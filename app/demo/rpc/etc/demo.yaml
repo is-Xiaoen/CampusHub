@@ -1,0 +1,37 @@
+# Demo RPC 服务配置
+Name: demo.rpc
+ListenOn: 0.0.0.0:9100
+
+# 服务注册（Etcd）
+Etcd:
+  Hosts:
+    - 192.168.10.4:2379
+  Key: demo.rpc
+
+# 日志
+Log:
+  ServiceName: demo-rpc
+  Mode: console
+  Level: info
+
+# 数据库
+MySQL:
+  DataSource: root:123456@tcp(192.168.10.4:3308)/campushub_main?charset=utf8mb4&parseTime=true&loc=Local
+
+# ==================== RPC 客户端配置（服务间通信示例） ====================
+# 如果 Demo 服务需要调用其他服务，配置如下：
+# UserRpc:
+#   Etcd:
+#     Hosts:
+#       - 127.0.0.1:2379
+#     Key: user.rpc
+#   NonBlock: true    # 非阻塞模式
+#   Timeout: 3000     # 超时 3 秒
+
+# ==================== 链路追踪（微服务核心） ====================
+# 分布式追踪，可在 Jaeger UI 查看完整调用链
+Telemetry:
+  Name: demo-rpc
+  Endpoint: http://192.168.10.4:14268/api/traces
+  Sampler: 1.0
+  Batcher: jaeger

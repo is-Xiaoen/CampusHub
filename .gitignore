@@ -68,9 +68,6 @@ app/activity/rpc/etc/activity.yaml
 # Chat RPC 配置
 app/chat/rpc/etc/chat.yaml
 
-# Demo RPC 配置
-app/demo/rpc/etc/demo.yaml
-
 # ==================== 项目特定排除 ====================
 # 计划文档（可能包含敏感业务信息）
 docs/plan/
