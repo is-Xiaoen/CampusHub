@@ -1,0 +1,146 @@
+version: '3.8'
+
+services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: activity-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root123456
+      MYSQL_USER: activity
+      MYSQL_PASSWORD: activity123456
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ../sql:/docker-entrypoint-initdb.d  # 自动执行初始化SQL
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --max_connections=1000
+      - --innodb_buffer_pool_size=256M
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - activity-network
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: activity-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - activity-network
+
+  # ==================== Etcd 服务注册中心（微服务核心） ====================
+  # 面试亮点：服务注册与发现、健康检查、故障摘除
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.9
+    container_name: activity-etcd
+    restart: unless-stopped
+    environment:
+      ETCD_NAME: etcd-node1
+      ETCD_DATA_DIR: /etcd-data
+      ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
+      ETCD_ADVERTISE_CLIENT_URLS: http://etcd:2379
+      ETCD_LISTEN_PEER_URLS: http://0.0.0.0:2380
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: http://etcd:2380
+      ETCD_INITIAL_CLUSTER: etcd-node1=http://etcd:2380
+      ETCD_INITIAL_CLUSTER_TOKEN: activity-cluster
+      ETCD_INITIAL_CLUSTER_STATE: new
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+    volumes:
+      - etcd_data:/etcd-data
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - activity-network
+
+  # ==================== Jaeger 链路追踪（微服务核心） ====================
+  # 面试亮点：分布式追踪、性能分析、调用链可视化
+  jaeger:
+    image: jaegertracing/all-in-one:1.51
+    container_name: activity-jaeger
+    restart: unless-stopped
+    environment:
+      COLLECTOR_ZIPKIN_HOST_PORT: ":9411"
+    ports:
+      - "5775:5775/udp"   # Agent - Thrift over UDP
+      - "6831:6831/udp"   # Agent - Thrift compact
+      - "6832:6832/udp"   # Agent - Thrift binary
+      - "5778:5778"       # Agent - HTTP sampling
+      - "16686:16686"     # UI
+      - "14268:14268"     # Collector - HTTP
+      - "14250:14250"     # Collector - gRPC
+      - "9411:9411"       # Zipkin compatible
+    networks:
+      - activity-network
+
+  # Kafka 消息队列（可选，用于事件驱动）
+  # zookeeper:
+  #   image: confluentinc/cp-zookeeper:7.4.0
+  #   container_name: activity-zookeeper
+  #   environment:
+  #     ZOOKEEPER_CLIENT_PORT: 2181
+  #   networks:
+  #     - activity-network
+  #
+  # kafka:
+  #   image: confluentinc/cp-kafka:7.4.0
+  #   container_name: activity-kafka
+  #   depends_on:
+  #     - zookeeper
+  #   environment:
+  #     KAFKA_BROKER_ID: 1
+  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  #   ports:
+  #     - "9092:9092"
+  #   networks:
+  #     - activity-network
+
+  # Elasticsearch 搜索引擎（可选）
+  # elasticsearch:
+  #   image: elasticsearch:8.8.0
+  #   container_name: activity-es
+  #   environment:
+  #     - discovery.type=single-node
+  #     - xpack.security.enabled=false
+  #     - ES_JAVA_OPTS=-Xms512m -Xmx512m
+  #   ports:
+  #     - "9200:9200"
+  #   volumes:
+  #     - es_data:/usr/share/elasticsearch/data
+  #   networks:
+  #     - activity-network
+
+volumes:
+  mysql_data:
+  redis_data:
+  etcd_data:
+  # es_data:
+
+networks:
+  activity-network:
+    driver: bridge

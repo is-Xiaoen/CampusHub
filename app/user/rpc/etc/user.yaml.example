@@ -1,0 +1,51 @@
+# ============================================================================
+# User RPC 服务配置模板
+# ============================================================================
+# 使用方法：复制此文件为 user.yaml，然后修改相应配置
+# cp user.yaml.example user.yaml
+# ============================================================================
+
+Name: user.rpc
+ListenOn: 0.0.0.0:19001    # 使用高端口避免冲突
+
+# 服务注册（Etcd）
+Etcd:
+  Hosts:
+    - <ETCD_HOST>:2379    # 例如: 192.168.10.4:2379
+  Key: user.rpc
+
+# 日志配置
+Log:
+  ServiceName: user-rpc
+  Mode: console
+  Encoding: plain
+  Level: info
+  Path: ./logs
+
+# 数据库配置
+MySQL:
+  DataSource: <DB_USER>:<DB_PASSWORD>@tcp(<DB_HOST>:<DB_PORT>)/campushub_user?charset=utf8mb4&parseTime=true&loc=Local
+  # 示例: root:123456@tcp(192.168.10.4:3308)/campushub_user?charset=utf8mb4&parseTime=true&loc=Local
+
+# Redis 配置
+Redis:
+  Host: <REDIS_HOST>:6379    # 例如: 192.168.10.4:6379
+  Type: node
+  Pass: "<REDIS_PASSWORD>"   # Redis 密码
+
+# JWT 配置
+JWT:
+  AccessSecret: <YOUR_ACCESS_SECRET_32_CHARS>
+  RefreshSecret: <YOUR_REFRESH_SECRET_32_CHARS>
+  AccessExpire: 7200       # 2小时
+  RefreshExpire: 604800    # 7天
+
+# 短信服务配置（示例）
+SMS:
+  Provider: mock    # mock | aliyun
+  # Aliyun:
+  #   AccessKeyId: <YOUR_KEY>
+  #   AccessKeySecret: <YOUR_SECRET>
+  #   SignName: <YOUR_SIGN>
+  #   TemplateCode: SMS_xxx
+

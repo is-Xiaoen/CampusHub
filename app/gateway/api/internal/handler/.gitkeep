@@ -1,0 +1,17 @@
+# Handler 层
+# 负责人: 全员
+#
+# 职责:
+# - HTTP请求参数解析
+# - 调用Logic层处理业务
+# - 返回响应结果
+#
+# 目录结构示例:
+# handler/
+# ├── user/
+# │   ├── loginhandler.go
+# │   └── registerhandler.go
+# ├── activity/
+# │   ├── createhandler.go
+# │   └── listhandler.go
+# └── routes.go

@@ -1,0 +1,55 @@
+# ============================================================================
+# Activity RPC 服务配置模板
+# ============================================================================
+# 使用方法：复制此文件为 activity.yaml，然后修改相应配置
+# cp activity.yaml.example activity.yaml
+# ============================================================================
+
+Name: activity.rpc
+ListenOn: 0.0.0.0:19002    # 使用高端口避免冲突
+
+# 服务注册（Etcd）
+Etcd:
+  Hosts:
+    - <ETCD_HOST>:2379    # 例如: 192.168.10.4:2379
+  Key: activity.rpc
+
+# 日志配置
+Log:
+  ServiceName: activity-rpc
+  Mode: console
+  Encoding: plain
+  Level: info
+
+# 数据库配置
+MySQL:
+  DataSource: <DB_USER>:<DB_PASSWORD>@tcp(<DB_HOST>:<DB_PORT>)/campushub_main?charset=utf8mb4&parseTime=true&loc=Local
+  # 示例: root:123456@tcp(192.168.10.4:3308)/campushub_main?charset=utf8mb4&parseTime=true&loc=Local
+
+# Redis 配置
+Redis:
+  Host: <REDIS_HOST>:6379
+  Pass: "<REDIS_PASSWORD>"
+  DB: 1    # 使用 DB1，与 User 服务隔离
+
+# 消息队列配置（可选）
+# MQ:
+#   Brokers:
+#     - <KAFKA_HOST>:9092
+#   Topic: activity-registration
+
+# RPC 客户端配置（调用 User 服务）
+UserRpc:
+  Etcd:
+    Hosts:
+      - <ETCD_HOST>:2379
+    Key: user.rpc
+  NonBlock: true
+  Timeout: 3000
+
+# 链路追踪（可选）
+# Telemetry:
+#   Name: activity-rpc
+#   Endpoint: http://<JAEGER_HOST>:14268/api/traces
+#   Sampler: 1.0
+#   Batcher: jaeger

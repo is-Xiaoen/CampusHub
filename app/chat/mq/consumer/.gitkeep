@@ -1,0 +1,5 @@
+# Chat MQ Consumer
+# 负责人: E同学
+#
+# 待实现:
+# - notify_consumer.go  通知消息消费者

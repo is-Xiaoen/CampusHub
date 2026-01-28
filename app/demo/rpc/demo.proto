@@ -1,0 +1,136 @@
+// ============================================================================
+// Demo 服务 Proto 定义文件
+// ============================================================================
+//
+// 文件说明：
+//   这是 gRPC 服务的接口定义文件，定义了服务的所有 RPC 方法和消息结构。
+//   Proto 文件是微服务间通信的"契约"，修改需要通知所有调用方。
+//
+// 命名规范：
+//   - 服务名：大驼峰，以 Service 结尾，如 DemoService
+//   - 方法名：大驼峰，动词开头，如 GetUser, CreateOrder
+//   - 消息名：大驼峰，请求以 Request 结尾，响应以 Response 结尾
+//   - 字段名：小驼峰转下划线，如 user_id, created_at
+//
+// 生成命令：
+//   cd app/demo/rpc
+//   protoc --go_out=. --go-grpc_out=. demo.proto
+//
+// ============================================================================
+
+syntax = "proto3";
+
+package demo;
+
+// 指定生成的 Go 代码包路径
+// 重要：这决定了 import 路径
+option go_package = "./pb";
+
+// ============================================================================
+// 服务定义
+// ============================================================================
+
+// DemoService 示例服务
+// 展示标准的 CRUD 操作定义方式
+service DemoService {
+  // ==================== 查询类接口 ====================
+
+  // GetItem 获取单个资源
+  // 用于：根据 ID 获取详情
+  rpc GetItem(GetItemRequest) returns (GetItemResponse);
+
+  // ListItems 获取资源列表
+  // 用于：分页查询列表
+  rpc ListItems(ListItemsRequest) returns (ListItemsResponse);
+
+  // ==================== 写入类接口 ====================
+
+  // CreateItem 创建资源
+  // 用于：新增数据
+  rpc CreateItem(CreateItemRequest) returns (CreateItemResponse);
+
+  // UpdateItem 更新资源
+  // 用于：修改已有数据
+  rpc UpdateItem(UpdateItemRequest) returns (UpdateItemResponse);
+
+  // DeleteItem 删除资源
+  // 用于：逻辑删除或物理删除
+  rpc DeleteItem(DeleteItemRequest) returns (DeleteItemResponse);
+}
+
+// ============================================================================
+// 消息定义 - 通用结构
+// ============================================================================
+
+// Item 资源实体
+// 说明：定义业务实体的完整结构
+message Item {
+  int64 id = 1;           // 主键 ID（雪花算法生成）
+  string name = 2;        // 名称
+  string description = 3; // 描述
+  int32 status = 4;       // 状态：1-正常 2-禁用
+  int64 created_at = 5;   // 创建时间（Unix 时间戳，秒）
+  int64 updated_at = 6;   // 更新时间（Unix 时间戳，秒）
+}
+
+// ============================================================================
+// 消息定义 - 请求/响应
+// ============================================================================
+
+// ---------- GetItem 获取单个 ----------
+
+message GetItemRequest {
+  int64 id = 1;  // 资源 ID（必填）
+}
+
+message GetItemResponse {
+  Item item = 1;  // 资源详情
+}
+
+// ---------- ListItems 列表查询 ----------
+
+message ListItemsRequest {
+  int32 page = 1;       // 页码，从 1 开始
+  int32 page_size = 2;  // 每页数量，默认 10，最大 100
+  string keyword = 3;   // 搜索关键词（可选）
+  int32 status = 4;     // 状态筛选（可选，0 表示全部）
+}
+
+message ListItemsResponse {
+  repeated Item list = 1;  // 列表数据
+  int64 total = 2;         // 总数量
+}
+
+// ---------- CreateItem 创建 ----------
+
+message CreateItemRequest {
+  string name = 1;        // 名称（必填）
+  string description = 2; // 描述（可选）
+}
+
+message CreateItemResponse {
+  int64 id = 1;  // 创建成功后返回的 ID
+}
+
+// ---------- UpdateItem 更新 ----------
+
+message UpdateItemRequest {
+  int64 id = 1;           // 资源 ID（必填）
+  string name = 2;        // 名称（可选，空字符串表示不更新）
+  string description = 3; // 描述（可选）
+  int32 status = 4;       // 状态（可选，0 表示不更新）
+}
+
+message UpdateItemResponse {
+  bool success = 1;  // 是否成功
+}
+
+// ---------- DeleteItem 删除 ----------
+
+message DeleteItemRequest {
+  int64 id = 1;  // 资源 ID（必填）
+}
+
+message DeleteItemResponse {
+  bool success = 1;  // 是否成功
+}

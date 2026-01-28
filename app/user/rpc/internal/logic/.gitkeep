@@ -1,0 +1,12 @@
+# User Logic 层
+# 负责人: B同学
+#
+# 待实现文件:
+# - registerlogic.go      注册逻辑
+# - loginlogic.go         密码登录
+# - loginbysmslogic.go    短信登录
+# - sendsmscodelogic.go   发送验证码
+# - refreshtokenlogic.go  Token刷新
+# - getuserinfologic.go   获取用户信息
+# - updateuserinfologic.go 更新用户信息
+# - changepasswordlogic.go 修改密码

@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "./pb";
+
+// ==================== 用户服务定义 ====================

@@ -1,0 +1,8 @@
+# Chat Logic 层
+# 负责人: E同学
+#
+# 待实现:
+# - sendnotifylogic.go    发送通知
+# - getunreadlogic.go     获取未读
+# - markreadlogic.go      标记已读
+# - gethistorylogic.go    获取消息历史

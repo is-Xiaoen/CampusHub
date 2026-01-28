@@ -1,0 +1,14 @@
+# WebSocket 服务
+# 负责人: E同学
+#
+# 待实现:
+# - hub.go        连接管理器
+# - client.go     客户端连接
+# - handler.go    消息处理
+# - heartbeat.go  心跳保活
+#
+# 面试亮点:
+# - WebSocket握手与升级
+# - 心跳保活机制
+# - 断线重连
+# - 消息ACK与重传

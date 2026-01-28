@@ -1,0 +1,5 @@
+# User Proto 生成文件目录
+# 由 protoc 自动生成
+#
+# 生成命令:
+# protoc --go_out=. --go-grpc_out=. user.proto

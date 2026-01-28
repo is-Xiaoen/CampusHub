@@ -1,0 +1,123 @@
+# ============================================================================
+# CampusHub 应用服务部署
+# ============================================================================
+# 部署目标：192.168.10.9（应用服务器）
+# 中间件地址：192.168.10.4（MySQL:3308, Redis:6379, Etcd:2379）
+#
+# 使用方法：
+#   docker-compose -f docker-compose-app.yaml up -d
+#   docker-compose -f docker-compose-app.yaml logs -f
+# ============================================================================
+
+version: '3.8'
+
+services:
+  # ==================== API 网关 ====================
+  gateway:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+      args:
+        SERVICE: gateway
+    image: campushub/gateway:latest
+    container_name: campushub-gateway
+    restart: unless-stopped
+    ports:
+      - "18080:18080"
+    volumes:
+      - ./config/gateway.yaml:/app/etc/config.yaml:ro
+    environment:
+      TZ: Asia/Shanghai
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - campushub-network
+    depends_on:
+      - user
+      - activity
+      - chat
+
+  # ==================== User RPC 服务 ====================
+  user:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+      args:
+        SERVICE: user
+    image: campushub/user:latest
+    container_name: campushub-user
+    restart: unless-stopped
+    ports:
+      - "19001:19001"
+    volumes:
+      - ./config/user.yaml:/app/etc/config.yaml:ro
+    environment:
+      TZ: Asia/Shanghai
+    networks:
+      - campushub-network
+
+  # ==================== Activity RPC 服务 ====================
+  activity:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+      args:
+        SERVICE: activity
+    image: campushub/activity:latest
+    container_name: campushub-activity
+    restart: unless-stopped
+    ports:
+      - "19002:19002"
+    volumes:
+      - ./config/activity.yaml:/app/etc/config.yaml:ro
+    environment:
+      TZ: Asia/Shanghai
+    networks:
+      - campushub-network
+
+  # ==================== Chat RPC 服务 ====================
+  chat:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+      args:
+        SERVICE: chat
+    image: campushub/chat:latest
+    container_name: campushub-chat
+    restart: unless-stopped
+    ports:
+      - "19003:19003"
+    volumes:
+      - ./config/chat.yaml:/app/etc/config.yaml:ro
+    environment:
+      TZ: Asia/Shanghai
+    networks:
+      - campushub-network
+
+  # ==================== Demo RPC 服务（可选） ====================
+  demo:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+      args:
+        SERVICE: demo
+    image: campushub/demo:latest
+    container_name: campushub-demo
+    restart: unless-stopped
+    ports:
+      - "19100:19100"
+    volumes:
+      - ./config/demo.yaml:/app/etc/config.yaml:ro
+    environment:
+      TZ: Asia/Shanghai
+    networks:
+      - campushub-network
+    profiles:
+      - demo  # 可选服务，使用 --profile demo 启用
+
+networks:
+  campushub-network:
+    driver: bridge

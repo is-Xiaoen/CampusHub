@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Activity Pro - V5 Complete</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            background-color: #F8FAFC;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            color: #1e293b;
+        }
+
+        .mobile-container {
+            max-width: 420px;
+            margin: 0 auto;
+            background: #F8FAFC;
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 110px;
+            /* Space for nav */
+            overflow-x: hidden;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Floating Nav */
+        .bottom-nav-container {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 380px;
+            z-index: 50;
+        }
+
+        .bottom-nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1);
+            border-radius: 28px;
+            padding: 14px 0;
+        }
+
+        .nav-item {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .nav-item.active {
+            color: #f97316;
+            transform: translateY(-2px);
+        }
+
+        .nav-item.active i {
+            transform: scale(1.1);
+        }
+
+        /* Gradients */
+        .bg-gradient-brand {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        }
+
+        .text-gradient-brand {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* View Transitions */
+        .page-view {
+            min-height: 100vh;
+            width: 100%;
+            transition: opacity 0.3s ease;
+        }
+
+        .sub-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #F8FAFC;
+            z-index: 60;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        .sub-view.active {
+            transform: translateX(0);
+        }
+
+        .sub-view-modal {
+            transform: translateY(100%);
+        }
+
+        .sub-view-modal.active {
+            transform: translateY(0);
+        }
+
+        .card-hover:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="mobile-container">
+
+        <!-- ================= MAIN TABS ================= -->
+
+        <!-- HOME TAB -->
+        <div id="tab-home" class="page-view fade-in">
+            <header class="sticky top-0 z-40 bg-[#F8FAFC]/95 backdrop-blur-md px-6 pt-6 pb-2">
+                <div class="flex items-center justify-between mb-5">
+                    <div class="flex flex-col">
+                        <span class="text-xs text-gray-400 font-medium mb-1">Welcome Back</span>
+                        <div class="flex items-center text-gray-800 font-bold text-lg select-none">
+                            <span>Activity Pro</span>
+                        </div>
+                    </div>
+                    <div class="relative bg-white p-2.5 rounded-full shadow-sm border border-gray-100">
+                        <i class="far fa-bell text-lg text-gray-600"></i>
+                        <span class="absolute top-2.5 right-3 bg-red-500 w-2 h-2 rounded-full"></span>
+                    </div>
+                </div>
+
+                <div class="relative mb-6">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    <input type="text"
+                        class="w-full bg-white border border-gray-100 text-gray-800 text-sm rounded-2xl focus:ring-2 focus:ring-orange-100 focus:border-orange-500 block w-full pl-10 p-4 shadow-sm transition-all outline-none"
+                        placeholder="搜索活动...">
+                </div>
+
+                <!-- Single Tab as requested -->
+                <div class="flex items-end border-b border-gray-100/80">
+                    <div class="text-2xl font-bold text-gray-900 relative pb-3 px-1">
+                        推荐活动
+                        <span class="absolute bottom-0 left-0 w-8 h-1 bg-orange-500 rounded-full"></span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="px-5 space-y-6 pt-4">
+                <!-- Icons Filter - 增加更多标签 -->
+                <div class="flex gap-3 overflow-x-auto hide-scrollbar py-1">
+                    <button
+                        class="bg-gray-900 text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-lg shadow-gray-200 shrink-0 flex items-center gap-2">
+                        <i class="fas fa-layer-group"></i> 全部
+                    </button>
+                    <button
+                        class="bg-white text-gray-600 px-5 py-2.5 rounded-full text-xs font-semibold shadow-sm border border-gray-100 shrink-0 flex items-center gap-2">
+                        <i class="fas fa-running text-orange-500"></i> 跑步
+                    </button>
+                    <button
+                        class="bg-white text-gray-600 px-5 py-2.5 rounded-full text-xs font-semibold shadow-sm border border-gray-100 shrink-0 flex items-center gap-2">
+                        <i class="fas fa-basketball-ball text-orange-400"></i> 球类
+                    </button>
+                    <button
+                        class="bg-white text-gray-600 px-5 py-2.5 rounded-full text-xs font-semibold shadow-sm border border-gray-100 shrink-0 flex items-center gap-2">
+                        <i class="fas fa-mountain text-green-500"></i> 徒步
+                    </button>
+                    <button
+                        class="bg-white text-gray-600 px-5 py-2.5 rounded-full text-xs font-semibold shadow-sm border border-gray-100 shrink-0 flex items-center gap-2">
+                        <i class="fas fa-campground text-green-600"></i> 露营
+                    </button>
+                    <button
+                        class="bg-white text-gray-600 px-5 py-2.5 rounded-full text-xs font-semibold shadow-sm border border-gray-100 shrink-0 flex items-center gap-2">
+                        <i class="fas fa-music text-purple-500"></i> 音乐
+                    </button>
+                    <button
+                        class="bg-white text-gray-600 px-5 py-2.5 rounded-full text-xs font-semibold shadow-sm border border-gray-100 shrink-0 flex items-center gap-2">
+                        <i class="fas fa-book text-purple-600"></i> 读书
+                    </button>
+                    <button
+                        class="bg-white text-gray-600 px-5 py-2.5 rounded-full text-xs font-semibold shadow-sm border border-gray-100 shrink-0 flex items-center gap-2">
+                        <i class="fas fa-camera text-pink-500"></i> 摄影
+                    </button>
+                    <button
+                        class="bg-white text-gray-600 px-5 py-2.5 rounded-full text-xs font-semibold shadow-sm border border-gray-100 shrink-0 flex items-center gap-2">
+                        <i class="fas fa-utensils text-red-500"></i> 美食
+                    </button>
+                    <button
+                        class="bg-white text-gray-600 px-5 py-2.5 rounded-full text-xs font-semibold shadow-sm border border-gray-100 shrink-0 flex items-center gap-2">
+                        <i class="fas fa-gamepad text-blue-500"></i> 游戏
+                    </button>
+                </div>
+
+                <!-- Card 1 - 增加活动标签 -->
+                <div onclick="router.push('detail')"
+                    class="group bg-white rounded-[24px] p-3 shadow-xl shadow-orange-100/40 hover:shadow-2xl hover:shadow-orange-200/40 transition-all duration-300 card-hover cursor-pointer border border-white">
+                    <div class="relative h-52 rounded-[20px] overflow-hidden mb-4 bg-gray-100">
+                        <img src="https://picsum.photos/800/600?random=1" class="w-full h-full object-cover">
+                        <div
+                            class="absolute top-3 left-3 bg-white/95 backdrop-blur text-orange-600 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm tracking-wide">
+                            <i class="fas fa-fire"></i> 报名中
+                        </div>
+                        <div
+                            class="absolute bottom-3 right-3 bg-black/60 backdrop-blur text-white text-[10px] px-3 py-1.5 rounded-full flex items-center border border-white/10">
+                            15/20 人
+                        </div>
+                    </div>
+                    <div class="px-2 pb-2">
+                        <div class="mb-3">
+                            <h3 class="font-bold text-gray-900 text-lg leading-snug">周五晚·奥森公园 5km 荧光夜跑</h3>
+                            <!-- 活动标签 -->
+                            <div class="flex gap-2 mt-2">
+                                <span class="bg-orange-50 text-orange-500 text-[10px] px-2 py-0.5 rounded font-bold"><i class="fas fa-running mr-1"></i>跑步</span>
+                                <span class="bg-green-50 text-green-600 text-[10px] px-2 py-0.5 rounded font-bold"><i class="fas fa-moon mr-1"></i>夜跑</span>
+                            </div>
+                        </div>
+
+                        <div
+                            class="flex items-center gap-4 text-gray-500 text-xs font-medium mb-5 bg-gray-50 p-2.5 rounded-xl">
+                            <span class="flex items-center"><i class="far fa-clock text-gray-400 mr-2"></i>周五
+                                19:00</span>
+                            <div class="w-px h-3 bg-gray-300"></div>
+                            <span class="flex items-center"><i
+                                    class="fas fa-map-marker-alt text-gray-400 mr-2"></i>奥森南门</span>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <!-- Organizer tiny profile -->
+                            <div class="flex items-center gap-2"
+                                onclick="even.stopPropagation(); router.push('public-profile')">
+                                <img src="https://picsum.photos/50?random=100" class="w-6 h-6 rounded-full">
+                                <span class="text-xs text-gray-500">极客跑团</span>
+                            </div>
+                            <button
+                                class="bg-gray-900 text-white px-6 py-2.5 rounded-full text-xs font-bold shadow-lg shadow-gray-200 group-hover:bg-orange-500 group-hover:shadow-orange-200 transition-all flex items-center gap-2">
+                                查看详情 <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 - 增加活动标签 -->
+                <div onclick="router.push('detail')"
+                    class="group bg-white rounded-[24px] p-3 shadow-xl shadow-gray-100 hover:shadow-2xl transition-all duration-300 card-hover cursor-pointer border border-white">
+                    <div class="relative h-52 rounded-[20px] overflow-hidden mb-4 bg-gray-100">
+                        <img src="https://picsum.photos/800/600?random=2" class="w-full h-full object-cover">
+                        <div
+                            class="absolute top-3 left-3 bg-white/95 backdrop-blur text-blue-600 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm tracking-wide">
+                            <i class="fas fa-users"></i> 需审核
+                        </div>
+                        <div
+                            class="absolute bottom-3 right-3 bg-black/60 backdrop-blur text-white text-[10px] px-3 py-1.5 rounded-full flex items-center border border-white/10">
+                            3/10 人
+                        </div>
+                    </div>
+                    <div class="px-2 pb-2">
+                        <h3 class="font-bold text-gray-900 text-lg leading-snug mb-2">周末读书分享会 - 科技与人文</h3>
+                        <!-- 活动标签 -->
+                        <div class="flex gap-2 mb-3">
+                            <span class="bg-purple-50 text-purple-600 text-[10px] px-2 py-0.5 rounded font-bold"><i class="fas fa-book mr-1"></i>读书</span>
+                            <span class="bg-blue-50 text-blue-600 text-[10px] px-2 py-0.5 rounded font-bold"><i class="fas fa-users mr-1"></i>社交</span>
+                        </div>
+                        <div
+                            class="flex items-center gap-4 text-gray-500 text-xs font-medium mb-4 bg-gray-50 p-2.5 rounded-xl">
+                            <span class="flex items-center"><i class="far fa-clock text-gray-400 mr-2"></i>周六
+                                14:00</span>
+                            <div class="w-px h-3 bg-gray-300"></div>
+                            <span class="flex items-center"><i
+                                    class="fas fa-map-marker-alt text-gray-400 mr-2"></i>朝阳书社</span>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- MESSAGE TAB -->
+        <div id="tab-message" class="page-view hidden fade-in">
+            <header class="sticky top-0 z-40 bg-[#F8FAFC]/95 backdrop-blur-md px-6 py-5">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="font-bold text-2xl text-gray-900">消息</h1>
+                    <!-- No Add Friend Icon -->
+                </div>
+                <!-- System Notify Link -->
+                <div onclick="router.push('system-msg')"
+                    class="bg-white p-4 rounded-2xl flex items-center mb-2 shadow-sm border border-gray-100 cursor-pointer active:scale-95 transition-transform">
+                    <div
+                        class="w-10 h-10 bg-orange-50 rounded-full flex items-center justify-center text-orange-500 mr-4 shrink-0">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-bold text-gray-800 mb-0.5">系统通知</div>
+                        <div class="text-xs text-gray-400">点击查看最新的活动状态变更</div>
+                    </div>
+                    <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                </div>
+            </header>
+
+            <main class="px-2 space-y-2">
+                <!-- Chat Item -->
+                <div onclick="router.push('chat')"
+                    class="flex items-center px-4 py-4 hover:bg-white rounded-2xl transition-colors cursor-pointer">
+                    <div class="relative">
+                        <img src="https://picsum.photos/100?random=20" class="w-14 h-14 rounded-2xl bg-gray-200">
+                        <div
+                            class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] h-5 min-w-[20px] px-1 rounded-full flex items-center justify-center border-2 border-[#F8FAFC]">
+                            9</div>
+                    </div>
+                    <div class="flex-1 ml-4 pb-2 border-b border-gray-100/50">
+                        <div class="flex justify-between items-baseline mb-1">
+                            <h3 class="font-bold text-gray-800 text-[15px]">周五羽毛球核心群</h3>
+                            <span class="text-[10px] text-gray-400">14:20</span>
+                        </div>
+                        <p class="text-xs text-gray-500 line-clamp-1"><span class="text-gray-400">Kevin:</span>
+                            谁带了多余的球拍吗？</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- PUBLISH TAB (Full Screen Modal style) -->
+        <div id="tab-publish" class="page-view hidden fade-in h-screen bg-white">
+            <header
+                class="px-6 py-5 flex items-center justify-between border-b border-gray-50 sticky top-0 bg-white z-10">
+                <button class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600"
+                    onclick="switchMainTab('home')"><i class="fas fa-times"></i></button>
+                <span class="text-base font-bold text-gray-900">发布新活动</span>
+                <button class="text-orange-500 font-bold text-sm bg-orange-50 px-4 py-1.5 rounded-full">提交</button>
+            </header>
+
+            <main class="p-6 pb-32">
+                <!-- Media Upload -->
+                <div
+                    class="w-full h-48 rounded-3xl bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 mb-8 hover:border-orange-400 hover:bg-orange-50/50 transition-all cursor-pointer group">
+                    <i class="fas fa-camera text-2xl mb-2 group-hover:text-orange-500 transition-colors"></i>
+                    <span class="text-xs font-bold text-gray-400">上传活动封面/视频</span>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Title -->
+                    <input type="text" placeholder="活动名称"
+                        class="w-full text-xl font-bold border-b border-gray-100 py-3 outline-none placeholder-gray-300 text-gray-800 focus:border-orange-200 transition-colors">
+
+                    <!-- Detailed Form Fields -->
+                    <div class="space-y-4">
+                        <!-- Date/Time -->
+                        <div class="bg-gray-50 p-4 rounded-2xl flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-500 shadow-sm">
+                                    <i class="far fa-clock"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-400 font-bold uppercase">活动时间</div>
+                                    <div class="text-sm font-bold text-gray-800">设置开始 ~ 结束时间</div>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-xs text-gray-300"></i>
+                        </div>
+
+                        <!-- Location -->
+                        <div class="bg-gray-50 p-4 rounded-2xl flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-500 shadow-sm">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-400 font-bold uppercase">活动地点</div>
+                                    <div class="text-sm font-bold text-gray-800">选择线下地点</div>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-xs text-gray-300"></i>
+                        </div>
+
+                        <!-- Capacity -->
+                        <div class="bg-gray-50 p-4 rounded-2xl flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-500 shadow-sm">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-400 font-bold uppercase">人数限制</div>
+                                    <div class="text-sm font-bold text-gray-800">设置最大参与人数</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center bg-white rounded-lg px-2 py-1 border border-gray-100">
+                                <span class="text-lg font-bold px-2">20</span>
+                                <span class="text-xs text-gray-400">人</span>
+                            </div>
+                        </div>
+
+                        <!-- Tags -->
+                        <div>
+                            <div class="text-xs text-gray-400 font-bold uppercase mb-2">活动标签</div>
+                            <div class="flex flex-wrap gap-2">
+                                <span
+                                    class="bg-orange-50 text-orange-500 px-3 py-1 rounded-lg text-xs font-bold border border-orange-100">运动</span>
+                                <span
+                                    class="bg-white text-gray-500 px-3 py-1 rounded-lg text-xs font-bold border border-gray-100">聚会</span>
+                                <span
+                                    class="bg-white text-gray-500 px-3 py-1 rounded-lg text-xs font-bold border border-gray-100">
+                                    <i class="fas fa-plus"></i> 添加</span>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                            <div class="text-xs text-gray-400 font-bold uppercase mb-2">活动详情</div>
+                            <textarea rows="6" placeholder="输入详细的活动流程、注意事项等（支持图文混排）..."
+                                class="w-full bg-gray-50 rounded-2xl p-4 text-sm outline-none resize-none focus:bg-white focus:ring-2 focus:ring-orange-100 transition-all"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- TICKET TAB (LIST) -->
+        <div id="tab-ticket" class="page-view hidden fade-in">
+            <header class="sticky top-0 z-40 bg-[#F8FAFC]/95 backdrop-blur-md px-6 py-5 border-b border-gray-100/50">
+                <h1 class="font-bold text-2xl text-gray-900">我的票券</h1>
+            </header>
+            <main class="p-5 space-y-4">
+                <!-- Ticket Item 1 -->
+                <div onclick="router.push('ticket-detail')"
+                    class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex justify-between items-center cursor-pointer active:scale-98 transition-transform">
+                    <div class="flex gap-4">
+                        <div
+                            class="w-16 h-16 bg-orange-100 rounded-xl flex items-center justify-center text-orange-500 text-2xl shrink-0">
+                            <i class="fas fa-running"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800 text-sm mb-1">奥森公园夜跑</h3>
+                            <div class="text-xs text-gray-500 mb-1"><i class="far fa-clock mr-1"></i> 10.24 19:00</div>
+                            <div
+                                class="text-[10px] bg-green-50 text-green-600 px-2 py-0.5 rounded inline-block font-bold">
+                                待使用</div>
+                        </div>
+                    </div>
+                    <i class="fas fa-qrcode text-2xl text-gray-300"></i>
+                </div>
+                <!-- Ticket Item 2 -->
+                <div
+                    class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex justify-between items-center opacity-60">
+                    <div class="flex gap-4">
+                        <div
+                            class="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-2xl shrink-0">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800 text-sm mb-1">读书分享会</h3>
+                            <div class="text-xs text-gray-500 mb-1"><i class="far fa-clock mr-1"></i> 10.12 14:00</div>
+                            <div
+                                class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded inline-block font-bold">
+                                已核销</div>
+                        </div>
+                    </div>
+                    <i class="fas fa-check-circle text-2xl text-gray-300"></i>
+                </div>
+            </main>
+        </div>
+
+        <!-- PROFILE TAB -->
+        <div id="tab-profile" class="page-view hidden fade-in">
+            <header class="relative px-6 pt-12 pb-8 bg-white">
+                <div class="flex justify-between items-start mb-6">
+                    <!-- Avatar -->
+                    <div class="relative">
+                        <img src="https://picsum.photos/100?random=50"
+                            class="w-24 h-24 rounded-full border-4 border-white shadow-xl object-cover">
+                        <!-- Tags Display - 活动相关标签 -->
+                        <div class="absolute -bottom-2 -right-2 bg-white px-2 py-1 rounded-full shadow-sm flex gap-1">
+                            <span class="text-[8px] font-bold bg-orange-50 text-orange-500 px-1.5 rounded">跑步</span>
+                            <span class="text-[8px] font-bold bg-green-50 text-green-600 px-1.5 rounded">徒步</span>
+                        </div>
+                    </div>
+                    <!-- Settings Button -->
+                    <div class="mt-2">
+                        <button onclick="router.push('settings')"
+                            class="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50"><i
+                                class="fas fa-cog"></i></button>
+                    </div>
+                </div>
+
+                <h1 class="text-2xl font-bold text-gray-900 mb-1">Yang</h1>
+                <p class="text-gray-400 text-sm mb-4">这里是个人简介，可以在设置中修改。</p>
+
+                <!-- 用户兴趣标签展示 -->
+                <div class="flex flex-wrap gap-2 mb-6">
+                    <span class="bg-orange-50 text-orange-500 px-3 py-1 rounded-full text-xs font-bold"><i class="fas fa-running mr-1"></i>跑步</span>
+                    <span class="bg-green-50 text-green-600 px-3 py-1 rounded-full text-xs font-bold"><i class="fas fa-mountain mr-1"></i>徒步</span>
+                    <span class="bg-purple-50 text-purple-600 px-3 py-1 rounded-full text-xs font-bold"><i class="fas fa-book mr-1"></i>读书</span>
+                </div>
+
+                <div class="flex gap-8 border-b border-gray-50 pb-6">
+                    <!-- Just basic stats -->
+                    <div class="text-center">
+                        <div class="font-bold text-lg text-gray-900">12</div>
+                        <div class="text-[10px] text-gray-400 font-bold">发布</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="font-bold text-lg text-gray-900">45</div>
+                        <div class="text-[10px] text-gray-400 font-bold">参与</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="font-bold text-lg text-green-500">100</div>
+                        <div class="text-[10px] text-gray-400 font-bold">信用分</div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="px-5 space-y-4 -mt-2">
+                <!-- Simplified Stats -->
+                <div class="bg-white rounded-[24px] p-6 shadow-xl shadow-gray-100 flex justify-around">
+                    <div onclick="router.push('list-pending')"
+                        class="flex flex-col items-center gap-2 group cursor-pointer w-full">
+                        <i class="far fa-calendar-check text-2xl text-orange-500"></i>
+                        <span class="text-xs font-bold text-gray-600">待参加</span>
+                    </div>
+                    <div class="w-px h-10 bg-gray-100"></div>
+                    <div onclick="router.push('list-joined')"
+                        class="flex flex-col items-center gap-2 group cursor-pointer w-full">
+                        <i class="fas fa-history text-2xl text-blue-500"></i>
+                        <span class="text-xs font-bold text-gray-600">已参加</span>
+                    </div>
+                </div>
+
+                <!-- Menu -->
+                <div class="bg-white rounded-[24px] overflow-hidden shadow-sm border border-gray-50">
+                    <div onclick="router.push('list-published')"
+                        class="p-4 flex items-center justify-between border-b border-gray-50 hover:bg-gray-50 cursor-pointer">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-9 h-9 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center">
+                                <i class="fas fa-flag text-sm"></i>
+                            </div>
+                            <span class="font-bold text-gray-700 text-sm">我发起的活动</span>
+                        </div>
+                        <i class="fas fa-chevron-right text-xs text-gray-300"></i>
+                    </div>
+                    <div onclick="router.push('student-verify')"
+                        class="p-4 flex items-center justify-between border-b border-gray-50 hover:bg-gray-50 cursor-pointer">
+                        <div class="flex items-center gap-4">
+                            <div class="w-9 h-9 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center">
+                                <i class="fas fa-graduation-cap text-sm"></i>
+                            </div>
+                            <span class="font-bold text-gray-700 text-sm">学生认证</span>
+                        </div>
+                        <span class="text-xs text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded">已通过</span>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- ================= SUB VIEWS (STACK) ================= -->
+
+        <!-- 1. ACTIVITY DETAIL -->
+        <div id="view-detail" class="sub-view">
+            <div class="relative h-[45vh]">
+                <img src="https://picsum.photos/800/800?random=1" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20"></div>
+                <button onclick="router.back()"
+                    class="absolute top-6 left-6 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10 z-50">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="absolute bottom-0 left-0 w-full p-6 pb-8">
+                    <div class="flex gap-2 mb-3">
+                        <span class="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-md">报名中</span>
+                    </div>
+                    <h1 class="text-2xl font-bold text-white leading-tight mb-2 text-shadow">奥森公园 5km 荧光夜跑</h1>
+                </div>
+            </div>
+
+            <div class="relative bg-white rounded-t-[32px] -mt-6 px-6 pt-8 pb-32 min-h-[60vh]">
+                <!-- Organizer Link -->
+                <div onclick="router.push('public-profile')"
+                    class="flex items-center justify-between mb-8 bg-gray-50 p-3 rounded-2xl cursor-pointer active:bg-gray-100">
+                    <div class="flex items-center gap-3">
+                        <img src="https://picsum.photos/100?random=60"
+                            class="w-10 h-10 rounded-full bg-gray-100 object-cover">
+                        <div>
+                            <div class="font-bold text-sm text-gray-900">极客跑团</div>
+                            <div class="text-[10px] text-gray-500">点击查看发起人详情</div>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right text-xs text-gray-300"></i>
+                </div>
+                <!-- Info -->
+                <div class="grid grid-cols-2 gap-3 mb-8">
+                    <div class="bg-orange-50/50 p-4 rounded-2xl border border-orange-100/50">
+                        <div class="text-[10px] text-gray-400 uppercase font-bold mb-1">Time</div>
+                        <div class="font-bold text-sm text-gray-900">10.24 19:00</div>
+                    </div>
+                    <div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50">
+                        <div class="text-[10px] text-gray-400 uppercase font-bold mb-1">Location</div>
+                        <div class="font-bold text-sm text-gray-900">奥森南门</div>
+                    </div>
+                </div>
+
+                <h3 class="font-bold text-lg mb-4 text-gray-900">活动详情</h3>
+                <div class="text-gray-600 text-sm leading-relaxed space-y-4">
+                    <p>🎉 欢迎参加我们的周五夜跑活动！我们将提供荧光手环和饮用水。跑完后会有30分钟的新手飞盘教学。</p>
+                </div>
+
+                <!-- Bottom Action -->
+                <div
+                    class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-50 p-4 z-50 max-w-[420px] mx-auto inset-x-0 pb-8 flex items-center justify-center">
+                    <button onclick="alert('报名申请已提交')"
+                        class="w-full bg-gray-900 text-white rounded-full font-bold h-12 shadow-xl hover:bg-orange-500 transition-all text-sm flex items-center justify-center gap-2">
+                        立即报名
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. PUBLIC USER PROFILE -->
+        <div id="view-public-profile" class="sub-view">
+            <header class="bg-white sticky top-0 z-10 border-b border-gray-50">
+                <div class="px-4 py-3 flex items-center">
+                    <button onclick="router.back()"
+                        class="w-8 h-8 rounded-full flex items-center justify-center text-gray-800"><i
+                            class="fas fa-arrow-left"></i></button>
+                    <span class="font-bold ml-2">用户详情</span>
+                </div>
+            </header>
+            <main class="p-6">
+                <div class="text-center mb-6">
+                    <img src="https://picsum.photos/100?random=60"
+                        class="w-24 h-24 rounded-full mx-auto mb-3 border-4 border-white shadow-lg">
+                    <h1 class="text-2xl font-bold text-gray-900">极客跑团</h1>
+                    <p class="text-sm text-gray-500 mt-2">热爱运动，专注组织线下夜跑活动。</p>
+                    <div class="mt-3 flex justify-center gap-2">
+                        <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded">运动达人</span>
+                        <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded">组织者</span>
+                    </div>
+                </div>
+
+                <!-- User's Activities -->
+                <div class="border-t border-gray-100 pt-6">
+                    <h3 class="font-bold text-gray-900 mb-4">Ta 发布的活动</h3>
+                    <div class="space-y-3">
+                        <div class="bg-white border border-gray-100 p-3 rounded-xl flex gap-3">
+                            <img src="https://picsum.photos/100?random=1" class="w-16 h-16 rounded-lg object-cover">
+                            <div>
+                                <div class="font-bold text-sm">奥森夜跑</div>
+                                <div class="text-xs text-gray-400 mt-1">10.24 19:00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-100 mt-6 pt-6">
+                    <h3 class="font-bold text-gray-900 mb-4">Ta 参加的活动</h3>
+                    <div class="space-y-3">
+                        <div class="bg-white border border-gray-100 p-3 rounded-xl flex gap-3">
+                            <img src="https://picsum.photos/100?random=2"
+                                class="w-16 h-16 rounded-lg object-cover grayscale opacity-70">
+                            <div>
+                                <div class="font-bold text-sm text-gray-500">读书会 (已结束)</div>
+                                <div class="text-xs text-gray-400 mt-1">10.10</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- 3. TICKET QR DETAIL -->
+        <div id="view-ticket-detail" class="sub-view bg-gray-900">
+            <header class="p-4 text-white flex items-center">
+                <button onclick="router.back()" class="w-8 h-8 rounded-full flex items-center justify-center"><i
+                        class="fas fa-arrow-left"></i></button>
+                <span class="font-bold ml-2">票券详情</span>
+            </header>
+            <div class="p-6 pt-10">
+                <div class="bg-white rounded-3xl overflow-hidden relative">
+                    <div class="bg-orange-500 p-6 text-center text-white">
+                        <h2 class="font-bold text-xl">奥森公园夜跑</h2>
+                        <p class="text-sm opacity-90 mt-1">10.24 19:00 - 21:00</p>
+                    </div>
+                    <div class="p-10 text-center">
+                        <div class="w-48 h-48 bg-gray-100 mx-auto rounded-lg flex items-center justify-center mb-4">
+                            <i class="fas fa-qrcode text-8xl text-gray-800"></i>
+                        </div>
+                        <p class="text-2xl font-mono font-bold text-gray-800 tracking-widest">8293</p>
+                        <p class="text-xs text-gray-400 mt-2">请出示二维码核销入场</p>
+                    </div>
+                    <!-- Circle notches -->
+                    <div class="absolute top-[88px] -left-3 w-6 h-6 bg-gray-900 rounded-full"></div>
+                    <div class="absolute top-[88px] -right-3 w-6 h-6 bg-gray-900 rounded-full"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. SYSTEM MESSAGES -->
+        <div id="view-system-msg" class="sub-view">
+            <header class="bg-white sticky top-0 z-10 border-b border-gray-50 px-4 py-3 flex items-center">
+                <button onclick="router.back()"
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-gray-800"><i
+                        class="fas fa-arrow-left"></i></button>
+                <span class="font-bold ml-2">系统消息</span>
+            </header>
+            <main class="p-4 space-y-3">
+                <div class="bg-white p-4 rounded-xl border border-gray-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-bold text-sm text-gray-800">审核通过</span>
+                        <span class="text-[10px] text-gray-400">刚刚</span>
+                    </div>
+                    <p class="text-xs text-gray-600">您报名的“奥森公园夜跑”已通过发起人审核，请准时参加。</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-gray-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-bold text-sm text-gray-800">活动变更</span>
+                        <span class="text-[10px] text-gray-400">昨天</span>
+                    </div>
+                    <p class="text-xs text-gray-600">您关注的活动地点发生了变更，请查看详情。</p>
+                </div>
+            </main>
+        </div>
+
+        <!-- 5. CHAT ROOM -->
+        <div id="view-chat" class="sub-view flex flex-col bg-[#F2F4F7]">
+            <header class="bg-white px-4 py-3 border-b border-gray-100 flex items-center justify-between shrink-0">
+                <button onclick="router.back()" class="w-8 h-8 flex items-center justify-center text-gray-800"><i
+                        class="fas fa-arrow-left"></i></button>
+                <span class="font-bold text-gray-900">周五羽毛球核心群 (14)</span>
+                <button class="w-8 h-8 flex items-center justify-center text-gray-800"><i
+                        class="fas fa-ellipsis-h"></i></button>
+            </header>
+            <main class="flex-1 p-4 space-y-4 overflow-y-auto">
+                <div class="text-center"><span
+                        class="text-gray-400 text-[10px] bg-gray-200 px-2 py-1 rounded">14:20</span></div>
+                <div class="flex items-end">
+                    <img src="https://picsum.photos/100?random=20"
+                        class="w-8 h-8 rounded-full border border-white mr-2">
+                    <div class="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm text-sm text-gray-700 max-w-[75%]">
+                        大家到了吗？</div>
+                </div>
+                <div class="flex items-end justify-end">
+                    <div
+                        class="bg-orange-500 p-3 rounded-2xl rounded-tr-none shadow-md text-sm text-white max-w-[75%] mr-2">
+                        马上到！</div>
+                    <img src="https://picsum.photos/100?random=50" class="w-8 h-8 rounded-full border border-white">
+                </div>
+            </main>
+            <footer class="p-3 bg-white border-t border-gray-100 pb-8 safe-bottom flex gap-2">
+                <input type="text" class="bg-gray-50 flex-1 outline-none text-sm px-4 py-2.5 rounded-full"
+                    placeholder="发送消息...">
+                <button class="w-20 bg-orange-500 text-white rounded-full text-xs font-bold">发送</button>
+            </footer>
+        </div>
+
+        <!-- 6. LIST PAGES (Pending/Joined/Published) - Generic Template -->
+        <div id="view-list-pending" class="sub-view">
+            <header class="bg-white px-4 py-3 border-b border-gray-50 flex items-center">
+                <button onclick="router.back()"
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-gray-800"><i
+                        class="fas fa-arrow-left"></i></button>
+                <span class="font-bold ml-2">待参加活动</span>
+            </header>
+            <main class="p-4 space-y-3">
+                <div class="bg-white p-3 rounded-xl border border-gray-100 flex gap-3">
+                    <img src="https://picsum.photos/100?random=1" class="w-20 h-20 rounded-lg object-cover">
+                    <div class="flex flex-col justify-between py-1">
+                        <div class="font-bold text-sm">奥森公园夜跑</div>
+                        <div class="text-xs text-gray-500"><i class="far fa-clock"></i> 10.24 19:00</div>
+                        <div class="text-xs text-orange-500 font-bold">倒计时 2天</div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <div id="view-list-joined" class="sub-view">
+            <header class="bg-white px-4 py-3 border-b border-gray-50 flex items-center">
+                <button onclick="router.back()"
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-gray-800"><i
+                        class="fas fa-arrow-left"></i></button>
+                <span class="font-bold ml-2">历史记录</span>
+            </header>
+            <main class="p-4 space-y-3">
+                <div class="bg-white p-3 rounded-xl border border-gray-100 flex gap-3 opacity-60">
+                    <img src="https://picsum.photos/100?random=5" class="w-20 h-20 rounded-lg object-cover grayscale">
+                    <div class="flex flex-col justify-between py-1">
+                        <div class="font-bold text-sm">读书分享会</div>
+                        <div class="text-xs text-gray-500"><i class="far fa-clock"></i> 10.10</div>
+                        <div class="text-xs text-gray-400 font-bold">已结束</div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <div id="view-list-published" class="sub-view">
+            <header class="bg-white px-4 py-3 border-b border-gray-50 flex items-center">
+                <button onclick="router.back()"
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-gray-800"><i
+                        class="fas fa-arrow-left"></i></button>
+                <span class="font-bold ml-2">我发布的</span>
+            </header>
+            <main class="p-4 flex flex-col items-center justify-center h-[50vh] text-gray-400">
+                <i class="far fa-folder-open text-4xl mb-2"></i>
+                <span class="text-xs">暂无发布活动</span>
+            </main>
+        </div>
+
+        <!-- 7. SETTINGS -->
+        <div id="view-settings" class="sub-view">
+            <header class="bg-white px-4 py-3 border-b border-gray-50 flex items-center">
+                <button onclick="router.back()"
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-gray-800"><i
+                        class="fas fa-arrow-left"></i></button>
+                <span class="font-bold ml-2">设置</span>
+            </header>
+            <main class="p-4 space-y-4">
+                <div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
+                    <div onclick="router.push('edit-profile')"
+                        class="p-4 border-b border-gray-50 flex justify-between items-center cursor-pointer hover:bg-gray-50">
+                        <span class="text-sm font-bold text-gray-700">编辑资料</span>
+                        <i class="fas fa-chevron-right text-xs text-gray-300"></i>
+                    </div>
+                    <div onclick="router.push('account-security')"
+                        class="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50">
+                        <span class="text-sm font-bold text-gray-700">账号安全</span>
+                        <i class="fas fa-chevron-right text-xs text-gray-300"></i>
+                    </div>
+                </div>
+                <button onclick="router.push('login')"
+                    class="w-full bg-white text-red-500 font-bold py-3 rounded-xl border border-gray-100">退出登录</button>
+            </main>
+        </div>
+
+        <!-- 8. STUDENT VERIFICATION -->
+        <div id="view-student-verify" class="sub-view">
+            <header class="bg-white px-4 py-3 border-b border-gray-50 flex items-center sticky top-0 z-10">
+                <button onclick="router.back()"
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-gray-800">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <span class="font-bold ml-2">学生认证</span>
+            </header>
+            <main class="p-5 space-y-6">
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-start gap-3">
+                    <i class="fas fa-graduation-cap text-blue-500 mt-0.5"></i>
+                    <p class="text-xs text-blue-700 leading-relaxed">
+                        本平台仅对在校大学生开放。请提供真实的学校和学籍信息，认证通过后将获得学生专属标识。
+                    </p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">真实姓名</label>
+                        <input type="text" placeholder="请输入姓名"
+                            class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:border-orange-500 outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">学校名称</label>
+                        <input type="text" placeholder="例如：北京大学"
+                            class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:border-orange-500 outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">入学年份</label>
+                        <input type="text" placeholder="例如：2023"
+                            class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:border-orange-500 outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">学号</label>
+                        <input type="text" placeholder="请输入学号"
+                            class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:border-orange-500 outline-none transition-colors">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-3">上传学生证/校园卡</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div
+                            class="aspect-[3/2] bg-white border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-orange-400 hover:text-orange-500 transition-all cursor-pointer">
+                            <i class="fas fa-id-card-clip text-xl"></i>
+                            <span class="text-[10px] font-bold">正面 (含照片)</span>
+                        </div>
+                        <div
+                            class="aspect-[3/2] bg-white border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-orange-400 hover:text-orange-500 transition-all cursor-pointer">
+                            <i class="fas fa-book text-xl"></i>
+                            <span class="text-[10px] font-bold">详情面</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="router.back(); alert('提交成功，请等待审核')"
+                    class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-full shadow-lg hover:bg-orange-500 transition-all mt-4">
+                    提交审核
+                </button>
+            </main>
+        </div>
+
+        <!-- 9. EDIT PROFILE -->
+        <div id="view-edit-profile" class="sub-view">
+            <header
+                class="bg-white px-4 py-3 border-b border-gray-50 flex items-center justify-between sticky top-0 z-10">
+                <button onclick="router.back()"
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-gray-800"><i
+                        class="fas fa-arrow-left"></i></button>
+                <span class="font-bold text-gray-900">编辑资料</span>
+                <span onclick="router.back()" class="text-orange-500 font-bold text-sm cursor-pointer">保存</span>
+            </header>
+            <main class="p-6 space-y-6">
+                <div class="flex justify-center mb-6">
+                    <div class="relative">
+                        <img src="https://picsum.photos/100?random=50"
+                            class="w-24 h-24 rounded-full border-4 border-white shadow-lg">
+                        <div
+                            class="absolute bottom-0 right-0 bg-gray-900 text-white w-8 h-8 rounded-full flex items-center justify-center border-2 border-white cursor-pointer">
+                            <i class="fas fa-camera text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">昵称</label>
+                        <input type="text" value="Yang"
+                            class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:border-orange-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">个性签名</label>
+                        <textarea
+                            class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm focus:border-orange-500 outline-none h-24 resize-none">这里是个人简介，可以在设置中修改。</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">兴趣标签</label>
+                        <p class="text-xs text-gray-400 mb-3">选择感兴趣的活动类型，我们会为你推荐相关活动</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span
+                                class="bg-orange-50 text-orange-500 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 border border-orange-200">
+                                <i class="fas fa-running"></i>跑步
+                                <i class="fas fa-times cursor-pointer"></i></span>
+                            <span
+                                class="bg-green-50 text-green-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 border border-green-200">
+                                <i class="fas fa-mountain"></i>徒步
+                                <i class="fas fa-times cursor-pointer"></i></span>
+                            <span
+                                class="bg-purple-50 text-purple-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 border border-purple-200">
+                                <i class="fas fa-book"></i>读书
+                                <i class="fas fa-times cursor-pointer"></i></span>
+                            <span
+                                class="bg-gray-100 text-gray-400 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 border border-dashed border-gray-300 cursor-pointer hover:border-orange-400 hover:text-orange-500 transition-all"><i
+                                    class="fas fa-plus"></i> 添加</span>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- 10. ACCOUNT SECURITY -->
+        <div id="view-account-security" class="sub-view">
+            <header class="bg-white px-4 py-3 border-b border-gray-50 flex items-center sticky top-0 z-10">
+                <button onclick="router.back()"
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-gray-800"><i
+                        class="fas fa-arrow-left"></i></button>
+                <span class="font-bold ml-2">账号安全</span>
+            </header>
+            <main class="p-4 space-y-4">
+                <div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
+                    <div
+                        class="p-4 border-b border-gray-50 flex justify-between items-center cursor-pointer hover:bg-gray-50">
+                        <span class="text-sm font-bold text-gray-700">手机号</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-gray-400">138****8888</span>
+                            <i class="fas fa-chevron-right text-xs text-gray-300"></i>
+                        </div>
+                    </div>
+                    <div onclick="router.push('change-password')" class="p-4 flex justify-between items-center cursor-pointer hover:bg-gray-50">
+                        <span class="text-sm font-bold text-gray-700">修改密码</span>
+                        <i class="fas fa-chevron-right text-xs text-gray-300"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl border border-red-100 overflow-hidden mt-8">
+                    <div class="p-4 flex justify-center items-center cursor-pointer hover:bg-red-50">
+                        <span class="text-sm font-bold text-red-500">注销账号</span>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- 10.1 CHANGE PASSWORD -->
+        <div id="view-change-password" class="sub-view">
+            <header class="bg-white px-4 py-3 border-b border-gray-50 flex items-center justify-between sticky top-0 z-10">
+                <button onclick="router.back()"
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-gray-800"><i
+                        class="fas fa-arrow-left"></i></button>
+                <span class="font-bold text-gray-900">修改密码</span>
+                <span onclick="router.back(); alert('密码修改成功')" class="text-orange-500 font-bold text-sm cursor-pointer">完成</span>
+            </header>
+            <main class="p-6 space-y-6">
+                <div class="bg-orange-50 p-4 rounded-xl border border-orange-100 flex items-start gap-3">
+                    <i class="fas fa-shield-alt text-orange-500 mt-0.5"></i>
+                    <p class="text-xs text-orange-700 leading-relaxed">
+                        为保障账号安全，请设置包含字母和数字的8位以上密码。
+                    </p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">当前密码</label>
+                        <div class="relative">
+                            <input type="password" placeholder="请输入当前密码"
+                                class="w-full bg-white border border-gray-200 rounded-xl p-3 pr-10 text-sm focus:border-orange-500 outline-none transition-colors">
+                            <i class="far fa-eye-slash absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">新密码</label>
+                        <div class="relative">
+                            <input type="password" placeholder="请输入新密码（至少8位）"
+                                class="w-full bg-white border border-gray-200 rounded-xl p-3 pr-10 text-sm focus:border-orange-500 outline-none transition-colors">
+                            <i class="far fa-eye-slash absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">确认新密码</label>
+                        <div class="relative">
+                            <input type="password" placeholder="请再次输入新密码"
+                                class="w-full bg-white border border-gray-200 rounded-xl p-3 pr-10 text-sm focus:border-orange-500 outline-none transition-colors">
+                            <i class="far fa-eye-slash absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-right">
+                    <span class="text-xs text-orange-500 font-bold cursor-pointer">忘记当前密码？</span>
+                </div>
+
+                <button onclick="router.back(); alert('密码修改成功')"
+                    class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-full shadow-lg hover:bg-orange-500 transition-all mt-4">
+                    确认修改
+                </button>
+            </main>
+        </div>
+
+        <!-- 11. LOGIN -->
+        <div id="view-login" class="sub-view bg-white z-[60]"
+            style="transform: translateY(100%); transition: transform 0.4s ease;">
+            <main class="p-8 flex flex-col h-full justify-center">
+                <div class="mb-10 animate-fade-in-up">
+                    <div
+                        class="w-16 h-16 bg-gradient-brand rounded-2xl flex items-center justify-center text-white text-3xl shadow-xl mb-6 shadow-orange-500/30">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">欢迎回来</h1>
+                    <p class="text-gray-400 text-sm">登录 Activity Pro，发现精彩校园生活</p>
+                </div>
+
+                <div class="space-y-5 mb-8">
+                    <div>
+                        <div
+                            class="flex items-center bg-gray-50 rounded-2xl px-4 py-3 border border-transparent focus-within:bg-white focus-within:border-orange-500 transition-all">
+                            <i class="fas fa-mobile-alt text-gray-400 mr-3"></i>
+                            <input type="tel" placeholder="手机号码"
+                                class="bg-transparent w-full outline-none text-gray-800 font-bold placeholder-gray-300">
+                        </div>
+                    </div>
+                    <div>
+                        <div
+                            class="flex items-center bg-gray-50 rounded-2xl px-4 py-3 border border-transparent focus-within:bg-white focus-within:border-orange-500 transition-all">
+                            <i class="fas fa-lock text-gray-400 mr-3"></i>
+                            <input type="password" placeholder="密码"
+                                class="bg-transparent w-full outline-none text-gray-800 font-bold placeholder-gray-300">
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-bold text-gray-400 cursor-pointer">忘记密码?</span>
+                        <span class="font-bold text-orange-500 cursor-pointer">验证码登录</span>
+                    </div>
+                </div>
+
+                <button
+                    onclick="document.getElementById('view-login').style.transform='translateY(100%)'; switchMainTab('home');"
+                    class="w-full bg-gray-900 text-white font-bold py-4 rounded-2xl shadow-xl hover:bg-orange-500 transition-all mb-6">
+                    立即登录
+                </button>
+
+                <div class="text-center">
+                    <span class="text-xs text-gray-400">还没有账号? </span>
+                    <span onclick="router.push('register')"
+                        class="text-xs font-bold text-orange-500 cursor-pointer">立即注册</span>
+                </div>
+            </main>
+        </div>
+
+        <!-- 12. REGISTER -->
+        <div id="view-register" class="sub-view bg-white z-[70]">
+            <header class="absolute top-0 left-0 w-full p-6">
+                <button onclick="router.back()"
+                    class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-800"><i
+                        class="fas fa-arrow-left"></i></button>
+            </header>
+            <main class="p-8 flex flex-col h-full justify-center">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">注册账号</h1>
+                <p class="text-gray-400 text-sm mb-10">填写信息，开启你的旅程</p>
+
+                <div class="space-y-5 mb-8">
+                    <div class="flex items-center bg-gray-50 rounded-2xl px-4 py-3">
+                        <input type="text" placeholder="昵称"
+                            class="bg-transparent w-full outline-none text-gray-800 font-bold placeholder-gray-300">
+                    </div>
+                    <div class="flex items-center bg-gray-50 rounded-2xl px-4 py-3">
+                        <input type="tel" placeholder="手机号码"
+                            class="bg-transparent w-full outline-none text-gray-800 font-bold placeholder-gray-300">
+                    </div>
+                    <div class="flex gap-3">
+                        <div class="flex items-center bg-gray-50 rounded-2xl px-4 py-3 flex-1">
+                            <input type="text" placeholder="验证码"
+                                class="bg-transparent w-full outline-none text-gray-800 font-bold placeholder-gray-300">
+                        </div>
+                        <button
+                            class="px-4 py-3 bg-gray-900 text-white text-xs font-bold rounded-2xl whitespace-nowrap">获取验证码</button>
+                    </div>
+                    <div class="flex items-center bg-gray-50 rounded-2xl px-4 py-3">
+                        <input type="password" placeholder="设置密码"
+                            class="bg-transparent w-full outline-none text-gray-800 font-bold placeholder-gray-300">
+                    </div>
+                </div>
+
+                <button onclick="router.push('select-tags')"
+                    class="w-full bg-orange-500 text-white font-bold py-4 rounded-2xl shadow-xl shadow-orange-200 hover:shadow-orange-300 transition-all">
+                    下一步
+                </button>
+            </main>
+        </div>
+
+        <!-- 13. SELECT TAGS (注册后选择兴趣标签) -->
+        <div id="view-select-tags" class="sub-view bg-white z-[80]">
+            <header class="px-6 py-5 pt-12 border-b border-gray-50">
+                <div class="flex items-center justify-between mb-2">
+                    <button onclick="router.back()"
+                        class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-800"><i
+                            class="fas fa-arrow-left"></i></button>
+                    <span class="text-xs text-gray-400">2/2</span>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-900 mb-2">选择你的兴趣</h1>
+                <p class="text-gray-400 text-sm">选择至少1个标签，我们将为你推荐相关活动</p>
+            </header>
+
+            <main class="p-6">
+                <div class="mb-6">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-4">运动健身</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <button class="tag-btn bg-orange-50 text-orange-500 border-orange-200 px-4 py-2.5 rounded-full text-sm font-bold border-2 transition-all active:scale-95">
+                            <i class="fas fa-running mr-1.5"></i>跑步
+                        </button>
+                        <button class="tag-btn bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2 transition-all active:scale-95">
+                            <i class="fas fa-basketball-ball mr-1.5"></i>球类
+                        </button>
+                        <button class="tag-btn bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2 transition-all active:scale-95">
+                            <i class="fas fa-dumbbell mr-1.5"></i>健身
+                        </button>
+                        <button class="tag-btn bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2 transition-all active:scale-95">
+                            <i class="fas fa-swimmer mr-1.5"></i>游泳
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-4">户外探索</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <button class="tag-btn bg-green-50 text-green-600 border-green-200 px-4 py-2.5 rounded-full text-sm font-bold border-2 transition-all active:scale-95">
+                            <i class="fas fa-mountain mr-1.5"></i>徒步
+                        </button>
+                        <button class="tag-btn bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2 transition-all active:scale-95">
+                            <i class="fas fa-campground mr-1.5"></i>露营
+                        </button>
+                        <button class="tag-btn bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2 transition-all active:scale-95">
+                            <i class="fas fa-bicycle mr-1.5"></i>骑行
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-4">文化艺术</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <button class="tag-btn bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2 transition-all active:scale-95">
+                            <i class="fas fa-music mr-1.5"></i>音乐
+                        </button>
+                        <button class="tag-btn bg-purple-50 text-purple-600 border-purple-200 px-4 py-2.5 rounded-full text-sm font-bold border-2 transition-all active:scale-95">
+                            <i class="fas fa-book mr-1.5"></i>读书
+                        </button>
+                        <button class="tag-btn bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2 transition-all active:scale-95">
+                            <i class="fas fa-camera mr-1.5"></i>摄影
+                        </button>
+                        <button class="tag-btn bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2 transition-all active:scale-95">
+                            <i class="fas fa-paint-brush mr-1.5"></i>绘画
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase mb-4">生活社交</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <button class="tag-btn bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2 transition-all active:scale-95">
+                            <i class="fas fa-utensils mr-1.5"></i>美食
+                        </button>
+                        <button class="tag-btn bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2 transition-all active:scale-95">
+                            <i class="fas fa-plane mr-1.5"></i>旅行
+                        </button>
+                        <button class="tag-btn bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2 transition-all active:scale-95">
+                            <i class="fas fa-gamepad mr-1.5"></i>游戏
+                        </button>
+                        <button class="tag-btn bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2 transition-all active:scale-95">
+                            <i class="fas fa-film mr-1.5"></i>电影
+                        </button>
+                        <button class="tag-btn bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2 transition-all active:scale-95">
+                            <i class="fas fa-coffee mr-1.5"></i>桌游
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-center text-xs text-gray-400 mb-6">
+                    已选择 <span class="text-orange-500 font-bold">3</span> 个标签
+                </div>
+            </main>
+
+            <div class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-50 p-4 pb-8 max-w-[420px] mx-auto inset-x-0">
+                <button onclick="document.getElementById('view-select-tags').classList.remove('active'); document.getElementById('view-register').classList.remove('active'); document.getElementById('view-login').style.transform='translateY(100%)'; switchMainTab('home'); alert('注册成功！')"
+                    class="w-full bg-gray-900 text-white font-bold py-4 rounded-2xl shadow-xl hover:bg-orange-500 transition-all">
+                    完成注册
+                </button>
+            </div>
+        </div>
+
+
+        <!-- ================= NAV ================= -->
+        <div class="bottom-nav-container">
+            <nav class="bottom-nav flex justify-around items-center">
+                <div onclick="switchMainTab('home')" id="nav-home"
+                    class="nav-item flex flex-col items-center active text-gray-400 cursor-pointer">
+                    <i class="fas fa-compass text-xl"></i>
+                </div>
+                <div onclick="switchMainTab('message')" id="nav-message"
+                    class="nav-item flex flex-col items-center text-gray-400 cursor-pointer">
+                    <i class="fas fa-comment-alt text-xl relative">
+                        <!-- Red dot -->
+                        <span
+                            class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+                    </i>
+                </div>
+                <div onclick="switchMainTab('publish')" id="nav-publish"
+                    class="nav-item flex flex-col items-center justify-center -mt-8 cursor-pointer">
+                    <div
+                        class="w-14 h-14 bg-gray-900 rounded-[20px] rotate-45 flex items-center justify-center text-white shadow-xl shadow-gray-400/40 hover:scale-110 hover:shadow-orange-500/30 transition-all border-4 border-[#F8FAFC] group">
+                        <i
+                            class="fas fa-plus text-lg -rotate-45 group-hover:rotate-45 transition-transform duration-300"></i>
+                    </div>
+                </div>
+                <div onclick="switchMainTab('ticket')" id="nav-ticket"
+                    class="nav-item flex flex-col items-center text-gray-400 cursor-pointer">
+                    <i class="fas fa-ticket-alt text-xl"></i>
+                </div>
+                <div onclick="switchMainTab('profile')" id="nav-profile"
+                    class="nav-item flex flex-col items-center text-gray-400 cursor-pointer">
+                    <i class="fas fa-user text-xl"></i>
+                </div>
+            </nav>
+        </div>
+
+    </div>
+
+    <script>
+        // Router Logic
+        const router = {
+            history: [],
+            push: function (viewId) {
+                this.history.push(viewId);
+                const el = document.getElementById('view-' + viewId);
+                if (el) el.classList.add('active');
+            },
+            back: function () {
+                if (this.history.length > 0) {
+                    const viewId = this.history.pop();
+                    const el = document.getElementById('view-' + viewId);
+                    if (el) el.classList.remove('active');
+                }
+            }
+        };
+
+        // Main Tab Logic
+        const mainTabs = ['home', 'message', 'publish', 'ticket', 'profile'];
+
+        function switchMainTab(tabName) {
+            // Reset subviews when switching main tabs? Optional, but safer
+            // router.history.forEach(id => document.getElementById('view-'+id).classList.remove('active'));
+            // router.history = [];
+
+            mainTabs.forEach(t => {
+                const el = document.getElementById('tab-' + t);
+                if (el) el.classList.add('hidden');
+
+                const nav = document.getElementById('nav-' + t);
+                if (t === 'publish') return;
+                if (nav) nav.classList.remove('active', 'text-orange-500');
+            });
+
+            const activeEl = document.getElementById('tab-' + tabName);
+            activeEl.classList.remove('hidden');
+            if (tabName !== 'home') activeEl.classList.add('fade-in');
+
+            if (tabName !== 'publish') {
+                document.getElementById('nav-' + tabName).classList.add('active', 'text-orange-500');
+            }
+        }
+    </script>
+
+</body>
+
+</html>

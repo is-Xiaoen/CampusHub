@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Pro - 全页面平铺预览 (V7 - Complete)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            background-color: #e2e8f0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            padding: 40px;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background-color: #F8FAFC;
+            border-radius: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 12px solid #1e293b;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .screen-content {
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        .screen-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        .absolute-nav {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            z-index: 50;
+        }
+
+        .absolute-header {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        .bottom-nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1);
+            border-radius: 28px;
+            padding: 12px 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .nav-item {
+            color: #94a3b8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 10px;
+        }
+
+        .nav-item.active {
+            color: #f97316;
+        }
+
+        .bg-gradient-brand {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        }
+
+        .label {
+            text-align: center;
+            font-weight: bold;
+            color: #475569;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .grid-layout {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1 class="text-3xl font-bold text-gray-800 mb-2 text-center">Activity Pro - Full UI Overview</h1>
+    <p class="text-center text-gray-500 mb-10">Total 21 Screens</p>
+
+    <div class="grid-layout">
+
+        <!-- 1. HOME SCREEN -->
+        <div>
+            <div class="label">1. 首页 (Home)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-[#F8FAFC]">
+                    <header class="absolute-header px-5 pt-12 pb-2">
+                        <div class="flex items-center justify-between mb-5">
+                            <div class="flex flex-col">
+                                <span class="text-xs text-gray-400 font-medium mb-1">Welcome Back</span>
+                                <div class="flex items-center text-gray-800 font-bold text-lg">
+                                    <span>Activity Pro</span>
+                                </div>
+                            </div>
+                            <div class="relative bg-white p-2.5 rounded-full shadow-sm border border-gray-100">
+                                <i class="far fa-bell text-lg text-gray-600"></i>
+                                <span class="absolute top-2.5 right-3 bg-red-500 w-2 h-2 rounded-full"></span>
+                            </div>
+                        </div>
+                        <div class="relative mb-6">
+                            <i class="fas fa-search text-gray-400 absolute left-4 top-4"></i>
+                            <input disabled type="text"
+                                class="w-full bg-white border border-gray-100 text-sm rounded-2xl pl-10 p-4 shadow-sm"
+                                placeholder="搜索活动...">
+                        </div>
+                        <div class="flex items-end border-b border-gray-100/80">
+                            <div class="text-2xl font-bold text-gray-900 relative pb-3 px-1">
+                                推荐活动
+                                <span class="absolute bottom-0 left-0 w-8 h-1 bg-orange-500 rounded-full"></span>
+                            </div>
+                        </div>
+                    </header>
+
+                    <main class="px-5 space-y-6 pt-4 pb-24">
+                        <div class="flex gap-3 overflow-x-hidden py-1">
+                            <button
+                                class="bg-gray-900 text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-lg shrink-0 flex items-center gap-2"><i
+                                    class="fas fa-layer-group"></i> 全部</button>
+                            <button
+                                class="bg-white text-gray-600 px-5 py-2.5 rounded-full text-xs font-semibold shadow-sm border border-gray-100 shrink-0 flex items-center gap-2"><i
+                                    class="fas fa-running text-orange-500"></i> 跑步</button>
+                            <button
+                                class="bg-white text-gray-600 px-5 py-2.5 rounded-full text-xs font-semibold shadow-sm border border-gray-100 shrink-0 flex items-center gap-2"><i
+                                    class="fas fa-mountain text-green-500"></i> 徒步</button>
+                        </div>
+
+                        <div class="bg-white rounded-[24px] p-3 shadow-xl shadow-orange-100/40 border border-white">
+                            <div class="relative h-44 rounded-[20px] overflow-hidden mb-4 bg-gray-100">
+                                <img src="https://picsum.photos/800/600?random=1" class="w-full h-full object-cover">
+                                <div
+                                    class="absolute top-3 left-3 bg-white/95 backdrop-blur text-orange-600 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm">
+                                    <i class="fas fa-fire"></i> 报名中</div>
+                                <div
+                                    class="absolute bottom-3 right-3 bg-black/60 backdrop-blur text-white text-[10px] px-3 py-1.5 rounded-full flex items-center border border-white/10">
+                                    15/20 人</div>
+                            </div>
+                            <div class="px-2 pb-2">
+                                <h3 class="font-bold text-gray-900 text-lg leading-snug mb-2">周五晚·奥森公园 5km 荧光夜跑</h3>
+                                <!-- 活动标签 -->
+                                <div class="flex gap-2 mb-3">
+                                    <span class="bg-orange-50 text-orange-500 text-[10px] px-2 py-0.5 rounded font-bold"><i class="fas fa-running mr-1"></i>跑步</span>
+                                    <span class="bg-green-50 text-green-600 text-[10px] px-2 py-0.5 rounded font-bold"><i class="fas fa-moon mr-1"></i>夜跑</span>
+                                </div>
+                                <div
+                                    class="flex items-center gap-4 text-gray-500 text-xs font-medium mb-5 bg-gray-50 p-2.5 rounded-xl">
+                                    <span><i class="far fa-clock text-gray-400 mr-2"></i>周五 19:00</span>
+                                    <span><i class="fas fa-map-marker-alt text-gray-400 mr-2"></i>奥森南门</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <img src="https://picsum.photos/50?random=100" class="w-6 h-6 rounded-full">
+                                        <span class="text-xs text-gray-500">极客跑团</span>
+                                    </div>
+                                    <button
+                                        class="bg-gray-900 text-white px-5 py-2 rounded-full text-xs font-bold">查看详情</button>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+                <div class="absolute-nav">
+                    <nav class="bottom-nav">
+                        <div class="nav-item active"><i class="fas fa-compass text-xl"></i></div>
+                        <div class="nav-item"><i class="fas fa-comment-alt text-xl"></i></div>
+                        <div class="nav-item -mt-8">
+                            <div
+                                class="w-12 h-12 bg-gray-900 rounded-[18px] rotate-45 flex items-center justify-center text-white border-4 border-[#F8FAFC]">
+                                <i class="fas fa-plus text-lg -rotate-45"></i></div>
+                        </div>
+                        <div class="nav-item"><i class="fas fa-ticket-alt text-xl"></i></div>
+                        <div class="nav-item"><i class="fas fa-user text-xl"></i></div>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. DETAIL SCREEN -->
+        <div>
+            <div class="label">2. 活动详情 (Detail)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-white">
+                    <div class="relative h-[350px]">
+                        <img src="https://picsum.photos/800/800?random=1" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20"></div>
+                        <button
+                            class="absolute top-12 left-6 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10"><i
+                                class="fas fa-arrow-left"></i></button>
+                        <div class="absolute bottom-0 left-0 w-full p-6 pb-8">
+                            <div class="flex gap-2 mb-3">
+                                <span
+                                    class="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-md">报名中</span>
+                            </div>
+                            <h1 class="text-2xl font-bold text-white leading-tight mb-2 text-shadow">奥森公园 5km 荧光夜跑</h1>
+                        </div>
+                    </div>
+
+                    <div class="relative bg-white rounded-t-[32px] -mt-6 px-6 pt-8 pb-32">
+                        <div class="flex items-center justify-between mb-8 bg-gray-50 p-3 rounded-2xl">
+                            <div class="flex items-center gap-3">
+                                <img src="https://picsum.photos/100?random=60"
+                                    class="w-10 h-10 rounded-full bg-gray-100 object-cover">
+                                <div>
+                                    <div class="font-bold text-sm text-gray-900">极客跑团</div>
+                                    <div class="text-[10px] text-gray-500">点击查看发起人详情</div>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-xs text-gray-300"></i>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 mb-8">
+                            <div class="bg-orange-50/50 p-4 rounded-2xl border border-orange-100/50">
+                                <div class="text-[10px] text-gray-400 uppercase font-bold mb-1">Time</div>
+                                <div class="font-bold text-sm text-gray-900">10.24 19:00</div>
+                            </div>
+                            <div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50">
+                                <div class="text-[10px] text-gray-400 uppercase font-bold mb-1">Location</div>
+                                <div class="font-bold text-sm text-gray-900">奥森南门</div>
+                            </div>
+                        </div>
+                        <h3 class="font-bold text-lg mb-4 text-gray-900">活动详情</h3>
+                        <p class="text-gray-600 text-sm leading-relaxed">🎉
+                            欢迎参加我们的周五夜跑活动！我们将提供荧光手环和饮用水。跑完后会有30分钟的新手飞盘教学。</p>
+                    </div>
+
+                    <div
+                        class="absolute bottom-0 left-0 w-full bg-white border-t border-gray-50 p-4 flex items-center justify-center pb-8">
+                        <button
+                            class="w-full bg-gray-900 text-white rounded-full font-bold h-12 text-sm shadow-xl">立即报名</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. PUBLIC USER PROFILE -->
+        <div>
+            <div class="label">3. 公开用户主页 (Public Profile)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-white">
+                    <header class="bg-white sticky top-0 z-10 border-b border-gray-50 pt-12">
+                        <div class="px-4 py-3 flex items-center">
+                            <button class="w-8 h-8 rounded-full flex items-center justify-center text-gray-800"><i
+                                    class="fas fa-arrow-left"></i></button>
+                            <span class="font-bold ml-2">用户详情</span>
+                        </div>
+                    </header>
+                    <main class="p-6">
+                        <div class="text-center mb-6">
+                            <img src="https://picsum.photos/100?random=60"
+                                class="w-24 h-24 rounded-full mx-auto mb-3 border-4 border-white shadow-lg">
+                            <h1 class="text-2xl font-bold text-gray-900">极客跑团</h1>
+                            <p class="text-sm text-gray-500 mt-2">热爱运动，专注组织线下夜跑活动。</p>
+                            <div class="mt-3 flex justify-center gap-2">
+                                <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded">运动达人</span>
+                                <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded">组织者</span>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-gray-100 pt-6">
+                            <h3 class="font-bold text-gray-900 mb-4">Ta 发布的活动</h3>
+                            <div class="bg-white border border-gray-100 p-3 rounded-xl flex gap-3">
+                                <img src="https://picsum.photos/100?random=1" class="w-16 h-16 rounded-lg object-cover">
+                                <div>
+                                    <div class="font-bold text-sm">奥森夜跑</div>
+                                    <div class="text-xs text-gray-400 mt-1">10.24 19:00</div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. MESSAGE TAB -->
+        <div>
+            <div class="label">4. 消息/Chat List</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-[#F8FAFC]">
+                    <header class="absolute-header px-6 py-5 pt-12">
+                        <div class="flex justify-between items-center mb-6">
+                            <h1 class="font-bold text-2xl text-gray-900">消息</h1>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl flex items-center mb-2 shadow-sm border border-gray-100">
+                            <div
+                                class="w-10 h-10 bg-orange-50 rounded-full flex items-center justify-center text-orange-500 mr-4 shrink-0">
+                                <i class="fas fa-bell"></i></div>
+                            <div class="flex-1">
+                                <div class="text-sm font-bold text-gray-800 mb-0.5">系统通知</div>
+                                <div class="text-xs text-gray-400">点击查看最新的活动状态变更</div>
+                            </div>
+                            <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                        </div>
+                    </header>
+                    <main class="px-2 space-y-2">
+                        <div class="flex items-center px-4 py-4 bg-white rounded-2xl">
+                            <div class="relative">
+                                <img src="https://picsum.photos/100?random=20"
+                                    class="w-14 h-14 rounded-2xl bg-gray-200">
+                                <div
+                                    class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] h-5 min-w-[20px] px-1 rounded-full flex items-center justify-center border-2 border-[#F8FAFC]">
+                                    9</div>
+                            </div>
+                            <div class="flex-1 ml-4 pb-2 border-b border-gray-100/50">
+                                <div class="flex justify-between items-baseline mb-1">
+                                    <h3 class="font-bold text-gray-800 text-[15px]">周五羽毛球核心群</h3>
+                                    <span class="text-[10px] text-gray-400">14:20</span>
+                                </div>
+                                <p class="text-xs text-gray-500 line-clamp-1"><span class="text-gray-400">Kevin:</span>
+                                    谁带了多余的球拍吗？</p>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+                <div class="absolute-nav">
+                    <nav class="bottom-nav">
+                        <div class="nav-item"><i class="fas fa-compass text-xl"></i></div>
+                        <div class="nav-item active"><i class="fas fa-comment-alt text-xl"></i></div>
+                        <div class="nav-item -mt-8">
+                            <div
+                                class="w-12 h-12 bg-gray-900 rounded-[18px] rotate-45 flex items-center justify-center text-white border-4 border-[#F8FAFC]">
+                                <i class="fas fa-plus text-lg -rotate-45"></i></div>
+                        </div>
+                        <div class="nav-item"><i class="fas fa-ticket-alt text-xl"></i></div>
+                        <div class="nav-item"><i class="fas fa-user text-xl"></i></div>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. CHAT ROOM -->
+        <div>
+            <div class="label">5. 聊天室 (Chat)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-[#F2F4F7] flex flex-col h-full">
+                    <header class="bg-white px-4 py-3 border-b border-gray-100 flex items-center justify-between pt-12">
+                        <i class="fas fa-arrow-left"></i>
+                        <span class="font-bold text-gray-900">周五羽毛球核心群 (14)</span>
+                        <i class="fas fa-ellipsis-h"></i>
+                    </header>
+                    <main class="flex-1 p-4 space-y-4">
+                        <div class="text-center"><span
+                                class="text-gray-400 text-[10px] bg-gray-200 px-2 py-1 rounded">14:20</span></div>
+                        <div class="flex items-end">
+                            <img src="https://picsum.photos/100?random=20"
+                                class="w-8 h-8 rounded-full border border-white mr-2">
+                            <div
+                                class="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm text-sm text-gray-700 max-w-[75%]">
+                                大家到了吗？</div>
+                        </div>
+                        <div class="flex items-end justify-end">
+                            <div
+                                class="bg-orange-500 p-3 rounded-2xl rounded-tr-none shadow-md text-sm text-white max-w-[75%] mr-2">
+                                马上到！</div>
+                            <img src="https://picsum.photos/100?random=50"
+                                class="w-8 h-8 rounded-full border border-white">
+                        </div>
+                    </main>
+                    <footer class="p-3 bg-white border-t border-gray-100 pb-8 flex gap-2 absolute bottom-0 w-full">
+                        <input type="text" class="bg-gray-50 flex-1 outline-none text-sm px-4 py-2.5 rounded-full"
+                            placeholder="发送消息...">
+                        <button class="w-16 bg-orange-500 text-white rounded-full text-xs font-bold">发送</button>
+                    </footer>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. SYSTEM MSG -->
+        <div>
+            <div class="label">6. 系统消息 (System Msg)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-[#F8FAFC]">
+                    <header class="bg-white border-b border-gray-50 px-4 py-3 pt-12 flex items-center">
+                        <i class="fas fa-arrow-left"></i>
+                        <span class="font-bold ml-2">系统消息</span>
+                    </header>
+                    <main class="p-4 space-y-3">
+                        <div class="bg-white p-4 rounded-xl border border-gray-100">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-bold text-sm text-gray-800">审核通过</span>
+                                <span class="text-[10px] text-gray-400">刚刚</span>
+                            </div>
+                            <p class="text-xs text-gray-600">您报名的“奥森公园夜跑”已通过发起人审核，请准时参加。</p>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. PUBLISH TAB (FULL) -->
+        <div>
+            <div class="label">7. 发布活动 (Publish)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-white">
+                    <header class="px-6 py-5 flex items-center justify-between border-b border-gray-50 pt-12">
+                        <i class="fas fa-times text-gray-600"></i>
+                        <span class="text-base font-bold text-gray-900">发布新活动</span>
+                        <span class="text-orange-500 font-bold text-sm bg-orange-50 px-4 py-1.5 rounded-full">提交</span>
+                    </header>
+
+                    <main class="p-6">
+                        <div
+                            class="w-full h-40 rounded-3xl bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 mb-8">
+                            <i class="fas fa-camera text-2xl mb-2"></i>
+                            <span class="text-xs font-bold text-gray-400">上传活动封面/视频</span>
+                        </div>
+                        <div class="space-y-6">
+                            <input disabled type="text" placeholder="活动名称"
+                                class="w-full text-xl font-bold border-b border-gray-100 py-3 outline-none"
+                                value="周末摄影聚会">
+                            <div class="space-y-4">
+                                <div class="bg-gray-50 p-4 rounded-2xl flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-500 shadow-sm">
+                                            <i class="far fa-clock"></i></div>
+                                        <div>
+                                            <div class="text-xs text-gray-400 font-bold uppercase">活动时间</div>
+                                            <div class="text-sm font-bold text-gray-800">设置开始 ~ 结束时间</div>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-xs text-gray-300"></i>
+                                </div>
+                                <div class="bg-gray-50 p-4 rounded-2xl flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-500 shadow-sm">
+                                            <i class="fas fa-map-marker-alt"></i></div>
+                                        <div>
+                                            <div class="text-xs text-gray-400 font-bold uppercase">活动地点</div>
+                                            <div class="text-sm font-bold text-gray-800">选择线下地点</div>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-xs text-gray-300"></i>
+                                </div>
+                                <div class="bg-gray-50 p-4 rounded-2xl flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-gray-500 shadow-sm">
+                                            <i class="fas fa-users"></i></div>
+                                        <div>
+                                            <div class="text-xs text-gray-400 font-bold uppercase">人数限制</div>
+                                            <div class="text-sm font-bold text-gray-800">设置最大参与人数</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center bg-white rounded-lg px-2 py-1 border border-gray-100">
+                                        <span class="text-lg font-bold px-2">20</span>
+                                        <span class="text-xs text-gray-400">人</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-400 font-bold uppercase mb-2">活动标签</div>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span
+                                            class="bg-orange-50 text-orange-500 px-3 py-1 rounded-lg text-xs font-bold border border-orange-100">运动</span>
+                                        <span
+                                            class="bg-white text-gray-500 px-3 py-1 rounded-lg text-xs font-bold border border-gray-100">聚会</span>
+                                        <span
+                                            class="bg-white text-gray-500 px-3 py-1 rounded-lg text-xs font-bold border border-gray-100"><i
+                                                class="fas fa-plus"></i> 添加</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-400 font-bold uppercase mb-2">活动详情</div>
+                                    <div class="w-full bg-gray-50 rounded-2xl p-4 text-sm text-gray-500 h-24">
+                                        输入详细的活动流程、注意事项等...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. TICKET LIST -->
+        <div>
+            <div class="label">8. 票券列表 (Ticket List)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-[#F8FAFC]">
+                    <header class="absolute-header px-6 py-5 pt-12 border-b border-gray-100/50">
+                        <h1 class="font-bold text-2xl text-gray-900">我的票券</h1>
+                    </header>
+                    <main class="p-5 space-y-4">
+                        <div
+                            class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex justify-between items-center">
+                            <div class="flex gap-4">
+                                <div
+                                    class="w-16 h-16 bg-orange-100 rounded-xl flex items-center justify-center text-orange-500 text-2xl shrink-0">
+                                    <i class="fas fa-running"></i></div>
+                                <div>
+                                    <h3 class="font-bold text-gray-800 text-sm mb-1">奥森公园夜跑</h3>
+                                    <div class="text-xs text-gray-500 mb-1"><i class="far fa-clock mr-1"></i> 10.24
+                                        19:00</div>
+                                    <div
+                                        class="text-[10px] bg-green-50 text-green-600 px-2 py-0.5 rounded inline-block font-bold">
+                                        待使用</div>
+                                </div>
+                            </div>
+                            <i class="fas fa-qrcode text-2xl text-gray-300"></i>
+                        </div>
+                    </main>
+                </div>
+                <!-- NAV 4 -->
+                <div class="absolute-nav">
+                    <nav class="bottom-nav">
+                        <div class="nav-item"><i class="fas fa-compass text-xl"></i></div>
+                        <div class="nav-item"><i class="fas fa-comment-alt text-xl"></i></div>
+                        <div class="nav-item -mt-8">
+                            <div
+                                class="w-12 h-12 bg-gray-900 rounded-[18px] rotate-45 flex items-center justify-center text-white border-4 border-[#F8FAFC]">
+                                <i class="fas fa-plus text-lg -rotate-45"></i></div>
+                        </div>
+                        <div class="nav-item active"><i class="fas fa-ticket-alt text-xl"></i></div>
+                        <div class="nav-item"><i class="fas fa-user text-xl"></i></div>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9. TICKET QR -->
+        <div>
+            <div class="label">9. 核销码详情 (QR Detail)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-gray-900 flex flex-col">
+                    <header class="p-4 text-white flex items-center pt-12">
+                        <i class="fas fa-arrow-left"></i>
+                        <span class="font-bold ml-2">票券详情</span>
+                    </header>
+                    <div class="p-6 pt-10">
+                        <div class="bg-white rounded-3xl overflow-hidden relative">
+                            <div class="bg-orange-500 p-6 text-center text-white">
+                                <h2 class="font-bold text-xl">奥森公园夜跑</h2>
+                                <p class="text-sm opacity-90 mt-1">10.24 19:00 - 21:00</p>
+                            </div>
+                            <div class="p-10 text-center">
+                                <div
+                                    class="w-48 h-48 bg-gray-100 mx-auto rounded-lg flex items-center justify-center mb-4">
+                                    <i class="fas fa-qrcode text-8xl text-gray-800"></i></div>
+                                <p class="text-2xl font-mono font-bold text-gray-800 tracking-widest">8293</p>
+                                <p class="text-xs text-gray-400 mt-2">请出示二维码核销入场</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 10. PROFILE TAB (UPDATED) -->
+        <div>
+            <div class="label">10. 个人中心 (Profile)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-[#F8FAFC]">
+                    <header class="relative px-6 pt-12 pb-8 bg-white">
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="relative">
+                                <img src="https://picsum.photos/100?random=50"
+                                    class="w-24 h-24 rounded-full border-4 border-white shadow-xl object-cover">
+                                <div
+                                    class="absolute -bottom-2 -right-2 bg-white px-2 py-1 rounded-full shadow-sm flex gap-1">
+                                    <span
+                                        class="text-[8px] font-bold bg-orange-50 text-orange-500 px-1.5 rounded">跑步</span>
+                                    <span
+                                        class="text-[8px] font-bold bg-green-50 text-green-600 px-1.5 rounded">徒步</span>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <div
+                                    class="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-600">
+                                    <i class="fas fa-cog"></i></div>
+                            </div>
+                        </div>
+
+                        <h1 class="text-2xl font-bold text-gray-900 mb-1">Yang</h1>
+                        <p class="text-gray-400 text-sm mb-4">这里是个人简介，可以在设置中修改。</p>
+
+                        <!-- 用户兴趣标签展示 -->
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span class="bg-orange-50 text-orange-500 px-3 py-1 rounded-full text-xs font-bold"><i class="fas fa-running mr-1"></i>跑步</span>
+                            <span class="bg-green-50 text-green-600 px-3 py-1 rounded-full text-xs font-bold"><i class="fas fa-mountain mr-1"></i>徒步</span>
+                            <span class="bg-purple-50 text-purple-600 px-3 py-1 rounded-full text-xs font-bold"><i class="fas fa-book mr-1"></i>读书</span>
+                        </div>
+
+                        <div class="flex gap-8 border-b border-gray-50 pb-6">
+                            <div class="text-center">
+                                <div class="font-bold text-lg text-gray-900">12</div>
+                                <div class="text-[10px] text-gray-400 font-bold">发布</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="font-bold text-lg text-gray-900">45</div>
+                                <div class="text-[10px] text-gray-400 font-bold">参与</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="font-bold text-lg text-green-500">100</div>
+                                <div class="text-[10px] text-gray-400 font-bold">信用分</div>
+                            </div>
+                        </div>
+                    </header>
+
+                    <main class="px-5 space-y-4 -mt-2">
+                        <div class="bg-white rounded-[24px] p-6 shadow-xl shadow-gray-100 flex justify-around">
+                            <div class="flex flex-col items-center gap-2 w-full">
+                                <i class="far fa-calendar-check text-2xl text-orange-500"></i>
+                                <span class="text-xs font-bold text-gray-600">待参加</span>
+                            </div>
+                            <div class="w-px h-10 bg-gray-100"></div>
+                            <div class="flex flex-col items-center gap-2 w-full">
+                                <i class="fas fa-history text-2xl text-blue-500"></i>
+                                <span class="text-xs font-bold text-gray-600">已参加</span>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-[24px] overflow-hidden shadow-sm border border-gray-50">
+                            <div class="p-4 flex items-center justify-between border-b border-gray-50">
+                                <div class="flex items-center gap-4">
+                                    <div
+                                        class="w-9 h-9 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center">
+                                        <i class="fas fa-flag text-sm"></i></div>
+                                    <span class="font-bold text-gray-700 text-sm">我发起的活动</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-xs text-gray-300"></i>
+                            </div>
+                            <div class="p-4 flex items-center justify-between">
+                                <div class="flex items-center gap-4">
+                                    <div
+                                        class="w-9 h-9 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center">
+                                        <i class="fas fa-graduation-cap text-sm"></i></div>
+                                    <span class="font-bold text-gray-700 text-sm">学生认证</span>
+                                </div>
+                                <span
+                                    class="text-xs text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded">已通过</span>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+                <!-- NAV 5 -->
+                <div class="absolute-nav">
+                    <nav class="bottom-nav">
+                        <div class="nav-item"><i class="fas fa-compass text-xl"></i></div>
+                        <div class="nav-item"><i class="fas fa-comment-alt text-xl"></i></div>
+                        <div class="nav-item -mt-8">
+                            <div
+                                class="w-12 h-12 bg-gray-900 rounded-[18px] rotate-45 flex items-center justify-center text-white border-4 border-[#F8FAFC]">
+                                <i class="fas fa-plus text-lg -rotate-45"></i></div>
+                        </div>
+                        <div class="nav-item"><i class="fas fa-ticket-alt text-xl"></i></div>
+                        <div class="nav-item active"><i class="fas fa-user text-xl"></i></div>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- 11. LIST PENDING -->
+        <div>
+            <div class="label">11. 待参加 (Pending)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-[#F8FAFC]">
+                    <header class="bg-white px-4 py-3 border-b border-gray-50 flex items-center pt-12">
+                        <i class="fas fa-arrow-left"></i>
+                        <span class="font-bold ml-2">待参加活动</span>
+                    </header>
+                    <main class="p-4 space-y-3">
+                        <div class="bg-white p-3 rounded-xl border border-gray-100 flex gap-3">
+                            <img src="https://picsum.photos/100?random=1" class="w-20 h-20 rounded-lg object-cover">
+                            <div class="flex flex-col justify-between py-1">
+                                <div class="font-bold text-sm">奥森公园夜跑</div>
+                                <div class="text-xs text-gray-500"><i class="far fa-clock"></i> 10.24 19:00</div>
+                                <div class="text-xs text-orange-500 font-bold">倒计时 2天</div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+        <!-- 12. LIST JOINED -->
+        <div>
+            <div class="label">12. 已参加 (Joined)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-[#F8FAFC]">
+                    <header class="bg-white px-4 py-3 border-b border-gray-50 flex items-center pt-12">
+                        <i class="fas fa-arrow-left"></i>
+                        <span class="font-bold ml-2">历史记录</span>
+                    </header>
+                    <main class="p-4 space-y-3">
+                        <div class="bg-white p-3 rounded-xl border border-gray-100 flex gap-3 opacity-60">
+                            <img src="https://picsum.photos/100?random=5"
+                                class="w-20 h-20 rounded-lg object-cover grayscale">
+                            <div class="flex flex-col justify-between py-1">
+                                <div class="font-bold text-sm">读书分享会</div>
+                                <div class="text-xs text-gray-500"><i class="far fa-clock"></i> 10.10</div>
+                                <div class="text-xs text-gray-400 font-bold">已结束</div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+        <!-- 13. LIST PUBLISHED -->
+        <div>
+            <div class="label">13. 我发布的 (Published)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-[#F8FAFC]">
+                    <header class="bg-white px-4 py-3 border-b border-gray-50 flex items-center pt-12">
+                        <i class="fas fa-arrow-left"></i>
+                        <span class="font-bold ml-2">我发布的</span>
+                    </header>
+                    <main class="p-4 flex flex-col items-center justify-center h-[60%] text-gray-400">
+                        <i class="far fa-folder-open text-4xl mb-2"></i>
+                        <span class="text-xs">暂无发布活动</span>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+        <!-- 14. STUDENT VERIFICATION (UPDATED) -->
+        <div>
+            <div class="label">14. 学生认证 (Student Verify)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-[#F8FAFC]">
+                    <header class="bg-white px-4 py-3 border-b border-gray-50 flex items-center pt-12">
+                        <i class="fas fa-arrow-left"></i>
+                        <span class="font-bold ml-2">学生认证</span>
+                    </header>
+                    <main class="p-5 space-y-6">
+                        <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-start gap-3">
+                            <i class="fas fa-graduation-cap text-blue-500 mt-0.5"></i>
+                            <p class="text-xs text-blue-700 leading-relaxed">
+                                本平台仅对在校大学生开放。请提供真实的学校和学籍信息，认证通过后将获得学生专属标识。
+                            </p>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">真实姓名</label>
+                                <div
+                                    class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm text-gray-400">
+                                    请输入姓名</div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">学校名称</label>
+                                <div
+                                    class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm text-gray-400">
+                                    例如：北京大学</div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">入学年份</label>
+                                <div
+                                    class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm text-gray-400">
+                                    例如：2023</div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">学号</label>
+                                <div
+                                    class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm text-gray-400">
+                                    请输入学号</div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-3">上传学生证/校园卡</label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div
+                                    class="aspect-[3/2] bg-white border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-400">
+                                    <i class="fas fa-id-card-clip text-xl"></i>
+                                    <span class="text-[10px] font-bold">正面 (含照片)</span>
+                                </div>
+                                <div
+                                    class="aspect-[3/2] bg-white border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-400">
+                                    <i class="fas fa-book text-xl"></i>
+                                    <span class="text-[10px] font-bold">详情面</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button
+                            class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-full shadow-lg mt-4 text-sm">
+                            提交审核
+                        </button>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+        <!-- 15. EDIT PROFILE -->
+        <div>
+            <div class="label">15. 编辑资料 (Edit Profile)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-white">
+                    <header class="bg-white px-4 py-3 border-b border-gray-50 flex items-center justify-between pt-12">
+                        <i class="fas fa-arrow-left"></i>
+                        <span class="font-bold text-gray-900">编辑资料</span>
+                        <span class="text-orange-500 font-bold text-sm">保存</span>
+                    </header>
+                    <main class="p-6 space-y-6">
+                        <div class="flex justify-center mb-6">
+                            <div class="relative">
+                                <img src="https://picsum.photos/100?random=50"
+                                    class="w-24 h-24 rounded-full border-4 border-white shadow-lg">
+                                <div
+                                    class="absolute bottom-0 right-0 bg-gray-900 text-white w-8 h-8 rounded-full flex items-center justify-center border-2 border-white">
+                                    <i class="fas fa-camera text-xs"></i></div>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">昵称</label>
+                                <div class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm">Yang</div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">个性签名</label>
+                                <div class="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm h-24">
+                                    这里是个人简介，可以在设置中修改。</div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">兴趣标签</label>
+                                <p class="text-xs text-gray-400 mb-3">选择感兴趣的活动类型</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <span
+                                        class="bg-orange-50 text-orange-500 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 border border-orange-200">
+                                        <i class="fas fa-running"></i>跑步
+                                        <i class="fas fa-times"></i></span>
+                                    <span
+                                        class="bg-green-50 text-green-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 border border-green-200">
+                                        <i class="fas fa-mountain"></i>徒步
+                                        <i class="fas fa-times"></i></span>
+                                    <span
+                                        class="bg-purple-50 text-purple-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 border border-purple-200">
+                                        <i class="fas fa-book"></i>读书
+                                        <i class="fas fa-times"></i></span>
+                                    <span
+                                        class="bg-gray-100 text-gray-400 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 border border-dashed border-gray-300"><i
+                                            class="fas fa-plus"></i> 添加</span>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+        <!-- 16. ACCOUNT SECURITY -->
+        <div>
+            <div class="label">16. 账号安全 (Security)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-[#F8FAFC]">
+                    <header class="bg-white px-4 py-3 border-b border-gray-50 flex items-center pt-12">
+                        <i class="fas fa-arrow-left"></i>
+                        <span class="font-bold ml-2">账号安全</span>
+                    </header>
+                    <main class="p-4 space-y-4">
+                        <div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
+                            <div class="p-4 border-b border-gray-50 flex justify-between items-center">
+                                <span class="text-sm font-bold text-gray-700">手机号</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs text-gray-400">138****8888</span>
+                                    <i class="fas fa-chevron-right text-xs text-gray-300"></i>
+                                </div>
+                            </div>
+                            <div class="p-4 flex justify-between items-center">
+                                <span class="text-sm font-bold text-gray-700">修改密码</span>
+                                <i class="fas fa-chevron-right text-xs text-gray-300"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl border border-red-100 overflow-hidden mt-8">
+                            <div class="p-4 flex justify-center items-center">
+                                <span class="text-sm font-bold text-red-500">注销账号</span>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+        <!-- 17. LOGIN -->
+        <div>
+            <div class="label">17. 登录 (Login)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-white">
+                    <main class="p-8 flex flex-col h-full justify-center pt-20">
+                        <div class="mb-10">
+                            <div
+                                class="w-16 h-16 bg-gradient-brand rounded-2xl flex items-center justify-center text-white text-3xl shadow-xl mb-6 shadow-orange-500/30">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <h1 class="text-3xl font-bold text-gray-900 mb-2">欢迎回来</h1>
+                            <p class="text-gray-400 text-sm">登录 Activity Pro，发现精彩校园生活</p>
+                        </div>
+
+                        <div class="space-y-5 mb-8">
+                            <div>
+                                <div
+                                    class="flex items-center bg-gray-50 rounded-2xl px-4 py-3 border border-transparent">
+                                    <i class="fas fa-mobile-alt text-gray-400 mr-3"></i>
+                                    <div class="bg-transparent w-full text-gray-800 font-bold">手机号码</div>
+                                </div>
+                            </div>
+                            <div>
+                                <div
+                                    class="flex items-center bg-gray-50 rounded-2xl px-4 py-3 border border-transparent">
+                                    <i class="fas fa-lock text-gray-400 mr-3"></i>
+                                    <div class="bg-transparent w-full text-gray-800 font-bold">密码</div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="font-bold text-gray-400">忘记密码?</span>
+                                <span class="font-bold text-orange-500">验证码登录</span>
+                            </div>
+                        </div>
+
+                        <button class="w-full bg-gray-900 text-white font-bold py-4 rounded-2xl shadow-xl mb-6">
+                            立即登录
+                        </button>
+
+                        <div class="text-center">
+                            <span class="text-xs text-gray-400">还没有账号? </span>
+                            <span class="text-xs font-bold text-orange-500">立即注册</span>
+                        </div>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+        <!-- 18. REGISTER -->
+        <div>
+            <div class="label">18. 注册 (Register)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-white">
+                    <header class="absolute top-0 left-0 w-full p-6 pt-12">
+                        <div class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-800"><i
+                                class="fas fa-arrow-left"></i></div>
+                    </header>
+                    <main class="p-8 flex flex-col h-full justify-center pt-20">
+                        <h1 class="text-3xl font-bold text-gray-900 mb-2">注册账号</h1>
+                        <p class="text-gray-400 text-sm mb-10">填写信息，开启你的旅程</p>
+
+                        <div class="space-y-5 mb-8">
+                            <div class="flex items-center bg-gray-50 rounded-2xl px-4 py-3">
+                                <div class="bg-transparent w-full text-gray-800 font-bold">昵称</div>
+                            </div>
+                            <div class="flex items-center bg-gray-50 rounded-2xl px-4 py-3">
+                                <div class="bg-transparent w-full text-gray-800 font-bold">手机号码</div>
+                            </div>
+                            <div class="flex gap-3">
+                                <div class="flex items-center bg-gray-50 rounded-2xl px-4 py-3 flex-1">
+                                    <div class="bg-transparent w-full text-gray-800 font-bold">验证码</div>
+                                </div>
+                                <button
+                                    class="px-4 py-3 bg-gray-900 text-white text-xs font-bold rounded-2xl whitespace-nowrap">获取验证码</button>
+                            </div>
+                            <div class="flex items-center bg-gray-50 rounded-2xl px-4 py-3">
+                                <div class="bg-transparent w-full text-gray-800 font-bold">设置密码</div>
+                            </div>
+                        </div>
+
+                        <button
+                            class="w-full bg-orange-500 text-white font-bold py-4 rounded-2xl shadow-xl shadow-orange-200">
+                            完成注册
+                        </button>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+        <!-- 19. SETTINGS (UPDATED MENU) -->
+        <div>
+            <div class="label">19. 设置 (Settings)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-[#F8FAFC]">
+                    <header class="bg-white px-4 py-3 border-b border-gray-50 flex items-center pt-12">
+                        <i class="fas fa-arrow-left"></i>
+                        <span class="font-bold ml-2">设置</span>
+                    </header>
+                    <main class="p-4 space-y-4">
+                        <div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
+                            <div class="p-4 border-b border-gray-50 flex justify-between items-center">
+                                <span class="text-sm font-bold text-gray-700">编辑资料</span>
+                                <i class="fas fa-chevron-right text-xs text-gray-300"></i>
+                            </div>
+                            <div class="p-4 flex justify-between items-center">
+                                <span class="text-sm font-bold text-gray-700">账号安全</span>
+                                <i class="fas fa-chevron-right text-xs text-gray-300"></i>
+                            </div>
+                        </div>
+                        <button
+                            class="w-full bg-white text-red-500 font-bold py-3 rounded-xl border border-gray-100">退出登录</button>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+        <!-- 20. CHANGE PASSWORD (NEW) -->
+        <div>
+            <div class="label">20. 修改密码 (Change Password)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-[#F8FAFC]">
+                    <header class="bg-white px-4 py-3 border-b border-gray-50 flex items-center justify-between pt-12">
+                        <i class="fas fa-arrow-left"></i>
+                        <span class="font-bold text-gray-900">修改密码</span>
+                        <span class="text-orange-500 font-bold text-sm">完成</span>
+                    </header>
+                    <main class="p-6 space-y-6">
+                        <div class="bg-orange-50 p-4 rounded-xl border border-orange-100 flex items-start gap-3">
+                            <i class="fas fa-shield-alt text-orange-500 mt-0.5"></i>
+                            <p class="text-xs text-orange-700 leading-relaxed">
+                                为保障账号安全，请设置包含字母和数字的8位以上密码。
+                            </p>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">当前密码</label>
+                                <div class="relative">
+                                    <div class="w-full bg-white border border-gray-200 rounded-xl p-3 pr-10 text-sm text-gray-400">
+                                        请输入当前密码</div>
+                                    <i class="far fa-eye-slash absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">新密码</label>
+                                <div class="relative">
+                                    <div class="w-full bg-white border border-gray-200 rounded-xl p-3 pr-10 text-sm text-gray-400">
+                                        请输入新密码（至少8位）</div>
+                                    <i class="far fa-eye-slash absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">确认新密码</label>
+                                <div class="relative">
+                                    <div class="w-full bg-white border border-gray-200 rounded-xl p-3 pr-10 text-sm text-gray-400">
+                                        请再次输入新密码</div>
+                                    <i class="far fa-eye-slash absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-right">
+                            <span class="text-xs text-orange-500 font-bold">忘记当前密码？</span>
+                        </div>
+
+                        <button class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-full shadow-lg mt-4">
+                            确认修改
+                        </button>
+                    </main>
+                </div>
+            </div>
+        </div>
+
+        <!-- 21. SELECT TAGS (NEW - 注册后选择兴趣标签) -->
+        <div>
+            <div class="label">21. 选择兴趣标签 (Select Tags)</div>
+            <div class="phone-frame">
+                <div class="screen-content bg-white">
+                    <header class="px-6 py-5 pt-12 border-b border-gray-50">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-800">
+                                <i class="fas fa-arrow-left"></i>
+                            </div>
+                            <span class="text-xs text-gray-400">2/2</span>
+                        </div>
+                        <h1 class="text-2xl font-bold text-gray-900 mb-2">选择你的兴趣</h1>
+                        <p class="text-gray-400 text-sm">选择至少1个标签，我们将为你推荐相关活动</p>
+                    </header>
+
+                    <main class="p-6">
+                        <div class="mb-6">
+                            <h3 class="text-xs font-bold text-gray-400 uppercase mb-4">运动健身</h3>
+                            <div class="flex flex-wrap gap-3">
+                                <span class="bg-orange-50 text-orange-500 border-orange-200 px-4 py-2.5 rounded-full text-sm font-bold border-2">
+                                    <i class="fas fa-running mr-1.5"></i>跑步
+                                </span>
+                                <span class="bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2">
+                                    <i class="fas fa-basketball-ball mr-1.5"></i>球类
+                                </span>
+                                <span class="bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2">
+                                    <i class="fas fa-dumbbell mr-1.5"></i>健身
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <h3 class="text-xs font-bold text-gray-400 uppercase mb-4">户外探索</h3>
+                            <div class="flex flex-wrap gap-3">
+                                <span class="bg-green-50 text-green-600 border-green-200 px-4 py-2.5 rounded-full text-sm font-bold border-2">
+                                    <i class="fas fa-mountain mr-1.5"></i>徒步
+                                </span>
+                                <span class="bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2">
+                                    <i class="fas fa-campground mr-1.5"></i>露营
+                                </span>
+                                <span class="bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2">
+                                    <i class="fas fa-bicycle mr-1.5"></i>骑行
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <h3 class="text-xs font-bold text-gray-400 uppercase mb-4">文化艺术</h3>
+                            <div class="flex flex-wrap gap-3">
+                                <span class="bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2">
+                                    <i class="fas fa-music mr-1.5"></i>音乐
+                                </span>
+                                <span class="bg-purple-50 text-purple-600 border-purple-200 px-4 py-2.5 rounded-full text-sm font-bold border-2">
+                                    <i class="fas fa-book mr-1.5"></i>读书
+                                </span>
+                                <span class="bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2">
+                                    <i class="fas fa-camera mr-1.5"></i>摄影
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <h3 class="text-xs font-bold text-gray-400 uppercase mb-4">生活社交</h3>
+                            <div class="flex flex-wrap gap-3">
+                                <span class="bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2">
+                                    <i class="fas fa-utensils mr-1.5"></i>美食
+                                </span>
+                                <span class="bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2">
+                                    <i class="fas fa-gamepad mr-1.5"></i>游戏
+                                </span>
+                                <span class="bg-white text-gray-600 border-gray-200 px-4 py-2.5 rounded-full text-sm font-bold border-2">
+                                    <i class="fas fa-film mr-1.5"></i>电影
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="text-center text-xs text-gray-400 mb-6">
+                            已选择 <span class="text-orange-500 font-bold">3</span> 个标签
+                        </div>
+                    </main>
+
+                    <div class="absolute bottom-0 left-0 w-full bg-white border-t border-gray-50 p-4 pb-8">
+                        <button class="w-full bg-gray-900 text-white font-bold py-4 rounded-2xl shadow-xl">
+                            完成注册
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

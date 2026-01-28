@@ -1,0 +1,10 @@
+# Kubernetes 部署配置
+#
+# 待创建:
+# - gateway-deployment.yaml
+# - user-deployment.yaml
+# - activity-deployment.yaml
+# - chat-deployment.yaml
+# - job-deployment.yaml
+# - configmap.yaml
+# - secret.yaml

@@ -1,0 +1,7 @@
+# Activity Model 层
+#
+# 数据模型: C同学
+# - activity.go       活动模型
+# - category.go       分类模型
+# - registration.go   报名记录
+# - ticket.go         票据模型

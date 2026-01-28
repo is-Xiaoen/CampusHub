@@ -1,0 +1,79 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/bin/
+/output/
+
+# Claude code
+.claude
+CLAUDE.md
+
+# Test binary
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Dependency directories
+/vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+.env.*.local
+*.local.yaml
+
+# Logs
+*.log
+logs/
+
+# Temp files
+tmp/
+temp/
+
+# Build output
+/dist/
+/build/
+
+# Docker
+docker-compose.override.yml
+
+# ==================== 敏感配置文件 ====================
+# 实际配置包含密码等敏感信息，不应提交到公共仓库
+# 使用方法：复制 .yaml.example 为 .yaml，然后修改配置
+
+# Gateway 配置
+app/gateway/api/etc/gateway.yaml
+
+# User RPC 配置
+app/user/rpc/etc/user.yaml
+
+# Activity RPC 配置
+app/activity/rpc/etc/activity.yaml
+
+# Chat RPC 配置
+app/chat/rpc/etc/chat.yaml
+
+# Demo RPC 配置
+app/demo/rpc/etc/demo.yaml
+
+# ==================== 项目特定排除 ====================
+# 计划文档（可能包含敏感业务信息）
+docs/plan/
+
+# 部署配置（包含敏感信息）
+deploy/docker/config/*.yaml
