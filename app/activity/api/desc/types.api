@@ -1,0 +1,306 @@
+// 活动服务 类型定义
+syntax = "v1"
+
+// ==================== 基础类型 ====================
+
+// Tag 标签信息
+type Tag {
+	Id    int64  `json:"id"`
+	Name  string `json:"name"`
+	Color string `json:"color,omitempty"`
+	Icon  string `json:"icon,omitempty"`
+}
+
+// Category 分类信息
+type Category {
+	Id   int64  `json:"id"`
+	Name string `json:"name"`
+	Icon string `json:"icon,omitempty"`
+	Sort int32  `json:"sort"`
+}
+
+// Pagination 分页信息
+type Pagination {
+	Page       int32 `json:"page"`
+	PageSize   int32 `json:"pageSize"`
+	Total      int64 `json:"total"`
+	TotalPages int32 `json:"totalPages"`
+}
+
+// ==================== 活动详情类型 ====================
+
+// ActivityDetail 活动详情（完整信息）
+type ActivityDetail {
+	Id                   int64  `json:"id"`
+	Title                string `json:"title"`
+	CoverUrl             string `json:"coverUrl"`
+	CoverType            int32  `json:"coverType"`              // 1=图片, 2=视频
+	Content              string `json:"content"`                // 富文本
+	CategoryId           int64  `json:"categoryId"`
+	CategoryName         string `json:"categoryName"`
+	OrganizerId          int64  `json:"organizerId"`
+	OrganizerName        string `json:"organizerName"`
+	OrganizerAvatar      string `json:"organizerAvatar"`
+	ContactPhone         string `json:"contactPhone,omitempty"` // 脱敏
+	RegisterStartTime    int64  `json:"registerStartTime"`      // 时间戳秒
+	RegisterEndTime      int64  `json:"registerEndTime"`
+	ActivityStartTime    int64  `json:"activityStartTime"`
+	ActivityEndTime      int64  `json:"activityEndTime"`
+	Location             string `json:"location"`
+	AddressDetail        string `json:"addressDetail,omitempty"`
+	Longitude            float64 `json:"longitude,omitempty"`
+	Latitude             float64 `json:"latitude,omitempty"`
+	MaxParticipants      int32  `json:"maxParticipants"`        // 0=不限
+	CurrentParticipants  int32  `json:"currentParticipants"`
+	RequireApproval      bool   `json:"requireApproval"`
+	RequireStudentVerify bool   `json:"requireStudentVerify"`
+	MinCreditScore       int32  `json:"minCreditScore"`
+	Status               int32  `json:"status"`                 // 0-6
+	StatusText           string `json:"statusText"`
+	RejectReason         string `json:"rejectReason,omitempty"`
+	ViewCount            int64  `json:"viewCount"`
+	LikeCount            int64  `json:"likeCount"`
+	Tags                 []Tag  `json:"tags"`
+	CreatedAt            int64  `json:"createdAt"`
+	UpdatedAt            int64  `json:"updatedAt"`
+	Version              int32  `json:"version"`                // 乐观锁版本号
+}
+
+// ActivityListItem 活动列表项（简化信息）
+type ActivityListItem {
+	Id                  int64  `json:"id"`
+	Title               string `json:"title"`
+	CoverUrl            string `json:"coverUrl"`
+	CoverType           int32  `json:"coverType"`
+	CategoryName        string `json:"categoryName"`
+	OrganizerName       string `json:"organizerName"`
+	OrganizerAvatar     string `json:"organizerAvatar"`
+	ActivityStartTime   int64  `json:"activityStartTime"`
+	Location            string `json:"location"`
+	MaxParticipants     int32  `json:"maxParticipants"`
+	CurrentParticipants int32  `json:"currentParticipants"`
+	Status              int32  `json:"status"`
+	StatusText          string `json:"statusText"`
+	Tags                []Tag  `json:"tags"`
+	ViewCount           int64  `json:"viewCount"`
+	CreatedAt           int64  `json:"createdAt"`
+}
+
+// ==================== CRUD 请求/响应类型 ====================
+
+// 创建活动请求
+type CreateActivityReq {
+	Title                string  `json:"title"`                            // 必填，2-100字
+	CoverUrl             string  `json:"coverUrl"`                         // 必填
+	CoverType            int32   `json:"coverType,default=1"`              // 1=图片(默认), 2=视频
+	Content              string  `json:"content,optional"`                 // 富文本
+	CategoryId           int64   `json:"categoryId"`                       // 必填
+	ContactPhone         string  `json:"contactPhone,optional"`
+	RegisterStartTime    int64   `json:"registerStartTime"`                // 必填
+	RegisterEndTime      int64   `json:"registerEndTime"`                  // 必填
+	ActivityStartTime    int64   `json:"activityStartTime"`                // 必填
+	ActivityEndTime      int64   `json:"activityEndTime"`                  // 必填
+	Location             string  `json:"location"`                         // 必填
+	AddressDetail        string  `json:"addressDetail,optional"`
+	Longitude            float64 `json:"longitude,optional"`
+	Latitude             float64 `json:"latitude,optional"`
+	MaxParticipants      int32   `json:"maxParticipants,default=0"`        // 0=不限
+	RequireApproval      bool    `json:"requireApproval,default=false"`
+	RequireStudentVerify bool    `json:"requireStudentVerify,default=false"`
+	MinCreditScore       int32   `json:"minCreditScore,default=0"`
+	TagIds               []int64 `json:"tagIds,optional"`                  // 最多5个
+	IsDraft              bool    `json:"isDraft,default=false"`            // true=保存草稿
+}
+
+// 创建活动响应
+type CreateActivityResp {
+	Id     int64 `json:"id"`
+	Status int32 `json:"status"` // 0=草稿，1=待审核
+}
+
+// 更新活动请求
+type UpdateActivityReq {
+	Id                   int64    `path:"id"`                               // 路径参数
+	Version              int32    `json:"version"`                          // 乐观锁版本号（必填）
+	Title                *string  `json:"title,optional"`
+	CoverUrl             *string  `json:"coverUrl,optional"`
+	CoverType            *int32   `json:"coverType,optional"`
+	Content              *string  `json:"content,optional"`
+	CategoryId           *int64   `json:"categoryId,optional"`
+	ContactPhone         *string  `json:"contactPhone,optional"`
+	RegisterStartTime    *int64   `json:"registerStartTime,optional"`
+	RegisterEndTime      *int64   `json:"registerEndTime,optional"`
+	ActivityStartTime    *int64   `json:"activityStartTime,optional"`
+	ActivityEndTime      *int64   `json:"activityEndTime,optional"`
+	Location             *string  `json:"location,optional"`
+	AddressDetail        *string  `json:"addressDetail,optional"`
+	Longitude            *float64 `json:"longitude,optional"`
+	Latitude             *float64 `json:"latitude,optional"`
+	MaxParticipants      *int32   `json:"maxParticipants,optional"`
+	RequireApproval      *bool    `json:"requireApproval,optional"`
+	RequireStudentVerify *bool    `json:"requireStudentVerify,optional"`
+	MinCreditScore       *int32   `json:"minCreditScore,optional"`
+	TagIds               []int64  `json:"tagIds,optional"`
+	UpdateTags           bool     `json:"updateTags,default=false"`         // true=更新标签
+}
+
+// 更新活动响应
+type UpdateActivityResp {
+	Status     int32 `json:"status"`
+	NewVersion int32 `json:"newVersion"`
+}
+
+// 删除活动请求
+type DeleteActivityReq {
+	Id int64 `path:"id"`
+}
+
+// 删除活动响应
+type DeleteActivityResp {
+	Success bool `json:"success"`
+}
+
+// 获取活动详情请求
+type GetActivityReq {
+	Id int64 `path:"id"`
+}
+
+// 获取活动详情响应
+type GetActivityResp {
+	Activity ActivityDetail `json:"activity"`
+}
+
+// 获取活动列表请求
+type ListActivityReq {
+	Page       int32  `form:"page,default=1"`
+	PageSize   int32  `form:"pageSize,default=10"`
+	CategoryId int64  `form:"categoryId,optional"`    // 分类筛选
+	Status     int32  `form:"status,default=-1"`      // -1=公开状态, -2=全部
+	Sort       string `form:"sort,default=created_at"` // created_at, hot, start_time
+}
+
+// 获取活动列表响应
+type ListActivityResp {
+	List       []ActivityListItem `json:"list"`
+	Pagination Pagination         `json:"pagination"`
+}
+
+// ==================== 状态操作请求/响应类型 ====================
+
+// 提交审核请求
+type SubmitActivityReq {
+	Id int64 `path:"id"`
+}
+
+// 提交审核响应
+type SubmitActivityResp {
+	Status int32 `json:"status"` // 1=待审核
+}
+
+// 审核通过请求（管理员）
+type ApproveActivityReq {
+	Id int64 `path:"id"`
+}
+
+// 审核通过响应
+type ApproveActivityResp {
+	Status int32 `json:"status"` // 2=已发布
+}
+
+// 审核拒绝请求（管理员）
+type RejectActivityReq {
+	Id     int64  `path:"id"`
+	Reason string `json:"reason"` // 必填，1-500字
+}
+
+// 审核拒绝响应
+type RejectActivityResp {
+	Status int32 `json:"status"` // 5=已拒绝
+}
+
+// 取消活动请求
+type CancelActivityReq {
+	Id     int64  `path:"id"`
+	Reason string `json:"reason,optional"`
+}
+
+// 取消活动响应
+type CancelActivityResp {
+	Status int32 `json:"status"` // 6=已取消
+}
+
+// ==================== 搜索请求/响应类型 ====================
+
+// 搜索活动请求
+type SearchActivityReq {
+	Keyword    string `form:"keyword"`                   // 必填，2-50字
+	CategoryId int64  `form:"categoryId,optional"`
+	Page       int32  `form:"page,default=1"`
+	PageSize   int32  `form:"pageSize,default=10"`
+	Sort       string `form:"sort,default=relevance"`   // relevance, time, hot
+}
+
+// 搜索活动响应
+type SearchActivityResp {
+	List        []ActivityListItem `json:"list"`
+	Total       int64              `json:"total"`
+	QueryTimeMs int32              `json:"queryTimeMs"` // 搜索耗时（毫秒）
+}
+
+// 获取热门活动请求
+type GetHotActivityReq {
+	Limit int32 `form:"limit,default=10"` // 最大20
+}
+
+// 获取热门活动响应
+type GetHotActivityResp {
+	List []ActivityListItem `json:"list"`
+}
+
+// ==================== 分类标签请求/响应类型 ====================
+
+// 获取分类列表请求
+type ListCategoryReq {
+	// 暂无参数
+}
+
+// 获取分类列表响应
+type ListCategoryResp {
+	List []Category `json:"list"`
+}
+
+// 获取标签列表请求
+type ListTagReq {
+	Limit int32 `form:"limit,optional"` // 0=全部，>0=热门N个
+}
+
+// 获取标签列表响应
+type ListTagResp {
+	List []Tag `json:"list"`
+}
+
+// ==================== 浏览量请求/响应类型 ====================
+
+// 增加浏览量请求
+type IncrViewCountReq {
+	Id int64 `path:"id"`
+}
+
+// 增加浏览量响应
+type IncrViewCountResp {
+	ViewCount int64 `json:"viewCount"`
+}
+
+// ==================== 我的活动请求/响应类型 ====================
+
+// 我的活动列表请求
+type MyActivityReq {
+	Page     int32 `form:"page,default=1"`
+	PageSize int32 `form:"pageSize,default=10"`
+}
+
+// 我的活动列表响应
+type MyActivityResp {
+	List       []ActivityListItem `json:"list"`
+	Pagination Pagination         `json:"pagination"`
+}
