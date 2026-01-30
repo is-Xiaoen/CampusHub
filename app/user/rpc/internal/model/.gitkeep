@@ -1,7 +1,0 @@
-# User Model 层
-# 负责人: B同学
-#
-# 数据模型文件:
-# - user.go               用户模型
-# - user_credit.go        用户信用分（A同学）
-# - student_verification.go 学生认证（A同学）

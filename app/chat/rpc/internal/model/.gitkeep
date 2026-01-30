@@ -1,7 +1,0 @@
-# Chat Model 层
-#
-# 数据模型:
-# - chat_room.go          聊天室
-# - chat_room_member.go   聊天室成员
-# - message.go            消息
-# - notification.go       通知
