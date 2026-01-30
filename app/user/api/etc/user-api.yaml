@@ -1,0 +1,43 @@
+# ============================================================================
+# 用户服务 API 配置
+# ============================================================================
+#
+# 负责人：杨春路（B同学）
+#
+# 说明：
+#   - 所有 API 服务的 Auth.AccessSecret 必须一致
+#   - user-api 签发的 Token 在 activity-api、chat-api 中都能验证
+#
+# ============================================================================
+
+Name: user-api
+Host: 0.0.0.0
+Port: 8001
+
+# 日志配置
+Log:
+  ServiceName: user-api
+  Mode: console
+  Encoding: plain
+  Level: info
+
+# ==================== JWT 配置（重要：所有 API 服务必须一致）====================
+Auth:
+  AccessSecret: "your-access-secret-key-change-in-production-32chars"
+  AccessExpire: 7200  # 2小时
+
+# ==================== RPC 服务配置 ====================
+UserRpc:
+  Etcd:
+    Hosts:
+      - 192.168.10.4:2379
+    Key: user.rpc
+  NonBlock: true
+  Timeout: 3000
+
+# ==================== 链路追踪（可选）====================
+# Telemetry:
+#   Name: user-api
+#   Endpoint: http://192.168.10.4:14268/api/traces
+#   Sampler: 1.0
+#   Batcher: jaeger
