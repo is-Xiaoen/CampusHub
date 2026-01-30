@@ -1,12 +1,47 @@
 package response
 
 import (
+	"context"
 	"net/http"
 
 	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
+
+// SetupGlobalErrorHandler 设置全局错误处理器
+// 必须在 server.Start() 之前调用
+// 这样 goctl 生成的 handler 中的 httpx.ErrorCtx 也会使用统一格式
+func SetupGlobalErrorHandler() {
+	httpx.SetErrorHandler(func(err error) (int, interface{}) {
+		bizErr := errorx.FromError(err)
+		return getHttpStatus(bizErr.Code), &Response{
+			Code:    bizErr.Code,
+			Message: bizErr.Message,
+		}
+	})
+
+	httpx.SetErrorHandlerCtx(func(ctx context.Context, err error) (int, interface{}) {
+		bizErr := errorx.FromError(err)
+		return getHttpStatus(bizErr.Code), &Response{
+			Code:    bizErr.Code,
+			Message: bizErr.Message,
+		}
+	})
+}
+
+// SetupGlobalOkHandler 设置全局成功处理器（可选）
+// 如果想让 httpx.OkJsonCtx 也使用统一格式，调用此方法
+// 注意：这会让所有响应都包装在 {code, message, data} 中
+func SetupGlobalOkHandler() {
+	httpx.SetOkHandler(func(ctx context.Context, data interface{}) interface{} {
+		return &Response{
+			Code:    errorx.CodeSuccess,
+			Message: "success",
+			Data:    data,
+		}
+	})
+}
 
 // Response 统一响应结构
 type Response struct {
