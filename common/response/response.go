@@ -14,18 +14,18 @@ import (
 // 这样 goctl 生成的 handler 中的 httpx.ErrorCtx 也会使用统一格式
 func SetupGlobalErrorHandler() {
 	httpx.SetErrorHandler(func(err error) (int, interface{}) {
-		codeErr := errorx.FromError(err)
-		return getHttpStatus(codeErr.Code), &Response{
-			Code:    codeErr.Code,
-			Message: codeErr.Msg,
+		bizErr := errorx.FromError(err)
+		return getHttpStatus(bizErr.Code), &Response{
+			Code:    bizErr.Code,
+			Message: bizErr.Message,
 		}
 	})
 
 	httpx.SetErrorHandlerCtx(func(ctx context.Context, err error) (int, interface{}) {
-		codeErr := errorx.FromError(err)
-		return getHttpStatus(codeErr.Code), &Response{
-			Code:    codeErr.Code,
-			Message: codeErr.Msg,
+		bizErr := errorx.FromError(err)
+		return getHttpStatus(bizErr.Code), &Response{
+			Code:    bizErr.Code,
+			Message: bizErr.Message,
 		}
 	})
 }
@@ -93,15 +93,15 @@ func SuccessWithPage(w http.ResponseWriter, list interface{}, total int64, page,
 	httpx.OkJson(w, resp)
 }
 
-// Fail 失败响应（使用 CodeError）
+// Fail 失败响应（使用 BizError）
 func Fail(w http.ResponseWriter, err error) {
-	codeErr := errorx.FromError(err)
+	bizErr := errorx.FromError(err)
 	resp := &Response{
-		Code:    codeErr.Code,
-		Message: codeErr.Msg,
+		Code:    bizErr.Code,
+		Message: bizErr.Message,
 	}
 	// 根据错误类型返回不同的 HTTP 状态码
-	httpx.WriteJson(w, getHttpStatus(codeErr.Code), resp)
+	httpx.WriteJson(w, getHttpStatus(bizErr.Code), resp)
 }
 
 // FailWithCode 失败响应（指定错误码）
