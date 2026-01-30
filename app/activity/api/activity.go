@@ -1,24 +1,3 @@
-// ============================================================================
-// 活动服务 API 入口
-// ============================================================================
-//
-// 负责人：马肖阳（C/D同学）
-//
-// 说明：
-//   activity-api 是活动服务的 HTTP 接口层，负责：
-//   - 活动 CRUD
-//   - 报名、签到
-//   - 我的活动列表
-//
-// 启动命令：
-//   go run activity.go -f etc/activity-api.yaml
-//
-// 代码生成：
-//   cd app/activity/api
-//   goctl api go -api desc/activity.api -dir . -style go_zero
-//
-// ============================================================================
-
 package main
 
 import (
@@ -48,7 +27,7 @@ func main() {
 	// response.SetupGlobalOkHandler() // 可选：统一成功响应格式
 	// ============================================================================
 
-	// TODO(马肖阳): goctl 生成代码后，取消下方注释，删除临时代码
+	// TODO(Xiaoen): goctl 生成代码后，取消下方注释，删除临时代码
 	//
 	// var c config.Config
 	// conf.MustLoad(*configFile, &c)
@@ -71,3 +50,18 @@ func main() {
 	fmt.Printf("请执行: cd app/activity/api && goctl api go -api desc/activity.api -dir . -style go_zero\n")
 	// ============ 临时代码结束 ============
 }
+
+// 活动服务 API 入口
+// 说明：
+//   activity-api 是活动服务的 HTTP 接口层，负责：
+//   - 活动 CRUD
+//   - 报名、签到
+//   - 我的活动列表
+//
+// 启动命令：
+//   go run activity.go -f etc/activity-api.yaml
+//
+// 代码生成：
+//   cd app/activity/api
+//   goctl api go -api desc/activity.api -dir . -style go_zero
+//

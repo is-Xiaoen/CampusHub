@@ -1,18 +1,26 @@
 package main
 
-// Activity RPC 活动服务入口
-// TODO: 由 C同学、D同学 实现
-//
-// C同学负责:
-// - 活动CRUD + 状态机
-// - 活动列表/详情
-// - 缓存策略
-//
-// D同学负责:
-// - 活动报名（高并发）
-// - 签到核销
-// - 推荐算法
+import (
+	"flag"
+)
+
+var configFile = flag.String("f", "etc/activity.yaml", "配置文件路径")
 
 func main() {
-	// TODO: 实现活动服务启动逻辑
+
 }
+
+// 活动服务 RPC 入口
+// 说明：
+//   activity-rpc 是活动服务的 gRPC 服务层，负责：
+//   - 活动 CRUD + 状态机
+//   - 活动列表/详情/搜索
+//   - 分类标签管理
+//   - 跨服务调用接口（供 User/Chat 服务调用）
+//
+// 启动命令：
+//   go run activity.go -f etc/activity.yaml
+//
+// 代码生成：
+//   cd app/activity/rpc
+//   goctl rpc protoc activity.proto --go_out=. --go-grpc_out=. --zrpc_out=. --style go_zero
