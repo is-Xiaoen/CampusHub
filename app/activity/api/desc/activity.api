@@ -1,153 +1,18 @@
-// ============================================================================
-// 活动服务 API 定义
-// ============================================================================
-//
-//
-// 说明：
-//   本文件定义活动服务的所有 HTTP 接口，使用 goctl 生成代码：
-//   goctl api go -api desc/activity.api -dir . -style go_zero
-//
-// 接口列表：
-//   公开接口（无需登录）：
-//   - GET /api/v1/activity/list         活动列表
-//   - GET /api/v1/activity/:id          活动详情
-//
-//   需要登录的接口（jwt:Auth）：
-//   - POST   /api/v1/activity           创建活动
-//   - PUT    /api/v1/activity/:id       更新活动
-//   - DELETE /api/v1/activity/:id       删除活动
-//   - POST   /api/v1/activity/:id/join  报名活动
-//   - POST   /api/v1/activity/:id/checkin 签到
-//   - GET    /api/v1/activity/my/joined 我报名的活动
-//   - GET    /api/v1/activity/my/created 我创建的活动
-//
-// ============================================================================
 syntax = "v1"
 
 info (
 	title:   "活动服务 API"
-	desc:    "活动发布、报名、签到"
-	author:  "马肖阳"
+	desc:    "活动发布、报名、签到、搜索"
+	author:  "Xiaoen"
 	version: "v1"
 )
 
-// ==================== 类型定义 ====================
-// 活动信息
-type Activity {
-	Id          int64  `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	CoverImage  string `json:"coverImage"`
-	Location    string `json:"location"`
-	StartTime   int64  `json:"startTime"`
-	EndTime     int64  `json:"endTime"`
-	MaxMembers  int32  `json:"maxMembers"`
-	JoinedCount int32  `json:"joinedCount"`
-	Status      int32  `json:"status"` // 1-报名中 2-进行中 3-已结束
-	CreatorId   int64  `json:"creatorId"`
-	CreatedAt   int64  `json:"createdAt"`
-}
+// 导入类型定义
+import "types.api"
 
-// 活动列表请求
-type ListActivityReq {
-	Page     int32  `form:"page,default=1"`
-	PageSize int32  `form:"pageSize,default=10"`
-	Keyword  string `form:"keyword,optional"`
-	Status   int32  `form:"status,optional"`
-}
-
-// 活动列表响应
-type ListActivityResp {
-	List  []Activity `json:"list"`
-	Total int64      `json:"total"`
-}
-
-// 活动详情请求
-type GetActivityReq {
-	Id int64 `path:"id"`
-}
-
-// 活动详情响应
-type GetActivityResp {
-	Activity Activity `json:"activity"`
-}
-
-// 创建活动请求
-type CreateActivityReq {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	CoverImage  string `json:"coverImage,optional"`
-	Location    string `json:"location"`
-	StartTime   int64  `json:"startTime"`
-	EndTime     int64  `json:"endTime"`
-	MaxMembers  int32  `json:"maxMembers"`
-}
-
-// 创建活动响应
-type CreateActivityResp {
-	Id int64 `json:"id"`
-}
-
-// 更新活动请求
-type UpdateActivityReq {
-	Id          int64  `path:"id"`
-	Title       string `json:"title,optional"`
-	Description string `json:"description,optional"`
-	CoverImage  string `json:"coverImage,optional"`
-	Location    string `json:"location,optional"`
-	StartTime   int64  `json:"startTime,optional"`
-	EndTime     int64  `json:"endTime,optional"`
-	MaxMembers  int32  `json:"maxMembers,optional"`
-}
-
-// 更新活动响应
-type UpdateActivityResp {
-	Success bool `json:"success"`
-}
-
-// 删除活动请求
-type DeleteActivityReq {
-	Id int64 `path:"id"`
-}
-
-// 删除活动响应
-type DeleteActivityResp {
-	Success bool `json:"success"`
-}
-
-// 报名请求
-type JoinActivityReq {
-	Id int64 `path:"id"`
-}
-
-// 报名响应
-type JoinActivityResp {
-	Success bool `json:"success"`
-}
-
-// 签到请求
-type CheckinReq {
-	Id int64 `path:"id"`
-}
-
-// 签到响应
-type CheckinResp {
-	Success bool `json:"success"`
-}
-
-// 我的活动列表响应
-type MyActivityListResp {
-	List  []Activity `json:"list"`
-	Total int64      `json:"total"`
-}
-
-// 分页请求
-type PageReq {
-	Page     int32 `form:"page,default=1"`
-	PageSize int32 `form:"pageSize,default=10"`
-}
-
-// ==================== 服务定义 ====================
+// ============================================================================
+// 公开接口（无需登录）
+// ============================================================================
 @server (
 	prefix: /api/v1/activity
 	group:  public
@@ -160,8 +25,31 @@ service activity-api {
 	@doc "活动详情"
 	@handler GetActivity
 	get /:id (GetActivityReq) returns (GetActivityResp)
+
+	@doc "搜索活动"
+	@handler SearchActivity
+	get /search (SearchActivityReq) returns (SearchActivityResp)
+
+	@doc "热门活动"
+	@handler GetHotActivity
+	get /hot (GetHotActivityReq) returns (GetHotActivityResp)
+
+	@doc "分类列表"
+	@handler ListCategory
+	get /categories (ListCategoryReq) returns (ListCategoryResp)
+
+	@doc "标签列表"
+	@handler ListTag
+	get /tags (ListTagReq) returns (ListTagResp)
+
+	@doc "增加浏览量"
+	@handler IncrViewCount
+	post /:id/view (IncrViewCountReq) returns (IncrViewCountResp)
 }
 
+// ============================================================================
+// 需要登录的活动操作接口
+// ============================================================================
 @server (
 	prefix: /api/v1/activity
 	group:  activity
@@ -180,20 +68,53 @@ service activity-api {
 	@handler DeleteActivity
 	delete /:id (DeleteActivityReq) returns (DeleteActivityResp)
 
-	@doc "报名活动"
-	@handler JoinActivity
-	post /:id/join (JoinActivityReq) returns (JoinActivityResp)
+	@doc "提交审核"
+	@handler SubmitActivity
+	post /:id/submit (SubmitActivityReq) returns (SubmitActivityResp)
 
-	@doc "签到"
-	@handler Checkin
-	post /:id/checkin (CheckinReq) returns (CheckinResp)
-
-	@doc "我报名的活动"
-	@handler MyJoinedActivity
-	get /my/joined (PageReq) returns (MyActivityListResp)
+	@doc "取消活动"
+	@handler CancelActivity
+	post /:id/cancel (CancelActivityReq) returns (CancelActivityResp)
 
 	@doc "我创建的活动"
 	@handler MyCreatedActivity
-	get /my/created (PageReq) returns (MyActivityListResp)
+	get /my/created (MyActivityReq) returns (MyActivityResp)
 }
 
+// ============================================================================
+// 管理员接口
+// ============================================================================
+@server (
+	prefix:     /api/v1/admin/activity
+	group:      admin
+	jwt:        Auth
+	middleware: AdminAuth
+)
+service activity-api {
+	@doc "审核通过"
+	@handler ApproveActivity
+	post /:id/approve (ApproveActivityReq) returns (ApproveActivityResp)
+
+	@doc "审核拒绝"
+	@handler RejectActivity
+	post /:id/reject (RejectActivityReq) returns (RejectActivityResp)
+
+	@doc "管理员活动列表"
+	@handler AdminListActivity
+	get /list (ListActivityReq) returns (ListActivityResp)
+}
+
+	// 活动服务 API 定义
+	// 说明：
+	//   本文件定义活动服务的所有 HTTP 接口路由。
+	//   类型定义在 types.api 中，通过 import 导入。
+	//
+	// 生成命令：
+	//   cd app/activity/api
+	//   goctl api go -api desc/activity.api -dir . -style go_zero
+	//
+	// 接口分组：
+	//   public   - 公开接口（无需登录）
+	//   activity - 需要登录的活动操作接口
+	//   admin    - 管理员接口
+	//
