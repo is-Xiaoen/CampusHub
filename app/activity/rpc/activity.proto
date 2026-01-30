@@ -1,95 +1,12 @@
-// Activity 服务 Proto 定义文件（外部服务）
-//
-// 文件说明：
-//   定义活动模块的对外 gRPC 服务接口，供 Gateway API 调用。
-//   包含活动 CRUD、状态操作、搜索、分类标签等功能。
-//
-// 字段编号规划：
-//   - 1-50：基础字段
-//   - 51-80：扩展字段
-//   - 81-100：预留字段
-//   ⚠️ 警告：字段编号一旦发布使用后不可更改或复用！
-//
-// 生成命令：
-//   cd app/activity/rpc
-//
-
+// Activity 服务 Proto 定义文件
 syntax = "proto3";
 
-package activity;//   goctl rpc protoc activity.proto --go_out=./pb --go-grpc_out=./pb --zrpc_out=.
+package activity;
 
+option go_package = "./activity";
 
-option go_package = "./pb";
-
-
-// ActivityService 活动服务（外部）
-
-service ActivityService {
-  // ==================== CRUD 接口 ====================
-
-  // CreateActivity 创建活动
-  // 支持保存为草稿或直接提交审核
-  rpc CreateActivity(CreateActivityReq) returns (CreateActivityResp);
-
-  // UpdateActivity 更新活动
-  // 根据当前状态限制可编辑字段
-  rpc UpdateActivity(UpdateActivityReq) returns (UpdateActivityResp);
-
-  // DeleteActivity 删除活动
-  // 软删除，有报名记录不可删除
-  rpc DeleteActivity(DeleteActivityReq) returns (DeleteActivityResp);
-
-  // GetActivity 获取活动详情
-  rpc GetActivity(GetActivityReq) returns (GetActivityResp);
-
-  // ListActivities 获取活动列表
-  // 支持分页、筛选、排序
-  rpc ListActivities(ListActivitiesReq) returns (ListActivitiesResp);
-
-  // ==================== 状态操作接口 ====================
-
-  // SubmitActivity 提交审核
-  // 草稿(0)/已拒绝(5) → 待审核(1)
-  rpc SubmitActivity(SubmitActivityReq) returns (SubmitActivityResp);
-
-  // ApproveActivity 审核通过（仅管理员）
-  // 待审核(1) → 已发布(2)
-  rpc ApproveActivity(ApproveActivityReq) returns (ApproveActivityResp);
-
-  // RejectActivity 审核拒绝（仅管理员）
-  // 待审核(1) → 已拒绝(5)
-  rpc RejectActivity(RejectActivityReq) returns (RejectActivityResp);
-
-  // CancelActivity 取消活动
-  // 组织者/管理员可操作
-  rpc CancelActivity(CancelActivityReq) returns (CancelActivityResp);
-
-  // ==================== 搜索接口 ====================
-
-  // SearchActivities 搜索活动
-  // 使用 ES/Meilisearch 实现全文搜索
-  rpc SearchActivities(SearchActivitiesReq) returns (SearchActivitiesResp);
-
-  // GetHotActivities 获取热门活动
-  // 按报名人数排序，返回 Top N
-  rpc GetHotActivities(GetHotActivitiesReq) returns (GetHotActivitiesResp);
-
-  // ==================== 分类标签接口 ====================
-
-  // ListCategories 获取分类列表
-  rpc ListCategories(ListCategoriesReq) returns (ListCategoriesResp);
-
-  // ListTags 获取标签列表
-  rpc ListTags(ListTagsReq) returns (ListTagsResp);
-
-  // ==================== 浏览量接口 ====================
-
-  // IncrViewCount 增加浏览量
-  // 带防刷策略：同一用户+活动 10分钟内只计1次
-  rpc IncrViewCount(IncrViewCountReq) returns (IncrViewCountResp);
-}
-
-// 通用消息定义
+// ============================================================================
+// 公共消息定义
 // ============================================================================
 
 // Tag 标签信息
@@ -98,7 +15,6 @@ message Tag {
   string name = 2;   // 标签名称
   string color = 3;  // 标签颜色
   string icon = 4;   // 标签图标
-  // 5-10 预留
 }
 
 // Category 分类信息
@@ -107,67 +23,6 @@ message Category {
   string name = 2;   // 分类名称
   string icon = 3;   // 分类图标
   int32 sort = 4;    // 排序权重
-  // 5-10 预留
-}
-
-// ActivityDetail 活动详情（完整信息）
-message ActivityDetail {
-  int64 id = 1;                          // 活动ID
-  string title = 2;                      // 活动标题
-  string cover_url = 3;                  // 封面URL
-  int32 cover_type = 4;                  // 封面类型: 1=图片, 2=视频
-  string content = 5;                    // 活动详情（富文本）
-  int64 category_id = 6;                 // 分类ID
-  string category_name = 7;              // 分类名称
-  int64 organizer_id = 8;                // 组织者ID
-  string organizer_name = 9;             // 组织者名称
-  string organizer_avatar = 10;          // 组织者头像
-  string contact_phone = 11;             // 联系电话（脱敏）
-  int64 register_start_time = 12;        // 报名开始时间（时间戳秒）
-  int64 register_end_time = 13;          // 报名截止时间（时间戳秒）
-  int64 activity_start_time = 14;        // 活动开始时间（时间戳秒）
-  int64 activity_end_time = 15;          // 活动结束时间（时间戳秒）
-  string location = 16;                  // 活动地点
-  string address_detail = 17;            // 详细地址
-  double longitude = 18;                 // 经度
-  double latitude = 19;                  // 纬度
-  int32 max_participants = 20;           // 最大人数（0=不限）
-  int32 current_participants = 21;       // 当前报名人数
-  bool require_approval = 22;            // 是否需要审批
-  bool require_student_verify = 23;      // 是否需要学生认证
-  int32 min_credit_score = 24;           // 最低信用分要求
-  int32 status = 25;                     // 活动状态(0-6)
-  string status_text = 26;               // 状态文本
-  string reject_reason = 27;             // 拒绝原因（状态=5时有值）
-  int64 view_count = 28;                 // 浏览量
-  int64 like_count = 29;                 // 点赞数
-  repeated Tag tags = 30;                // 标签列表
-  int64 created_at = 31;                 // 创建时间（时间戳秒）
-  int64 updated_at = 32;                 // 更新时间（时间戳秒）
-  int32 version = 33;                    // 乐观锁版本号
-  // 34-50 预留基础字段
-  // 51-80 扩展字段
-}
-
-// ActivityListItem 活动列表项（简化信息）
-message ActivityListItem {
-  int64 id = 1;                          // 活动ID
-  string title = 2;                      // 活动标题
-  string cover_url = 3;                  // 封面URL
-  int32 cover_type = 4;                  // 封面类型
-  string category_name = 5;              // 分类名称
-  string organizer_name = 6;             // 组织者名称
-  string organizer_avatar = 7;           // 组织者头像
-  int64 activity_start_time = 8;         // 活动开始时间（时间戳秒）
-  string location = 9;                   // 活动地点
-  int32 max_participants = 10;           // 最大人数
-  int32 current_participants = 11;       // 当前报名人数
-  int32 status = 12;                     // 活动状态
-  string status_text = 13;               // 状态文本
-  repeated Tag tags = 14;                // 标签列表（简化版）
-  int64 view_count = 15;                 // 浏览量
-  int64 created_at = 16;                 // 创建时间
-  // 17-25 预留
 }
 
 // Pagination 分页信息
@@ -178,54 +33,140 @@ message Pagination {
   int32 total_pages = 4; // 总页数
 }
 
+// ActivityDetail 活动详情（完整信息）
+message ActivityDetail {
+  int64 id = 1;
+  string title = 2;
+  string cover_url = 3;
+  int32 cover_type = 4;               // 1=图片, 2=视频
+  string content = 5;                 // 富文本
+  int64 category_id = 6;
+  string category_name = 7;
+  int64 organizer_id = 8;
+  string organizer_name = 9;
+  string organizer_avatar = 10;
+  string contact_phone = 11;          // 脱敏
+  int64 register_start_time = 12;     // 时间戳秒
+  int64 register_end_time = 13;
+  int64 activity_start_time = 14;
+  int64 activity_end_time = 15;
+  string location = 16;
+  string address_detail = 17;
+  double longitude = 18;
+  double latitude = 19;
+  int32 max_participants = 20;        // 0=不限
+  int32 current_participants = 21;
+  bool require_approval = 22;
+  bool require_student_verify = 23;
+  int32 min_credit_score = 24;
+  int32 status = 25;                  // 0-6
+  string status_text = 26;
+  string reject_reason = 27;
+  int64 view_count = 28;
+  int64 like_count = 29;
+  repeated Tag tags = 30;
+  int64 created_at = 31;
+  int64 updated_at = 32;
+  int32 version = 33;                 // 乐观锁版本号
+}
+
+// ActivityListItem 活动列表项（简化信息）
+message ActivityListItem {
+  int64 id = 1;
+  string title = 2;
+  string cover_url = 3;
+  int32 cover_type = 4;
+  string category_name = 5;
+  string organizer_name = 6;
+  string organizer_avatar = 7;
+  int64 activity_start_time = 8;
+  string location = 9;
+  int32 max_participants = 10;
+  int32 current_participants = 11;
+  int32 status = 12;
+  string status_text = 13;
+  repeated Tag tags = 14;
+  int64 view_count = 15;
+  int64 created_at = 16;
+}
+
+// ============================================================================
+// ActivityService 活动服务（外部）- 供 Gateway API 调用
+// ============================================================================
+
+service ActivityService {
+  // ==================== CRUD 接口 ====================
+  rpc CreateActivity(CreateActivityReq) returns (CreateActivityResp);
+  rpc UpdateActivity(UpdateActivityReq) returns (UpdateActivityResp);
+  rpc DeleteActivity(DeleteActivityReq) returns (DeleteActivityResp);
+  rpc GetActivity(GetActivityReq) returns (GetActivityResp);
+  rpc ListActivities(ListActivitiesReq) returns (ListActivitiesResp);
+
+  // ==================== 状态操作接口 ====================
+  rpc SubmitActivity(SubmitActivityReq) returns (SubmitActivityResp);
+  rpc ApproveActivity(ApproveActivityReq) returns (ApproveActivityResp);
+  rpc RejectActivity(RejectActivityReq) returns (RejectActivityResp);
+  rpc CancelActivity(CancelActivityReq) returns (CancelActivityResp);
+
+  // ==================== 搜索接口 ====================
+  rpc SearchActivities(SearchActivitiesReq) returns (SearchActivitiesResp);
+  rpc GetHotActivities(GetHotActivitiesReq) returns (GetHotActivitiesResp);
+
+  // ==================== 分类标签接口 ====================
+  rpc ListCategories(ListCategoriesReq) returns (ListCategoriesResp);
+  rpc ListTags(ListTagsReq) returns (ListTagsResp);
+
+  // ==================== 浏览量接口 ====================
+  rpc IncrViewCount(IncrViewCountReq) returns (IncrViewCountResp);
+
+  // ==================== 内部接口（供其他微服务调用）====================
+  // 获取活动基本信息（User/Chat 服务调用）
+  rpc GetActivityBasic(GetActivityBasicReq) returns (GetActivityBasicResp);
+  // 批量获取活动基本信息
+  rpc BatchGetActivityBasic(BatchGetActivityBasicReq) returns (BatchGetActivityBasicResp);
+  // 获取用户已发布的活动列表（User 服务调用，用于展示用户主页）
+  rpc GetUserPublishedActivities(GetUserPublishedActivitiesReq) returns (GetUserPublishedActivitiesResp);
+}
+
 // ============================================================================
 // CRUD 接口消息定义
 // ============================================================================
 
-// ---------- CreateActivity 创建活动 ----------
-
 message CreateActivityReq {
-  string title = 1;                      // 活动标题，2-100字（必填）
-  string cover_url = 2;                  // 封面URL（必填）
-  int32 cover_type = 3;                  // 封面类型: 1=图片(默认), 2=视频
-  string content = 4;                    // 活动详情（富文本）
-  int64 category_id = 5;                 // 分类ID（必填）
-  string contact_phone = 6;              // 联系电话
-  int64 register_start_time = 7;         // 报名开始时间（时间戳秒，必填）
-  int64 register_end_time = 8;           // 报名截止时间（时间戳秒，必填）
-  int64 activity_start_time = 9;         // 活动开始时间（时间戳秒，必填）
-  int64 activity_end_time = 10;          // 活动结束时间（时间戳秒，必填）
-  string location = 11;                  // 活动地点（必填）
-  string address_detail = 12;            // 详细地址
-  double longitude = 13;                 // 经度
-  double latitude = 14;                  // 纬度
-  int32 max_participants = 15;           // 最大人数（0=不限，默认0）
-  bool require_approval = 16;            // 是否需要审批（默认false）
-  bool require_student_verify = 17;      // 是否需要学生认证（默认false）
-  int32 min_credit_score = 18;           // 最低信用分要求（默认0）
-  repeated int64 tag_ids = 19;           // 标签ID数组（最多5个）
-  bool is_draft = 20;                    // true=保存草稿，false=直接提交审核
-
-  // 以下由 Gateway 从 Token 解析后传入
-  int64 organizer_id = 21;               // 组织者ID
-  string organizer_name = 22;            // 组织者名称
-  string organizer_avatar = 23;          // 组织者头像
-  // 24-35 预留
+  string title = 1;
+  string cover_url = 2;
+  int32 cover_type = 3;
+  string content = 4;
+  int64 category_id = 5;
+  string contact_phone = 6;
+  int64 register_start_time = 7;
+  int64 register_end_time = 8;
+  int64 activity_start_time = 9;
+  int64 activity_end_time = 10;
+  string location = 11;
+  string address_detail = 12;
+  double longitude = 13;
+  double latitude = 14;
+  int32 max_participants = 15;
+  bool require_approval = 16;
+  bool require_student_verify = 17;
+  int32 min_credit_score = 18;
+  repeated int64 tag_ids = 19;
+  bool is_draft = 20;
+  // Gateway 传入
+  int64 organizer_id = 21;
+  string organizer_name = 22;
+  string organizer_avatar = 23;
 }
 
 message CreateActivityResp {
-  int64 id = 1;      // 创建的活动ID
-  int32 status = 2;  // 活动状态（0=草稿，1=待审核）
+  int64 id = 1;
+  int32 status = 2;
 }
 
-// ---------- UpdateActivity 更新活动 ----------
-
 message UpdateActivityReq {
-  int64 id = 1;                          // 活动ID（必填）
-  int32 version = 2;                     // 乐观锁版本号（必填，用于并发控制）
-
-  // 以下字段均为可选，只传需要更新的字段
-  // 使用 optional 语义：字段存在则更新，不存在则不更新
+  int64 id = 1;
+  int32 version = 2;
   optional string title = 3;
   optional string cover_url = 4;
   optional int32 cover_type = 5;
@@ -244,184 +185,213 @@ message UpdateActivityReq {
   optional bool require_approval = 18;
   optional bool require_student_verify = 19;
   optional int32 min_credit_score = 20;
-
-  // 标签更新：传入则全量替换
   repeated int64 tag_ids = 21;
-  bool update_tags = 22;  // true 表示要更新标签（允许清空）
-
-  // 操作人信息（Gateway 传入）
+  bool update_tags = 22;
   int64 operator_id = 23;
-  // 24-35 预留
 }
 
 message UpdateActivityResp {
-  int32 status = 1;      // 更新后的状态
-  int32 new_version = 2; // 新的版本号
+  int32 status = 1;
+  int32 new_version = 2;
 }
 
-// ---------- DeleteActivity 删除活动 ----------
-
 message DeleteActivityReq {
-  int64 id = 1;          // 活动ID（必填）
-  int64 operator_id = 2; // 操作人ID（Gateway 传入）
-  bool is_admin = 3;     // 是否管理员
+  int64 id = 1;
+  int64 operator_id = 2;
+  bool is_admin = 3;
 }
 
 message DeleteActivityResp {
-  bool success = 1;  // 是否成功
+  bool success = 1;
 }
 
-// ---------- GetActivity 获取活动详情 ----------
-
 message GetActivityReq {
-  int64 id = 1;          // 活动ID（必填）
-  int64 viewer_id = 2;   // 查看者ID（可选，用于权限判断）
+  int64 id = 1;
+  int64 viewer_id = 2;
 }
 
 message GetActivityResp {
-  ActivityDetail activity = 1;  // 活动详情
+  ActivityDetail activity = 1;
 }
 
-// ---------- ListActivities 获取活动列表 ----------
-
 message ListActivitiesReq {
-  int32 page = 1;            // 页码，默认1
-  int32 page_size = 2;       // 每页数量，默认10，最大50
-  int64 category_id = 3;     // 分类ID筛选（0=全部）
-  int32 status = 4;          // 状态筛选：-1=公开状态(2,3,4), -2=全部, 具体值=筛选该状态
-  int64 organizer_id = 5;    // 组织者ID筛选
-  string sort = 6;           // 排序方式: created_at(默认), hot, start_time
-
-  // 操作人信息（用于权限判断）
+  int32 page = 1;
+  int32 page_size = 2;
+  int64 category_id = 3;
+  int32 status = 4;           // -1=公开状态, -2=全部
+  int64 organizer_id = 5;
+  string sort = 6;            // created_at, hot, start_time
   int64 viewer_id = 7;
   bool is_admin = 8;
-  // 9-15 预留
 }
 
 message ListActivitiesResp {
-  repeated ActivityListItem list = 1;  // 活动列表
-  Pagination pagination = 2;           // 分页信息
+  repeated ActivityListItem list = 1;
+  Pagination pagination = 2;
 }
 
 // ============================================================================
 // 状态操作接口消息定义
 // ============================================================================
 
-// ---------- SubmitActivity 提交审核 ----------
-
 message SubmitActivityReq {
-  int64 id = 1;          // 活动ID（必填）
-  int64 operator_id = 2; // 操作人ID
+  int64 id = 1;
+  int64 operator_id = 2;
 }
 
 message SubmitActivityResp {
-  int32 status = 1;  // 新状态（1=待审核）
+  int32 status = 1;
 }
 
-// ---------- ApproveActivity 审核通过 ----------
-
 message ApproveActivityReq {
-  int64 id = 1;          // 活动ID（必填）
-  int64 operator_id = 2; // 操作人ID（管理员）
+  int64 id = 1;
+  int64 operator_id = 2;
 }
 
 message ApproveActivityResp {
-  int32 status = 1;  // 新状态（2=已发布）
+  int32 status = 1;
 }
 
-// ---------- RejectActivity 审核拒绝 ----------
-
 message RejectActivityReq {
-  int64 id = 1;          // 活动ID（必填）
-  string reason = 2;     // 拒绝原因，1-500字（必填）
-  int64 operator_id = 3; // 操作人ID（管理员）
+  int64 id = 1;
+  string reason = 2;
+  int64 operator_id = 3;
 }
 
 message RejectActivityResp {
-  int32 status = 1;  // 新状态（5=已拒绝）
+  int32 status = 1;
 }
 
-// ---------- CancelActivity 取消活动 ----------
-
 message CancelActivityReq {
-  int64 id = 1;          // 活动ID（必填）
-  string reason = 2;     // 取消原因（可选）
-  int64 operator_id = 3; // 操作人ID
-  bool is_admin = 4;     // 是否管理员
+  int64 id = 1;
+  string reason = 2;
+  int64 operator_id = 3;
+  bool is_admin = 4;
 }
 
 message CancelActivityResp {
-  int32 status = 1;  // 新状态（6=已取消）
+  int32 status = 1;
 }
 
 // ============================================================================
 // 搜索接口消息定义
 // ============================================================================
 
-// ---------- SearchActivities 搜索活动 ----------
-
 message SearchActivitiesReq {
-  string keyword = 1;        // 搜索关键词，2-50字（必填）
-  int64 category_id = 2;     // 分类ID筛选（0=全部）
-  int32 page = 3;            // 页码，默认1
-  int32 page_size = 4;       // 每页数量，默认10，最大50
-  string sort = 5;           // 排序: relevance(默认), time, hot
-  // 6-10 预留
+  string keyword = 1;
+  int64 category_id = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+  string sort = 5;            // relevance, time, hot
 }
 
 message SearchActivitiesResp {
-  repeated ActivityListItem list = 1;  // 搜索结果列表（title 含高亮标签）
-  int64 total = 2;                     // 总结果数
-  int32 query_time_ms = 3;             // 搜索耗时（毫秒）
+  repeated ActivityListItem list = 1;
+  int64 total = 2;
+  int32 query_time_ms = 3;
 }
 
-// ---------- GetHotActivities 获取热门活动 ----------
-
 message GetHotActivitiesReq {
-  int32 limit = 1;  // 返回数量，默认10，最大20
+  int32 limit = 1;
 }
 
 message GetHotActivitiesResp {
-  repeated ActivityListItem list = 1;  // 热门活动列表
+  repeated ActivityListItem list = 1;
 }
 
 // ============================================================================
 // 分类标签接口消息定义
 // ============================================================================
 
-// ---------- ListCategories 获取分类列表 ----------
-
 message ListCategoriesReq {
-  // 暂无参数，返回所有启用的分类
-  // 1-5 预留
 }
 
 message ListCategoriesResp {
-  repeated Category list = 1;  // 分类列表
+  repeated Category list = 1;
 }
 
-// ---------- ListTags 获取标签列表 ----------
-
 message ListTagsReq {
-  int32 limit = 1;  // 返回数量：0=全部（默认），>0=热门N个
+  int32 limit = 1;
 }
 
 message ListTagsResp {
-  repeated Tag list = 1;  // 标签列表
+  repeated Tag list = 1;
 }
 
 // ============================================================================
 // 浏览量接口消息定义
 // ============================================================================
 
-// ---------- IncrViewCount 增加浏览量 ----------
-
 message IncrViewCountReq {
-  int64 id = 1;       // 活动ID（必填）
-  int64 user_id = 2;  // 用户ID（用于防刷）
-  string client_ip = 3; // 客户端IP（备用防刷）
+  int64 id = 1;
+  int64 user_id = 2;
+  string client_ip = 3;
 }
 
 message IncrViewCountResp {
-  int64 view_count = 1;  // 当前浏览量
+  int64 view_count = 1;
 }
+
+// ============================================================================
+// 内部接口消息定义（供其他微服务调用）
+// ============================================================================
+
+message GetActivityBasicReq {
+  int64 id = 1;
+}
+
+message GetActivityBasicResp {
+  int64 id = 1;
+  string title = 2;
+  int32 status = 3;
+  string cover_url = 4;
+  int32 cover_type = 5;
+  string location = 6;
+  int64 activity_start_time = 7;
+  int64 activity_end_time = 8;
+  int32 max_participants = 9;
+  int32 current_participants = 10;
+  int64 organizer_id = 11;
+  string organizer_name = 12;
+  string organizer_avatar = 13;
+  string category_name = 14;
+}
+
+message BatchGetActivityBasicReq {
+  repeated int64 ids = 1;    // 最多100个
+}
+
+message BatchGetActivityBasicResp {
+  repeated GetActivityBasicResp activities = 1;
+}
+
+// 获取用户已发布的活动列表
+message GetUserPublishedActivitiesReq {
+  int64 user_id = 1;         // 用户ID
+  int32 page = 2;
+  int32 page_size = 3;
+  int32 status = 4;          // -1=已发布(2,3,4), -2=全部, 具体值=筛选该状态
+}
+
+message GetUserPublishedActivitiesResp {
+  repeated ActivityListItem list = 1;
+  Pagination pagination = 2;
+}
+
+//
+// 文件说明：
+//   定义活动模块的所有 gRPC 服务接口。
+//   - ActivityService: 外部服务，供 Gateway API 调用
+//   - ActivityInternalService: 内部服务，供其他微服务调用
+//
+// 字段编号规划：
+//   - 1-50：基础字段
+//   - 51-80：扩展字段
+//   - 81-100：预留字段
+//   ⚠️ 警告：字段编号一旦发布使用后不可更改或复用！
+//
+// 生成命令：
+//   cd app/activity/rpc
+//   goctl rpc protoc activity.proto --go_out=. --go-grpc_out=. --zrpc_out=. --style go_zero
+//
+
