@@ -1,7 +1,351 @@
+// ============================================================================
+// User 模块 Proto 定义文件
+// ============================================================================
+//
+// 文件说明：
+//   定义 User 模块的内部 gRPC 服务接口，供【其他微服务】调用。
+//   不对外暴露，不经过 Gateway。
+//
+// 包含服务：
+//   - CreditService: 信用分服务
+//   - VerifyService: 学生认证服务
+//
+// 调用方：
+//   - Activity RPC（报名/发布权限校验）
+//   - MQ Consumer（信用分变更）
+//   - User API（查询信用信息）
+//
+// 字段编号规划：
+//   - 1-30: 基础字段
+//   - 31-50: 扩展字段
+//   警告：字段编号一旦发布使用后不可更改或复用！
+//
+// 生成命令：
+//   cd app/user/rpc
+//   goctl rpc protoc user.proto --go_out=./pb --go-grpc_out=./pb --zrpc_out=. -style go_zero
+//
+// ============================================================================
+
 syntax = "proto3";
 
 package user;
 
 option go_package = "./pb";
 
-// ==================== 用户服务定义 ====================
+// ============================================================================
+// CreditService 信用分服务
+// ============================================================================
+// 提供信用分相关的内部RPC接口
+// 调用方: Activity服务、User API、MQ Consumer等
+// ============================================================================
+
+service CreditService {
+    // ==================== 查询类接口 ====================
+
+    // GetCreditInfo 获取用户信用信息
+    // 调用方: User API（个人中心-信用信息页面）
+    // 业务逻辑: 返回用户当前的信用分、等级、特权信息
+    rpc GetCreditInfo(GetCreditInfoReq) returns (GetCreditInfoResp);
+
+    // CanParticipate 校验是否允许报名
+    // 调用方: Activity服务（报名模块）
+    // 业务逻辑:
+    //   - score < 60: 黑名单，禁止报名
+    //   - 60 <= score < 70: 风险用户，每日限报名1次
+    //   - score >= 70: 正常报名
+    rpc CanParticipate(CanParticipateReq) returns (CanParticipateResp);
+
+    // CanPublish 校验是否允许发布活动
+    // 调用方: Activity服务（发布模块）
+    // 业务逻辑:
+    //   - score >= 90: 允许发布（Lv3优秀用户、Lv4社区之星）
+    //   - score < 90: 禁止发布
+    rpc CanPublish(CanPublishReq) returns (CanPublishResp);
+
+    // ==================== 写入类接口 ====================
+
+    // InitCredit 初始化信用分
+    // 调用方: User服务（注册流程）
+    // 业务逻辑: 用户注册成功后初始化信用分为100分（Lv4社区之星）
+    rpc InitCredit(InitCreditReq) returns (InitCreditResp);
+
+    // UpdateScore 变更信用分
+    // 调用方: MQ Consumer（内部系统）
+    // 业务逻辑: 签到、爽约、活动结束等事件触发信用分变更
+    // 幂等保证: 通过 source_id 实现幂等
+    rpc UpdateScore(UpdateScoreReq) returns (UpdateScoreResp);
+}
+
+// ============================================================================
+// CreditService 消息定义
+// ============================================================================
+
+// ==================== GetCreditInfo 获取信用信息 ====================
+
+// GetCreditInfoReq 获取信用信息请求
+message GetCreditInfoReq {
+    // 用户ID
+    int64 user_id = 1;
+}
+
+// GetCreditInfoResp 获取信用信息响应
+message GetCreditInfoResp {
+    // 用户ID
+    int64 user_id = 1;
+    // 当前信用分（0-100）
+    int64 score = 2;
+    // 当前信用等级（0-黑名单,1-风险,2-良好,3-优秀,4-社区之星）
+    int32 level = 3;
+    // 等级名称
+    string level_name = 4;
+    // 是否可发布活动
+    bool can_publish = 5;
+    // 是否可报名活动
+    bool can_participate = 6;
+    // 创建时间（Unix时间戳秒）
+    int64 created_at = 7;
+    // 更新时间（Unix时间戳秒）
+    int64 updated_at = 8;
+}
+
+// ==================== CanParticipate 校验报名资格 ====================
+
+// CanParticipateReq 校验报名资格请求
+message CanParticipateReq {
+    // 用户ID
+    int64 user_id = 1;
+}
+
+// CanParticipateResp 校验报名资格响应
+message CanParticipateResp {
+    // 是否允许报名
+    bool allowed = 1;
+    // 不允许时的原因（allowed=true时为空）
+    // 示例: "信用分过低(<60)，账户已被限制报名"
+    // 示例: "信用分处于风险区间(60-69)，每日仅限报名1次，今日已用完"
+    string reason = 2;
+    // 当前信用分
+    int64 score = 3;
+    // 当前信用等级
+    int32 level = 4;
+}
+
+// ==================== CanPublish 校验发布资格 ====================
+
+// CanPublishReq 校验发布资格请求
+message CanPublishReq {
+    // 用户ID
+    int64 user_id = 1;
+}
+
+// CanPublishResp 校验发布资格响应
+message CanPublishResp {
+    // 是否允许发布
+    bool allowed = 1;
+    // 不允许时的原因
+    // 示例: "信用分不足90，暂时无法发布活动，请先通过参与活动积累信用"
+    string reason = 2;
+    // 当前信用分
+    int64 score = 3;
+    // 当前信用等级
+    int32 level = 4;
+}
+
+// ==================== InitCredit 初始化信用分 ====================
+
+// InitCreditReq 初始化信用分请求
+message InitCreditReq {
+    // 用户ID
+    int64 user_id = 1;
+}
+
+// InitCreditResp 初始化信用分响应
+message InitCreditResp {
+    // 是否成功
+    bool success = 1;
+    // 初始化后的分数（100分）
+    int64 score = 2;
+    // 初始化后的等级（4-社区之星）
+    int32 level = 3;
+}
+
+// ==================== UpdateScore 变更信用分 ====================
+
+// UpdateScoreReq 变更信用分请求
+message UpdateScoreReq {
+    // 用户ID
+    int64 user_id = 1;
+    // 变动类型（详见枚举说明）
+    // 1-注册初始化, 2-正常履约(+2), 3-提前24h取消(0),
+    // 4-临期取消(-5), 5-爽约(-10), 6-圆满举办(+5),
+    // 7-删除活动(-10), 99-管理员调整
+    int32 change_type = 2;
+    // 业务来源ID（幂等键，格式: "业务类型:业务ID"）
+    // 示例: "activity:1001", "checkin:1001:10001"
+    string source_id = 3;
+    // 变动原因描述
+    // 示例: "活动[周末篮球赛]签到成功"
+    string reason = 4;
+    // 管理员调整时的分值（仅change_type=99时有效）
+    int64 admin_delta = 5;
+}
+
+// UpdateScoreResp 变更信用分响应
+message UpdateScoreResp {
+    // 是否成功
+    bool success = 1;
+    // 变动前分数
+    int64 before_score = 2;
+    // 变动后分数
+    int64 after_score = 3;
+    // 实际变动值（正数加分，负数扣分）
+    int64 delta = 4;
+    // 变动后等级
+    int32 new_level = 5;
+}
+
+// ============================================================================
+// 信用等级说明（仅供参考，实际在 Go 代码中定义常量）
+// ============================================================================
+//
+// Level 0: 黑名单 (score < 60)
+//   - 权限: 全站封禁，禁止报名，禁止发布
+//
+// Level 1: 信用风险 (60 <= score < 70)
+//   - 权限: 禁止发布活动，每日仅限报名1次
+//
+// Level 2: 良好用户 (70 <= score < 90)
+//   - 权限: 禁止发布活动，正常报名
+//
+// Level 3: 优秀用户 (90 <= score < 95)
+//   - 权限: 允许发布活动，正常报名
+//
+// Level 4: 社区之星 (score >= 95)
+//   - 权限: 允许发布活动，优先展示，报名无限制
+//   - 新用户初始100分，属于此等级
+//
+// ============================================================================
+// 信用变动类型说明
+// ============================================================================
+//
+// ChangeType 1: 注册初始化 -> 设为100分
+// ChangeType 2: 正常履约/签到成功 -> +2
+// ChangeType 3: 提前24h取消 -> 0（无责取消）
+// ChangeType 4: 临期取消(<24h) -> -5
+// ChangeType 5: 爽约/未签到 -> -10
+// ChangeType 6: 圆满举办活动 -> +5（组织者奖励）
+// ChangeType 7: 删除已有报名的活动 -> -10（组织者惩罚）
+// ChangeType 99: 管理员人工调整 -> 分值由admin_delta指定
+//
+// ============================================================================
+
+// ============================================================================
+// VerifyService 学生认证服务
+// ============================================================================
+// 提供学生身份认证相关的内部RPC接口
+// 调用方: Activity服务、Credit服务、MQ Consumer等
+// ============================================================================
+
+service VerifyService {
+    // ==================== 查询类接口 ====================
+
+    // IsVerified 查询用户是否已完成学生认证
+    // 调用方: Activity服务（报名/发布活动前校验）
+    // 场景: 需要确认用户学生身份时调用
+    rpc IsVerified(IsVerifiedReq) returns (IsVerifiedResp);
+
+    // ==================== 写入类接口 ====================
+
+    // UpdateVerifyStatus 更新认证状态
+    // 调用方: MQ Consumer（OCR回调、人工审核结果）
+    // 业务逻辑: 处理认证流程中的状态流转
+    rpc UpdateVerifyStatus(UpdateVerifyStatusReq) returns (UpdateVerifyStatusResp);
+}
+
+// ============================================================================
+// VerifyService 消息定义
+// ============================================================================
+
+// ==================== IsVerified 查询认证状态 ====================
+
+// IsVerifiedReq 查询学生认证状态请求
+message IsVerifiedReq {
+    // 用户ID
+    int64 user_id = 1;
+}
+
+// IsVerifiedResp 查询学生认证状态响应
+message IsVerifiedResp {
+    // 是否已完成学生认证
+    bool is_verified = 1;
+    // 学校名称（已认证时返回，未认证为空）
+    string school_name = 2;
+    // 学号-脱敏（已认证时返回，如 "202301****"）
+    string student_id = 3;
+    // 院系（已认证时返回）
+    string department = 4;
+    // 入学年份（已认证时返回，如 "2023"）
+    string admission_year = 5;
+    // 认证通过时间（Unix时间戳秒，未认证时为0）
+    int64 verified_at = 6;
+}
+
+// ==================== UpdateVerifyStatus 更新认证状态 ====================
+
+// UpdateVerifyStatusReq 更新认证状态请求
+message UpdateVerifyStatusReq {
+    // 认证记录ID
+    int64 verify_id = 1;
+    // 用户ID
+    int64 user_id = 2;
+    // 新状态
+    // 1-OCR审核中, 2-待确认, 3-人工审核中, 4-已通过, 5-已拒绝, 6-已超时, 7-已取消
+    int32 new_status = 3;
+    // OCR识别数据（状态为2-待确认时填充）
+    VerifyOcrData ocr_data = 4;
+    // 拒绝原因（状态为5-已拒绝时填充）
+    string reject_reason = 5;
+    // 操作来源
+    // 示例: "ocr_callback", "manual_review", "timeout_job"
+    string operator = 6;
+}
+
+// VerifyOcrData OCR识别数据
+message VerifyOcrData {
+    // 真实姓名
+    string real_name = 1;
+    // 学校名称
+    string school_name = 2;
+    // 学号
+    string student_id = 3;
+    // 院系
+    string department = 4;
+    // 入学年份
+    string admission_year = 5;
+}
+
+// UpdateVerifyStatusResp 更新认证状态响应
+message UpdateVerifyStatusResp {
+    // 是否成功
+    bool success = 1;
+    // 更新前状态
+    int32 before_status = 2;
+    // 更新后状态
+    int32 after_status = 3;
+}
+
+// ============================================================================
+// 认证状态说明（仅供参考，实际在 Go 代码中定义常量）
+// ============================================================================
+//
+// Status -1: 未申请（无认证记录）
+// Status 0: 初始化（已创建记录，未开始处理）
+// Status 1: OCR审核中（图片已上传，等待OCR识别）
+// Status 2: 待用户确认（OCR识别完成，等待用户确认/修改）
+// Status 3: 人工审核中（用户修改了信息，需人工复核）
+// Status 4: 已通过（认证成功）
+// Status 5: 已拒绝（认证失败，可重新申请）
+// Status 6: 已超时（超过确认时限，可重新申请）
+// Status 7: 已取消（用户主动取消，可重新申请）
+//
+// ============================================================================
