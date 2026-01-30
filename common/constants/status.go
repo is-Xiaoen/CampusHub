@@ -145,7 +145,7 @@ const (
 // ==================== 分页默认值 ====================
 
 const (
-	DefaultPage     = 1  // 默认页码
-	DefaultPageSize = 20 // 默认每页条数
+	DefaultPage     = 1   // 默认页码
+	DefaultPageSize = 20  // 默认每页条数
 	MaxPageSize     = 100 // 最大每页条数
 )
