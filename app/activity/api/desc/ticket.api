@@ -1,0 +1,117 @@
+syntax = "v1"
+
+info (
+    title:   "活动票券服务 API"
+    desc:    "活动报名、票券码生成/核销以及相关信息"
+    author:  "谢玉琳"
+    version: "v1"
+)
+
+// ==================== 报名活动 ====================
+
+// 报名活动请求
+type RegisterActivityRequest {
+	ActivityId int64 `json:"activityId"`
+}
+
+// 报名活动响应
+type RegisterActivityResponse {
+	Result string `json:"result"`
+	Reason string `json:"reason"`
+}
+
+// ==================== 取消报名活动 ====================
+
+// 取消报名活动请求
+type CancelActivityRequest {
+	ActivityId int64 `json:"activityId"`
+}
+
+// 取消报名活动响应
+type CancelActivityResponse {
+	Result string `json:"result"`
+}
+
+// ==================== 获取活动列表 ====================
+
+// 获取活动列表请求
+type GetActivityListRequest {
+	Page     int32  `json:"page"`
+	PageSize int32  `json:"pageSize"`
+	Type     string `json:"type"`
+}
+
+// 获取活动列表响应
+type GetActivityListResponse {
+	Total    int32               `json:"total"`
+	Items    []ActivityListItems `json:"items"`
+	Page     int32               `json:"page"`
+	PageSize int32               `json:"pageSize"`
+}
+
+// 活动列表项
+type ActivityListItems {
+	Id       int64  `json:"id"`
+	Name     string `json:"name"`
+	Time     string `json:"time"`
+	Status   string `json:"status"`
+	ImageUrl string `json:"imageUrl"`
+}
+
+// ==================== 核销票券 ====================
+
+// 核销票券请求
+type VerifyTicketRequest {
+	ActivityId int64  `json:"activityId"`
+	TicketCode string `json:"ticketCode"`
+	TotpCode   string `json:"totpCode"`
+}
+
+// 核销票券响应
+type VerifyTicketResponse {
+	Result string `json:"result"`
+}
+
+// ==================== 获取个人票券列表 ====================
+
+// 获取个人票券列表请求
+type GetTicketListRequest {
+	Page     int32 `json:"page"`
+	PageSize int32 `json:"pageSize"`
+}
+
+// 获取个人票券列表响应
+type GetTicketListResponse {
+	Total    int32            `json:"total"`
+	Items    []TicketListItem `json:"items"`
+	Page     int32            `json:"page"`
+	PageSize int32            `json:"pageSize"`
+}
+
+// 票券列表项
+type TicketListItem {
+	TicketId         int64  `json:"ticketId"`
+	ActivityId       int64  `json:"activityId"`
+	ActivityName     string `json:"activityName"`
+	ActivityTime     string `json:"activityTime"`
+	ActivityImageUrl string `json:"activityImageUrl"`
+	Status           int32  `json:"status"`
+}
+
+// ==================== 获取票券详情 ====================
+
+// 获取票券详情请求
+type GetTicketDetailRequest {
+	TicketId int64 `json:"ticketId"`
+}
+
+// 获取票券详情响应
+type GetTicketDetailResponse {
+	TicketId     int64  `json:"ticketId"`
+	TicketCode   string `json:"ticketCode"`
+	ActivityId   int64  `json:"activityId"`
+	ActivityName string `json:"activityName"`
+	ActivityTime string `json:"activityTime"`
+	QrCodeUrl    string `json:"qrCodeUrl"`
+}
+
