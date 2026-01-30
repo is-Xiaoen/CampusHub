@@ -148,12 +148,9 @@ func GetMessage(code int) string {
 // ==================== CodeError 错误结构体 ====================
 
 // CodeError 业务错误结构体
-// 用于封装业务错误码和错误信息
 type CodeError struct {
-	// Code 业务错误码
-	Code int `json:"code"`
-	// Msg 错误信息
-	Msg string `json:"msg"`
+	Code int    `json:"code"`
+	Msg  string `json:"msg"`
 }
 
 // Error 实现 error 接口
@@ -161,72 +158,43 @@ func (e *CodeError) Error() string {
 	return fmt.Sprintf("code: %d, msg: %s", e.Code, e.Msg)
 }
 
-// GetCode 获取错误码
-func (e *CodeError) GetCode() int {
-	return e.Code
-}
-
-// GetMsg 获取错误信息
-func (e *CodeError) GetMsg() string {
-	return e.Msg
-}
-
 // GRPCStatus 将 CodeError 转换为 gRPC Status
-// 便于在 RPC 调用中传递业务错误码
 func (e *CodeError) GRPCStatus() *status.Status {
 	return status.New(codes.Code(e.Code), e.Msg)
 }
 
 // ==================== 错误构造函数 ====================
 
-// New 创建一个新的业务错误
-// code: 错误码
-// msg: 错误信息
+// New 创建业务错误（自定义消息）
 func New(code int, msg string) *CodeError {
-	return &CodeError{
-		Code: code,
-		Msg:  msg,
-	}
+	return &CodeError{Code: code, Msg: msg}
 }
 
-// NewWithCode 根据错误码创建错误（使用默认消息）
-// code: 错误码
+// NewWithCode 创建业务错误（使用默认消息）
 func NewWithCode(code int) *CodeError {
-	return &CodeError{
-		Code: code,
-		Msg:  GetMessage(code),
-	}
+	return &CodeError{Code: code, Msg: GetMessage(code)}
 }
 
-// NewWithMsg 根据错误码创建错误（自定义消息）
-// code: 错误码
-// msg: 自定义错误信息
-func NewWithMsg(code int, msg string) *CodeError {
-	return &CodeError{
-		Code: code,
-		Msg:  msg,
-	}
-}
-
-// Wrap 包装原始错误，添加业务错误码
-// code: 错误码
-// err: 原始错误
+// Wrap 包装原始错误
 func Wrap(code int, err error) *CodeError {
 	if err == nil {
 		return nil
 	}
-	return &CodeError{
-		Code: code,
-		Msg:  err.Error(),
+	return &CodeError{Code: code, Msg: err.Error()}
+}
+
+// FromError 从 error 转换为 CodeError
+func FromError(err error) *CodeError {
+	if err == nil {
+		return nil
 	}
+	if ce, ok := err.(*CodeError); ok {
+		return ce
+	}
+	return &CodeError{Code: CodeInternalError, Msg: err.Error()}
 }
 
 // ==================== 常用错误快捷方法 ====================
-
-// ErrInternalError 内部服务器错误
-func ErrInternalError() *CodeError {
-	return NewWithCode(CodeInternalError)
-}
 
 // ErrInvalidParams 参数校验失败
 func ErrInvalidParams(msg string) *CodeError {
@@ -234,14 +202,6 @@ func ErrInvalidParams(msg string) *CodeError {
 		return NewWithCode(CodeInvalidParams)
 	}
 	return New(CodeInvalidParams, msg)
-}
-
-// ErrNotFound 资源不存在
-func ErrNotFound(resource string) *CodeError {
-	if resource == "" {
-		return NewWithCode(CodeNotFound)
-	}
-	return New(CodeNotFound, fmt.Sprintf("%s不存在", resource))
 }
 
 // ErrDBError 数据库错误
@@ -254,13 +214,6 @@ func ErrCacheError(err error) *CodeError {
 	return Wrap(CodeCacheError, err)
 }
 
-// ErrRPCError RPC调用失败
-func ErrRPCError(err error) *CodeError {
-	return Wrap(CodeRPCError, err)
-}
-
-// ==================== 信用分相关错误 ====================
-
 // ErrCreditNotFound 信用记录不存在
 func ErrCreditNotFound() *CodeError {
 	return NewWithCode(CodeCreditNotFound)
@@ -271,69 +224,7 @@ func ErrCreditAlreadyInit() *CodeError {
 	return NewWithCode(CodeCreditAlreadyInit)
 }
 
-// ErrCreditBlacklist 用户在黑名单中
-func ErrCreditBlacklist() *CodeError {
-	return NewWithCode(CodeCreditBlacklist)
-}
-
-// ErrCreditRiskLimit 风险用户已达每日限制
-func ErrCreditRiskLimit() *CodeError {
-	return NewWithCode(CodeCreditRiskLimit)
-}
-
-// ErrCreditCannotPublish 信用分不足，无法发布
-func ErrCreditCannotPublish() *CodeError {
-	return NewWithCode(CodeCreditCannotPublish)
-}
-
 // ErrCreditSourceDup 信用变更来源重复
 func ErrCreditSourceDup() *CodeError {
 	return NewWithCode(CodeCreditSourceDup)
-}
-
-// ErrCreditInvalidChange 无效的信用变更类型
-func ErrCreditInvalidChange() *CodeError {
-	return NewWithCode(CodeCreditInvalidChange)
-}
-
-// ==================== 学生认证相关错误 ====================
-
-// ErrVerifyNotFound 认证记录不存在
-func ErrVerifyNotFound() *CodeError {
-	return NewWithCode(CodeVerifyNotFound)
-}
-
-// ErrVerifyAlreadyExist 认证记录已存在
-func ErrVerifyAlreadyExist() *CodeError {
-	return NewWithCode(CodeVerifyAlreadyExist)
-}
-
-// ErrVerifyNotVerified 用户未通过学生认证
-func ErrVerifyNotVerified() *CodeError {
-	return NewWithCode(CodeVerifyNotVerified)
-}
-
-// ErrVerifyStudentIDUsed 学号已被其他用户认证
-func ErrVerifyStudentIDUsed() *CodeError {
-	return NewWithCode(CodeVerifyStudentIDUsed)
-}
-
-// ==================== 错误判断辅助函数 ====================
-
-// IsCodeError 判断是否为 CodeError 类型
-func IsCodeError(err error) bool {
-	_, ok := err.(*CodeError)
-	return ok
-}
-
-// GetCodeError 从 error 中提取 CodeError
-// 如果不是 CodeError 类型，返回 nil
-func GetCodeError(err error) *CodeError {
-	if err == nil {
-		return nil
-	}
-	if ce, ok := err.(*CodeError); ok {
-		return ce
-	}
-	return nil
 }

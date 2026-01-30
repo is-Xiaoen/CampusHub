@@ -192,7 +192,7 @@ func (l *UpdateScoreLogic) executeUpdate(in *pb.UpdateScoreReq, result *scoreCha
 
 	if err != nil {
 		// 幂等错误不算失败
-		if errorx.IsCodeError(err) && errorx.GetCodeError(err).Code == errorx.CodeCreditSourceDup {
+		if ce := errorx.FromError(err); ce.Code == errorx.CodeCreditSourceDup {
 			return err
 		}
 		l.Errorf("UpdateScore 更新信用分失败: userId=%d, err=%v", in.UserId, err)
