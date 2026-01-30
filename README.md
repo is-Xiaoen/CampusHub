@@ -11,69 +11,99 @@
 | 缓存 | Redis 7 |
 | 服务注册 | Etcd |
 | 通信 | gRPC + RESTful |
-| 认证 | JWT (双Token) |
+| 认证 | JWT |
+| 网关 | Nginx |
 | 链路追踪 | Jaeger |
-| 消息队列 | Kafka (可选) |
 
-## 微服务架构特性
+## 微服务架构
 
-本项目是真正的微服务架构，具备以下核心特性：
-
-| 特性        | 说明 |
-|-----------|------|
-| 服务注册/发现   | Etcd，服务启动自动注册，Gateway 动态发现 |
-| 负载均衡      | P2C 算法，自适应流量分发 |
-| 熔断降级      | go-zero 内置，故障快速失败 |
-| 链路追踪      | Jaeger，跨服务调用链可视化 |
-| 统一API网关   | Gateway 层，协议转换 |
-| **服务间通信** | RPC 服务之间通过 gRPC + Etcd 相互调用 |
-
-详细说明见 `docs/design/microservice-architecture.md`
-
-### 服务间通信架构
+### 架构图
 
 ```
-┌──────────┐     ┌──────────┐     ┌──────────┐
-│ User RPC │◄────│Activity  │     │ Chat RPC │
-│  :9001   │     │   RPC    │◄────│  :9003   │
-└──────────┘     │  :9002   │     └──────────┘
-     ▲           └──────────┘          │
-     │                                 │
-     └─────────────────────────────────┘
-                 gRPC (服务间通信)
+┌─────────────────────────────────────────────────────────────────────────┐
+│                              客户端                                      │
+│                     (Web / App / 小程序)                                 │
+└───────────────────────────────┬─────────────────────────────────────────┘
+                                │ HTTPS
+                                ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      Nginx 网关 (:8888)                                  │
+│                    （路由分发，不做业务逻辑）                               │
+└─────────────────────────────────────────────────────────────────────────┘
+                                │
+        ┌───────────────────────┼───────────────────────┐
+        │                       │                       │
+        ▼                       ▼                       ▼
+┌───────────────┐       ┌───────────────┐       ┌───────────────┐
+│   user-api    │       │ activity-api  │       │   chat-api    │
+│    :8001      │       │    :8002      │       │    :8003      │
+│   (jwt:Auth)  │       │   (jwt:Auth)  │       │   (jwt:Auth)  │
+└───────┬───────┘       └───────┬───────┘       └───────┬───────┘
+        │ gRPC                  │ gRPC                  │ gRPC
+        ▼                       ▼                       ▼
+┌───────────────┐       ┌───────────────┐       ┌───────────────┐
+│   user-rpc    │◄─────►│ activity-rpc  │◄─────►│   chat-rpc    │
+│    :9001      │       │    :9002      │       │    :9003      │
+└───────────────┘       └───────────────┘       └───────────────┘
+        │                       │                       │
+        └───────────────────────┼───────────────────────┘
+                                ▼
+                    ┌───────────────────────┐
+                    │   MySQL / Redis / Etcd │
+                    └───────────────────────┘
 ```
 
-- Activity → User：获取组织者信息、验证用户资格
-- Chat → User：获取用户信息（推送通知时）
-- Chat → Activity：获取活动信息（活动提醒通知）
+### 架构特点
 
+| 特性 | 说明 |
+|------|------|
+| Nginx 网关 | 统一入口，只做路由分发 |
+| 各服务独立 API | 每个服务有自己的 HTTP 接口层 |
+| go-zero jwt:Auth | 各 API 服务使用 go-zero 内置 JWT 鉴权 |
+| 共享 AccessSecret | 所有 API 使用相同密钥，Token 跨服务有效 |
+| RPC 内网通信 | gRPC 服务仅在内网，通过 Etcd 发现 |
 
 ## 项目结构
 
 ```
 activity-platform/
-├── app/                          # 应用服务
-│   ├── demo/rpc/                 # ⭐ 示例服务（开发规范参考）
-│   ├── gateway/api/              # API网关 (BFF层)
-│   │   └── internal/
-│   │       ├── middleware/       # 中间件 ✓
-│   │       └── ...
-│   ├── user/rpc/                 # 用户服务 - B同学
-│   ├── activity/rpc/             # 活动服务 - C/D同学
-│   ├── chat/rpc/                 # 聊天服务 - E同学
+├── app/
+│   ├── user/
+│   │   ├── api/                  # 用户 HTTP 接口（杨春路）
+│   │   │   ├── desc/user.api     # API 定义文件
+│   │   │   ├── etc/              # 配置
+│   │   │   └── internal/         # handler/logic/svc
+│   │   └── rpc/                  # 用户 gRPC 服务
+│   │
+│   ├── activity/
+│   │   ├── api/                  # 活动 HTTP 接口（马肖阳）
+│   │   └── rpc/                  # 活动 gRPC 服务
+│   │
+│   ├── chat/
+│   │   ├── api/                  # 聊天 HTTP 接口（马华恩）
+│   │   ├── rpc/                  # 聊天 gRPC 服务
+│   │   └── ws/                   # WebSocket 服务
+│   │
+│   ├── demo/rpc/                 # 示例服务（开发规范参考）
+│   │
+│   └── gateway/                  # [已废弃] 见 DEPRECATED.md
 │
-├── common/                       # 公共组件 ✓
-│   ├── errorx/                   # 错误码 ✓
-│   ├── response/                 # 响应封装 ✓
-│   ├── ctxdata/                  # 上下文 ✓
-│   ├── constants/                # 常量 ✓
+├── common/                       # 公共组件
+│   ├── errorx/                   # 错误码
+│   ├── response/                 # 响应封装
+│   ├── ctxdata/                  # 上下文
+│   ├── constants/                # 常量
 │   └── utils/
-│       ├── jwt/                  # JWT工具 (B同学实现)
-│       ├── encrypt/              # 加密脱敏 ✓
-│       └── validate/             # 验证器 ✓
+│       ├── jwt/                  # JWT 工具（杨春路实现）
+│       ├── encrypt/              # 加密脱敏
+│       └── validate/             # 验证器
+│
 ├── deploy/
-│   ├── docker/                   # Docker配置 ✓
-│   └── sql/                      # 数据库脚本 ✓
+│   ├── nginx/                    # Nginx 网关配置
+│   │   └── gateway.conf
+│   ├── docker/                   # Docker 配置
+│   └── sql/                      # 数据库脚本
+│
 └── scripts/                      # 脚本工具
 ```
 
@@ -83,113 +113,84 @@ activity-platform/
 
 - Go 1.21+
 - Docker & Docker Compose
-- protoc (Protocol Buffers 编译器)
+- goctl (go-zero 代码生成工具)
 
-### 2. 初始化项目
+### 2. 安装 goctl
 
 ```bash
-# 下载依赖
-go mod tidy
+go install github.com/zeromicro/go-zero/tools/goctl@latest
+```
 
-# 启动基础设施（MySQL + Redis + Etcd + Jaeger）
+### 3. 启动基础设施
+
+```bash
 cd deploy/docker
 docker-compose up -d
-
-# 验证 Etcd 启动
-docker exec activity-etcd etcdctl endpoint health
-
-# 初始化数据库
-make db-init
 ```
 
-### 3. 运行服务
+### 4. 生成 API 代码
 
 ```bash
-# 终端1: 用户服务（自动注册到 Etcd）
-cd app/user/rpc
-go run user.go
-
-# 终端2: 网关服务（从 Etcd 发现服务）
-cd app/gateway/api
-go run gateway.go
+# 以 user-api 为例
+cd app/user/api
+goctl api go -api desc/user.api -dir . -style go_zero
 ```
 
-### 4. 验证微服务
+### 5. 启动服务
 
 ```bash
-# 查看注册的服务
-docker exec activity-etcd etcdctl get --prefix /services/
+# 终端1: User RPC
+cd app/user/rpc && go run user.go
 
-# 访问 Jaeger UI 查看链路追踪
-# http://localhost:16686
+# 终端2: User API
+cd app/user/api && go run user.go
+
+# 终端3: Nginx（或直接访问各 API）
+# 开发时可直接访问 localhost:8001
 ```
 
 ## 开发指南
 
-### ⭐ 重要：先看 Demo 服务
+### API 服务开发流程
 
-**开发自己的服务前，请先阅读 `app/demo/` 目录**，包含：
-- 完整的目录结构
-- 代码规范和注释
-- Proto 文件定义示例
-- Model/Logic/Server 层示例
-- 详细的 README 文档
+1. **定义 .api 文件** - 在 `desc/xxx.api` 定义接口
+2. **生成代码** - `goctl api go -api desc/xxx.api -dir . -style go_zero`
+3. **实现 logic** - 在 `internal/logic/` 实现业务逻辑
+4. **配置 RPC 客户端** - 在 `internal/svc/servicecontext.go` 添加
+5. **测试接口** - 使用 Postman 或 curl
 
-### 开发流程
+### RPC 服务开发流程
 
-1. **阅读 Demo** - 理解项目规范
-2. **定义 Proto** - 在 `app/{服务}/rpc/` 下创建 `.proto` 文件
-3. **生成代码** - `protoc --go_out=. --go-grpc_out=. xxx.proto`
-4. **实现 Model** - 数据库操作层
-5. **实现 Logic** - 业务逻辑层
-6. **实现 Server** - gRPC 服务入口
-7. **测试接口** - 使用 grpcurl 测试
+1. **定义 .proto 文件** - 在 `xxx.proto` 定义接口
+2. **生成代码** - `goctl rpc protoc xxx.proto --go_out=. --go-grpc_out=. --zrpc_out=.`
+3. **实现 logic** - 在 `internal/logic/` 实现业务逻辑
+4. **实现 model** - 在 `internal/model/` 实现数据库操作
+5. **测试接口** - 使用 grpcurl
 
-### Git 分支规范
+### JWT 鉴权说明
 
-```
-main                    # 主分支 (保护)
-├── develop             # 开发分支
-│   ├── feature/user-login       # B: 登录注册
-│   ├── feature/activity-crud    # C: 活动CRUD
-│   ├── feature/registration     # D: 报名
-│   ├── feature/websocket        # E: WebSocket
-│   └── ...
-```
-
-### 代码规范
-
-```bash
-# 提交前执行
-go fmt ./...     # 格式化
-go vet ./...     # 静态检查
-go test ./...    # 运行测试
-```
-
-## 人员分配
-
-| 成员 | 模块 | 核心任务 |
-|------|------|----------|
-| A | 学生认证+信用分 | OCR认证、规则引擎 |
-| B | 注册登录+验证码 | JWT双Token、限流 |
-| C | 活动CRUD+缓存+搜索 | Cache-Aside、ES |
-| D | 报名(高并发)+签到 | Redis预扣、MQ |
-| E | WebSocket+通知 | 心跳保活、ACK |
+- 在 `.api` 文件中使用 `jwt: Auth` 声明需要鉴权的路由
+- 所有 API 服务的 `Auth.AccessSecret` 必须一致
+- user-api 签发的 Token 在其他 API 服务中也能验证
 
 ## 服务端口
 
-| 服务 | 端口 | 说明 |
-|------|------|------|
-| Gateway API | 8080 | HTTP 入口 |
-| User RPC | 9001 | 用户服务 |
-| Activity RPC | 9002 | 活动服务（含报名签到） |
-| Chat RPC | 9003 | 消息通知服务 |
-| Demo RPC | 9100 | 示例服务 |
-| MySQL | 3306 | 数据库 |
-| Redis | 6379 | 缓存 |
-| Etcd | 2379 | 服务注册 |
-| Jaeger UI | 16686 | 链路追踪 |
+| 服务 | HTTP 端口 | RPC 端口 | 说明 |
+|------|-----------|----------|------|
+| Nginx 网关 | 8888 | - | 统一入口 |
+| user | 8001 | 9001 | 用户服务 |
+| activity | 8002 | 9002 | 活动服务 |
+| chat | 8003 | 9003 | 聊天服务 |
+| demo | - | 9100 | 示例服务 |
 
+## 人员分配
+
+| 成员 | 服务 | 核心任务 |
+|------|------|----------|
+| 杨春路 | user-api/rpc | 注册登录、JWT 签发、用户信息 |
+| 马肖阳 | activity-api/rpc | 活动 CRUD、报名、签到 |
+| 马华恩 | chat-api/rpc/ws | 消息、WebSocket、通知 |
 
 ## License
+
 MIT
