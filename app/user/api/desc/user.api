@@ -1,0 +1,114 @@
+// ============================================================================
+// 用户服务 API 定义
+// ============================================================================
+//
+// 负责人：杨春路（B同学）
+//
+// 说明：
+//   本文件定义用户服务的所有 HTTP 接口，使用 goctl 生成代码：
+//   goctl api go -api desc/user.api -dir . -style go_zero
+//
+// 接口列表：
+//   公开接口（无需登录）：
+//   - POST /api/v1/user/register  用户注册
+//   - POST /api/v1/user/login     用户登录
+//
+//   需要登录的接口（jwt:Auth）：
+//   - GET  /api/v1/user/profile   获取个人信息
+//   - PUT  /api/v1/user/profile   更新个人信息
+//
+// ============================================================================
+
+syntax = "v1"
+
+info (
+	title:   "用户服务 API"
+	desc:    "用户注册、登录、个人信息管理"
+	author:  "杨春路"
+	version: "v1"
+)
+
+// ==================== 类型定义 ====================
+
+// 注册请求
+type RegisterReq {
+	Phone    string `json:"phone"`
+	Password string `json:"password"`
+	Nickname string `json:"nickname,optional"`
+}
+
+// 注册响应
+type RegisterResp {
+	UserId int64 `json:"userId"`
+}
+
+// 登录请求
+type LoginReq {
+	Phone    string `json:"phone"`
+	Password string `json:"password"`
+}
+
+// 登录响应
+type LoginResp {
+	UserId      int64  `json:"userId"`
+	AccessToken string `json:"accessToken"`
+	ExpiresAt   int64  `json:"expiresAt"`
+}
+
+// 用户信息
+type UserProfile {
+	UserId    int64  `json:"userId"`
+	Phone     string `json:"phone"`
+	Nickname  string `json:"nickname"`
+	Avatar    string `json:"avatar"`
+	CreatedAt int64  `json:"createdAt"`
+}
+
+// 获取个人信息响应
+type GetProfileResp {
+	Profile UserProfile `json:"profile"`
+}
+
+// 更新个人信息请求
+type UpdateProfileReq {
+	Nickname string `json:"nickname,optional"`
+	Avatar   string `json:"avatar,optional"`
+}
+
+// 更新个人信息响应
+type UpdateProfileResp {
+	Success bool `json:"success"`
+}
+
+// ==================== 服务定义 ====================
+
+// 公开接口（无需登录）
+@server (
+	prefix: /api/v1/user
+	group:  public
+)
+service user-api {
+	@doc "用户注册"
+	@handler Register
+	post /register (RegisterReq) returns (RegisterResp)
+
+	@doc "用户登录"
+	@handler Login
+	post /login (LoginReq) returns (LoginResp)
+}
+
+// 需要登录的接口
+@server (
+	prefix: /api/v1/user
+	group:  user
+	jwt:    Auth
+)
+service user-api {
+	@doc "获取个人信息"
+	@handler GetProfile
+	get /profile returns (GetProfileResp)
+
+	@doc "更新个人信息"
+	@handler UpdateProfile
+	put /profile (UpdateProfileReq) returns (UpdateProfileResp)
+}
