@@ -132,3 +132,13 @@ func (m *TagModel) UnbindFromActivity(ctx context.Context, tx *gorm.DB, activity
 		Where("activity_id = ?", activityID).
 		Delete(&ActivityTag{}).Error
 }
+
+// FindIDsByActivityID 获取活动关联的标签ID列表
+func (m *TagModel) FindIDsByActivityID(ctx context.Context, activityID uint64) ([]uint64, error) {
+	var ids []uint64
+	err := m.db.WithContext(ctx).
+		Model(&ActivityTag{}).
+		Where("activity_id = ?", activityID).
+		Pluck("tag_id", &ids).Error
+	return ids, err
+}
