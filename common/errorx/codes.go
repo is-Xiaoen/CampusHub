@@ -51,7 +51,22 @@ const (
 	CodeVerifyNotVerified   = 2203 // 用户未通过学生认证
 	CodeVerifyStudentIDUsed = 2204 // 学号已被其他用户认证
 
-	// 活动服务 3xxx - TODO(马肖阳)
+	// 活动服务 - 活动 3001-3050
+	CodeActivityNotFound         = 3001 // 活动不存在
+	CodeActivityStatusInvalid    = 3002 // 活动状态不允许此操作
+	CodeActivityTimeInvalid      = 3003 // 活动时间设置无效
+	CodeActivityConcurrentUpdate = 3004 // 活动并发更新冲突
+	CodeActivityPermissionDenied = 3005 // 无权限操作此活动
+	CodeActivityHasRegistration  = 3006 // 有报名记录不能删除
+
+	// 活动服务 - 分类 3101-3120
+	CodeCategoryNotFound = 3101 // 分类不存在
+	CodeCategoryDisabled = 3102 // 分类已禁用
+
+	// 活动服务 - 标签 3201-3220
+	CodeTagNotFound      = 3201 // 标签不存在
+	CodeTagLimitExceeded = 3202 // 标签数量超过限制
+
 	// 聊天服务 4xxx - TODO(马华恩)
 )
 
