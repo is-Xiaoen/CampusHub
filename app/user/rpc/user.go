@@ -19,6 +19,7 @@ import (
 	verifyserviceserver "activity-platform/app/user/rpc/internal/server/verifyservice"
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
+	"activity-platform/common/interceptor/rpcserver"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"
@@ -54,6 +55,9 @@ func main() {
 		}
 	})
 	defer s.Stop()
+
+	// 注册错误拦截器：将 BizError 转换为 gRPC Status
+	s.AddUnaryInterceptors(rpcserver.ErrorInterceptor)
 
 	fmt.Printf("Starting user rpc server at %s...\n", c.ListenOn)
 	s.Start()
