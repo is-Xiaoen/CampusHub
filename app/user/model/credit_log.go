@@ -52,6 +52,22 @@ func (CreditLog) TableName() string {
 	return "credit_logs"
 }
 
+// CreditLogQuery 信用变更记录查询条件
+type CreditLogQuery struct {
+	// UserID 用户ID（必填）
+	UserID int64
+	// ChangeType 变动类型（0表示全部）
+	ChangeType int8
+	// StartTime 开始时间（0表示不限）
+	StartTime int64
+	// EndTime 结束时间（0表示不限）
+	EndTime int64
+	// Offset 偏移量
+	Offset int
+	// Limit 每页条数
+	Limit int
+}
+
 // ICreditLogModel 信用变更记录数据访问层接口
 type ICreditLogModel interface {
 	// Create 创建信用变更记录
@@ -66,6 +82,10 @@ type ICreditLogModel interface {
 	ListByUserID(ctx context.Context, userID int64, offset, limit int) ([]*CreditLog, error)
 	// CountByUserID 统计用户的信用变更记录数量
 	CountByUserID(ctx context.Context, userID int64) (int64, error)
+	// ListByQuery 按条件查询信用变更记录列表
+	ListByQuery(ctx context.Context, query *CreditLogQuery) ([]*CreditLog, error)
+	// CountByQuery 按条件统计信用变更记录数量
+	CountByQuery(ctx context.Context, query *CreditLogQuery) (int64, error)
 }
 
 // 确保 CreditLogModel 实现 ICreditLogModel 接口
@@ -151,6 +171,60 @@ func (m *CreditLogModel) CountByUserID(
 	err := m.db.WithContext(ctx).
 		Model(&CreditLog{}).
 		Where("user_id = ?", userID).
+		Count(&count).Error
+	return count, err
+}
+
+// buildQueryCondition 构建查询条件
+func (m *CreditLogModel) buildQueryCondition(query *CreditLogQuery) *gorm.DB {
+	db := m.db.Model(&CreditLog{}).Where("user_id = ?", query.UserID)
+
+	// 变动类型筛选
+	if query.ChangeType > 0 {
+		db = db.Where("change_type = ?", query.ChangeType)
+	}
+
+	// 开始时间筛选
+	if query.StartTime > 0 {
+		startTime := time.Unix(query.StartTime, 0)
+		db = db.Where("created_at >= ?", startTime)
+	}
+
+	// 结束时间筛选
+	if query.EndTime > 0 {
+		endTime := time.Unix(query.EndTime, 0)
+		db = db.Where("created_at <= ?", endTime)
+	}
+
+	return db
+}
+
+// ListByQuery 按条件查询信用变更记录列表
+func (m *CreditLogModel) ListByQuery(
+	ctx context.Context,
+	query *CreditLogQuery,
+) ([]*CreditLog, error) {
+	var logs []*CreditLog
+	err := m.buildQueryCondition(query).
+		WithContext(ctx).
+		Order("created_at DESC").
+		Offset(query.Offset).
+		Limit(query.Limit).
+		Find(&logs).Error
+	if err != nil {
+		return nil, err
+	}
+	return logs, nil
+}
+
+// CountByQuery 按条件统计信用变更记录数量
+func (m *CreditLogModel) CountByQuery(
+	ctx context.Context,
+	query *CreditLogQuery,
+) (int64, error) {
+	var count int64
+	err := m.buildQueryCondition(query).
+		WithContext(ctx).
 		Count(&count).Error
 	return count, err
 }
