@@ -104,17 +104,17 @@ service activity-api {
 	get /list (ListActivityReq) returns (ListActivityResp)
 }
 
-	// 活动服务 API 定义
-	// 说明：
-	//   本文件定义活动服务的所有 HTTP 接口路由。
-	//   类型定义在 types.api 中，通过 import 导入。
-	//
-	// 生成命令：
-	//   cd app/activity/api
-	//   goctl api go -api desc/activity.api -dir . -style go_zero
-	//
-	// 接口分组：
-	//   public   - 公开接口（无需登录）
-	//   activity - 需要登录的活动操作接口
-	//   admin    - 管理员接口
-	//
+// 活动服务 API 定义
+// 说明：
+//   本文件定义活动服务的所有 HTTP 接口路由。
+//   类型定义在 types.api 中，通过 import 导入。
+//
+// 生成命令：
+//   cd app/activity/api
+//   goctl api go -api desc/activity.api -dir . -style go_zero
+//
+// 接口分组：
+//   public   - 公开接口（无需登录）
+//   activity - 需要登录的活动操作接口
+//   admin    - 管理员接口
+//
