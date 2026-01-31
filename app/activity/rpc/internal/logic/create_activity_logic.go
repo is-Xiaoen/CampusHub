@@ -45,10 +45,11 @@ func (l *CreateActivityLogic) CreateActivity(in *activity.CreateActivityReq) (*a
 		return nil, errorx.ErrDBError(err)
 	}
 
-	// 3. 确定初始状态：草稿 or 待审核
+	// 3. 确定初始状态：草稿 or 已发布
+	// MVP 版本：没有后台管理，审批自动通过，直接发布
 	status := model.StatusDraft
 	if !in.IsDraft {
-		status = model.StatusPending
+		status = model.StatusPublished // MVP: 跳过待审核，直接发布
 	}
 
 	// 4. 构建活动对象
