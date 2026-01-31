@@ -92,3 +92,11 @@ func GetMessage(code int) string {
 	}
 	return "未知错误"
 }
+
+// IsValidCode 判断是否为有效的业务错误码
+// 用于区分业务错误码和 gRPC 系统错误码
+// 业务错误码应该返回给前端，系统错误码（如 Unknown=2）应该隐藏
+func IsValidCode(code int) bool {
+	_, exists := codeMessages[code]
+	return exists
+}

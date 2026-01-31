@@ -15,10 +15,11 @@ import (
 	"fmt"
 
 	"activity-platform/app/user/rpc/internal/config"
-	"activity-platform/app/user/rpc/internal/server/creditservice"
-	"activity-platform/app/user/rpc/internal/server/verifyservice"
+	creditserviceserver "activity-platform/app/user/rpc/internal/server/creditservice"
+	verifyserviceserver "activity-platform/app/user/rpc/internal/server/verifyservice"
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
+	"activity-platform/common/interceptor/rpcserver"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"
@@ -43,10 +44,10 @@ func main() {
 	// 创建 gRPC Server
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
 		// 注册 CreditService（信用分服务）
-		pb.RegisterCreditServiceServer(grpcServer, creditservice.NewCreditServiceServer(ctx))
+		pb.RegisterCreditServiceServer(grpcServer, creditserviceserver.NewCreditServiceServer(ctx))
 
 		// 注册 VerifyService（学生认证服务）
-		pb.RegisterVerifyServiceServer(grpcServer, verifyservice.NewVerifyServiceServer(ctx))
+		pb.RegisterVerifyServiceServer(grpcServer, verifyserviceserver.NewVerifyServiceServer(ctx))
 
 		// 开发环境开启 gRPC Reflection（便于 grpcurl 调试）
 		if c.Mode == service.DevMode || c.Mode == service.TestMode {
@@ -54,6 +55,9 @@ func main() {
 		}
 	})
 	defer s.Stop()
+
+	// 注册错误拦截器：将 BizError 转换为 gRPC Status
+	s.AddUnaryInterceptors(rpcserver.ErrorInterceptor)
 
 	fmt.Printf("Starting user rpc server at %s...\n", c.ListenOn)
 	s.Start()

@@ -18,8 +18,11 @@ type (
 	CanParticipateResp     = pb.CanParticipateResp
 	CanPublishReq          = pb.CanPublishReq
 	CanPublishResp         = pb.CanPublishResp
+	CreditLogItem          = pb.CreditLogItem
 	GetCreditInfoReq       = pb.GetCreditInfoReq
 	GetCreditInfoResp      = pb.GetCreditInfoResp
+	GetCreditLogsReq       = pb.GetCreditLogsReq
+	GetCreditLogsResp      = pb.GetCreditLogsResp
 	InitCreditReq          = pb.InitCreditReq
 	InitCreditResp         = pb.InitCreditResp
 	IsVerifiedReq          = pb.IsVerifiedReq
@@ -33,6 +36,8 @@ type (
 	CreditService interface {
 		// GetCreditInfo 获取用户信用信息
 		GetCreditInfo(ctx context.Context, in *GetCreditInfoReq, opts ...grpc.CallOption) (*GetCreditInfoResp, error)
+		// GetCreditLogs 获取信用变更记录列表
+		GetCreditLogs(ctx context.Context, in *GetCreditLogsReq, opts ...grpc.CallOption) (*GetCreditLogsResp, error)
 		// CanParticipate 校验是否允许报名
 		CanParticipate(ctx context.Context, in *CanParticipateReq, opts ...grpc.CallOption) (*CanParticipateResp, error)
 		// CanPublish 校验是否允许发布活动
@@ -58,6 +63,12 @@ func NewCreditService(cli zrpc.Client) CreditService {
 func (m *defaultCreditService) GetCreditInfo(ctx context.Context, in *GetCreditInfoReq, opts ...grpc.CallOption) (*GetCreditInfoResp, error) {
 	client := pb.NewCreditServiceClient(m.cli.Conn())
 	return client.GetCreditInfo(ctx, in, opts...)
+}
+
+// GetCreditLogs 获取信用变更记录列表
+func (m *defaultCreditService) GetCreditLogs(ctx context.Context, in *GetCreditLogsReq, opts ...grpc.CallOption) (*GetCreditLogsResp, error) {
+	client := pb.NewCreditServiceClient(m.cli.Conn())
+	return client.GetCreditLogs(ctx, in, opts...)
 }
 
 // CanParticipate 校验是否允许报名

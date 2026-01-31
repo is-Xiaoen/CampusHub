@@ -204,6 +204,297 @@ func (x *GetCreditInfoResp) GetUpdatedAt() int64 {
 	return 0
 }
 
+// GetCreditLogsReq 获取信用变更记录请求
+type GetCreditLogsReq struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户ID
+	UserId int64 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// 变动类型筛选（0=全部，其他值参见变动类型说明）
+	ChangeType int32 `protobuf:"varint,2,opt,name=change_type,json=changeType,proto3" json:"change_type,omitempty"`
+	// 开始时间戳（秒），0表示不限
+	StartTime int64 `protobuf:"varint,3,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
+	// 结束时间戳（秒），0表示不限
+	EndTime int64 `protobuf:"varint,4,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
+	// 页码，从1开始
+	Page int32 `protobuf:"varint,5,opt,name=page,proto3" json:"page,omitempty"`
+	// 每页条数，默认20，最大50
+	PageSize      int32 `protobuf:"varint,6,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetCreditLogsReq) Reset() {
+	*x = GetCreditLogsReq{}
+	mi := &file_user_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetCreditLogsReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCreditLogsReq) ProtoMessage() {}
+
+func (x *GetCreditLogsReq) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCreditLogsReq.ProtoReflect.Descriptor instead.
+func (*GetCreditLogsReq) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GetCreditLogsReq) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *GetCreditLogsReq) GetChangeType() int32 {
+	if x != nil {
+		return x.ChangeType
+	}
+	return 0
+}
+
+func (x *GetCreditLogsReq) GetStartTime() int64 {
+	if x != nil {
+		return x.StartTime
+	}
+	return 0
+}
+
+func (x *GetCreditLogsReq) GetEndTime() int64 {
+	if x != nil {
+		return x.EndTime
+	}
+	return 0
+}
+
+func (x *GetCreditLogsReq) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *GetCreditLogsReq) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+// CreditLogItem 信用变更记录项
+type CreditLogItem struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 记录ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 用户ID
+	UserId int64 `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// 变动类型
+	ChangeType int32 `protobuf:"varint,3,opt,name=change_type,json=changeType,proto3" json:"change_type,omitempty"`
+	// 变动类型名称
+	ChangeTypeName string `protobuf:"bytes,4,opt,name=change_type_name,json=changeTypeName,proto3" json:"change_type_name,omitempty"`
+	// 变动分值（正数加分，负数扣分）
+	Delta int32 `protobuf:"varint,5,opt,name=delta,proto3" json:"delta,omitempty"`
+	// 业务来源ID
+	SourceId string `protobuf:"bytes,6,opt,name=source_id,json=sourceId,proto3" json:"source_id,omitempty"`
+	// 变动原因
+	Reason string `protobuf:"bytes,7,opt,name=reason,proto3" json:"reason,omitempty"`
+	// 变动前分数
+	BeforeScore int32 `protobuf:"varint,8,opt,name=before_score,json=beforeScore,proto3" json:"before_score,omitempty"`
+	// 变动后分数
+	AfterScore int32 `protobuf:"varint,9,opt,name=after_score,json=afterScore,proto3" json:"after_score,omitempty"`
+	// 变动时间戳（秒）
+	CreatedAt     int64 `protobuf:"varint,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreditLogItem) Reset() {
+	*x = CreditLogItem{}
+	mi := &file_user_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreditLogItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreditLogItem) ProtoMessage() {}
+
+func (x *CreditLogItem) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreditLogItem.ProtoReflect.Descriptor instead.
+func (*CreditLogItem) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *CreditLogItem) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *CreditLogItem) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *CreditLogItem) GetChangeType() int32 {
+	if x != nil {
+		return x.ChangeType
+	}
+	return 0
+}
+
+func (x *CreditLogItem) GetChangeTypeName() string {
+	if x != nil {
+		return x.ChangeTypeName
+	}
+	return ""
+}
+
+func (x *CreditLogItem) GetDelta() int32 {
+	if x != nil {
+		return x.Delta
+	}
+	return 0
+}
+
+func (x *CreditLogItem) GetSourceId() string {
+	if x != nil {
+		return x.SourceId
+	}
+	return ""
+}
+
+func (x *CreditLogItem) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+func (x *CreditLogItem) GetBeforeScore() int32 {
+	if x != nil {
+		return x.BeforeScore
+	}
+	return 0
+}
+
+func (x *CreditLogItem) GetAfterScore() int32 {
+	if x != nil {
+		return x.AfterScore
+	}
+	return 0
+}
+
+func (x *CreditLogItem) GetCreatedAt() int64 {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return 0
+}
+
+// GetCreditLogsResp 获取信用变更记录响应
+type GetCreditLogsResp struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 记录列表
+	List []*CreditLogItem `protobuf:"bytes,1,rep,name=list,proto3" json:"list,omitempty"`
+	// 总记录数
+	Total int64 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	// 当前页码
+	Page int32 `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
+	// 每页条数
+	PageSize      int32 `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetCreditLogsResp) Reset() {
+	*x = GetCreditLogsResp{}
+	mi := &file_user_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetCreditLogsResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCreditLogsResp) ProtoMessage() {}
+
+func (x *GetCreditLogsResp) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCreditLogsResp.ProtoReflect.Descriptor instead.
+func (*GetCreditLogsResp) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetCreditLogsResp) GetList() []*CreditLogItem {
+	if x != nil {
+		return x.List
+	}
+	return nil
+}
+
+func (x *GetCreditLogsResp) GetTotal() int64 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+func (x *GetCreditLogsResp) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *GetCreditLogsResp) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
 // CanParticipateReq 校验报名资格请求
 type CanParticipateReq struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -215,7 +506,7 @@ type CanParticipateReq struct {
 
 func (x *CanParticipateReq) Reset() {
 	*x = CanParticipateReq{}
-	mi := &file_user_proto_msgTypes[2]
+	mi := &file_user_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -227,7 +518,7 @@ func (x *CanParticipateReq) String() string {
 func (*CanParticipateReq) ProtoMessage() {}
 
 func (x *CanParticipateReq) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[2]
+	mi := &file_user_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -240,7 +531,7 @@ func (x *CanParticipateReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanParticipateReq.ProtoReflect.Descriptor instead.
 func (*CanParticipateReq) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{2}
+	return file_user_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *CanParticipateReq) GetUserId() int64 {
@@ -269,7 +560,7 @@ type CanParticipateResp struct {
 
 func (x *CanParticipateResp) Reset() {
 	*x = CanParticipateResp{}
-	mi := &file_user_proto_msgTypes[3]
+	mi := &file_user_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -281,7 +572,7 @@ func (x *CanParticipateResp) String() string {
 func (*CanParticipateResp) ProtoMessage() {}
 
 func (x *CanParticipateResp) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[3]
+	mi := &file_user_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -294,7 +585,7 @@ func (x *CanParticipateResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanParticipateResp.ProtoReflect.Descriptor instead.
 func (*CanParticipateResp) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{3}
+	return file_user_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *CanParticipateResp) GetAllowed() bool {
@@ -336,7 +627,7 @@ type CanPublishReq struct {
 
 func (x *CanPublishReq) Reset() {
 	*x = CanPublishReq{}
-	mi := &file_user_proto_msgTypes[4]
+	mi := &file_user_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -348,7 +639,7 @@ func (x *CanPublishReq) String() string {
 func (*CanPublishReq) ProtoMessage() {}
 
 func (x *CanPublishReq) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[4]
+	mi := &file_user_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -361,7 +652,7 @@ func (x *CanPublishReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanPublishReq.ProtoReflect.Descriptor instead.
 func (*CanPublishReq) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{4}
+	return file_user_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *CanPublishReq) GetUserId() int64 {
@@ -389,7 +680,7 @@ type CanPublishResp struct {
 
 func (x *CanPublishResp) Reset() {
 	*x = CanPublishResp{}
-	mi := &file_user_proto_msgTypes[5]
+	mi := &file_user_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -401,7 +692,7 @@ func (x *CanPublishResp) String() string {
 func (*CanPublishResp) ProtoMessage() {}
 
 func (x *CanPublishResp) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[5]
+	mi := &file_user_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -414,7 +705,7 @@ func (x *CanPublishResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanPublishResp.ProtoReflect.Descriptor instead.
 func (*CanPublishResp) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{5}
+	return file_user_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *CanPublishResp) GetAllowed() bool {
@@ -456,7 +747,7 @@ type InitCreditReq struct {
 
 func (x *InitCreditReq) Reset() {
 	*x = InitCreditReq{}
-	mi := &file_user_proto_msgTypes[6]
+	mi := &file_user_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -468,7 +759,7 @@ func (x *InitCreditReq) String() string {
 func (*InitCreditReq) ProtoMessage() {}
 
 func (x *InitCreditReq) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[6]
+	mi := &file_user_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -481,7 +772,7 @@ func (x *InitCreditReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InitCreditReq.ProtoReflect.Descriptor instead.
 func (*InitCreditReq) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{6}
+	return file_user_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *InitCreditReq) GetUserId() int64 {
@@ -506,7 +797,7 @@ type InitCreditResp struct {
 
 func (x *InitCreditResp) Reset() {
 	*x = InitCreditResp{}
-	mi := &file_user_proto_msgTypes[7]
+	mi := &file_user_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -518,7 +809,7 @@ func (x *InitCreditResp) String() string {
 func (*InitCreditResp) ProtoMessage() {}
 
 func (x *InitCreditResp) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[7]
+	mi := &file_user_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -531,7 +822,7 @@ func (x *InitCreditResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InitCreditResp.ProtoReflect.Descriptor instead.
 func (*InitCreditResp) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{7}
+	return file_user_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *InitCreditResp) GetSuccess() bool {
@@ -579,7 +870,7 @@ type UpdateScoreReq struct {
 
 func (x *UpdateScoreReq) Reset() {
 	*x = UpdateScoreReq{}
-	mi := &file_user_proto_msgTypes[8]
+	mi := &file_user_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -591,7 +882,7 @@ func (x *UpdateScoreReq) String() string {
 func (*UpdateScoreReq) ProtoMessage() {}
 
 func (x *UpdateScoreReq) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[8]
+	mi := &file_user_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -604,7 +895,7 @@ func (x *UpdateScoreReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateScoreReq.ProtoReflect.Descriptor instead.
 func (*UpdateScoreReq) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{8}
+	return file_user_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *UpdateScoreReq) GetUserId() int64 {
@@ -661,7 +952,7 @@ type UpdateScoreResp struct {
 
 func (x *UpdateScoreResp) Reset() {
 	*x = UpdateScoreResp{}
-	mi := &file_user_proto_msgTypes[9]
+	mi := &file_user_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -673,7 +964,7 @@ func (x *UpdateScoreResp) String() string {
 func (*UpdateScoreResp) ProtoMessage() {}
 
 func (x *UpdateScoreResp) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[9]
+	mi := &file_user_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -686,7 +977,7 @@ func (x *UpdateScoreResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateScoreResp.ProtoReflect.Descriptor instead.
 func (*UpdateScoreResp) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{9}
+	return file_user_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *UpdateScoreResp) GetSuccess() bool {
@@ -735,7 +1026,7 @@ type IsVerifiedReq struct {
 
 func (x *IsVerifiedReq) Reset() {
 	*x = IsVerifiedReq{}
-	mi := &file_user_proto_msgTypes[10]
+	mi := &file_user_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -747,7 +1038,7 @@ func (x *IsVerifiedReq) String() string {
 func (*IsVerifiedReq) ProtoMessage() {}
 
 func (x *IsVerifiedReq) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[10]
+	mi := &file_user_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -760,7 +1051,7 @@ func (x *IsVerifiedReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IsVerifiedReq.ProtoReflect.Descriptor instead.
 func (*IsVerifiedReq) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{10}
+	return file_user_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *IsVerifiedReq) GetUserId() int64 {
@@ -791,7 +1082,7 @@ type IsVerifiedResp struct {
 
 func (x *IsVerifiedResp) Reset() {
 	*x = IsVerifiedResp{}
-	mi := &file_user_proto_msgTypes[11]
+	mi := &file_user_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -803,7 +1094,7 @@ func (x *IsVerifiedResp) String() string {
 func (*IsVerifiedResp) ProtoMessage() {}
 
 func (x *IsVerifiedResp) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[11]
+	mi := &file_user_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -816,7 +1107,7 @@ func (x *IsVerifiedResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IsVerifiedResp.ProtoReflect.Descriptor instead.
 func (*IsVerifiedResp) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{11}
+	return file_user_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *IsVerifiedResp) GetIsVerified() bool {
@@ -884,7 +1175,7 @@ type UpdateVerifyStatusReq struct {
 
 func (x *UpdateVerifyStatusReq) Reset() {
 	*x = UpdateVerifyStatusReq{}
-	mi := &file_user_proto_msgTypes[12]
+	mi := &file_user_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -896,7 +1187,7 @@ func (x *UpdateVerifyStatusReq) String() string {
 func (*UpdateVerifyStatusReq) ProtoMessage() {}
 
 func (x *UpdateVerifyStatusReq) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[12]
+	mi := &file_user_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -909,7 +1200,7 @@ func (x *UpdateVerifyStatusReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateVerifyStatusReq.ProtoReflect.Descriptor instead.
 func (*UpdateVerifyStatusReq) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{12}
+	return file_user_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *UpdateVerifyStatusReq) GetVerifyId() int64 {
@@ -973,7 +1264,7 @@ type VerifyOcrData struct {
 
 func (x *VerifyOcrData) Reset() {
 	*x = VerifyOcrData{}
-	mi := &file_user_proto_msgTypes[13]
+	mi := &file_user_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -985,7 +1276,7 @@ func (x *VerifyOcrData) String() string {
 func (*VerifyOcrData) ProtoMessage() {}
 
 func (x *VerifyOcrData) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[13]
+	mi := &file_user_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -998,7 +1289,7 @@ func (x *VerifyOcrData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VerifyOcrData.ProtoReflect.Descriptor instead.
 func (*VerifyOcrData) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{13}
+	return file_user_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *VerifyOcrData) GetRealName() string {
@@ -1051,7 +1342,7 @@ type UpdateVerifyStatusResp struct {
 
 func (x *UpdateVerifyStatusResp) Reset() {
 	*x = UpdateVerifyStatusResp{}
-	mi := &file_user_proto_msgTypes[14]
+	mi := &file_user_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1063,7 +1354,7 @@ func (x *UpdateVerifyStatusResp) String() string {
 func (*UpdateVerifyStatusResp) ProtoMessage() {}
 
 func (x *UpdateVerifyStatusResp) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[14]
+	mi := &file_user_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1076,7 +1367,7 @@ func (x *UpdateVerifyStatusResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateVerifyStatusResp.ProtoReflect.Descriptor instead.
 func (*UpdateVerifyStatusResp) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{14}
+	return file_user_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *UpdateVerifyStatusResp) GetSuccess() bool {
@@ -1120,7 +1411,36 @@ const file_user_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\a \x01(\x03R\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18\b \x01(\x03R\tupdatedAt\",\n" +
+	"updated_at\x18\b \x01(\x03R\tupdatedAt\"\xb7\x01\n" +
+	"\x10GetCreditLogsReq\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1f\n" +
+	"\vchange_type\x18\x02 \x01(\x05R\n" +
+	"changeType\x12\x1d\n" +
+	"\n" +
+	"start_time\x18\x03 \x01(\x03R\tstartTime\x12\x19\n" +
+	"\bend_time\x18\x04 \x01(\x03R\aendTime\x12\x12\n" +
+	"\x04page\x18\x05 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x06 \x01(\x05R\bpageSize\"\xb1\x02\n" +
+	"\rCreditLogItem\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\x03R\x06userId\x12\x1f\n" +
+	"\vchange_type\x18\x03 \x01(\x05R\n" +
+	"changeType\x12(\n" +
+	"\x10change_type_name\x18\x04 \x01(\tR\x0echangeTypeName\x12\x14\n" +
+	"\x05delta\x18\x05 \x01(\x05R\x05delta\x12\x1b\n" +
+	"\tsource_id\x18\x06 \x01(\tR\bsourceId\x12\x16\n" +
+	"\x06reason\x18\a \x01(\tR\x06reason\x12!\n" +
+	"\fbefore_score\x18\b \x01(\x05R\vbeforeScore\x12\x1f\n" +
+	"\vafter_score\x18\t \x01(\x05R\n" +
+	"afterScore\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\n" +
+	" \x01(\x03R\tcreatedAt\"\x83\x01\n" +
+	"\x11GetCreditLogsResp\x12'\n" +
+	"\x04list\x18\x01 \x03(\v2\x13.user.CreditLogItemR\x04list\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\x12\x12\n" +
+	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\",\n" +
 	"\x11CanParticipateReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\"r\n" +
 	"\x12CanParticipateResp\x12\x18\n" +
@@ -1192,9 +1512,10 @@ const file_user_proto_rawDesc = "" +
 	"\x16UpdateVerifyStatusResp\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12#\n" +
 	"\rbefore_status\x18\x02 \x01(\x05R\fbeforeStatus\x12!\n" +
-	"\fafter_status\x18\x03 \x01(\x05R\vafterStatus2\xc4\x02\n" +
+	"\fafter_status\x18\x03 \x01(\x05R\vafterStatus2\x86\x03\n" +
 	"\rCreditService\x12@\n" +
-	"\rGetCreditInfo\x12\x16.user.GetCreditInfoReq\x1a\x17.user.GetCreditInfoResp\x12C\n" +
+	"\rGetCreditInfo\x12\x16.user.GetCreditInfoReq\x1a\x17.user.GetCreditInfoResp\x12@\n" +
+	"\rGetCreditLogs\x12\x16.user.GetCreditLogsReq\x1a\x17.user.GetCreditLogsResp\x12C\n" +
 	"\x0eCanParticipate\x12\x17.user.CanParticipateReq\x1a\x18.user.CanParticipateResp\x127\n" +
 	"\n" +
 	"CanPublish\x12\x13.user.CanPublishReq\x1a\x14.user.CanPublishResp\x127\n" +
@@ -1218,45 +1539,51 @@ func file_user_proto_rawDescGZIP() []byte {
 	return file_user_proto_rawDescData
 }
 
-var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_user_proto_goTypes = []any{
 	(*GetCreditInfoReq)(nil),       // 0: user.GetCreditInfoReq
 	(*GetCreditInfoResp)(nil),      // 1: user.GetCreditInfoResp
-	(*CanParticipateReq)(nil),      // 2: user.CanParticipateReq
-	(*CanParticipateResp)(nil),     // 3: user.CanParticipateResp
-	(*CanPublishReq)(nil),          // 4: user.CanPublishReq
-	(*CanPublishResp)(nil),         // 5: user.CanPublishResp
-	(*InitCreditReq)(nil),          // 6: user.InitCreditReq
-	(*InitCreditResp)(nil),         // 7: user.InitCreditResp
-	(*UpdateScoreReq)(nil),         // 8: user.UpdateScoreReq
-	(*UpdateScoreResp)(nil),        // 9: user.UpdateScoreResp
-	(*IsVerifiedReq)(nil),          // 10: user.IsVerifiedReq
-	(*IsVerifiedResp)(nil),         // 11: user.IsVerifiedResp
-	(*UpdateVerifyStatusReq)(nil),  // 12: user.UpdateVerifyStatusReq
-	(*VerifyOcrData)(nil),          // 13: user.VerifyOcrData
-	(*UpdateVerifyStatusResp)(nil), // 14: user.UpdateVerifyStatusResp
+	(*GetCreditLogsReq)(nil),       // 2: user.GetCreditLogsReq
+	(*CreditLogItem)(nil),          // 3: user.CreditLogItem
+	(*GetCreditLogsResp)(nil),      // 4: user.GetCreditLogsResp
+	(*CanParticipateReq)(nil),      // 5: user.CanParticipateReq
+	(*CanParticipateResp)(nil),     // 6: user.CanParticipateResp
+	(*CanPublishReq)(nil),          // 7: user.CanPublishReq
+	(*CanPublishResp)(nil),         // 8: user.CanPublishResp
+	(*InitCreditReq)(nil),          // 9: user.InitCreditReq
+	(*InitCreditResp)(nil),         // 10: user.InitCreditResp
+	(*UpdateScoreReq)(nil),         // 11: user.UpdateScoreReq
+	(*UpdateScoreResp)(nil),        // 12: user.UpdateScoreResp
+	(*IsVerifiedReq)(nil),          // 13: user.IsVerifiedReq
+	(*IsVerifiedResp)(nil),         // 14: user.IsVerifiedResp
+	(*UpdateVerifyStatusReq)(nil),  // 15: user.UpdateVerifyStatusReq
+	(*VerifyOcrData)(nil),          // 16: user.VerifyOcrData
+	(*UpdateVerifyStatusResp)(nil), // 17: user.UpdateVerifyStatusResp
 }
 var file_user_proto_depIdxs = []int32{
-	13, // 0: user.UpdateVerifyStatusReq.ocr_data:type_name -> user.VerifyOcrData
-	0,  // 1: user.CreditService.GetCreditInfo:input_type -> user.GetCreditInfoReq
-	2,  // 2: user.CreditService.CanParticipate:input_type -> user.CanParticipateReq
-	4,  // 3: user.CreditService.CanPublish:input_type -> user.CanPublishReq
-	6,  // 4: user.CreditService.InitCredit:input_type -> user.InitCreditReq
-	8,  // 5: user.CreditService.UpdateScore:input_type -> user.UpdateScoreReq
-	10, // 6: user.VerifyService.IsVerified:input_type -> user.IsVerifiedReq
-	12, // 7: user.VerifyService.UpdateVerifyStatus:input_type -> user.UpdateVerifyStatusReq
-	1,  // 8: user.CreditService.GetCreditInfo:output_type -> user.GetCreditInfoResp
-	3,  // 9: user.CreditService.CanParticipate:output_type -> user.CanParticipateResp
-	5,  // 10: user.CreditService.CanPublish:output_type -> user.CanPublishResp
-	7,  // 11: user.CreditService.InitCredit:output_type -> user.InitCreditResp
-	9,  // 12: user.CreditService.UpdateScore:output_type -> user.UpdateScoreResp
-	11, // 13: user.VerifyService.IsVerified:output_type -> user.IsVerifiedResp
-	14, // 14: user.VerifyService.UpdateVerifyStatus:output_type -> user.UpdateVerifyStatusResp
-	8,  // [8:15] is the sub-list for method output_type
-	1,  // [1:8] is the sub-list for method input_type
-	1,  // [1:1] is the sub-list for extension type_name
-	1,  // [1:1] is the sub-list for extension extendee
-	0,  // [0:1] is the sub-list for field type_name
+	3,  // 0: user.GetCreditLogsResp.list:type_name -> user.CreditLogItem
+	16, // 1: user.UpdateVerifyStatusReq.ocr_data:type_name -> user.VerifyOcrData
+	0,  // 2: user.CreditService.GetCreditInfo:input_type -> user.GetCreditInfoReq
+	2,  // 3: user.CreditService.GetCreditLogs:input_type -> user.GetCreditLogsReq
+	5,  // 4: user.CreditService.CanParticipate:input_type -> user.CanParticipateReq
+	7,  // 5: user.CreditService.CanPublish:input_type -> user.CanPublishReq
+	9,  // 6: user.CreditService.InitCredit:input_type -> user.InitCreditReq
+	11, // 7: user.CreditService.UpdateScore:input_type -> user.UpdateScoreReq
+	13, // 8: user.VerifyService.IsVerified:input_type -> user.IsVerifiedReq
+	15, // 9: user.VerifyService.UpdateVerifyStatus:input_type -> user.UpdateVerifyStatusReq
+	1,  // 10: user.CreditService.GetCreditInfo:output_type -> user.GetCreditInfoResp
+	4,  // 11: user.CreditService.GetCreditLogs:output_type -> user.GetCreditLogsResp
+	6,  // 12: user.CreditService.CanParticipate:output_type -> user.CanParticipateResp
+	8,  // 13: user.CreditService.CanPublish:output_type -> user.CanPublishResp
+	10, // 14: user.CreditService.InitCredit:output_type -> user.InitCreditResp
+	12, // 15: user.CreditService.UpdateScore:output_type -> user.UpdateScoreResp
+	14, // 16: user.VerifyService.IsVerified:output_type -> user.IsVerifiedResp
+	17, // 17: user.VerifyService.UpdateVerifyStatus:output_type -> user.UpdateVerifyStatusResp
+	10, // [10:18] is the sub-list for method output_type
+	2,  // [2:10] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_user_proto_init() }
@@ -1270,7 +1597,7 @@ func file_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_user_proto_rawDesc), len(file_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   15,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   2,
 		},
