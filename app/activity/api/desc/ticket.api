@@ -36,9 +36,9 @@ type CancelActivityResponse {
 
 // 获取活动列表请求
 type GetActivityListRequest {
-	Page     int32  `json:"page"`
-	PageSize int32  `json:"pageSize"`
-	Type     string `json:"type"`
+	Page     int32  `form:"page"`
+	PageSize int32  `form:"pageSize"`
+	Type     string `form:"type"`
 }
 
 // 获取活动列表响应
@@ -76,8 +76,8 @@ type VerifyTicketResponse {
 
 // 获取个人票券列表请求
 type GetTicketListRequest {
-	Page     int32 `json:"page"`
-	PageSize int32 `json:"pageSize"`
+	Page     int32 `form:"page"`
+	PageSize int32 `form:"pageSize"`
 }
 
 // 获取个人票券列表响应
@@ -102,7 +102,7 @@ type TicketListItem {
 
 // 获取票券详情请求
 type GetTicketDetailRequest {
-	TicketId int64 `json:"ticketId"`
+	TicketId int64 `form:"ticketId"`
 }
 
 // 获取票券详情响应
@@ -113,5 +113,38 @@ type GetTicketDetailResponse {
 	ActivityName string `json:"activityName"`
 	ActivityTime string `json:"activityTime"`
 	QrCodeUrl    string `json:"qrCodeUrl"`
+}
+
+// ==================== 服务定义 ====================
+
+@server (
+	prefix: /api/v1/activity
+	group:  ticket
+	jwt:    Auth
+)
+service ticket-api {
+	@doc "报名活动"
+	@handler RegisterActivity
+	post /register (RegisterActivityRequest) returns (RegisterActivityResponse)
+
+	@doc "取消报名活动"
+	@handler CancelActivities
+	post /cancel (CancelActivityRequest) returns (CancelActivityResponse)
+
+	@doc "获取待参加/已参加活动列表"
+	@handler GetActivityList
+	get /list (GetActivityListRequest) returns (GetActivityListResponse)
+
+	@doc "核销票券"
+	@handler VerifyTicket
+	post /verify (VerifyTicketRequest) returns (VerifyTicketResponse)
+
+	@doc "获取个人票券列表"
+	@handler GetTicketList
+	get /tickets (GetTicketListRequest) returns (GetTicketListResponse)
+
+	@doc "获取票券详情"
+	@handler GetTicketDetail
+	get /tickets/detail (GetTicketDetailRequest) returns (GetTicketDetailResponse)
 }
 

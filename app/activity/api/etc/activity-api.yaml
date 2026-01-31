@@ -5,6 +5,15 @@
 Name: activity-api
 Host: 0.0.0.0
 Port: 8002
+MaxConns: 10000
+CpuThreshold: 900
+Timeout: 3000
+
+# ==================== 内置中间件开关 ====================
+Middlewares:
+  Breaker: true
+  Shedding: true
+  MaxConns: true
 
 # 日志配置
 Log:
@@ -35,3 +44,16 @@ UserRpc:
     Key: user.rpc
   NonBlock: true
   Timeout: 3000
+
+# ==================== 高并发、熔断限流配置 ====================
+# 报名活动限流配置（令牌桶算法）
+RegistrationLimit:
+  Rate: 100   # 每秒允许100个请求
+  Burst: 200  # 突发容量200个请求
+
+# 报名活动熔断配置（Google SRE算法）
+RegistrationBreaker:
+  Name: activity-registration  # 熔断器名称
+  Requests: 100                # 请求总数阈值
+  ErrorRate: 0.5               # 错误率阈值（50%）
+  Timeout: 60                  # 熔断持续时间（秒）
