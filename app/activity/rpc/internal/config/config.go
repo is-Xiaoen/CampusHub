@@ -8,17 +8,24 @@ import (
 type Config struct {
 	zrpc.RpcServerConf
 
-	// MySQL配置
-	MySQL struct {
-		DataSource string
-	}
+	// 数据存储
+	MySQL MySQLConfig     // MySQL 配置
+	Redis redis.RedisConf // Redis 配置（go-zero 内置结构）
 
-	// Redis配置（限流器使用）
-	Redis struct {
-		redis.RedisConf
-		DB int `json:",optional"`
-	}
+	// RPC 客户端（服务间调用）
+	UserRpc zrpc.RpcClientConf // User 服务 RPC 客户端
+}
 
+// MySQLConfig 数据库配置
+type MySQLConfig struct {
+	Host            string `json:",default=127.0.0.1"`
+	Port            int    `json:",default=3306"`
+	Username        string
+	Password        string
+	Database        string
+	MaxOpenConns    int `json:",default=100"`  // 最大打开连接数
+	MaxIdleConns    int `json:",default=10"`   // 最大空闲连接数
+	ConnMaxLifetime int `json:",default=3600"` // 连接生命周期（秒）
 	// ==================== 高并发、熔断限流配置 ====================
 	// 报名活动限流配置
 	RegistrationLimit struct {
