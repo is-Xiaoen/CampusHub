@@ -48,6 +48,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	CreditService_GetCreditInfo_FullMethodName  = "/user.CreditService/GetCreditInfo"
+	CreditService_GetCreditLogs_FullMethodName  = "/user.CreditService/GetCreditLogs"
 	CreditService_CanParticipate_FullMethodName = "/user.CreditService/CanParticipate"
 	CreditService_CanPublish_FullMethodName     = "/user.CreditService/CanPublish"
 	CreditService_InitCredit_FullMethodName     = "/user.CreditService/InitCredit"
@@ -62,6 +63,10 @@ type CreditServiceClient interface {
 	// 调用方: User API（个人中心-信用信息页面）
 	// 业务逻辑: 返回用户当前的信用分、等级、特权信息
 	GetCreditInfo(ctx context.Context, in *GetCreditInfoReq, opts ...grpc.CallOption) (*GetCreditInfoResp, error)
+	// GetCreditLogs 获取信用变更记录列表
+	// 调用方: User API（信用分明细页面）
+	// 业务逻辑: 分页查询用户的信用变更记录，支持按类型和时间筛选
+	GetCreditLogs(ctx context.Context, in *GetCreditLogsReq, opts ...grpc.CallOption) (*GetCreditLogsResp, error)
 	// CanParticipate 校验是否允许报名
 	// 调用方: Activity服务（报名模块）
 	// 业务逻辑:
@@ -98,6 +103,16 @@ func (c *creditServiceClient) GetCreditInfo(ctx context.Context, in *GetCreditIn
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetCreditInfoResp)
 	err := c.cc.Invoke(ctx, CreditService_GetCreditInfo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *creditServiceClient) GetCreditLogs(ctx context.Context, in *GetCreditLogsReq, opts ...grpc.CallOption) (*GetCreditLogsResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetCreditLogsResp)
+	err := c.cc.Invoke(ctx, CreditService_GetCreditLogs_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -152,6 +167,10 @@ type CreditServiceServer interface {
 	// 调用方: User API（个人中心-信用信息页面）
 	// 业务逻辑: 返回用户当前的信用分、等级、特权信息
 	GetCreditInfo(context.Context, *GetCreditInfoReq) (*GetCreditInfoResp, error)
+	// GetCreditLogs 获取信用变更记录列表
+	// 调用方: User API（信用分明细页面）
+	// 业务逻辑: 分页查询用户的信用变更记录，支持按类型和时间筛选
+	GetCreditLogs(context.Context, *GetCreditLogsReq) (*GetCreditLogsResp, error)
 	// CanParticipate 校验是否允许报名
 	// 调用方: Activity服务（报名模块）
 	// 业务逻辑:
@@ -186,6 +205,9 @@ type UnimplementedCreditServiceServer struct{}
 
 func (UnimplementedCreditServiceServer) GetCreditInfo(context.Context, *GetCreditInfoReq) (*GetCreditInfoResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetCreditInfo not implemented")
+}
+func (UnimplementedCreditServiceServer) GetCreditLogs(context.Context, *GetCreditLogsReq) (*GetCreditLogsResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetCreditLogs not implemented")
 }
 func (UnimplementedCreditServiceServer) CanParticipate(context.Context, *CanParticipateReq) (*CanParticipateResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method CanParticipate not implemented")
@@ -234,6 +256,24 @@ func _CreditService_GetCreditInfo_Handler(srv interface{}, ctx context.Context, 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CreditServiceServer).GetCreditInfo(ctx, req.(*GetCreditInfoReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CreditService_GetCreditLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCreditLogsReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CreditServiceServer).GetCreditLogs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CreditService_GetCreditLogs_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CreditServiceServer).GetCreditLogs(ctx, req.(*GetCreditLogsReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -320,6 +360,10 @@ var CreditService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetCreditInfo",
 			Handler:    _CreditService_GetCreditInfo_Handler,
+		},
+		{
+			MethodName: "GetCreditLogs",
+			Handler:    _CreditService_GetCreditLogs_Handler,
 		},
 		{
 			MethodName: "CanParticipate",
