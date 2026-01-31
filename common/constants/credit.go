@@ -120,6 +120,26 @@ var CreditChangeDeltas = map[int32]int{
 	CreditChangeTypeHostDelete:  -10,
 }
 
+// CreditChangeTypeNames 信用变更类型名称映射
+var CreditChangeTypeNames = map[int]string{
+	int(CreditChangeTypeInit):        "注册初始化",
+	int(CreditChangeTypeCheckin):     "正常履约",
+	int(CreditChangeTypeCancelEarly): "提前取消",
+	int(CreditChangeTypeCancelLate):  "临期取消",
+	int(CreditChangeTypeNoShow):      "爽约",
+	int(CreditChangeTypeHostSuccess): "圆满举办",
+	int(CreditChangeTypeHostDelete):  "删除活动",
+	int(CreditChangeTypeAdminAdjust): "管理员调整",
+}
+
+// GetCreditChangeTypeName 获取信用变更类型名称
+func GetCreditChangeTypeName(changeType int) string {
+	if name, ok := CreditChangeTypeNames[changeType]; ok {
+		return name
+	}
+	return "未知类型"
+}
+
 // GetCreditDelta 获取信用变更类型对应的分值变动
 // changeType: 变更类型
 // adminDelta: 管理员调整时的自定义分值

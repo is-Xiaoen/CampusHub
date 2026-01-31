@@ -6,8 +6,8 @@
 //
 // 说明：
 //   user-api 是用户服务的 HTTP 接口层，负责：
-//   - 用户注册、登录（签发 JWT Token）
-//   - 用户信息查询和更新
+//   - 信用分查询
+//   - 学生认证管理
 //
 // 启动命令：
 //   go run user.go -f etc/user-api.yaml
@@ -24,12 +24,10 @@ import (
 	"flag"
 	"fmt"
 
+	"activity-platform/app/user/api/internal/config"
+	"activity-platform/app/user/api/internal/handler"
+	"activity-platform/app/user/api/internal/svc"
 	"activity-platform/common/response"
-
-	// TODO(杨春路): goctl 生成代码后取消注释
-	// "activity-platform/app/user/api/internal/config"
-	// "activity-platform/app/user/api/internal/handler"
-	// "activity-platform/app/user/api/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/rest"
@@ -51,30 +49,20 @@ func main() {
 	//
 	response.SetupGlobalErrorHandler()
 
-	// 可选：如果想让 httpx.OkJsonCtx 也使用统一格式，取消下面的注释
-	// response.SetupGlobalOkHandler()
-	// ============================================================================
-
-	// TODO(杨春路): goctl 生成代码后，取消下方注释，删除临时代码
-	//
-	// var c config.Config
-	// conf.MustLoad(*configFile, &c)
-	//
-	// server := rest.MustNewServer(c.RestConf)
-	// defer server.Stop()
-	//
-	// ctx := svc.NewServiceContext(c)
-	// handler.RegisterHandlers(server, ctx)
-	//
-	// fmt.Printf("Starting user-api server at %s:%d...\n", c.Host, c.Port)
-	// server.Start()
-
-	// ============ 临时代码（goctl 生成后删除）============
-	var c struct {
-		rest.RestConf
-	}
+	// 加载配置
+	var c config.Config
 	conf.MustLoad(*configFile, &c)
-	fmt.Printf("user-api 骨架已就绪，等待 goctl 生成代码...\n")
-	fmt.Printf("请执行: cd app/user/api && goctl api go -api desc/user.api -dir . -style go_zero\n")
-	// ============ 临时代码结束 ============
+
+	// 创建 HTTP 服务器
+	server := rest.MustNewServer(c.RestConf)
+	defer server.Stop()
+
+	// 创建服务上下文（初始化 RPC 客户端等依赖）
+	ctx := svc.NewServiceContext(c)
+
+	// 注册路由
+	handler.RegisterHandlers(server, ctx)
+
+	fmt.Printf("Starting user-api server at %s:%d...\n", c.Host, c.Port)
+	server.Start()
 }
