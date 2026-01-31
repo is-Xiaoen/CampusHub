@@ -204,6 +204,297 @@ func (x *GetCreditInfoResp) GetUpdatedAt() int64 {
 	return 0
 }
 
+// GetCreditLogsReq 获取信用变更记录请求
+type GetCreditLogsReq struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户ID
+	UserId int64 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// 变动类型筛选（0=全部，其他值参见变动类型说明）
+	ChangeType int32 `protobuf:"varint,2,opt,name=change_type,json=changeType,proto3" json:"change_type,omitempty"`
+	// 开始时间戳（秒），0表示不限
+	StartTime int64 `protobuf:"varint,3,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
+	// 结束时间戳（秒），0表示不限
+	EndTime int64 `protobuf:"varint,4,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
+	// 页码，从1开始
+	Page int32 `protobuf:"varint,5,opt,name=page,proto3" json:"page,omitempty"`
+	// 每页条数，默认20，最大50
+	PageSize      int32 `protobuf:"varint,6,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetCreditLogsReq) Reset() {
+	*x = GetCreditLogsReq{}
+	mi := &file_user_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetCreditLogsReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCreditLogsReq) ProtoMessage() {}
+
+func (x *GetCreditLogsReq) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCreditLogsReq.ProtoReflect.Descriptor instead.
+func (*GetCreditLogsReq) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GetCreditLogsReq) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *GetCreditLogsReq) GetChangeType() int32 {
+	if x != nil {
+		return x.ChangeType
+	}
+	return 0
+}
+
+func (x *GetCreditLogsReq) GetStartTime() int64 {
+	if x != nil {
+		return x.StartTime
+	}
+	return 0
+}
+
+func (x *GetCreditLogsReq) GetEndTime() int64 {
+	if x != nil {
+		return x.EndTime
+	}
+	return 0
+}
+
+func (x *GetCreditLogsReq) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *GetCreditLogsReq) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+// CreditLogItem 信用变更记录项
+type CreditLogItem struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 记录ID
+	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// 用户ID
+	UserId int64 `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// 变动类型
+	ChangeType int32 `protobuf:"varint,3,opt,name=change_type,json=changeType,proto3" json:"change_type,omitempty"`
+	// 变动类型名称
+	ChangeTypeName string `protobuf:"bytes,4,opt,name=change_type_name,json=changeTypeName,proto3" json:"change_type_name,omitempty"`
+	// 变动分值（正数加分，负数扣分）
+	Delta int32 `protobuf:"varint,5,opt,name=delta,proto3" json:"delta,omitempty"`
+	// 业务来源ID
+	SourceId string `protobuf:"bytes,6,opt,name=source_id,json=sourceId,proto3" json:"source_id,omitempty"`
+	// 变动原因
+	Reason string `protobuf:"bytes,7,opt,name=reason,proto3" json:"reason,omitempty"`
+	// 变动前分数
+	BeforeScore int32 `protobuf:"varint,8,opt,name=before_score,json=beforeScore,proto3" json:"before_score,omitempty"`
+	// 变动后分数
+	AfterScore int32 `protobuf:"varint,9,opt,name=after_score,json=afterScore,proto3" json:"after_score,omitempty"`
+	// 变动时间戳（秒）
+	CreatedAt     int64 `protobuf:"varint,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreditLogItem) Reset() {
+	*x = CreditLogItem{}
+	mi := &file_user_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreditLogItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreditLogItem) ProtoMessage() {}
+
+func (x *CreditLogItem) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreditLogItem.ProtoReflect.Descriptor instead.
+func (*CreditLogItem) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *CreditLogItem) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *CreditLogItem) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *CreditLogItem) GetChangeType() int32 {
+	if x != nil {
+		return x.ChangeType
+	}
+	return 0
+}
+
+func (x *CreditLogItem) GetChangeTypeName() string {
+	if x != nil {
+		return x.ChangeTypeName
+	}
+	return ""
+}
+
+func (x *CreditLogItem) GetDelta() int32 {
+	if x != nil {
+		return x.Delta
+	}
+	return 0
+}
+
+func (x *CreditLogItem) GetSourceId() string {
+	if x != nil {
+		return x.SourceId
+	}
+	return ""
+}
+
+func (x *CreditLogItem) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+func (x *CreditLogItem) GetBeforeScore() int32 {
+	if x != nil {
+		return x.BeforeScore
+	}
+	return 0
+}
+
+func (x *CreditLogItem) GetAfterScore() int32 {
+	if x != nil {
+		return x.AfterScore
+	}
+	return 0
+}
+
+func (x *CreditLogItem) GetCreatedAt() int64 {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return 0
+}
+
+// GetCreditLogsResp 获取信用变更记录响应
+type GetCreditLogsResp struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 记录列表
+	List []*CreditLogItem `protobuf:"bytes,1,rep,name=list,proto3" json:"list,omitempty"`
+	// 总记录数
+	Total int64 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	// 当前页码
+	Page int32 `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
+	// 每页条数
+	PageSize      int32 `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetCreditLogsResp) Reset() {
+	*x = GetCreditLogsResp{}
+	mi := &file_user_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetCreditLogsResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCreditLogsResp) ProtoMessage() {}
+
+func (x *GetCreditLogsResp) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCreditLogsResp.ProtoReflect.Descriptor instead.
+func (*GetCreditLogsResp) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetCreditLogsResp) GetList() []*CreditLogItem {
+	if x != nil {
+		return x.List
+	}
+	return nil
+}
+
+func (x *GetCreditLogsResp) GetTotal() int64 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+func (x *GetCreditLogsResp) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *GetCreditLogsResp) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
 // CanParticipateReq 校验报名资格请求
 type CanParticipateReq struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
