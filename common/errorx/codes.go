@@ -98,6 +98,17 @@ var codeMessages = map[int]string{
 	CodeVerifyAlreadyExist:  "认证记录已存在",
 	CodeVerifyNotVerified:   "请先完成学生认证",
 	CodeVerifyStudentIDUsed: "该学号已被其他用户认证",
+	// 活动服务
+	CodeActivityNotFound:         "活动不存在",
+	CodeActivityStatusInvalid:    "活动状态不允许此操作",
+	CodeActivityTimeInvalid:      "活动时间设置无效",
+	CodeActivityConcurrentUpdate: "操作冲突，请重试",
+	CodeActivityPermissionDenied: "无权限操作此活动",
+	CodeActivityHasRegistration:  "有报名记录的活动不能删除",
+	CodeCategoryNotFound:         "分类不存在",
+	CodeCategoryDisabled:         "分类已禁用",
+	CodeTagNotFound:              "标签不存在",
+	CodeTagLimitExceeded:         "最多选择5个标签",
 }
 
 // GetMessage 根据错误码获取默认消息
