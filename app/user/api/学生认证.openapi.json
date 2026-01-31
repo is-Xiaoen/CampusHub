@@ -1,0 +1,992 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "默认模块",
+    "description": "仅包含权限校验逻辑的接口定义",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "学生认证"
+    }
+  ],
+  "paths": {
+    "/verify/student/current": {
+      "get": {
+        "summary": "获取当前认证进度",
+        "deprecated": false,
+        "description": "获取当前用户的认证进度，用于前端页面路由判断。进入认证模块时首先调用此接口，根据返回的need_action字段决定显示哪个页面",
+        "operationId": "GetStudentVerifyCurrent",
+        "tags": [
+          "学生认证"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，0=成功",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "has_record": {
+                          "type": "boolean",
+                          "description": "是否有认证记录",
+                          "example": true
+                        },
+                        "verify_id": {
+                          "type": "integer",
+                          "format": "int64",
+                          "description": "当前认证ID（无记录时为0）",
+                          "example": 10001
+                        },
+                        "status": {
+                          "type": "integer",
+                          "description": "当前状态码（-1=未申请,0-初始,1-OCR审核中,2-待确认,3-人工审核,4-通过,5-拒绝,6-超时,7-取消）",
+                          "example": 2
+                        },
+                        "status_desc": {
+                          "type": "string",
+                          "description": "状态描述",
+                          "example": "待用户确认"
+                        },
+                        "can_apply": {
+                          "type": "boolean",
+                          "description": "是否可以提交新申请",
+                          "example": false
+                        },
+                        "can_confirm": {
+                          "type": "boolean",
+                          "description": "是否可以确认/修改",
+                          "example": true
+                        },
+                        "can_cancel": {
+                          "type": "boolean",
+                          "description": "是否可以取消",
+                          "example": true
+                        },
+                        "need_action": {
+                          "type": "string",
+                          "description": "前端应执行的动作（apply=显示申请表单,wait_ocr=等待OCR,confirm=显示确认页,wait_manual=等待人工审核,done=认证完成,rejected=被拒绝可重新申请）",
+                          "enum": [
+                            "apply",
+                            "wait_ocr",
+                            "confirm",
+                            "wait_manual",
+                            "done",
+                            "rejected"
+                          ],
+                          "example": "confirm"
+                        },
+                        "verify_data": {
+                          "type": "object",
+                          "description": "OCR识别数据（待确认/已通过时返回）",
+                          "properties": {
+                            "real_name": {
+                              "type": "string",
+                              "description": "姓名",
+                              "example": "张*"
+                            },
+                            "school_name": {
+                              "type": "string",
+                              "description": "学校名称",
+                              "example": "北京大学"
+                            },
+                            "student_id": {
+                              "type": "string",
+                              "description": "学号",
+                              "example": "202301****"
+                            },
+                            "department": {
+                              "type": "string",
+                              "description": "院系",
+                              "example": "计算机科学与技术学院"
+                            },
+                            "admission_year": {
+                              "type": "string",
+                              "description": "入学年份",
+                              "example": "2023"
+                            },
+                            "verified_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "description": "认证通过时间（已通过时返回）",
+                              "example": "2026-01-29T10:35:00+08:00"
+                            }
+                          }
+                        },
+                        "reject_reason": {
+                          "type": "string",
+                          "description": "拒绝原因（被拒绝时返回）",
+                          "example": ""
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "申请时间",
+                          "example": "2026-01-29T10:30:00+08:00"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "最后更新时间",
+                          "example": "2026-01-29T10:30:15+08:00"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "1": {
+                    "summary": "无记录（首次进入）",
+                    "value": {
+                      "code": 0,
+                      "message": "success",
+                      "data": {
+                        "has_record": false,
+                        "verify_id": 0,
+                        "status": -1,
+                        "status_desc": "未申请",
+                        "can_apply": true,
+                        "can_confirm": false,
+                        "can_cancel": false,
+                        "need_action": "apply",
+                        "verify_data": null,
+                        "reject_reason": "",
+                        "created_at": null,
+                        "updated_at": null
+                      }
+                    }
+                  },
+                  "2": {
+                    "summary": "OCR审核中",
+                    "value": {
+                      "code": 0,
+                      "message": "success",
+                      "data": {
+                        "has_record": true,
+                        "verify_id": 10001,
+                        "status": 1,
+                        "status_desc": "OCR审核中",
+                        "can_apply": false,
+                        "can_confirm": false,
+                        "can_cancel": true,
+                        "need_action": "wait_ocr",
+                        "verify_data": null,
+                        "reject_reason": "",
+                        "created_at": "2026-01-29T10:30:00+08:00",
+                        "updated_at": "2026-01-29T10:30:00+08:00"
+                      }
+                    }
+                  },
+                  "3": {
+                    "summary": "待用户确认",
+                    "value": {
+                      "code": 0,
+                      "message": "success",
+                      "data": {
+                        "has_record": true,
+                        "verify_id": 10001,
+                        "status": 2,
+                        "status_desc": "待用户确认",
+                        "can_apply": false,
+                        "can_confirm": true,
+                        "can_cancel": true,
+                        "need_action": "confirm",
+                        "verify_data": {
+                          "real_name": "张*",
+                          "school_name": "北京大学",
+                          "student_id": "202301****",
+                          "department": "计算机科学与技术学院",
+                          "admission_year": "2023",
+                          "education_level": "本科"
+                        },
+                        "reject_reason": "",
+                        "created_at": "2026-01-29T10:30:00+08:00",
+                        "updated_at": "2026-01-29T10:30:15+08:00"
+                      }
+                    }
+                  },
+                  "4": {
+                    "summary": "人工审核中",
+                    "value": {
+                      "code": 0,
+                      "message": "success",
+                      "data": {
+                        "has_record": true,
+                        "verify_id": 10001,
+                        "status": 3,
+                        "status_desc": "人工审核中",
+                        "can_apply": false,
+                        "can_confirm": false,
+                        "can_cancel": false,
+                        "need_action": "wait_manual",
+                        "verify_data": null,
+                        "reject_reason": "",
+                        "created_at": "2026-01-29T10:30:00+08:00",
+                        "updated_at": "2026-01-29T10:32:00+08:00"
+                      }
+                    }
+                  },
+                  "5": {
+                    "summary": "已通过",
+                    "value": {
+                      "code": 0,
+                      "message": "success",
+                      "data": {
+                        "has_record": true,
+                        "verify_id": 10001,
+                        "status": 4,
+                        "status_desc": "已通过",
+                        "can_apply": false,
+                        "can_confirm": false,
+                        "can_cancel": false,
+                        "need_action": "done",
+                        "verify_data": {
+                          "real_name": "张*",
+                          "school_name": "北京大学",
+                          "student_id": "202301****",
+                          "department": "计算机科学与技术学院",
+                          "admission_year": "2023",
+                          "verified_at": "2026-01-29T10:35:00+08:00"
+                        },
+                        "reject_reason": "",
+                        "created_at": "2026-01-29T10:30:00+08:00",
+                        "updated_at": "2026-01-29T10:35:00+08:00"
+                      }
+                    }
+                  },
+                  "6": {
+                    "summary": "已拒绝",
+                    "value": {
+                      "code": 0,
+                      "message": "success",
+                      "data": {
+                        "has_record": true,
+                        "verify_id": 10001,
+                        "status": 5,
+                        "status_desc": "已拒绝",
+                        "can_apply": true,
+                        "can_confirm": false,
+                        "can_cancel": false,
+                        "need_action": "rejected",
+                        "verify_data": null,
+                        "reject_reason": "学生证照片模糊，无法识别",
+                        "created_at": "2026-01-29T10:30:00+08:00",
+                        "updated_at": "2026-01-29T10:40:00+08:00"
+                      }
+                    }
+                  },
+                  "7": {
+                    "summary": "已取消（可重新申请）",
+                    "value": {
+                      "code": 0,
+                      "message": "success",
+                      "data": {
+                        "has_record": true,
+                        "verify_id": 10001,
+                        "status": 7,
+                        "status_desc": "已取消",
+                        "can_apply": true,
+                        "can_confirm": false,
+                        "can_cancel": false,
+                        "need_action": "apply",
+                        "verify_data": null,
+                        "reject_reason": "",
+                        "created_at": "2026-01-29T10:30:00+08:00",
+                        "updated_at": "2026-01-29T10:32:00+08:00"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/verify/student/apply": {
+      "post": {
+        "summary": "提交学生认证申请",
+        "deprecated": false,
+        "description": "用户填写基本信息并上传学生证图片，发起学生身份认证申请",
+        "operationId": "ApplyStudentVerify",
+        "tags": [
+          "学生认证"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "user_id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "user_id",
+                  "status"
+                ]
+              },
+              "example": "{\r\n    user_id:\"1\",\r\n    status:\"1\"\r\n}"
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，0=成功",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "verify_id": {
+                          "type": "integer",
+                          "format": "int64",
+                          "description": "认证申请ID",
+                          "example": 10001
+                        },
+                        "status": {
+                          "type": "integer",
+                          "description": "当前状态码（1=OCR审核中）",
+                          "example": 1
+                        },
+                        "status_desc": {
+                          "type": "string",
+                          "description": "状态描述",
+                          "example": "OCR审核中"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "申请时间（ISO8601）",
+                          "example": "2026-01-29T10:30:00+08:00"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "code": 0,
+                      "message": "success",
+                      "data": {
+                        "verify_id": 10001,
+                        "status": 1,
+                        "status_desc": "OCR审核中",
+                        "created_at": "2026-01-29T10:30:00+08:00"
+                      }
+                    }
+                  },
+                  "2": {
+                    "summary": "操作太频繁",
+                    "value": {
+                      "code": 2101,
+                      "message": "操作太频繁，请稍后再试"
+                    }
+                  },
+                  "3": {
+                    "summary": "学号已被认证",
+                    "value": {
+                      "code": 2102,
+                      "message": "该学号已被认证"
+                    }
+                  },
+                  "4": {
+                    "summary": "存在进行中的申请",
+                    "value": {
+                      "code": 2103,
+                      "message": "您已有进行中的认证申请"
+                    }
+                  },
+                  "5": {
+                    "summary": "图片格式错误",
+                    "value": {
+                      "code": 2104,
+                      "message": "图片格式不支持"
+                    }
+                  },
+                  "6": {
+                    "summary": "图片过大",
+                    "value": {
+                      "code": 2105,
+                      "message": "图片大小超出限制"
+                    }
+                  },
+                  "7": {
+                    "summary": "正面照片缺失",
+                    "value": {
+                      "code": 2106,
+                      "message": "请上传学生证正面照片"
+                    }
+                  },
+                  "8": {
+                    "summary": "详情面照片缺失",
+                    "value": {
+                      "code": 2107,
+                      "message": "请上传学生证详情面照片"
+                    }
+                  },
+                  "9": {
+                    "summary": "姓名格式错误",
+                    "value": {
+                      "code": 2112,
+                      "message": "姓名格式不正确"
+                    }
+                  },
+                  "10": {
+                    "summary": "入学年份错误",
+                    "value": {
+                      "code": 2113,
+                      "message": "入学年份不正确"
+                    }
+                  },
+                  "11": {
+                    "summary": "学号格式错误",
+                    "value": {
+                      "code": 2114,
+                      "message": "学号格式不正确"
+                    }
+                  },
+                  "12": {
+                    "summary": "学校不支持",
+                    "value": {
+                      "code": 2115,
+                      "message": "学校名称不在支持范围内"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "错误码",
+                      "example": 2101
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "错误信息",
+                      "example": "操作太频繁，请稍后再试"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/verify/student/confirm": {
+      "post": {
+        "summary": "用户确认/修改认证信息",
+        "deprecated": false,
+        "description": "用户确认OCR识别结果无误，或提交修改后的数据（修改后将触发人工审核）",
+        "operationId": "ConfirmStudentVerify",
+        "tags": [
+          "学生认证"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "verify_id",
+                  "is_confirmed"
+                ],
+                "properties": {
+                  "verify_id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "认证申请ID",
+                    "example": 10001
+                  },
+                  "is_confirmed": {
+                    "type": "boolean",
+                    "description": "true=确认无误，false=需要修改",
+                    "example": true
+                  },
+                  "modified_data": {
+                    "type": "object",
+                    "description": "用户修改后的数据（is_confirmed=false时必填）",
+                    "properties": {
+                      "real_name": {
+                        "type": "string",
+                        "description": "姓名",
+                        "example": "张三"
+                      },
+                      "school_name": {
+                        "type": "string",
+                        "description": "学校名称",
+                        "example": "北京大学"
+                      },
+                      "student_id": {
+                        "type": "string",
+                        "description": "学号",
+                        "example": "2023010001"
+                      },
+                      "department": {
+                        "type": "string",
+                        "description": "院系",
+                        "example": "软件学院"
+                      },
+                      "admission_year": {
+                        "type": "string",
+                        "description": "入学年份",
+                        "example": "2023"
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "confirm": {
+                  "value": {
+                    "verify_id": 10001,
+                    "is_confirmed": true,
+                    "modified_data": null
+                  },
+                  "summary": "确认无误"
+                },
+                "modify": {
+                  "value": {
+                    "verify_id": 10001,
+                    "is_confirmed": false,
+                    "modified_data": {
+                      "real_name": "张三",
+                      "school_name": "北京大学",
+                      "student_id": "2023010001",
+                      "department": "软件学院",
+                      "admission_year": "2023"
+                    }
+                  },
+                  "summary": "需要修改"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，0=成功",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "verify_id": {
+                          "type": "integer",
+                          "format": "int64",
+                          "description": "认证申请ID",
+                          "example": 10001
+                        },
+                        "new_status": {
+                          "type": "integer",
+                          "description": "更新后的状态码（4=通过，3=人工审核）",
+                          "example": 4
+                        },
+                        "new_status_desc": {
+                          "type": "string",
+                          "description": "状态描述",
+                          "example": "最终通过"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "1": {
+                    "summary": "确认通过",
+                    "value": {
+                      "code": 0,
+                      "message": "success",
+                      "data": {
+                        "verify_id": 10001,
+                        "new_status": 4,
+                        "new_status_desc": "最终通过"
+                      }
+                    }
+                  },
+                  "2": {
+                    "summary": "转人工审核",
+                    "value": {
+                      "code": 0,
+                      "message": "success",
+                      "data": {
+                        "verify_id": 10001,
+                        "new_status": 3,
+                        "new_status_desc": "人工审核中"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "错误码",
+                      "example": 2108
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "错误信息",
+                      "example": "认证记录不存在"
+                    }
+                  }
+                },
+                "examples": {
+                  "3": {
+                    "summary": "记录不存在",
+                    "value": {
+                      "code": 2108,
+                      "message": "认证记录不存在"
+                    }
+                  },
+                  "4": {
+                    "summary": "状态不允许",
+                    "value": {
+                      "code": 2109,
+                      "message": "当前状态不允许该操作"
+                    }
+                  },
+                  "5": {
+                    "summary": "数据不完整",
+                    "value": {
+                      "code": 2110,
+                      "message": "修改数据不完整"
+                    }
+                  },
+                  "6": {
+                    "summary": "学号已被认证",
+                    "value": {
+                      "code": 2102,
+                      "message": "该学号已被认证"
+                    }
+                  },
+                  "7": {
+                    "summary": "姓名格式错误",
+                    "value": {
+                      "code": 2112,
+                      "message": "姓名格式不正确"
+                    }
+                  },
+                  "8": {
+                    "summary": "学号格式错误",
+                    "value": {
+                      "code": 2114,
+                      "message": "学号格式不正确"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/verify/student/cancel": {
+      "post": {
+        "summary": "取消认证申请",
+        "deprecated": false,
+        "description": "用户主动取消进行中的认证申请，可取消状态：INIT(0)、PENDING_OCR(1)、WAIT_USER_CONFIRM(2)",
+        "operationId": "CancelStudentVerify",
+        "tags": [
+          "学生认证"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "verify_id"
+                ],
+                "properties": {
+                  "verify_id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "认证申请ID",
+                    "example": 10001
+                  },
+                  "cancel_reason": {
+                    "type": "string",
+                    "description": "取消原因（可选）",
+                    "example": "信息填写错误，需要重新申请"
+                  }
+                }
+              },
+              "example": {
+                "verify_id": 10001,
+                "cancel_reason": "信息填写错误，需要重新申请"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码，0=成功",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "提示信息",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "verify_id": {
+                          "type": "integer",
+                          "format": "int64",
+                          "description": "认证申请ID",
+                          "example": 10001
+                        },
+                        "new_status": {
+                          "type": "integer",
+                          "description": "更新后的状态码（7=已取消）",
+                          "example": 7
+                        },
+                        "new_status_desc": {
+                          "type": "string",
+                          "description": "状态描述",
+                          "example": "已取消"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "code": 0,
+                  "message": "success",
+                  "data": {
+                    "verify_id": 10001,
+                    "new_status": 7,
+                    "new_status_desc": "已取消"
+                  }
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "错误码",
+                      "example": 2108
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "错误信息",
+                      "example": "认证记录不存在"
+                    }
+                  }
+                },
+                "examples": {
+                  "2": {
+                    "summary": "记录不存在",
+                    "value": {
+                      "code": 2108,
+                      "message": "认证记录不存在"
+                    }
+                  },
+                  "3": {
+                    "summary": "状态不允许取消",
+                    "value": {
+                      "code": 2109,
+                      "message": "当前状态不允许该操作"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "responses": {
+      "用户": {
+        "description": "",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "qq_email": {
+                  "type": "string"
+                },
+                "nickname": {
+                  "type": "string"
+                },
+                "avatar_url": {
+                  "type": "string"
+                },
+                "introduction": {
+                  "type": "string"
+                },
+                "gender": {
+                  "type": "string"
+                },
+                "age": {
+                  "type": "integer"
+                },
+                "latitude_longitude": {
+                  "type": "string"
+                },
+                "activities_num": {
+                  "type": "integer"
+                },
+                "initiate_num": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "qq_email",
+                "nickname",
+                "avatar_url",
+                "introduction",
+                "gender",
+                "age",
+                "latitude_longitude",
+                "activities_num",
+                "initiate_num"
+              ]
+            },
+            "examples": {
+              "示例 1": {
+                "summary": "示例 1",
+                "value": {
+                  "qq_email": "",
+                  "nickname": "",
+                  "avatar_url": "",
+                  "introduction": "",
+                  "gender": "",
+                  "age": 18,
+                  "latitude_longitude": "",
+                  "activities_num": 18,
+                  "initiate_num": 18
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT Token 认证"
+      }
+    }
+  },
+  "servers": [],
+  "security": []
+}

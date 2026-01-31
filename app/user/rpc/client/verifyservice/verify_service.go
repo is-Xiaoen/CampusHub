@@ -18,8 +18,11 @@ type (
 	CanParticipateResp     = pb.CanParticipateResp
 	CanPublishReq          = pb.CanPublishReq
 	CanPublishResp         = pb.CanPublishResp
+	CreditLogItem          = pb.CreditLogItem
 	GetCreditInfoReq       = pb.GetCreditInfoReq
 	GetCreditInfoResp      = pb.GetCreditInfoResp
+	GetCreditLogsReq       = pb.GetCreditLogsReq
+	GetCreditLogsResp      = pb.GetCreditLogsResp
 	InitCreditReq          = pb.InitCreditReq
 	InitCreditResp         = pb.InitCreditResp
 	IsVerifiedReq          = pb.IsVerifiedReq

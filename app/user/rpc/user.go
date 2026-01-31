@@ -15,8 +15,8 @@ import (
 	"fmt"
 
 	"activity-platform/app/user/rpc/internal/config"
-	"activity-platform/app/user/rpc/internal/server/creditservice"
-	"activity-platform/app/user/rpc/internal/server/verifyservice"
+	creditserviceserver "activity-platform/app/user/rpc/internal/server/creditservice"
+	verifyserviceserver "activity-platform/app/user/rpc/internal/server/verifyservice"
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
 
@@ -43,10 +43,10 @@ func main() {
 	// 创建 gRPC Server
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
 		// 注册 CreditService（信用分服务）
-		pb.RegisterCreditServiceServer(grpcServer, creditservice.NewCreditServiceServer(ctx))
+		pb.RegisterCreditServiceServer(grpcServer, creditserviceserver.NewCreditServiceServer(ctx))
 
 		// 注册 VerifyService（学生认证服务）
-		pb.RegisterVerifyServiceServer(grpcServer, verifyservice.NewVerifyServiceServer(ctx))
+		pb.RegisterVerifyServiceServer(grpcServer, verifyserviceserver.NewVerifyServiceServer(ctx))
 
 		// 开发环境开启 gRPC Reflection（便于 grpcurl 调试）
 		if c.Mode == service.DevMode || c.Mode == service.TestMode {
