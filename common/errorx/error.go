@@ -86,12 +86,10 @@ func ErrInternalError() *BizError {
 }
 
 // ErrInvalidParams 参数错误
-func ErrInvalidParams() *BizError {
-	return New(CodeInvalidParams)
-}
-
-// ErrInvalidParamsWithMsg 参数错误（带消息）
-func ErrInvalidParamsWithMsg(msg string) *BizError {
+func ErrInvalidParams(msg string) *BizError {
+	if msg == "" {
+		return New(CodeInvalidParams)
+	}
 	return NewWithMessage(CodeInvalidParams, msg)
 }
 
@@ -128,4 +126,19 @@ func ErrCacheError(err error) *BizError {
 // ErrRPCError RPC调用错误
 func ErrRPCError(err error) *BizError {
 	return Wrap(CodeRPCError, err)
+}
+
+// ErrCreditNotFound 信用记录不存在
+func ErrCreditNotFound() *BizError {
+	return New(CodeCreditNotFound)
+}
+
+// ErrCreditAlreadyInit 信用分已初始化
+func ErrCreditAlreadyInit() *BizError {
+	return New(CodeCreditAlreadyInit)
+}
+
+// ErrCreditSourceDup 信用变更来源重复
+func ErrCreditSourceDup() *BizError {
+	return New(CodeCreditSourceDup)
 }
