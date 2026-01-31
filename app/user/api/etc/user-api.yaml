@@ -12,7 +12,7 @@
 
 Name: user-api
 Host: 0.0.0.0
-Port: 8001
+Port: 9011
 
 # 日志配置
 Log:
