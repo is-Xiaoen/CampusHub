@@ -126,7 +126,7 @@ var CreditChangeTypeNames = map[int]string{
 	int(CreditChangeTypeCheckin):     "正常履约",
 	int(CreditChangeTypeCancelEarly): "提前取消",
 	int(CreditChangeTypeCancelLate):  "临期取消",
-	int(CreditChangeTypeNoShow):      "爽约/未签到",
+	int(CreditChangeTypeNoShow):      "爽约",
 	int(CreditChangeTypeHostSuccess): "圆满举办",
 	int(CreditChangeTypeHostDelete):  "删除活动",
 	int(CreditChangeTypeAdminAdjust): "管理员调整",
