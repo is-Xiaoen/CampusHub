@@ -204,297 +204,6 @@ func (x *GetCreditInfoResp) GetUpdatedAt() int64 {
 	return 0
 }
 
-// GetCreditLogsReq 获取信用变更记录请求
-type GetCreditLogsReq struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 用户ID
-	UserId int64 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	// 变动类型筛选（0=全部，其他值参见变动类型说明）
-	ChangeType int32 `protobuf:"varint,2,opt,name=change_type,json=changeType,proto3" json:"change_type,omitempty"`
-	// 开始时间戳（秒），0表示不限
-	StartTime int64 `protobuf:"varint,3,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
-	// 结束时间戳（秒），0表示不限
-	EndTime int64 `protobuf:"varint,4,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
-	// 页码，从1开始
-	Page int32 `protobuf:"varint,5,opt,name=page,proto3" json:"page,omitempty"`
-	// 每页条数，默认20，最大50
-	PageSize      int32 `protobuf:"varint,6,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetCreditLogsReq) Reset() {
-	*x = GetCreditLogsReq{}
-	mi := &file_user_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetCreditLogsReq) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetCreditLogsReq) ProtoMessage() {}
-
-func (x *GetCreditLogsReq) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetCreditLogsReq.ProtoReflect.Descriptor instead.
-func (*GetCreditLogsReq) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *GetCreditLogsReq) GetUserId() int64 {
-	if x != nil {
-		return x.UserId
-	}
-	return 0
-}
-
-func (x *GetCreditLogsReq) GetChangeType() int32 {
-	if x != nil {
-		return x.ChangeType
-	}
-	return 0
-}
-
-func (x *GetCreditLogsReq) GetStartTime() int64 {
-	if x != nil {
-		return x.StartTime
-	}
-	return 0
-}
-
-func (x *GetCreditLogsReq) GetEndTime() int64 {
-	if x != nil {
-		return x.EndTime
-	}
-	return 0
-}
-
-func (x *GetCreditLogsReq) GetPage() int32 {
-	if x != nil {
-		return x.Page
-	}
-	return 0
-}
-
-func (x *GetCreditLogsReq) GetPageSize() int32 {
-	if x != nil {
-		return x.PageSize
-	}
-	return 0
-}
-
-// CreditLogItem 信用变更记录项
-type CreditLogItem struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 记录ID
-	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	// 用户ID
-	UserId int64 `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	// 变动类型
-	ChangeType int32 `protobuf:"varint,3,opt,name=change_type,json=changeType,proto3" json:"change_type,omitempty"`
-	// 变动类型名称
-	ChangeTypeName string `protobuf:"bytes,4,opt,name=change_type_name,json=changeTypeName,proto3" json:"change_type_name,omitempty"`
-	// 变动分值（正数加分，负数扣分）
-	Delta int32 `protobuf:"varint,5,opt,name=delta,proto3" json:"delta,omitempty"`
-	// 业务来源ID
-	SourceId string `protobuf:"bytes,6,opt,name=source_id,json=sourceId,proto3" json:"source_id,omitempty"`
-	// 变动原因
-	Reason string `protobuf:"bytes,7,opt,name=reason,proto3" json:"reason,omitempty"`
-	// 变动前分数
-	BeforeScore int32 `protobuf:"varint,8,opt,name=before_score,json=beforeScore,proto3" json:"before_score,omitempty"`
-	// 变动后分数
-	AfterScore int32 `protobuf:"varint,9,opt,name=after_score,json=afterScore,proto3" json:"after_score,omitempty"`
-	// 变动时间戳（秒）
-	CreatedAt     int64 `protobuf:"varint,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreditLogItem) Reset() {
-	*x = CreditLogItem{}
-	mi := &file_user_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreditLogItem) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreditLogItem) ProtoMessage() {}
-
-func (x *CreditLogItem) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreditLogItem.ProtoReflect.Descriptor instead.
-func (*CreditLogItem) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *CreditLogItem) GetId() int64 {
-	if x != nil {
-		return x.Id
-	}
-	return 0
-}
-
-func (x *CreditLogItem) GetUserId() int64 {
-	if x != nil {
-		return x.UserId
-	}
-	return 0
-}
-
-func (x *CreditLogItem) GetChangeType() int32 {
-	if x != nil {
-		return x.ChangeType
-	}
-	return 0
-}
-
-func (x *CreditLogItem) GetChangeTypeName() string {
-	if x != nil {
-		return x.ChangeTypeName
-	}
-	return ""
-}
-
-func (x *CreditLogItem) GetDelta() int32 {
-	if x != nil {
-		return x.Delta
-	}
-	return 0
-}
-
-func (x *CreditLogItem) GetSourceId() string {
-	if x != nil {
-		return x.SourceId
-	}
-	return ""
-}
-
-func (x *CreditLogItem) GetReason() string {
-	if x != nil {
-		return x.Reason
-	}
-	return ""
-}
-
-func (x *CreditLogItem) GetBeforeScore() int32 {
-	if x != nil {
-		return x.BeforeScore
-	}
-	return 0
-}
-
-func (x *CreditLogItem) GetAfterScore() int32 {
-	if x != nil {
-		return x.AfterScore
-	}
-	return 0
-}
-
-func (x *CreditLogItem) GetCreatedAt() int64 {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return 0
-}
-
-// GetCreditLogsResp 获取信用变更记录响应
-type GetCreditLogsResp struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 记录列表
-	List []*CreditLogItem `protobuf:"bytes,1,rep,name=list,proto3" json:"list,omitempty"`
-	// 总记录数
-	Total int64 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
-	// 当前页码
-	Page int32 `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
-	// 每页条数
-	PageSize      int32 `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetCreditLogsResp) Reset() {
-	*x = GetCreditLogsResp{}
-	mi := &file_user_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetCreditLogsResp) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetCreditLogsResp) ProtoMessage() {}
-
-func (x *GetCreditLogsResp) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetCreditLogsResp.ProtoReflect.Descriptor instead.
-func (*GetCreditLogsResp) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *GetCreditLogsResp) GetList() []*CreditLogItem {
-	if x != nil {
-		return x.List
-	}
-	return nil
-}
-
-func (x *GetCreditLogsResp) GetTotal() int64 {
-	if x != nil {
-		return x.Total
-	}
-	return 0
-}
-
-func (x *GetCreditLogsResp) GetPage() int32 {
-	if x != nil {
-		return x.Page
-	}
-	return 0
-}
-
-func (x *GetCreditLogsResp) GetPageSize() int32 {
-	if x != nil {
-		return x.PageSize
-	}
-	return 0
-}
-
 // CanParticipateReq 校验报名资格请求
 type CanParticipateReq struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -506,7 +215,7 @@ type CanParticipateReq struct {
 
 func (x *CanParticipateReq) Reset() {
 	*x = CanParticipateReq{}
-	mi := &file_user_proto_msgTypes[5]
+	mi := &file_user_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -518,7 +227,7 @@ func (x *CanParticipateReq) String() string {
 func (*CanParticipateReq) ProtoMessage() {}
 
 func (x *CanParticipateReq) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[5]
+	mi := &file_user_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -531,7 +240,7 @@ func (x *CanParticipateReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanParticipateReq.ProtoReflect.Descriptor instead.
 func (*CanParticipateReq) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{5}
+	return file_user_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *CanParticipateReq) GetUserId() int64 {
@@ -560,7 +269,7 @@ type CanParticipateResp struct {
 
 func (x *CanParticipateResp) Reset() {
 	*x = CanParticipateResp{}
-	mi := &file_user_proto_msgTypes[6]
+	mi := &file_user_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -572,7 +281,7 @@ func (x *CanParticipateResp) String() string {
 func (*CanParticipateResp) ProtoMessage() {}
 
 func (x *CanParticipateResp) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[6]
+	mi := &file_user_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -585,7 +294,7 @@ func (x *CanParticipateResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanParticipateResp.ProtoReflect.Descriptor instead.
 func (*CanParticipateResp) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{6}
+	return file_user_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *CanParticipateResp) GetAllowed() bool {
@@ -627,7 +336,7 @@ type CanPublishReq struct {
 
 func (x *CanPublishReq) Reset() {
 	*x = CanPublishReq{}
-	mi := &file_user_proto_msgTypes[7]
+	mi := &file_user_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -639,7 +348,7 @@ func (x *CanPublishReq) String() string {
 func (*CanPublishReq) ProtoMessage() {}
 
 func (x *CanPublishReq) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[7]
+	mi := &file_user_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -652,7 +361,7 @@ func (x *CanPublishReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanPublishReq.ProtoReflect.Descriptor instead.
 func (*CanPublishReq) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{7}
+	return file_user_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *CanPublishReq) GetUserId() int64 {
@@ -680,7 +389,7 @@ type CanPublishResp struct {
 
 func (x *CanPublishResp) Reset() {
 	*x = CanPublishResp{}
-	mi := &file_user_proto_msgTypes[8]
+	mi := &file_user_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -692,7 +401,7 @@ func (x *CanPublishResp) String() string {
 func (*CanPublishResp) ProtoMessage() {}
 
 func (x *CanPublishResp) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[8]
+	mi := &file_user_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -705,7 +414,7 @@ func (x *CanPublishResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CanPublishResp.ProtoReflect.Descriptor instead.
 func (*CanPublishResp) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{8}
+	return file_user_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *CanPublishResp) GetAllowed() bool {
@@ -747,7 +456,7 @@ type InitCreditReq struct {
 
 func (x *InitCreditReq) Reset() {
 	*x = InitCreditReq{}
-	mi := &file_user_proto_msgTypes[9]
+	mi := &file_user_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -759,7 +468,7 @@ func (x *InitCreditReq) String() string {
 func (*InitCreditReq) ProtoMessage() {}
 
 func (x *InitCreditReq) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[9]
+	mi := &file_user_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -772,7 +481,7 @@ func (x *InitCreditReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InitCreditReq.ProtoReflect.Descriptor instead.
 func (*InitCreditReq) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{9}
+	return file_user_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *InitCreditReq) GetUserId() int64 {
@@ -797,7 +506,7 @@ type InitCreditResp struct {
 
 func (x *InitCreditResp) Reset() {
 	*x = InitCreditResp{}
-	mi := &file_user_proto_msgTypes[10]
+	mi := &file_user_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -809,7 +518,7 @@ func (x *InitCreditResp) String() string {
 func (*InitCreditResp) ProtoMessage() {}
 
 func (x *InitCreditResp) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[10]
+	mi := &file_user_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -822,7 +531,7 @@ func (x *InitCreditResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InitCreditResp.ProtoReflect.Descriptor instead.
 func (*InitCreditResp) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{10}
+	return file_user_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *InitCreditResp) GetSuccess() bool {
@@ -870,7 +579,7 @@ type UpdateScoreReq struct {
 
 func (x *UpdateScoreReq) Reset() {
 	*x = UpdateScoreReq{}
-	mi := &file_user_proto_msgTypes[11]
+	mi := &file_user_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -882,7 +591,7 @@ func (x *UpdateScoreReq) String() string {
 func (*UpdateScoreReq) ProtoMessage() {}
 
 func (x *UpdateScoreReq) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[11]
+	mi := &file_user_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -895,7 +604,7 @@ func (x *UpdateScoreReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateScoreReq.ProtoReflect.Descriptor instead.
 func (*UpdateScoreReq) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{11}
+	return file_user_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *UpdateScoreReq) GetUserId() int64 {
@@ -952,7 +661,7 @@ type UpdateScoreResp struct {
 
 func (x *UpdateScoreResp) Reset() {
 	*x = UpdateScoreResp{}
-	mi := &file_user_proto_msgTypes[12]
+	mi := &file_user_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -964,7 +673,7 @@ func (x *UpdateScoreResp) String() string {
 func (*UpdateScoreResp) ProtoMessage() {}
 
 func (x *UpdateScoreResp) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[12]
+	mi := &file_user_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -977,7 +686,7 @@ func (x *UpdateScoreResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateScoreResp.ProtoReflect.Descriptor instead.
 func (*UpdateScoreResp) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{12}
+	return file_user_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *UpdateScoreResp) GetSuccess() bool {
@@ -1026,7 +735,7 @@ type IsVerifiedReq struct {
 
 func (x *IsVerifiedReq) Reset() {
 	*x = IsVerifiedReq{}
-	mi := &file_user_proto_msgTypes[13]
+	mi := &file_user_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1038,7 +747,7 @@ func (x *IsVerifiedReq) String() string {
 func (*IsVerifiedReq) ProtoMessage() {}
 
 func (x *IsVerifiedReq) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[13]
+	mi := &file_user_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1051,7 +760,7 @@ func (x *IsVerifiedReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IsVerifiedReq.ProtoReflect.Descriptor instead.
 func (*IsVerifiedReq) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{13}
+	return file_user_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *IsVerifiedReq) GetUserId() int64 {
@@ -1082,7 +791,7 @@ type IsVerifiedResp struct {
 
 func (x *IsVerifiedResp) Reset() {
 	*x = IsVerifiedResp{}
-	mi := &file_user_proto_msgTypes[14]
+	mi := &file_user_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1094,7 +803,7 @@ func (x *IsVerifiedResp) String() string {
 func (*IsVerifiedResp) ProtoMessage() {}
 
 func (x *IsVerifiedResp) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[14]
+	mi := &file_user_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1107,7 +816,7 @@ func (x *IsVerifiedResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IsVerifiedResp.ProtoReflect.Descriptor instead.
 func (*IsVerifiedResp) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{14}
+	return file_user_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *IsVerifiedResp) GetIsVerified() bool {
@@ -1175,7 +884,7 @@ type UpdateVerifyStatusReq struct {
 
 func (x *UpdateVerifyStatusReq) Reset() {
 	*x = UpdateVerifyStatusReq{}
-	mi := &file_user_proto_msgTypes[15]
+	mi := &file_user_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1187,7 +896,7 @@ func (x *UpdateVerifyStatusReq) String() string {
 func (*UpdateVerifyStatusReq) ProtoMessage() {}
 
 func (x *UpdateVerifyStatusReq) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[15]
+	mi := &file_user_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1200,7 +909,7 @@ func (x *UpdateVerifyStatusReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateVerifyStatusReq.ProtoReflect.Descriptor instead.
 func (*UpdateVerifyStatusReq) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{15}
+	return file_user_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *UpdateVerifyStatusReq) GetVerifyId() int64 {
@@ -1264,7 +973,7 @@ type VerifyOcrData struct {
 
 func (x *VerifyOcrData) Reset() {
 	*x = VerifyOcrData{}
-	mi := &file_user_proto_msgTypes[16]
+	mi := &file_user_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1276,7 +985,7 @@ func (x *VerifyOcrData) String() string {
 func (*VerifyOcrData) ProtoMessage() {}
 
 func (x *VerifyOcrData) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[16]
+	mi := &file_user_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1289,7 +998,7 @@ func (x *VerifyOcrData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VerifyOcrData.ProtoReflect.Descriptor instead.
 func (*VerifyOcrData) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{16}
+	return file_user_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *VerifyOcrData) GetRealName() string {
@@ -1342,7 +1051,7 @@ type UpdateVerifyStatusResp struct {
 
 func (x *UpdateVerifyStatusResp) Reset() {
 	*x = UpdateVerifyStatusResp{}
-	mi := &file_user_proto_msgTypes[17]
+	mi := &file_user_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1354,7 +1063,7 @@ func (x *UpdateVerifyStatusResp) String() string {
 func (*UpdateVerifyStatusResp) ProtoMessage() {}
 
 func (x *UpdateVerifyStatusResp) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[17]
+	mi := &file_user_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1367,7 +1076,7 @@ func (x *UpdateVerifyStatusResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateVerifyStatusResp.ProtoReflect.Descriptor instead.
 func (*UpdateVerifyStatusResp) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{17}
+	return file_user_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *UpdateVerifyStatusResp) GetSuccess() bool {
@@ -1387,589 +1096,6 @@ func (x *UpdateVerifyStatusResp) GetBeforeStatus() int32 {
 func (x *UpdateVerifyStatusResp) GetAfterStatus() int32 {
 	if x != nil {
 		return x.AfterStatus
-	}
-	return 0
-}
-
-type GetAllTagsReq struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 上次同步时间戳（可选，用于增量同步）
-	// 0 表示全量同步
-	SinceTimestamp int64 `protobuf:"varint,1,opt,name=since_timestamp,json=sinceTimestamp,proto3" json:"since_timestamp,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-}
-
-func (x *GetAllTagsReq) Reset() {
-	*x = GetAllTagsReq{}
-	mi := &file_user_proto_msgTypes[18]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAllTagsReq) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAllTagsReq) ProtoMessage() {}
-
-func (x *GetAllTagsReq) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[18]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAllTagsReq.ProtoReflect.Descriptor instead.
-func (*GetAllTagsReq) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *GetAllTagsReq) GetSinceTimestamp() int64 {
-	if x != nil {
-		return x.SinceTimestamp
-	}
-	return 0
-}
-
-type GetAllTagsResp struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 标签列表
-	Tags []*TagInfo `protobuf:"bytes,1,rep,name=tags,proto3" json:"tags,omitempty"`
-	// 服务端当前时间戳（用于下次增量同步）
-	ServerTimestamp int64 `protobuf:"varint,2,opt,name=server_timestamp,json=serverTimestamp,proto3" json:"server_timestamp,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
-}
-
-func (x *GetAllTagsResp) Reset() {
-	*x = GetAllTagsResp{}
-	mi := &file_user_proto_msgTypes[19]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetAllTagsResp) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetAllTagsResp) ProtoMessage() {}
-
-func (x *GetAllTagsResp) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[19]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetAllTagsResp.ProtoReflect.Descriptor instead.
-func (*GetAllTagsResp) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{19}
-}
-
-func (x *GetAllTagsResp) GetTags() []*TagInfo {
-	if x != nil {
-		return x.Tags
-	}
-	return nil
-}
-
-func (x *GetAllTagsResp) GetServerTimestamp() int64 {
-	if x != nil {
-		return x.ServerTimestamp
-	}
-	return 0
-}
-
-type GetTagsByIdsReq struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 标签 ID 列表（最多 50 个）
-	Ids           []int64 `protobuf:"varint,1,rep,packed,name=ids,proto3" json:"ids,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetTagsByIdsReq) Reset() {
-	*x = GetTagsByIdsReq{}
-	mi := &file_user_proto_msgTypes[20]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetTagsByIdsReq) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetTagsByIdsReq) ProtoMessage() {}
-
-func (x *GetTagsByIdsReq) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[20]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetTagsByIdsReq.ProtoReflect.Descriptor instead.
-func (*GetTagsByIdsReq) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{20}
-}
-
-func (x *GetTagsByIdsReq) GetIds() []int64 {
-	if x != nil {
-		return x.Ids
-	}
-	return nil
-}
-
-type GetTagsByIdsResp struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 存在且启用的标签列表
-	Tags []*TagInfo `protobuf:"bytes,1,rep,name=tags,proto3" json:"tags,omitempty"`
-	// 不存在或已禁用的标签 ID 列表
-	InvalidIds    []int64 `protobuf:"varint,2,rep,packed,name=invalid_ids,json=invalidIds,proto3" json:"invalid_ids,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetTagsByIdsResp) Reset() {
-	*x = GetTagsByIdsResp{}
-	mi := &file_user_proto_msgTypes[21]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetTagsByIdsResp) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetTagsByIdsResp) ProtoMessage() {}
-
-func (x *GetTagsByIdsResp) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[21]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetTagsByIdsResp.ProtoReflect.Descriptor instead.
-func (*GetTagsByIdsResp) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{21}
-}
-
-func (x *GetTagsByIdsResp) GetTags() []*TagInfo {
-	if x != nil {
-		return x.Tags
-	}
-	return nil
-}
-
-func (x *GetTagsByIdsResp) GetInvalidIds() []int64 {
-	if x != nil {
-		return x.InvalidIds
-	}
-	return nil
-}
-
-type TagInfo struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`                                // 标签 ID
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`                             // 标签名称
-	Color         string                 `protobuf:"bytes,3,opt,name=color,proto3" json:"color,omitempty"`                           // 标签颜色
-	Icon          string                 `protobuf:"bytes,4,opt,name=icon,proto3" json:"icon,omitempty"`                             // 标签图标 URL
-	Status        uint64                 `protobuf:"varint,5,opt,name=status,proto3" json:"status,omitempty"`                        // 状态: 1 启用, 0 禁用
-	Description   string                 `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`               // 标签描述（可选）
-	CreatedAt     int64                  `protobuf:"varint,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"` // 创建时间戳
-	UpdatedAt     int64                  `protobuf:"varint,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"` // 更新时间戳
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *TagInfo) Reset() {
-	*x = TagInfo{}
-	mi := &file_user_proto_msgTypes[22]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TagInfo) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TagInfo) ProtoMessage() {}
-
-func (x *TagInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[22]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TagInfo.ProtoReflect.Descriptor instead.
-func (*TagInfo) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{22}
-}
-
-func (x *TagInfo) GetId() uint64 {
-	if x != nil {
-		return x.Id
-	}
-	return 0
-}
-
-func (x *TagInfo) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *TagInfo) GetColor() string {
-	if x != nil {
-		return x.Color
-	}
-	return ""
-}
-
-func (x *TagInfo) GetIcon() string {
-	if x != nil {
-		return x.Icon
-	}
-	return ""
-}
-
-func (x *TagInfo) GetStatus() uint64 {
-	if x != nil {
-		return x.Status
-	}
-	return 0
-}
-
-func (x *TagInfo) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-func (x *TagInfo) GetCreatedAt() int64 {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return 0
-}
-
-func (x *TagInfo) GetUpdatedAt() int64 {
-	if x != nil {
-		return x.UpdatedAt
-	}
-	return 0
-}
-
-type GetUserTagsRep struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetUserTagsRep) Reset() {
-	*x = GetUserTagsRep{}
-	mi := &file_user_proto_msgTypes[23]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetUserTagsRep) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetUserTagsRep) ProtoMessage() {}
-
-func (x *GetUserTagsRep) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[23]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetUserTagsRep.ProtoReflect.Descriptor instead.
-func (*GetUserTagsRep) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{23}
-}
-
-type GetUserTagsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetUserTagsResponse) Reset() {
-	*x = GetUserTagsResponse{}
-	mi := &file_user_proto_msgTypes[24]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetUserTagsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetUserTagsResponse) ProtoMessage() {}
-
-func (x *GetUserTagsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[24]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetUserTagsResponse.ProtoReflect.Descriptor instead.
-func (*GetUserTagsResponse) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{24}
-}
-
-func (x *GetUserTagsResponse) GetId() uint64 {
-	if x != nil {
-		return x.Id
-	}
-	return 0
-}
-
-func (x *GetUserTagsResponse) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-type GetGroupUserRep struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetGroupUserRep) Reset() {
-	*x = GetGroupUserRep{}
-	mi := &file_user_proto_msgTypes[25]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetGroupUserRep) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetGroupUserRep) ProtoMessage() {}
-
-func (x *GetGroupUserRep) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[25]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetGroupUserRep.ProtoReflect.Descriptor instead.
-func (*GetGroupUserRep) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{25}
-}
-
-type GetGroupUserResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	AvatarUrl     string                 `protobuf:"bytes,2,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
-	Nickname      string                 `protobuf:"bytes,3,opt,name=nickname,proto3" json:"nickname,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetGroupUserResponse) Reset() {
-	*x = GetGroupUserResponse{}
-	mi := &file_user_proto_msgTypes[26]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetGroupUserResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetGroupUserResponse) ProtoMessage() {}
-
-func (x *GetGroupUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[26]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetGroupUserResponse.ProtoReflect.Descriptor instead.
-func (*GetGroupUserResponse) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{26}
-}
-
-func (x *GetGroupUserResponse) GetId() uint64 {
-	if x != nil {
-		return x.Id
-	}
-	return 0
-}
-
-func (x *GetGroupUserResponse) GetAvatarUrl() string {
-	if x != nil {
-		return x.AvatarUrl
-	}
-	return ""
-}
-
-func (x *GetGroupUserResponse) GetNickname() string {
-	if x != nil {
-		return x.Nickname
-	}
-	return ""
-}
-
-type UserInfo struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	QqEmail       string                 `protobuf:"bytes,2,opt,name=qq_email,json=qqEmail,proto3" json:"qq_email,omitempty"`
-	Nickname      string                 `protobuf:"bytes,3,opt,name=nickname,proto3" json:"nickname,omitempty"`
-	AvatarUrl     string                 `protobuf:"bytes,4,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
-	Introduction  string                 `protobuf:"bytes,5,opt,name=introduction,proto3" json:"introduction,omitempty"`
-	Status        uint64                 `protobuf:"varint,6,opt,name=status,proto3" json:"status,omitempty"`
-	Age           uint64                 `protobuf:"varint,7,opt,name=age,proto3" json:"age,omitempty"`
-	Gender        uint64                 `protobuf:"varint,8,opt,name=gender,proto3" json:"gender,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UserInfo) Reset() {
-	*x = UserInfo{}
-	mi := &file_user_proto_msgTypes[27]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UserInfo) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UserInfo) ProtoMessage() {}
-
-func (x *UserInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[27]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UserInfo.ProtoReflect.Descriptor instead.
-func (*UserInfo) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{27}
-}
-
-func (x *UserInfo) GetId() uint64 {
-	if x != nil {
-		return x.Id
-	}
-	return 0
-}
-
-func (x *UserInfo) GetQqEmail() string {
-	if x != nil {
-		return x.QqEmail
-	}
-	return ""
-}
-
-func (x *UserInfo) GetNickname() string {
-	if x != nil {
-		return x.Nickname
-	}
-	return ""
-}
-
-func (x *UserInfo) GetAvatarUrl() string {
-	if x != nil {
-		return x.AvatarUrl
-	}
-	return ""
-}
-
-func (x *UserInfo) GetIntroduction() string {
-	if x != nil {
-		return x.Introduction
-	}
-	return ""
-}
-
-func (x *UserInfo) GetStatus() uint64 {
-	if x != nil {
-		return x.Status
-	}
-	return 0
-}
-
-func (x *UserInfo) GetAge() uint64 {
-	if x != nil {
-		return x.Age
-	}
-	return 0
-}
-
-func (x *UserInfo) GetGender() uint64 {
-	if x != nil {
-		return x.Gender
 	}
 	return 0
 }
@@ -1994,36 +1120,7 @@ const file_user_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\a \x01(\x03R\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18\b \x01(\x03R\tupdatedAt\"\xb7\x01\n" +
-	"\x10GetCreditLogsReq\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1f\n" +
-	"\vchange_type\x18\x02 \x01(\x05R\n" +
-	"changeType\x12\x1d\n" +
-	"\n" +
-	"start_time\x18\x03 \x01(\x03R\tstartTime\x12\x19\n" +
-	"\bend_time\x18\x04 \x01(\x03R\aendTime\x12\x12\n" +
-	"\x04page\x18\x05 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x06 \x01(\x05R\bpageSize\"\xb1\x02\n" +
-	"\rCreditLogItem\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\x03R\x06userId\x12\x1f\n" +
-	"\vchange_type\x18\x03 \x01(\x05R\n" +
-	"changeType\x12(\n" +
-	"\x10change_type_name\x18\x04 \x01(\tR\x0echangeTypeName\x12\x14\n" +
-	"\x05delta\x18\x05 \x01(\x05R\x05delta\x12\x1b\n" +
-	"\tsource_id\x18\x06 \x01(\tR\bsourceId\x12\x16\n" +
-	"\x06reason\x18\a \x01(\tR\x06reason\x12!\n" +
-	"\fbefore_score\x18\b \x01(\x05R\vbeforeScore\x12\x1f\n" +
-	"\vafter_score\x18\t \x01(\x05R\n" +
-	"afterScore\x12\x1d\n" +
-	"\n" +
-	"created_at\x18\n" +
-	" \x01(\x03R\tcreatedAt\"\x83\x01\n" +
-	"\x11GetCreditLogsResp\x12'\n" +
-	"\x04list\x18\x01 \x03(\v2\x13.user.CreditLogItemR\x04list\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x03R\x05total\x12\x12\n" +
-	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\",\n" +
+	"updated_at\x18\b \x01(\x03R\tupdatedAt\",\n" +
 	"\x11CanParticipateReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\"r\n" +
 	"\x12CanParticipateResp\x12\x18\n" +
@@ -2095,52 +1192,9 @@ const file_user_proto_rawDesc = "" +
 	"\x16UpdateVerifyStatusResp\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12#\n" +
 	"\rbefore_status\x18\x02 \x01(\x05R\fbeforeStatus\x12!\n" +
-	"\fafter_status\x18\x03 \x01(\x05R\vafterStatus\"8\n" +
-	"\rGetAllTagsReq\x12'\n" +
-	"\x0fsince_timestamp\x18\x01 \x01(\x03R\x0esinceTimestamp\"^\n" +
-	"\x0eGetAllTagsResp\x12!\n" +
-	"\x04tags\x18\x01 \x03(\v2\r.user.TagInfoR\x04tags\x12)\n" +
-	"\x10server_timestamp\x18\x02 \x01(\x03R\x0fserverTimestamp\"#\n" +
-	"\x0fGetTagsByIdsReq\x12\x10\n" +
-	"\x03ids\x18\x01 \x03(\x03R\x03ids\"V\n" +
-	"\x10GetTagsByIdsResp\x12!\n" +
-	"\x04tags\x18\x01 \x03(\v2\r.user.TagInfoR\x04tags\x12\x1f\n" +
-	"\vinvalid_ids\x18\x02 \x03(\x03R\n" +
-	"invalidIds\"\xcf\x01\n" +
-	"\aTagInfo\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
-	"\x05color\x18\x03 \x01(\tR\x05color\x12\x12\n" +
-	"\x04icon\x18\x04 \x01(\tR\x04icon\x12\x16\n" +
-	"\x06status\x18\x05 \x01(\x04R\x06status\x12 \n" +
-	"\vdescription\x18\x06 \x01(\tR\vdescription\x12\x1d\n" +
-	"\n" +
-	"created_at\x18\a \x01(\x03R\tcreatedAt\x12\x1d\n" +
-	"\n" +
-	"updated_at\x18\b \x01(\x03R\tupdatedAt\"\x10\n" +
-	"\x0eGetUserTagsRep\"9\n" +
-	"\x13GetUserTagsResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\"\x11\n" +
-	"\x0fGetGroupUserRep\"a\n" +
-	"\x14GetGroupUserResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x1d\n" +
-	"\n" +
-	"avatar_url\x18\x02 \x01(\tR\tavatarUrl\x12\x1a\n" +
-	"\bnickname\x18\x03 \x01(\tR\bnickname\"\xd6\x01\n" +
-	"\bUserInfo\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x19\n" +
-	"\bqq_email\x18\x02 \x01(\tR\aqqEmail\x12\x1a\n" +
-	"\bnickname\x18\x03 \x01(\tR\bnickname\x12\x1d\n" +
-	"\n" +
-	"avatar_url\x18\x04 \x01(\tR\tavatarUrl\x12\"\n" +
-	"\fintroduction\x18\x05 \x01(\tR\fintroduction\x12\x16\n" +
-	"\x06status\x18\x06 \x01(\x04R\x06status\x12\x10\n" +
-	"\x03age\x18\a \x01(\x04R\x03age\x12\x16\n" +
-	"\x06gender\x18\b \x01(\x04R\x06gender2\x86\x03\n" +
+	"\fafter_status\x18\x03 \x01(\x05R\vafterStatus2\xc4\x02\n" +
 	"\rCreditService\x12@\n" +
-	"\rGetCreditInfo\x12\x16.user.GetCreditInfoReq\x1a\x17.user.GetCreditInfoResp\x12@\n" +
-	"\rGetCreditLogs\x12\x16.user.GetCreditLogsReq\x1a\x17.user.GetCreditLogsResp\x12C\n" +
+	"\rGetCreditInfo\x12\x16.user.GetCreditInfoReq\x1a\x17.user.GetCreditInfoResp\x12C\n" +
 	"\x0eCanParticipate\x12\x17.user.CanParticipateReq\x1a\x18.user.CanParticipateResp\x127\n" +
 	"\n" +
 	"CanPublish\x12\x13.user.CanPublishReq\x1a\x14.user.CanPublishResp\x127\n" +
@@ -2150,15 +1204,7 @@ const file_user_proto_rawDesc = "" +
 	"\rVerifyService\x127\n" +
 	"\n" +
 	"IsVerified\x12\x13.user.IsVerifiedReq\x1a\x14.user.IsVerifiedResp\x12O\n" +
-	"\x12UpdateVerifyStatus\x12\x1b.user.UpdateVerifyStatusReq\x1a\x1c.user.UpdateVerifyStatusResp2\xc4\x01\n" +
-	"\n" +
-	"TagService\x127\n" +
-	"\n" +
-	"GetAllTags\x12\x13.user.GetAllTagsReq\x1a\x14.user.GetAllTagsResp\x12=\n" +
-	"\fGetTagsByIds\x12\x15.user.GetTagsByIdsReq\x1a\x16.user.GetTagsByIdsResp\x12>\n" +
-	"\vGetUserTags\x12\x14.user.GetUserTagsRep\x1a\x19.user.GetUserTagsResponse2U\n" +
-	"\x10UserBasicService\x12A\n" +
-	"\fGetGroupUser\x12\x15.user.GetGroupUserRep\x1a\x1a.user.GetGroupUserResponseB\x06Z\x04./pbb\x06proto3"
+	"\x12UpdateVerifyStatus\x12\x1b.user.UpdateVerifyStatusReq\x1a\x1c.user.UpdateVerifyStatusRespB\x06Z\x04./pbb\x06proto3"
 
 var (
 	file_user_proto_rawDescOnce sync.Once
@@ -2172,71 +1218,45 @@ func file_user_proto_rawDescGZIP() []byte {
 	return file_user_proto_rawDescData
 }
 
-var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
+var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_user_proto_goTypes = []any{
 	(*GetCreditInfoReq)(nil),       // 0: user.GetCreditInfoReq
 	(*GetCreditInfoResp)(nil),      // 1: user.GetCreditInfoResp
-	(*GetCreditLogsReq)(nil),       // 2: user.GetCreditLogsReq
-	(*CreditLogItem)(nil),          // 3: user.CreditLogItem
-	(*GetCreditLogsResp)(nil),      // 4: user.GetCreditLogsResp
-	(*CanParticipateReq)(nil),      // 5: user.CanParticipateReq
-	(*CanParticipateResp)(nil),     // 6: user.CanParticipateResp
-	(*CanPublishReq)(nil),          // 7: user.CanPublishReq
-	(*CanPublishResp)(nil),         // 8: user.CanPublishResp
-	(*InitCreditReq)(nil),          // 9: user.InitCreditReq
-	(*InitCreditResp)(nil),         // 10: user.InitCreditResp
-	(*UpdateScoreReq)(nil),         // 11: user.UpdateScoreReq
-	(*UpdateScoreResp)(nil),        // 12: user.UpdateScoreResp
-	(*IsVerifiedReq)(nil),          // 13: user.IsVerifiedReq
-	(*IsVerifiedResp)(nil),         // 14: user.IsVerifiedResp
-	(*UpdateVerifyStatusReq)(nil),  // 15: user.UpdateVerifyStatusReq
-	(*VerifyOcrData)(nil),          // 16: user.VerifyOcrData
-	(*UpdateVerifyStatusResp)(nil), // 17: user.UpdateVerifyStatusResp
-	(*GetAllTagsReq)(nil),          // 18: user.GetAllTagsReq
-	(*GetAllTagsResp)(nil),         // 19: user.GetAllTagsResp
-	(*GetTagsByIdsReq)(nil),        // 20: user.GetTagsByIdsReq
-	(*GetTagsByIdsResp)(nil),       // 21: user.GetTagsByIdsResp
-	(*TagInfo)(nil),                // 22: user.TagInfo
-	(*GetUserTagsRep)(nil),         // 23: user.GetUserTagsRep
-	(*GetUserTagsResponse)(nil),    // 24: user.GetUserTagsResponse
-	(*GetGroupUserRep)(nil),        // 25: user.GetGroupUserRep
-	(*GetGroupUserResponse)(nil),   // 26: user.GetGroupUserResponse
-	(*UserInfo)(nil),               // 27: user.UserInfo
+	(*CanParticipateReq)(nil),      // 2: user.CanParticipateReq
+	(*CanParticipateResp)(nil),     // 3: user.CanParticipateResp
+	(*CanPublishReq)(nil),          // 4: user.CanPublishReq
+	(*CanPublishResp)(nil),         // 5: user.CanPublishResp
+	(*InitCreditReq)(nil),          // 6: user.InitCreditReq
+	(*InitCreditResp)(nil),         // 7: user.InitCreditResp
+	(*UpdateScoreReq)(nil),         // 8: user.UpdateScoreReq
+	(*UpdateScoreResp)(nil),        // 9: user.UpdateScoreResp
+	(*IsVerifiedReq)(nil),          // 10: user.IsVerifiedReq
+	(*IsVerifiedResp)(nil),         // 11: user.IsVerifiedResp
+	(*UpdateVerifyStatusReq)(nil),  // 12: user.UpdateVerifyStatusReq
+	(*VerifyOcrData)(nil),          // 13: user.VerifyOcrData
+	(*UpdateVerifyStatusResp)(nil), // 14: user.UpdateVerifyStatusResp
 }
 var file_user_proto_depIdxs = []int32{
-	3,  // 0: user.GetCreditLogsResp.list:type_name -> user.CreditLogItem
-	16, // 1: user.UpdateVerifyStatusReq.ocr_data:type_name -> user.VerifyOcrData
-	22, // 2: user.GetAllTagsResp.tags:type_name -> user.TagInfo
-	22, // 3: user.GetTagsByIdsResp.tags:type_name -> user.TagInfo
-	0,  // 4: user.CreditService.GetCreditInfo:input_type -> user.GetCreditInfoReq
-	2,  // 5: user.CreditService.GetCreditLogs:input_type -> user.GetCreditLogsReq
-	5,  // 6: user.CreditService.CanParticipate:input_type -> user.CanParticipateReq
-	7,  // 7: user.CreditService.CanPublish:input_type -> user.CanPublishReq
-	9,  // 8: user.CreditService.InitCredit:input_type -> user.InitCreditReq
-	11, // 9: user.CreditService.UpdateScore:input_type -> user.UpdateScoreReq
-	13, // 10: user.VerifyService.IsVerified:input_type -> user.IsVerifiedReq
-	15, // 11: user.VerifyService.UpdateVerifyStatus:input_type -> user.UpdateVerifyStatusReq
-	18, // 12: user.TagService.GetAllTags:input_type -> user.GetAllTagsReq
-	20, // 13: user.TagService.GetTagsByIds:input_type -> user.GetTagsByIdsReq
-	23, // 14: user.TagService.GetUserTags:input_type -> user.GetUserTagsRep
-	25, // 15: user.UserBasicService.GetGroupUser:input_type -> user.GetGroupUserRep
-	1,  // 16: user.CreditService.GetCreditInfo:output_type -> user.GetCreditInfoResp
-	4,  // 17: user.CreditService.GetCreditLogs:output_type -> user.GetCreditLogsResp
-	6,  // 18: user.CreditService.CanParticipate:output_type -> user.CanParticipateResp
-	8,  // 19: user.CreditService.CanPublish:output_type -> user.CanPublishResp
-	10, // 20: user.CreditService.InitCredit:output_type -> user.InitCreditResp
-	12, // 21: user.CreditService.UpdateScore:output_type -> user.UpdateScoreResp
-	14, // 22: user.VerifyService.IsVerified:output_type -> user.IsVerifiedResp
-	17, // 23: user.VerifyService.UpdateVerifyStatus:output_type -> user.UpdateVerifyStatusResp
-	19, // 24: user.TagService.GetAllTags:output_type -> user.GetAllTagsResp
-	21, // 25: user.TagService.GetTagsByIds:output_type -> user.GetTagsByIdsResp
-	24, // 26: user.TagService.GetUserTags:output_type -> user.GetUserTagsResponse
-	26, // 27: user.UserBasicService.GetGroupUser:output_type -> user.GetGroupUserResponse
-	16, // [16:28] is the sub-list for method output_type
-	4,  // [4:16] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	13, // 0: user.UpdateVerifyStatusReq.ocr_data:type_name -> user.VerifyOcrData
+	0,  // 1: user.CreditService.GetCreditInfo:input_type -> user.GetCreditInfoReq
+	2,  // 2: user.CreditService.CanParticipate:input_type -> user.CanParticipateReq
+	4,  // 3: user.CreditService.CanPublish:input_type -> user.CanPublishReq
+	6,  // 4: user.CreditService.InitCredit:input_type -> user.InitCreditReq
+	8,  // 5: user.CreditService.UpdateScore:input_type -> user.UpdateScoreReq
+	10, // 6: user.VerifyService.IsVerified:input_type -> user.IsVerifiedReq
+	12, // 7: user.VerifyService.UpdateVerifyStatus:input_type -> user.UpdateVerifyStatusReq
+	1,  // 8: user.CreditService.GetCreditInfo:output_type -> user.GetCreditInfoResp
+	3,  // 9: user.CreditService.CanParticipate:output_type -> user.CanParticipateResp
+	5,  // 10: user.CreditService.CanPublish:output_type -> user.CanPublishResp
+	7,  // 11: user.CreditService.InitCredit:output_type -> user.InitCreditResp
+	9,  // 12: user.CreditService.UpdateScore:output_type -> user.UpdateScoreResp
+	11, // 13: user.VerifyService.IsVerified:output_type -> user.IsVerifiedResp
+	14, // 14: user.VerifyService.UpdateVerifyStatus:output_type -> user.UpdateVerifyStatusResp
+	8,  // [8:15] is the sub-list for method output_type
+	1,  // [1:8] is the sub-list for method input_type
+	1,  // [1:1] is the sub-list for extension type_name
+	1,  // [1:1] is the sub-list for extension extendee
+	0,  // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_user_proto_init() }
@@ -2250,9 +1270,9 @@ func file_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_user_proto_rawDesc), len(file_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   28,
+			NumMessages:   15,
 			NumExtensions: 0,
-			NumServices:   4,
+			NumServices:   2,
 		},
 		GoTypes:           file_user_proto_goTypes,
 		DependencyIndexes: file_user_proto_depIdxs,
