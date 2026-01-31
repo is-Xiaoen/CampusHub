@@ -22,9 +22,16 @@ Log:
   Level: info
 
 # 数据库配置
+# MySQL 配置
 MySQL:
-  DataSource: <DB_USER>:<DB_PASSWORD>@tcp(<DB_HOST>:<DB_PORT>)/campushub_main?charset=utf8mb4&parseTime=true&loc=Local
-  # 示例: root:123456@tcp(192.168.10.4:3308)/campushub_main?charset=utf8mb4&parseTime=true&loc=Local
+  Host: 192.168.10.4
+  Port: 3308
+  Username: root
+  Password: 123456
+  Database: campushub_main
+  MaxOpenConns: 100
+  MaxIdleConns: 10
+  ConnMaxLifetime: 3600
 
 # Redis 配置
 Redis:
