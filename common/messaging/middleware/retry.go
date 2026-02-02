@@ -6,7 +6,7 @@ import (
 	"math"
 	"time"
 
-	"CampusHub/common/messaging"
+	"activity-platform/common/messaging"
 )
 
 // RetryMiddleware 创建重试中间件

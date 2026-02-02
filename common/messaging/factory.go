@@ -60,7 +60,7 @@ type MessagingClient struct {
 //
 // 迁移指南：
 //
-//	import "CampusHub/common/messaging/client"
+//	import "activity-platform/common/messaging/client"
 //	c, err := client.NewMessagingClient(client.MessagingConfig{...})
 func NewMessagingClient(config MessagingConfig) (*MessagingClient, error) {
 	// 为了避免循环导入，此函数已被移除
