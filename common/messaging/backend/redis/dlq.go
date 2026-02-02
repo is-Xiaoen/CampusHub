@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"CampusHub/common/messaging"
+	"activity-platform/common/messaging"
 
 	"github.com/redis/go-redis/v9"
 )

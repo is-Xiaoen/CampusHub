@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"CampusHub/common/messaging"
+	"activity-platform/common/messaging"
 )
 
 // MetricsMiddleware 创建指标收集中间件
