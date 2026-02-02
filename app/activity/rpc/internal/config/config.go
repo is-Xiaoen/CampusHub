@@ -6,7 +6,7 @@ import (
 )
 
 type Config struct {
-	zrpc.RpcServerConf
+	zrpc.RpcServerConf // go-zero RPC 服务配置（含 Etcd、Log、Telemetry 等）
 
 	// 数据存储
 	MySQL MySQLConfig     // MySQL 配置
@@ -26,18 +26,13 @@ type MySQLConfig struct {
 	MaxOpenConns    int `json:",default=100"`  // 最大打开连接数
 	MaxIdleConns    int `json:",default=10"`   // 最大空闲连接数
 	ConnMaxLifetime int `json:",default=3600"` // 连接生命周期（秒）
-	// ==================== 高并发、熔断限流配置 ====================
-	// 报名活动限流配置
-	RegistrationLimit struct {
-		Rate  int `json:",default=100"` // 每秒允许的请求数
-		Burst int `json:",default=200"` // 突发容量
-	}
+}
 
-	// 报名活动熔断配置
-	RegistrationBreaker struct {
-		Name string `json:",default=activity-registration"` // 熔断器名称
-	}
-
-	// ==================== RPC 客户端配置（服务间通信） ====================
-	UserRpc zrpc.RpcClientConf
+// ==================== 高并发、熔断限流配置 ====================
+type RegistrationLimit struct {
+	Rate  int `json:",default=100"` // 每秒允许的请求数
+	Burst int `json:",default=200"` // 突发容量
+}
+type RegistrationBreaker struct {
+	Name string `json:",default=activity-registration"` // 熔断器名称
 }

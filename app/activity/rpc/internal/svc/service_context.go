@@ -1,7 +1,6 @@
 package svc
 
 import (
-	"fmt"
 	"time"
 
 	"activity-platform/app/activity/model"
@@ -9,6 +8,8 @@ import (
 	"activity-platform/app/user/rpc/client/creditservice"
 	"activity-platform/app/user/rpc/client/verifyservice"
 
+	"github.com/zeromicro/go-zero/core/breaker"
+	"github.com/zeromicro/go-zero/core/limit"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github.com/zeromicro/go-zero/zrpc"
@@ -24,23 +25,40 @@ type ServiceContext struct {
 	DB    *gorm.DB     // MySQL 连接
 	Redis *redis.Redis // Redis 客户端
 
+	// 高并发、熔断限流组件
+	RegistrationLimiter *limit.TokenLimiter
+	RegistrationBreaker breaker.Breaker
+
 	// Model 层
-	ActivityModel  *model.ActivityModel
-	CategoryModel  *model.CategoryModel
-	TagModel       *model.TagModel
-	StatusLogModel *model.ActivityStatusLogModel
+	ActivityModel             *model.ActivityModel
+	CategoryModel             *model.CategoryModel
+	TagModel                  *model.TagModel
+	StatusLogModel            *model.ActivityStatusLogModel
+	ActivityRegistrationModel *model.ActivityRegistrationModel
+	ActivityTicketModel       *model.ActivityTicketModel
 
 	// RPC 客户端（调用其他微服务）
-	CreditRpc creditservice.CreditService // 信用分服务
-	VerifyRpc verifyservice.VerifyService // 学生认证服务
+	CreditRpc     creditservice.CreditService // 信用分服务
+	VerifyService verifyservice.VerifyService // 学生认证服务
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
 	// 1. 初始化数据库连接
-	db := initDB(c.MySQL)
+	db := initDB(c.MySQL.DataSource)
 
 	// 2. 初始化 Redis
-	rds := initRedis(c.Redis)
+	rds := initRedis(c.Redis.RedisConf)
+
+	// 3. 初始化限流/熔断
+	registrationLimiter := limit.NewTokenLimiter(
+		c.RegistrationLimit.Rate,
+		c.RegistrationLimit.Burst,
+		rds,
+		"activity:registration:limiter",
+	)
+	registrationBreaker := breaker.NewBreaker(
+		breaker.WithName(c.RegistrationBreaker.Name),
+	)
 
 	// 3. 初始化 User RPC 客户端
 	userRpcClient := zrpc.MustNewClient(c.UserRpc)
@@ -55,32 +73,30 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		DB:    db,
 		Redis: rds,
 
+		// 限流/熔断
+		RegistrationLimiter: registrationLimiter,
+		RegistrationBreaker: registrationBreaker,
+
 		// Model 层
-		ActivityModel:  model.NewActivityModel(db),
-		CategoryModel:  model.NewCategoryModel(db),
-		TagModel:       model.NewTagModel(db),
-		StatusLogModel: model.NewActivityStatusLogModel(db),
+		ActivityModel:             model.NewActivityModel(db),
+		CategoryModel:             model.NewCategoryModel(db),
+		TagModel:                  model.NewTagModel(db),
+		StatusLogModel:            model.NewActivityStatusLogModel(db),
+		ActivityRegistrationModel: model.NewActivityRegistrationModel(db),
+		ActivityTicketModel:       model.NewActivityTicketModel(db),
 
 		// RPC 客户端
-		CreditRpc: creditRpc,
-		VerifyRpc: verifyRpc,
+		CreditRpc:     creditRpc,
+		VerifyService: verifyRpc,
 	}
 }
 
 // 初始化函数
 
 // initDB 初始化数据库连接
-func initDB(c config.MySQLConfig) *gorm.DB {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		c.Username,
-		c.Password,
-		c.Host,
-		c.Port,
-		c.Database,
-	)
-
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info), // 开发环境打印 SQL
+func initDB(dataSource string) *gorm.DB {
+	db, err := gorm.Open(mysql.Open(dataSource), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Warn),
 	})
 	if err != nil {
 		logx.Errorf("连接数据库失败: %v", err)
@@ -92,9 +108,9 @@ func initDB(c config.MySQLConfig) *gorm.DB {
 	if err != nil {
 		panic(err)
 	}
-	sqlDB.SetMaxOpenConns(c.MaxOpenConns)
-	sqlDB.SetMaxIdleConns(c.MaxIdleConns)
-	sqlDB.SetConnMaxLifetime(time.Duration(c.ConnMaxLifetime) * time.Second)
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	logx.Info("数据库连接成功")
 	return db
