@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// Subscriber 定义了消息订阅者的接口
+// Subscriber 定义了消息订阅者接口
 // 订阅者负责从指定主题接收消息并调用处理器
 type Subscriber interface {
 	// Subscribe 订阅指定主题的消息
@@ -30,6 +30,7 @@ type Subscriber interface {
 // 参数:
 //   - ctx: 上下文，包含追踪信息等
 //   - msg: 接收到的消息
+//
 // 返回:
 //   - error: 处理失败时返回错误，将触发重试机制
 type HandlerFunc func(ctx context.Context, msg *Message) error
