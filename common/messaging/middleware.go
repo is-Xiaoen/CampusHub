@@ -4,6 +4,7 @@ package messaging
 // 中间件可以在消息处理前后执行额外逻辑（如日志、追踪、重试）
 // 参数:
 //   - next: 下一个处理器
+//
 // 返回:
 //   - HandlerFunc: 包装后的处理器
 type Middleware func(next HandlerFunc) HandlerFunc
