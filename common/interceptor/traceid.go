@@ -3,7 +3,7 @@ package interceptor
 import (
 	"context"
 
-	"CampusHub/common/ctxdata"
+	"activity-platform/common/ctxdata"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"

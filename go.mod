@@ -1,4 +1,4 @@
-module CampusHub
+module activity-platform
 
 go 1.24.0
 
