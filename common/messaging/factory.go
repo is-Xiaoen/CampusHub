@@ -59,8 +59,9 @@ type MessagingClient struct {
 // 此函数保留用于向后兼容，但会在未来版本中移除
 //
 // 迁移指南：
-//   import "CampusHub/common/messaging/client"
-//   c, err := client.NewMessagingClient(client.MessagingConfig{...})
+//
+//	import "CampusHub/common/messaging/client"
+//	c, err := client.NewMessagingClient(client.MessagingConfig{...})
 func NewMessagingClient(config MessagingConfig) (*MessagingClient, error) {
 	// 为了避免循环导入，此函数已被移除
 	// 请使用 client.NewMessagingClient
