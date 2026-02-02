@@ -23,10 +23,40 @@ func NewVerifyServiceServer(svcCtx *svc.ServiceContext) *VerifyServiceServer {
 	}
 }
 
+// GetVerifyCurrent 获取当前认证进度
+func (s *VerifyServiceServer) GetVerifyCurrent(ctx context.Context, in *pb.GetVerifyCurrentReq) (*pb.GetVerifyCurrentResp, error) {
+	l := verifyservicelogic.NewGetVerifyCurrentLogic(ctx, s.svcCtx)
+	return l.GetVerifyCurrent(in)
+}
+
+// GetVerifyInfo 获取已通过的认证信息
+func (s *VerifyServiceServer) GetVerifyInfo(ctx context.Context, in *pb.GetVerifyInfoReq) (*pb.GetVerifyInfoResp, error) {
+	l := verifyservicelogic.NewGetVerifyInfoLogic(ctx, s.svcCtx)
+	return l.GetVerifyInfo(in)
+}
+
 // IsVerified 查询用户是否已完成学生认证
 func (s *VerifyServiceServer) IsVerified(ctx context.Context, in *pb.IsVerifiedReq) (*pb.IsVerifiedResp, error) {
 	l := verifyservicelogic.NewIsVerifiedLogic(ctx, s.svcCtx)
 	return l.IsVerified(in)
+}
+
+// ApplyStudentVerify 提交学生认证申请
+func (s *VerifyServiceServer) ApplyStudentVerify(ctx context.Context, in *pb.ApplyStudentVerifyReq) (*pb.ApplyStudentVerifyResp, error) {
+	l := verifyservicelogic.NewApplyStudentVerifyLogic(ctx, s.svcCtx)
+	return l.ApplyStudentVerify(in)
+}
+
+// ConfirmStudentVerify 用户确认/修改认证信息
+func (s *VerifyServiceServer) ConfirmStudentVerify(ctx context.Context, in *pb.ConfirmStudentVerifyReq) (*pb.ConfirmStudentVerifyResp, error) {
+	l := verifyservicelogic.NewConfirmStudentVerifyLogic(ctx, s.svcCtx)
+	return l.ConfirmStudentVerify(in)
+}
+
+// CancelStudentVerify 取消认证申请
+func (s *VerifyServiceServer) CancelStudentVerify(ctx context.Context, in *pb.CancelStudentVerifyReq) (*pb.CancelStudentVerifyResp, error) {
+	l := verifyservicelogic.NewCancelStudentVerifyLogic(ctx, s.svcCtx)
+	return l.CancelStudentVerify(in)
 }
 
 // UpdateVerifyStatus 更新认证状态

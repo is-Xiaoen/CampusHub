@@ -23,14 +23,17 @@ type Config struct {
 	// MySQL 数据库配置
 	MySQL MySQLConf
 
-	// BizRedis 业务Redis缓存配置（避免与go-zero内置Redis冲突）
-	BizRedis redis.RedisConf
+	// Redis 缓存配置（复用go-zero内置配置）
+	Redis redis.RedisConf
 
 	// JWT 认证配置
 	JWT JWTConf
 
 	// SMS 短信服务配置
 	SMS SMSConf
+
+	// Ocr OCR 识别服务配置
+	Ocr OcrConf
 }
 
 // MySQLConf MySQL数据库配置
@@ -55,13 +58,51 @@ type JWTConf struct {
 // SMSConf 短信服务配置
 type SMSConf struct {
 	// Provider 短信服务提供商：aliyun, tencent, mock
-	Provider string `json:",optional,default=mock"`
+	Provider string
 	// AccessKey 访问密钥ID
-	AccessKey string `json:",optional"`
+	AccessKey string
 	// SecretKey 访问密钥Secret
-	SecretKey string `json:",optional"`
+	SecretKey string
 	// SignName 短信签名
-	SignName string `json:",optional"`
+	SignName string
 	// TemplateCode 短信模板ID
-	TemplateCode string `json:",optional"`
+	TemplateCode string
+}
+
+// OcrConf OCR 识别服务配置
+type OcrConf struct {
+	// Tencent 腾讯云 OCR 配置
+	Tencent TencentOcrConf
+	// Aliyun 阿里云 OCR 配置
+	Aliyun AliyunOcrConf
+}
+
+// TencentOcrConf 腾讯云 OCR 配置
+type TencentOcrConf struct {
+	// Enabled 是否启用
+	Enabled bool
+	// SecretId 密钥ID
+	SecretId string
+	// SecretKey 密钥Key
+	SecretKey string
+	// Region 地域（如 ap-guangzhou）
+	Region string
+	// Endpoint 服务端点
+	Endpoint string
+	// Timeout 超时时间（秒）
+	Timeout int
+}
+
+// AliyunOcrConf 阿里云 OCR 配置
+type AliyunOcrConf struct {
+	// Enabled 是否启用
+	Enabled bool
+	// AccessKeyId 访问密钥ID
+	AccessKeyId string
+	// AccessKeySecret 访问密钥Secret
+	AccessKeySecret string
+	// Endpoint 服务端点
+	Endpoint string
+	// Timeout 超时时间（秒）
+	Timeout int
 }
