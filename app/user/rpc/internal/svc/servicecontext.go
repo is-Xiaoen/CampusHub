@@ -118,8 +118,8 @@ func initDB(c config.Config) *gorm.DB {
 // 使用 go-zero 的 RedisConf 配置
 func initRedis(c config.Config) *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:         c.Redis.Host,
-		Password:     c.Redis.Pass,
+		Addr:         c.BizRedis.Host,
+		Password:     c.BizRedis.Pass,
 		DB:           0,
 		PoolSize:     100,
 		MinIdleConns: 10,

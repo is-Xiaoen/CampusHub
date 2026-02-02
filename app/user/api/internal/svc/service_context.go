@@ -62,8 +62,8 @@ func NewServiceContext(c config.Config) *ServiceContext {
 // initRedis 初始化Redis客户端
 func initRedis(c config.Config) *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     c.Redis.Host,
-		Password: c.Redis.Pass,
+		Addr:     c.BizRedis.Host,
+		Password: c.BizRedis.Pass,
 		DB:       0,
 	})
 	logx.Info("Redis连接初始化成功")

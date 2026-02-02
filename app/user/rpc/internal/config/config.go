@@ -20,20 +20,20 @@ type Config struct {
 	// RPC服务基础配置（包含服务发现、监听端口、日志等）
 	zrpc.RpcServerConf
 
-	// MySQL 数据库配置
+	// MySQL 数据库配置（必填）
 	MySQL MySQLConf
 
-	// Redis 缓存配置（复用go-zero内置配置）
-	Redis redis.RedisConf
+	// BizRedis 业务Redis缓存配置（必填，避免与go-zero内置Redis冲突）
+	BizRedis redis.RedisConf
 
-	// JWT 认证配置
+	// JWT 认证配置（必填）
 	JWT JWTConf
 
-	// SMS 短信服务配置
-	SMS SMSConf
+	// SMS 短信服务配置（可选，默认 mock 模式）
+	SMS SMSConf `json:",optional"`
 
-	// Ocr OCR 识别服务配置
-	Ocr OcrConf
+	// Ocr OCR 识别服务配置（可选，不配置则禁用）
+	Ocr OcrConf `json:",optional"`
 }
 
 // MySQLConf MySQL数据库配置
@@ -58,51 +58,51 @@ type JWTConf struct {
 // SMSConf 短信服务配置
 type SMSConf struct {
 	// Provider 短信服务提供商：aliyun, tencent, mock
-	Provider string
-	// AccessKey 访问密钥ID
-	AccessKey string
-	// SecretKey 访问密钥Secret
-	SecretKey string
-	// SignName 短信签名
-	SignName string
-	// TemplateCode 短信模板ID
-	TemplateCode string
+	Provider string `json:",default=mock"`
+	// AccessKey 访问密钥ID（mock 模式可选）
+	AccessKey string `json:",optional"`
+	// SecretKey 访问密钥Secret（mock 模式可选）
+	SecretKey string `json:",optional"`
+	// SignName 短信签名（mock 模式可选）
+	SignName string `json:",optional"`
+	// TemplateCode 短信模板ID（mock 模式可选）
+	TemplateCode string `json:",optional"`
 }
 
 // OcrConf OCR 识别服务配置
 type OcrConf struct {
 	// Tencent 腾讯云 OCR 配置
-	Tencent TencentOcrConf
+	Tencent TencentOcrConf `json:",optional"`
 	// Aliyun 阿里云 OCR 配置
-	Aliyun AliyunOcrConf
+	Aliyun AliyunOcrConf `json:",optional"`
 }
 
 // TencentOcrConf 腾讯云 OCR 配置
 type TencentOcrConf struct {
 	// Enabled 是否启用
-	Enabled bool
+	Enabled bool `json:",default=false"`
 	// SecretId 密钥ID
-	SecretId string
+	SecretId string `json:",optional"`
 	// SecretKey 密钥Key
-	SecretKey string
+	SecretKey string `json:",optional"`
 	// Region 地域（如 ap-guangzhou）
-	Region string
+	Region string `json:",optional"`
 	// Endpoint 服务端点
-	Endpoint string
+	Endpoint string `json:",optional"`
 	// Timeout 超时时间（秒）
-	Timeout int
+	Timeout int `json:",default=30"`
 }
 
 // AliyunOcrConf 阿里云 OCR 配置
 type AliyunOcrConf struct {
 	// Enabled 是否启用
-	Enabled bool
+	Enabled bool `json:",default=false"`
 	// AccessKeyId 访问密钥ID
-	AccessKeyId string
+	AccessKeyId string `json:",optional"`
 	// AccessKeySecret 访问密钥Secret
-	AccessKeySecret string
+	AccessKeySecret string `json:",optional"`
 	// Endpoint 服务端点
-	Endpoint string
+	Endpoint string `json:",optional"`
 	// Timeout 超时时间（秒）
-	Timeout int
+	Timeout int `json:",default=30"`
 }

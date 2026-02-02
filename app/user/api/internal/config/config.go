@@ -30,6 +30,6 @@ type Config struct {
 	// User RPC 服务配置
 	UserRpc zrpc.RpcClientConf
 
-	// Redis 配置
-	Redis redis.RedisConf
+	// BizRedis 业务Redis配置（避免与go-zero内置Redis冲突）
+	BizRedis redis.RedisConf
 }
