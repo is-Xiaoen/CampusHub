@@ -12,7 +12,7 @@ CREATE DATABASE IF NOT EXISTS `campushub_user`
 USE `campushub_user`;
 
 -- 0. user_details 用户表（壳子，具体字段由杨春路补充）
-CREATE TABLE `user` (
+CREATE TABLE `users` (
     `user_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '用户主键ID（与关联表user_id完全统一）',
     `QQemail` VARCHAR(100) NOT NULL COMMENT 'QQ邮箱（用户登录/标识用）',
     `nickname` VARCHAR(50) NOT NULL COMMENT '用户昵称',
@@ -79,7 +79,7 @@ CREATE TABLE `student_verifications` (
 ) ENGINE=InnoDB COMMENT='学生认证表';
 
 
-CREATE TABLE `interest_tag` (
+CREATE TABLE `interest_tags` (
     `tag_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '标签主键ID，自增',
     `tag_name` VARCHAR(50) NOT NULL COMMENT '标签名称（如：运动、音乐、阅读）',
     `color` VARCHAR(20) DEFAULT '' COMMENT '标签颜色值（如十六进制#FFFFFF、RGB值等）',
@@ -94,7 +94,7 @@ CREATE TABLE `interest_tag` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='兴趣标签基础表';
 
 
-CREATE TABLE user_interest_relation (
+CREATE TABLE `user_interest_relations` (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     user_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
     tag_id BIGINT UNSIGNED NOT NULL DEFAULT 0,  -- 关键修改：interest_id → tag_id
