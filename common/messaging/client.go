@@ -16,10 +16,10 @@ import (
 
 // Client Watermill 消息客户端
 type Client struct {
-	Publisher  message.Publisher
-	Subscriber message.Subscriber
-	Router     *message.Router
-	config     Config
+	Publisher   message.Publisher
+	Subscriber  message.Subscriber
+	Router      *message.Router
+	config      Config
 	redisClient *redis.Client
 }
 
@@ -70,7 +70,7 @@ func NewClient(config Config) (*Client, error) {
 	}
 
 	// 应用中间件（按顺序）
-	
+
 	// 1. Go-Zero trace_id 传播中间件（最先执行，确保 context 中有 trace_id）
 	if config.EnableGoZero {
 		router.AddMiddleware(gozero.NewGoZeroMiddleware(config.ServiceName))
@@ -123,20 +123,20 @@ func (c *Client) Close() error {
 	return nil
 }
 
-// Publish 发布消息（便捷方法）
+// Publish 发布消息
 func (c *Client) Publish(ctx context.Context, topic string, payload []byte) error {
 	msg := message.NewMessage(watermill.NewUUID(), payload)
 	msg.Metadata.Set("topic", topic)
-	
+
 	// 如果启用了 Go-Zero，注入 trace_id
 	if c.config.EnableGoZero {
 		gozero.InjectTraceID(ctx, msg)
 	}
-	
+
 	return c.Publisher.Publish(topic, msg)
 }
 
-// Subscribe 订阅消息（便捷方法）
+// Subscribe 订阅消息
 // 注意：这个方法会直接添加 handler 到 Router，需要调用 Router.Run() 来启动
 func (c *Client) Subscribe(topic string, handlerName string, handler message.NoPublishHandlerFunc) {
 	c.Router.AddNoPublisherHandler(
