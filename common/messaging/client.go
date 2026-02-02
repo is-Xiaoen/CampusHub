@@ -34,7 +34,7 @@ func NewClient(config Config) (*Client, error) {
 
 	// 测试 Redis 连接
 	if err := redisClient.Ping(context.Background()).Err(); err != nil {
-		return nil, fmt.Errorf("failed to connect to Redis: %w", err)
+		return nil, fmt.Errorf("连接 Redis 失败: %w", err)
 	}
 
 	// 创建 Watermill logger
@@ -48,7 +48,7 @@ func NewClient(config Config) (*Client, error) {
 		logger,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create publisher: %w", err)
+		return nil, fmt.Errorf("创建发布者失败: %w", err)
 	}
 
 	// 创建 Subscriber
@@ -60,13 +60,13 @@ func NewClient(config Config) (*Client, error) {
 		logger,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create subscriber: %w", err)
+		return nil, fmt.Errorf("创建订阅者失败: %w", err)
 	}
 
 	// 创建 Router（用于中间件）
 	router, err := message.NewRouter(message.RouterConfig{}, logger)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create router: %w", err)
+		return nil, fmt.Errorf("创建路由器失败: %w", err)
 	}
 
 	// 应用中间件（按顺序）
@@ -109,16 +109,16 @@ func NewClient(config Config) (*Client, error) {
 // Close 关闭客户端
 func (c *Client) Close() error {
 	if err := c.Publisher.Close(); err != nil {
-		return fmt.Errorf("failed to close publisher: %w", err)
+		return fmt.Errorf("关闭发布者失败: %w", err)
 	}
 	if err := c.Subscriber.Close(); err != nil {
-		return fmt.Errorf("failed to close subscriber: %w", err)
+		return fmt.Errorf("关闭订阅者失败: %w", err)
 	}
 	if err := c.Router.Close(); err != nil {
-		return fmt.Errorf("failed to close router: %w", err)
+		return fmt.Errorf("关闭路由器失败: %w", err)
 	}
 	if err := c.redisClient.Close(); err != nil {
-		return fmt.Errorf("failed to close redis client: %w", err)
+		return fmt.Errorf("关闭 Redis 客户端失败: %w", err)
 	}
 	return nil
 }
