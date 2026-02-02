@@ -2,7 +2,7 @@
 // goctl 1.9.2
 // Source: user.proto
 
-package verifyservice
+package userbasicservice
 
 import (
 	"context"
@@ -43,32 +43,22 @@ type (
 	UserInfo               = pb.UserInfo
 	VerifyOcrData          = pb.VerifyOcrData
 
-	VerifyService interface {
-		// IsVerified 查询用户是否已完成学生认证
-		IsVerified(ctx context.Context, in *IsVerifiedReq, opts ...grpc.CallOption) (*IsVerifiedResp, error)
-		// UpdateVerifyStatus 更新认证状态
-		UpdateVerifyStatus(ctx context.Context, in *UpdateVerifyStatusReq, opts ...grpc.CallOption) (*UpdateVerifyStatusResp, error)
+	UserBasicService interface {
+		GetGroupUser(ctx context.Context, in *GetGroupUserRep, opts ...grpc.CallOption) (*GetGroupUserResponse, error)
 	}
 
-	defaultVerifyService struct {
+	defaultUserBasicService struct {
 		cli zrpc.Client
 	}
 )
 
-func NewVerifyService(cli zrpc.Client) VerifyService {
-	return &defaultVerifyService{
+func NewUserBasicService(cli zrpc.Client) UserBasicService {
+	return &defaultUserBasicService{
 		cli: cli,
 	}
 }
 
-// IsVerified 查询用户是否已完成学生认证
-func (m *defaultVerifyService) IsVerified(ctx context.Context, in *IsVerifiedReq, opts ...grpc.CallOption) (*IsVerifiedResp, error) {
-	client := pb.NewVerifyServiceClient(m.cli.Conn())
-	return client.IsVerified(ctx, in, opts...)
-}
-
-// UpdateVerifyStatus 更新认证状态
-func (m *defaultVerifyService) UpdateVerifyStatus(ctx context.Context, in *UpdateVerifyStatusReq, opts ...grpc.CallOption) (*UpdateVerifyStatusResp, error) {
-	client := pb.NewVerifyServiceClient(m.cli.Conn())
-	return client.UpdateVerifyStatus(ctx, in, opts...)
+func (m *defaultUserBasicService) GetGroupUser(ctx context.Context, in *GetGroupUserRep, opts ...grpc.CallOption) (*GetGroupUserResponse, error) {
+	client := pb.NewUserBasicServiceClient(m.cli.Conn())
+	return client.GetGroupUser(ctx, in, opts...)
 }
