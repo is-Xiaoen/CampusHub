@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// Subscriber 定义了消息订阅者接口
+// Subscriber 定义了消息订阅者的接口
 // 订阅者负责从指定主题接收消息并调用处理器
 type Subscriber interface {
 	// Subscribe 订阅指定主题的消息
