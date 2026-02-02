@@ -537,3 +537,291 @@ var VerifyService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "user.proto",
 }
+
+const (
+	TagService_GetAllTags_FullMethodName   = "/user.TagService/GetAllTags"
+	TagService_GetTagsByIds_FullMethodName = "/user.TagService/GetTagsByIds"
+	TagService_GetUserTags_FullMethodName  = "/user.TagService/GetUserTags"
+)
+
+// TagServiceClient is the client API for TagService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// 标签服务
+type TagServiceClient interface {
+	GetAllTags(ctx context.Context, in *GetAllTagsReq, opts ...grpc.CallOption) (*GetAllTagsResp, error)
+	GetTagsByIds(ctx context.Context, in *GetTagsByIdsReq, opts ...grpc.CallOption) (*GetTagsByIdsResp, error)
+	GetUserTags(ctx context.Context, in *GetUserTagsRep, opts ...grpc.CallOption) (*GetUserTagsResponse, error)
+}
+
+type tagServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewTagServiceClient(cc grpc.ClientConnInterface) TagServiceClient {
+	return &tagServiceClient{cc}
+}
+
+func (c *tagServiceClient) GetAllTags(ctx context.Context, in *GetAllTagsReq, opts ...grpc.CallOption) (*GetAllTagsResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetAllTagsResp)
+	err := c.cc.Invoke(ctx, TagService_GetAllTags_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tagServiceClient) GetTagsByIds(ctx context.Context, in *GetTagsByIdsReq, opts ...grpc.CallOption) (*GetTagsByIdsResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetTagsByIdsResp)
+	err := c.cc.Invoke(ctx, TagService_GetTagsByIds_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tagServiceClient) GetUserTags(ctx context.Context, in *GetUserTagsRep, opts ...grpc.CallOption) (*GetUserTagsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUserTagsResponse)
+	err := c.cc.Invoke(ctx, TagService_GetUserTags_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// TagServiceServer is the server API for TagService service.
+// All implementations must embed UnimplementedTagServiceServer
+// for forward compatibility.
+//
+// 标签服务
+type TagServiceServer interface {
+	GetAllTags(context.Context, *GetAllTagsReq) (*GetAllTagsResp, error)
+	GetTagsByIds(context.Context, *GetTagsByIdsReq) (*GetTagsByIdsResp, error)
+	GetUserTags(context.Context, *GetUserTagsRep) (*GetUserTagsResponse, error)
+	mustEmbedUnimplementedTagServiceServer()
+}
+
+// UnimplementedTagServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedTagServiceServer struct{}
+
+func (UnimplementedTagServiceServer) GetAllTags(context.Context, *GetAllTagsReq) (*GetAllTagsResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetAllTags not implemented")
+}
+func (UnimplementedTagServiceServer) GetTagsByIds(context.Context, *GetTagsByIdsReq) (*GetTagsByIdsResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetTagsByIds not implemented")
+}
+func (UnimplementedTagServiceServer) GetUserTags(context.Context, *GetUserTagsRep) (*GetUserTagsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetUserTags not implemented")
+}
+func (UnimplementedTagServiceServer) mustEmbedUnimplementedTagServiceServer() {}
+func (UnimplementedTagServiceServer) testEmbeddedByValue()                    {}
+
+// UnsafeTagServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to TagServiceServer will
+// result in compilation errors.
+type UnsafeTagServiceServer interface {
+	mustEmbedUnimplementedTagServiceServer()
+}
+
+func RegisterTagServiceServer(s grpc.ServiceRegistrar, srv TagServiceServer) {
+	// If the following call panics, it indicates UnimplementedTagServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&TagService_ServiceDesc, srv)
+}
+
+func _TagService_GetAllTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllTagsReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TagServiceServer).GetAllTags(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TagService_GetAllTags_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TagServiceServer).GetAllTags(ctx, req.(*GetAllTagsReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TagService_GetTagsByIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTagsByIdsReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TagServiceServer).GetTagsByIds(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TagService_GetTagsByIds_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TagServiceServer).GetTagsByIds(ctx, req.(*GetTagsByIdsReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TagService_GetUserTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserTagsRep)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TagServiceServer).GetUserTags(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TagService_GetUserTags_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TagServiceServer).GetUserTags(ctx, req.(*GetUserTagsRep))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// TagService_ServiceDesc is the grpc.ServiceDesc for TagService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var TagService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "user.TagService",
+	HandlerType: (*TagServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetAllTags",
+			Handler:    _TagService_GetAllTags_Handler,
+		},
+		{
+			MethodName: "GetTagsByIds",
+			Handler:    _TagService_GetTagsByIds_Handler,
+		},
+		{
+			MethodName: "GetUserTags",
+			Handler:    _TagService_GetUserTags_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "user.proto",
+}
+
+const (
+	UserBasicService_GetGroupUser_FullMethodName = "/user.UserBasicService/GetGroupUser"
+)
+
+// UserBasicServiceClient is the client API for UserBasicService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// 用户信息服务
+type UserBasicServiceClient interface {
+	GetGroupUser(ctx context.Context, in *GetGroupUserRep, opts ...grpc.CallOption) (*GetGroupUserResponse, error)
+}
+
+type userBasicServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewUserBasicServiceClient(cc grpc.ClientConnInterface) UserBasicServiceClient {
+	return &userBasicServiceClient{cc}
+}
+
+func (c *userBasicServiceClient) GetGroupUser(ctx context.Context, in *GetGroupUserRep, opts ...grpc.CallOption) (*GetGroupUserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetGroupUserResponse)
+	err := c.cc.Invoke(ctx, UserBasicService_GetGroupUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// UserBasicServiceServer is the server API for UserBasicService service.
+// All implementations must embed UnimplementedUserBasicServiceServer
+// for forward compatibility.
+//
+// 用户信息服务
+type UserBasicServiceServer interface {
+	GetGroupUser(context.Context, *GetGroupUserRep) (*GetGroupUserResponse, error)
+	mustEmbedUnimplementedUserBasicServiceServer()
+}
+
+// UnimplementedUserBasicServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedUserBasicServiceServer struct{}
+
+func (UnimplementedUserBasicServiceServer) GetGroupUser(context.Context, *GetGroupUserRep) (*GetGroupUserResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetGroupUser not implemented")
+}
+func (UnimplementedUserBasicServiceServer) mustEmbedUnimplementedUserBasicServiceServer() {}
+func (UnimplementedUserBasicServiceServer) testEmbeddedByValue()                          {}
+
+// UnsafeUserBasicServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to UserBasicServiceServer will
+// result in compilation errors.
+type UnsafeUserBasicServiceServer interface {
+	mustEmbedUnimplementedUserBasicServiceServer()
+}
+
+func RegisterUserBasicServiceServer(s grpc.ServiceRegistrar, srv UserBasicServiceServer) {
+	// If the following call panics, it indicates UnimplementedUserBasicServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&UserBasicService_ServiceDesc, srv)
+}
+
+func _UserBasicService_GetGroupUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetGroupUserRep)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserBasicServiceServer).GetGroupUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserBasicService_GetGroupUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserBasicServiceServer).GetGroupUser(ctx, req.(*GetGroupUserRep))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// UserBasicService_ServiceDesc is the grpc.ServiceDesc for UserBasicService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var UserBasicService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "user.UserBasicService",
+	HandlerType: (*UserBasicServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetGroupUser",
+			Handler:    _UserBasicService_GetGroupUser_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "user.proto",
+}

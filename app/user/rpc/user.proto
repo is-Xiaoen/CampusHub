@@ -80,17 +80,9 @@ service CreditService {
     // 幂等保证: 通过 source_id 实现幂等
     rpc UpdateScore(UpdateScoreReq) returns (UpdateScoreResp);
 
-    rpc GetUserIdAndTag(GetUserIdAndTagReq) returns(GetUserIdAndTagResponse);
 }
 
-message GetUserIdAndTagReq {}
 
-message GetUserIdAndTagResponse {
-    // 用户ID
-    uint64 user_id = 1;
-    // 用户标签
-    uint64 tag_id =2;
-}
 
 // ============================================================================
 // CreditService 消息定义
@@ -419,3 +411,81 @@ message UpdateVerifyStatusResp {
 // Status 7: 已取消（用户主动取消，可重新申请）
 //
 // ============================================================================
+
+// 标签服务
+service TagService {
+    rpc GetAllTags(GetAllTagsReq) returns (GetAllTagsResp);
+
+    rpc GetTagsByIds(GetTagsByIdsReq) returns (GetTagsByIdsResp);
+
+    rpc GetUserTags(GetUserTagsRep)returns(GetUserTagsResponse);
+}
+
+message GetAllTagsReq {
+    // 上次同步时间戳（可选，用于增量同步）
+    // 0 表示全量同步
+    int64 since_timestamp = 1;
+}
+
+message GetAllTagsResp {
+    // 标签列表
+    repeated TagInfo tags = 1;
+    // 服务端当前时间戳（用于下次增量同步）
+    int64 server_timestamp = 2;
+}
+
+message GetTagsByIdsReq {
+    // 标签 ID 列表（最多 50 个）
+    repeated int64 ids = 1;
+}
+
+message GetTagsByIdsResp {
+    // 存在且启用的标签列表
+    repeated TagInfo tags = 1;
+    // 不存在或已禁用的标签 ID 列表
+    repeated int64 invalid_ids = 2;
+}
+
+message TagInfo {
+    uint64 id = 1;           // 标签 ID
+    string name = 2;        // 标签名称
+    string color = 3;       // 标签颜色
+    string icon = 4;        // 标签图标 URL
+    uint64 status = 5;       // 状态: 1 启用, 0 禁用
+    string description = 6; // 标签描述（可选）
+    int64 created_at = 7;   // 创建时间戳
+    int64 updated_at = 8;   // 更新时间戳
+}
+
+message GetUserTagsRep {}
+
+message GetUserTagsResponse {
+    uint64 id = 1;
+    string name = 2;
+}
+
+
+// 用户信息服务
+service UserBasicService {
+    rpc GetGroupUser(GetGroupUserRep)returns(GetGroupUserResponse);
+}
+
+message GetGroupUserRep {}
+
+message GetGroupUserResponse {
+    uint64 id = 1;
+    string avatar_url = 2;
+    string nickname = 3;
+}
+
+message UserInfo {
+    uint64 id = 1;
+    string qq_email = 2;
+    string nickname = 3;
+    string avatar_url = 4;
+    string introduction = 5;
+    uint64 status = 6;
+    uint64 age = 7;
+    uint64 gender = 8;
+}
+
