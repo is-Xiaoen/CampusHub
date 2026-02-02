@@ -16,10 +16,10 @@ import (
 
 // ActivityTagStats 活动标签统计
 type ActivityTagStats struct {
-	TagID         uint64 `gorm:"column:tag_id;primaryKey" json:"tag_id"`                        // 标签ID
-	ActivityCount uint32 `gorm:"column:activity_count;default:0" json:"activity_count"`         // 关联的活动数量
-	ViewCount     uint64 `gorm:"column:view_count;default:0" json:"view_count"`                 // 标签关联活动的总浏览量（预留）
-	UpdatedAt     int64  `gorm:"column:updated_at;not null" json:"updated_at"`                  // 更新时间戳
+	TagID         uint64 `gorm:"column:tag_id;primaryKey" json:"tag_id"`                // 标签ID
+	ActivityCount uint32 `gorm:"column:activity_count;default:0" json:"activity_count"` // 关联的活动数量
+	ViewCount     uint64 `gorm:"column:view_count;default:0" json:"view_count"`         // 标签关联活动的总浏览量（预留）
+	UpdatedAt     int64  `gorm:"column:updated_at;not null" json:"updated_at"`          // 更新时间戳
 }
 
 func (ActivityTagStats) TableName() string {
