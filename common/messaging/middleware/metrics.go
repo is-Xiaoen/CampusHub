@@ -11,10 +11,10 @@ import (
 var (
 	// messagesProcessed 消息处理计数器
 	messagesProcessed *prometheus.CounterVec
-	
+
 	// processingDuration 消息处理耗时直方图
 	processingDuration *prometheus.HistogramVec
-	
+
 	// messagesInFlight 正在处理的消息数量
 	messagesInFlight *prometheus.GaugeVec
 )
@@ -58,7 +58,7 @@ func NewMetricsMiddleware(serviceName string) message.HandlerMiddleware {
 
 			// 记录开始时间
 			start := time.Now()
-			
+
 			// 增加正在处理的消息数
 			messagesInFlight.WithLabelValues(serviceName, topic).Inc()
 			defer messagesInFlight.WithLabelValues(serviceName, topic).Dec()
