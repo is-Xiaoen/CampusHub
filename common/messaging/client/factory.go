@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"activity-platform/common/messaging"
-	"activity-platform/common/messaging/backend/redis"
-	"activity-platform/common/messaging/gozero"
-	"activity-platform/common/messaging/metrics"
-	"activity-platform/common/messaging/middleware"
+	"CampusHub/common/messaging"
+	"CampusHub/common/messaging/backend/redis"
+	"CampusHub/common/messaging/gozero"
+	"CampusHub/common/messaging/metrics"
+	"CampusHub/common/messaging/middleware"
 
 	goredis "github.com/redis/go-redis/v9"
 )

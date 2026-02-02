@@ -3,7 +3,7 @@ package metrics
 import (
 	"time"
 
-	"activity-platform/common/messaging"
+	"CampusHub/common/messaging"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"

@@ -3,7 +3,7 @@ package gozero
 import (
 	"context"
 
-	"activity-platform/common/messaging"
+	"CampusHub/common/messaging"
 )
 
 // Context keys for go-zero integration

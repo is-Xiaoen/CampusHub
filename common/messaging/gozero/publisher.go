@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"activity-platform/common/messaging"
+	"CampusHub/common/messaging"
 )
 
 // Publisher Go-Zero 发布者适配器
