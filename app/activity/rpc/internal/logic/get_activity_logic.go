@@ -73,16 +73,16 @@ func (l *GetActivityLogic) GetActivity(in *activity.GetActivityReq) (*activity.G
 		categoryName = category.Name
 	}
 
-	// 5. 查询标签列表
-	tags, err := l.svcCtx.TagModel.FindByActivityID(l.ctx, uint64(in.Id))
+	// 5. 查询标签列表（从 tag_cache 表）
+	tagCaches, err := l.svcCtx.TagCacheModel.FindByActivityID(l.ctx, uint64(in.Id))
 	if err != nil {
 		// 标签查询失败不影响主流程
 		l.Infof("[WARNING] 查询标签失败: activity_id=%d, err=%v", in.Id, err)
-		tags = []model.Tag{}
+		tagCaches = []model.TagCache{}
 	}
 
 	// 6. 构建响应
-	detail := l.buildActivityDetail(activityData, categoryName, tags)
+	detail := l.buildActivityDetail(activityData, categoryName, tagCaches)
 
 	l.Infof("获取活动详情成功: id=%d, title=%s, viewer_id=%d",
 		activityData.ID, activityData.Title, in.ViewerId)
@@ -93,7 +93,7 @@ func (l *GetActivityLogic) GetActivity(in *activity.GetActivityReq) (*activity.G
 }
 
 // buildActivityDetail 构建活动详情响应
-func (l *GetActivityLogic) buildActivityDetail(act *model.Activity, categoryName string, tags []model.Tag) *activity.ActivityDetail {
+func (l *GetActivityLogic) buildActivityDetail(act *model.Activity, categoryName string, tags []model.TagCache) *activity.ActivityDetail {
 	return &activity.ActivityDetail{
 		Id:                   int64(act.ID),
 		Title:                act.Title,
@@ -124,7 +124,7 @@ func (l *GetActivityLogic) buildActivityDetail(act *model.Activity, categoryName
 		RejectReason:         act.RejectReason,
 		ViewCount:            int64(act.ViewCount),
 		LikeCount:            int64(act.LikeCount),
-		Tags:                 convertTags(tags),
+		Tags:                 convertTagCaches(tags),
 		CreatedAt:            act.CreatedAt,
 		UpdatedAt:            act.UpdatedAt,
 		Version:              int32(act.Version),
@@ -147,8 +147,8 @@ func maskPhone(phone string) string {
 	return phone[:3] + "****" + phone[7:]
 }
 
-// convertTags 将 model.Tag 转换为 proto Tag
-func convertTags(tags []model.Tag) []*activity.Tag {
+// convertTagCaches 将 model.TagCache 转换为 proto Tag
+func convertTagCaches(tags []model.TagCache) []*activity.Tag {
 	if len(tags) == 0 {
 		return []*activity.Tag{}
 	}
