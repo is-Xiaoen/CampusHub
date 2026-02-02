@@ -1,4 +1,4 @@
-CREATE TABLE `user` (
+CREATE TABLE `users` (
                         `user_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '用户主键ID（与关联表user_id完全统一）',
                         `QQemail` VARCHAR(100) NOT NULL COMMENT 'QQ邮箱（用户登录/标识用）',
                         `nickname` VARCHAR(50) NOT NULL COMMENT '用户昵称',
