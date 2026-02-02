@@ -66,10 +66,19 @@ func (l *GetTicketDetailLogic) GetTicketDetail(in *activity.GetTicketDetailReque
 		QrCodeUrl:  qrPayload,
 	}
 
-	// TODO: 调用同事的方法，通过 activity_id 获取活动名称、时间
-	// activityInfo := l.svcCtx.ActivityModel.???
-	// resp.ActivityName = activityInfo.Name
-	// resp.ActivityTime = activityInfo.Time
+	activityInfo, err := l.svcCtx.ActivityModel.FindByID(l.ctx, ticket.ActivityID)
+	if err != nil {
+		if errors.Is(err, model.ErrActivityNotFound) {
+			l.Infof("[WARNING] 活动不存在: activityId=%d, ticketId=%d", ticket.ActivityID, ticket.ID)
+		} else {
+			return nil, err
+		}
+	} else {
+		resp.ActivityName = activityInfo.Title
+		if activityInfo.ActivityStartTime > 0 {
+			resp.ActivityTime = time.Unix(activityInfo.ActivityStartTime, 0).Format("2006-01-02 15:04:05")
+		}
+	}
 
 	return resp, nil
 }

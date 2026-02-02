@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"errors"
+	"time"
 
 	"activity-platform/app/activity/model"
 	"activity-platform/app/activity/rpc/activity"
@@ -68,11 +69,20 @@ func (l *GetTicketListLogic) GetTicketList(in *activity.GetTicketListRequest) (*
 			Status:     mapTicketStatus(ticket.Status),
 		}
 
-		// TODO: 调用同事的方法，通过 activity_id 获取活动名称、时间、封面图
-		// activityInfo := l.svcCtx.ActivityModel.???
-		// item.ActivityName = activityInfo.Name
-		// item.ActivityTime = activityInfo.Time
-		// item.ActivityImageUrl = activityInfo.ImageUrl
+		activityInfo, err := l.svcCtx.ActivityModel.FindByID(l.ctx, ticket.ActivityID)
+		if err != nil {
+			if errors.Is(err, model.ErrActivityNotFound) {
+				l.Infof("[WARNING] 活动不存在: activityId=%d, ticketId=%d", ticket.ActivityID, ticket.ID)
+			} else {
+				return nil, err
+			}
+		} else {
+			item.ActivityName = activityInfo.Title
+			if activityInfo.ActivityStartTime > 0 {
+				item.ActivityTime = time.Unix(activityInfo.ActivityStartTime, 0).Format("2006-01-02 15:04:05")
+			}
+			item.ActivityImageUrl = activityInfo.CoverURL
+		}
 
 		items = append(items, item)
 	}

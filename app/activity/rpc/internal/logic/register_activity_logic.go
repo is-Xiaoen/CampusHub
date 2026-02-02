@@ -20,10 +20,8 @@ import (
 	"activity-platform/app/user/rpc/client/verifyservice"
 	"activity-platform/common/ctxdata"
 
-	mysqlerr "github.com/go-sql-driver/mysql"
 	"github.com/zeromicro/go-zero/core/breaker"
 	"github.com/zeromicro/go-zero/core/logx"
-	"gorm.io/gorm"
 )
 
 type RegisterActivityLogic struct {
@@ -44,7 +42,8 @@ func NewRegisterActivityLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 // RegisterActivity 报名活动
 func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRequest) (*activity.RegisterActivityResponse, error) {
 	userID := ctxdata.GetUserIDFromCtx(l.ctx)
-	if userID <= 0 || in.GetActivityId() <= 0 {
+	activityID := in.GetActivityId()
+	if userID <= 0 || activityID <= 0 {
 		return &activity.RegisterActivityResponse{
 			Result: "fail",
 			Reason: "参数错误",
@@ -56,6 +55,47 @@ func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRe
 		return &activity.RegisterActivityResponse{
 			Result: "fail",
 			Reason: "请求过于频繁，请稍后再试",
+		}, nil
+	}
+
+	// ==================== 活动校验 ====================
+	activityData, err := l.svcCtx.ActivityModel.FindByID(l.ctx, uint64(activityID))
+	if err != nil {
+		if errors.Is(err, model.ErrActivityNotFound) {
+			return &activity.RegisterActivityResponse{
+				Result: "fail",
+				Reason: "活动不存在",
+			}, nil
+		}
+		l.Errorf("活动查询失败: activityId=%d, err=%v", activityID, err)
+		return &activity.RegisterActivityResponse{
+			Result: "fail",
+			Reason: "活动查询失败，请稍后重试",
+		}, nil
+	}
+	now := time.Now().Unix()
+	if activityData.Status != model.StatusPublished {
+		return &activity.RegisterActivityResponse{
+			Result: "fail",
+			Reason: "活动不在报名中",
+		}, nil
+	}
+	if activityData.RegisterStartTime > 0 && now < activityData.RegisterStartTime {
+		return &activity.RegisterActivityResponse{
+			Result: "fail",
+			Reason: "报名未开始",
+		}, nil
+	}
+	if activityData.RegisterEndTime > 0 && now > activityData.RegisterEndTime {
+		return &activity.RegisterActivityResponse{
+			Result: "fail",
+			Reason: "报名已结束",
+		}, nil
+	}
+	if activityData.MaxParticipants > 0 && activityData.CurrentParticipants >= activityData.MaxParticipants {
+		return &activity.RegisterActivityResponse{
+			Result: "fail",
+			Reason: "活动名额已满",
 		}, nil
 	}
 
@@ -72,7 +112,7 @@ func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRe
 	}
 	if !creditResp.GetAllowed() {
 		_ = l.svcCtx.ActivityRegistrationModel.Create(l.ctx, &model.ActivityRegistration{
-			ActivityID: uint64(in.GetActivityId()),
+			ActivityID: uint64(activityID),
 			UserID:     uint64(userID),
 			Status:     model.RegistrationStatusFailed,
 		})
@@ -83,77 +123,55 @@ func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRe
 	}
 
 	// ==================== 实名校验 ====================
-	verifyResp, err := l.svcCtx.VerifyService.IsVerified(l.ctx, &verifyservice.IsVerifiedReq{
-		UserId: userID,
-	})
-	if err != nil {
-		l.Errorf("实名校验失败: userId=%d, err=%v", userID, err)
-		return &activity.RegisterActivityResponse{
-			Result: "fail",
-			Reason: "实名校验失败，请稍后重试",
-		}, nil
-	}
-	if !verifyResp.GetIsVerified() {
-		_ = l.svcCtx.ActivityRegistrationModel.Create(l.ctx, &model.ActivityRegistration{
-			ActivityID: uint64(in.GetActivityId()),
-			UserID:     uint64(userID),
-			Status:     model.RegistrationStatusFailed,
+	if activityData.RequireStudentVerify {
+		verifyResp, err := l.svcCtx.VerifyService.IsVerified(l.ctx, &verifyservice.IsVerifiedReq{
+			UserId: userID,
 		})
-		return &activity.RegisterActivityResponse{
-			Result: "fail",
-			Reason: "请先完成学生认证",
-		}, nil
+		if err != nil {
+			l.Errorf("实名校验失败: userId=%d, err=%v", userID, err)
+			return &activity.RegisterActivityResponse{
+				Result: "fail",
+				Reason: "实名校验失败，请稍后重试",
+			}, nil
+		}
+		if !verifyResp.GetIsVerified() {
+			_ = l.svcCtx.ActivityRegistrationModel.Create(l.ctx, &model.ActivityRegistration{
+				ActivityID: uint64(activityID),
+				UserID:     uint64(userID),
+				Status:     model.RegistrationStatusFailed,
+			})
+			return &activity.RegisterActivityResponse{
+				Result: "fail",
+				Reason: "请先完成学生认证",
+			}, nil
+		}
 	}
-
-	// TODO: 检查活动是否存在/状态允许报名（同事实现）
-	// TODO: 报名成功后名额-1（同事实现）
 
 	// ==================== 第二步：熔断保护 ====================
 	alreadyRegistered := false
 	err = l.svcCtx.RegistrationBreaker.DoWithFallbackAcceptable(
 		func() error {
-			return l.svcCtx.DB.WithContext(l.ctx).Transaction(func(tx *gorm.DB) error {
-				reg := &model.ActivityRegistration{
-					ActivityID: uint64(in.GetActivityId()),
-					UserID:     uint64(userID),
-					Status:     model.RegistrationStatusSuccess,
-				}
-				if err := tx.Create(reg).Error; err != nil {
-					if isDuplicateKeyErr(err) {
-						alreadyRegistered = true
-						return nil
-					}
-					return err
-				}
-
-				for i := 0; i < 3; i++ {
+			result, err := l.svcCtx.ActivityRegistrationModel.RegisterWithTicket(
+				l.ctx,
+				uint64(activityID),
+				uint64(userID),
+				func() (*model.TicketPayload, error) {
 					ticketCode, err := generateTicketCode()
 					if err != nil {
-						return err
+						return nil, err
 					}
-					secret := deriveTotpSecret(in.GetActivityId(), userID, ticketCode)
-					qrPayload := buildTicketQrPayload(in.GetActivityId(), ticketCode)
-
-					ticket := &model.ActivityTicket{
-						ActivityID:     uint64(in.GetActivityId()),
-						UserID:         uint64(userID),
-						RegistrationID: reg.ID,
-						TicketCode:     ticketCode,
-						TicketUUID:     qrPayload,
-						TotpSecret:     secret,
-						Status:         model.TicketStatusUnused,
-					}
-					if err := tx.Create(ticket).Error; err != nil {
-						if isDuplicateKeyErr(err) {
-							continue
-						}
-						return err
-					}
-					return nil
-				}
-
-				return errors.New("生成票据失败")
-			})
+					return &model.TicketPayload{
+						TicketCode: ticketCode,
+						TicketUUID: buildTicketQrPayload(activityID, ticketCode),
+						TotpSecret: deriveTotpSecret(activityID, userID, ticketCode),
+					}, nil
+				},
+			)
+			if err != nil {
+				return err
+			}
+			alreadyRegistered = result.AlreadyRegistered
+			return nil
 		},
 		func(err error) error {
 			return breaker.ErrServiceUnavailable
@@ -163,6 +181,12 @@ func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRe
 		},
 	)
 	if err != nil {
+		if errors.Is(err, model.ErrActivityQuotaFull) {
+			return &activity.RegisterActivityResponse{
+				Result: "fail",
+				Reason: "活动名额已满",
+			}, nil
+		}
 		l.Errorf("报名记录写入失败: userId=%d, activityId=%d, err=%v", userID, in.GetActivityId(), err)
 		return &activity.RegisterActivityResponse{
 			Result: "fail",
@@ -181,21 +205,6 @@ func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRe
 		Result: "success",
 		Reason: "",
 	}, nil
-}
-
-// isDuplicateKeyErr 判断是否为重复键错误
-func isDuplicateKeyErr(err error) bool {
-	if err == nil {
-		return false
-	}
-	if errors.Is(err, gorm.ErrDuplicatedKey) {
-		return true
-	}
-	var mysqlErr *mysqlerr.MySQLError
-	if errors.As(err, &mysqlErr) {
-		return mysqlErr.Number == 1062
-	}
-	return false
 }
 
 const (
