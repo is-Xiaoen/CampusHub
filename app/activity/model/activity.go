@@ -68,8 +68,8 @@ type Activity struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// 关联数据（非数据库字段）
-	Tags         []Tag  `gorm:"-" json:"tags,omitempty"`
-	CategoryName string `gorm:"-" json:"category_name,omitempty"`
+	Tags         []TagCache `gorm:"-" json:"tags,omitempty"`
+	CategoryName string     `gorm:"-" json:"category_name,omitempty"`
 }
 
 func (Activity) TableName() string {

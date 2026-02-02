@@ -89,11 +89,11 @@ func (l *ListActivitiesLogic) ListActivities(in *activity.ListActivitiesReq) (*a
 		categoryIDSet[act.CategoryID] = true
 	}
 
-	// 5.2 批量查询标签
-	tagsMap, err := l.svcCtx.TagModel.FindByActivityIDs(l.ctx, activityIDs)
+	// 5.2 批量查询标签（从 tag_cache 表）
+	tagsMap, err := l.svcCtx.TagCacheModel.FindByActivityIDs(l.ctx, activityIDs)
 	if err != nil {
 		l.Infof("[WARNING] 批量查询标签失败: %v", err)
-		tagsMap = make(map[uint64][]model.Tag)
+		tagsMap = make(map[uint64][]model.TagCache)
 	}
 
 	// 5.3 查询分类（分类数量通常较少，一次性查询所有）
@@ -175,7 +175,7 @@ func (l *ListActivitiesLogic) loadCategoryMap() map[uint64]string {
 func (l *ListActivitiesLogic) buildActivityListItem(
 	act *model.Activity,
 	categoryMap map[uint64]string,
-	tagsMap map[uint64][]model.Tag,
+	tagsMap map[uint64][]model.TagCache,
 ) *activity.ActivityListItem {
 	// 获取分类名称
 	categoryName := categoryMap[act.CategoryID]
@@ -200,14 +200,14 @@ func (l *ListActivitiesLogic) buildActivityListItem(
 		CurrentParticipants: int32(act.CurrentParticipants),
 		Status:              int32(act.Status),
 		StatusText:          act.StatusText(),
-		Tags:                convertTagsForList(tags),
+		Tags:                convertTagCachesForList(tags),
 		ViewCount:           int64(act.ViewCount),
 		CreatedAt:           act.CreatedAt,
 	}
 }
 
-// convertTagsForList 转换标签列表（用于列表项）
-func convertTagsForList(tags []model.Tag) []*activity.Tag {
+// convertTagCachesForList 转换标签缓存列表为 Proto Tag（用于列表项）
+func convertTagCachesForList(tags []model.TagCache) []*activity.Tag {
 	if len(tags) == 0 {
 		return []*activity.Tag{}
 	}
