@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"CampusHub/common/messaging"
+	"activity-platform/common/messaging"
 )
 
 // Subscriber Go-Zero 订阅者适配器
