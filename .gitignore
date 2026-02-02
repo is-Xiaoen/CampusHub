@@ -17,6 +17,7 @@
 # mess code
 .messing_docs
 common/messaging/tests
+.specify
 
 # Test binary
 *.test
