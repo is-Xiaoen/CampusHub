@@ -19,18 +19,28 @@ type (
 	CanPublishReq          = pb.CanPublishReq
 	CanPublishResp         = pb.CanPublishResp
 	CreditLogItem          = pb.CreditLogItem
+	GetAllTagsReq          = pb.GetAllTagsReq
+	GetAllTagsResp         = pb.GetAllTagsResp
 	GetCreditInfoReq       = pb.GetCreditInfoReq
 	GetCreditInfoResp      = pb.GetCreditInfoResp
 	GetCreditLogsReq       = pb.GetCreditLogsReq
 	GetCreditLogsResp      = pb.GetCreditLogsResp
+	GetGroupUserRep        = pb.GetGroupUserRep
+	GetGroupUserResponse   = pb.GetGroupUserResponse
+	GetTagsByIdsReq        = pb.GetTagsByIdsReq
+	GetTagsByIdsResp       = pb.GetTagsByIdsResp
+	GetUserTagsRep         = pb.GetUserTagsRep
+	GetUserTagsResponse    = pb.GetUserTagsResponse
 	InitCreditReq          = pb.InitCreditReq
 	InitCreditResp         = pb.InitCreditResp
 	IsVerifiedReq          = pb.IsVerifiedReq
 	IsVerifiedResp         = pb.IsVerifiedResp
+	TagInfo                = pb.TagInfo
 	UpdateScoreReq         = pb.UpdateScoreReq
 	UpdateScoreResp        = pb.UpdateScoreResp
 	UpdateVerifyStatusReq  = pb.UpdateVerifyStatusReq
 	UpdateVerifyStatusResp = pb.UpdateVerifyStatusResp
+	UserInfo               = pb.UserInfo
 	VerifyOcrData          = pb.VerifyOcrData
 
 	CreditService interface {
