@@ -79,6 +79,17 @@ service CreditService {
     // 业务逻辑: 签到、爽约、活动结束等事件触发信用分变更
     // 幂等保证: 通过 source_id 实现幂等
     rpc UpdateScore(UpdateScoreReq) returns (UpdateScoreResp);
+
+    rpc GetUserIdAndTag(GetUserIdAndTagReq) returns(GetUserIdAndTagResponse);
+}
+
+message GetUserIdAndTagReq {}
+
+message GetUserIdAndTagResponse {
+    // 用户ID
+    uint64 user_id = 1;
+    // 用户标签
+    uint64 tag_id =2;
 }
 
 // ============================================================================
