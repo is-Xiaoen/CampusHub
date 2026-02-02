@@ -2,7 +2,7 @@
 // goctl 1.9.2
 // Source: user.proto
 
-package verifyservice
+package tagservice
 
 import (
 	"context"
@@ -43,32 +43,34 @@ type (
 	UserInfo               = pb.UserInfo
 	VerifyOcrData          = pb.VerifyOcrData
 
-	VerifyService interface {
-		// IsVerified 查询用户是否已完成学生认证
-		IsVerified(ctx context.Context, in *IsVerifiedReq, opts ...grpc.CallOption) (*IsVerifiedResp, error)
-		// UpdateVerifyStatus 更新认证状态
-		UpdateVerifyStatus(ctx context.Context, in *UpdateVerifyStatusReq, opts ...grpc.CallOption) (*UpdateVerifyStatusResp, error)
+	TagService interface {
+		GetAllTags(ctx context.Context, in *GetAllTagsReq, opts ...grpc.CallOption) (*GetAllTagsResp, error)
+		GetTagsByIds(ctx context.Context, in *GetTagsByIdsReq, opts ...grpc.CallOption) (*GetTagsByIdsResp, error)
+		GetUserTags(ctx context.Context, in *GetUserTagsRep, opts ...grpc.CallOption) (*GetUserTagsResponse, error)
 	}
 
-	defaultVerifyService struct {
+	defaultTagService struct {
 		cli zrpc.Client
 	}
 )
 
-func NewVerifyService(cli zrpc.Client) VerifyService {
-	return &defaultVerifyService{
+func NewTagService(cli zrpc.Client) TagService {
+	return &defaultTagService{
 		cli: cli,
 	}
 }
 
-// IsVerified 查询用户是否已完成学生认证
-func (m *defaultVerifyService) IsVerified(ctx context.Context, in *IsVerifiedReq, opts ...grpc.CallOption) (*IsVerifiedResp, error) {
-	client := pb.NewVerifyServiceClient(m.cli.Conn())
-	return client.IsVerified(ctx, in, opts...)
+func (m *defaultTagService) GetAllTags(ctx context.Context, in *GetAllTagsReq, opts ...grpc.CallOption) (*GetAllTagsResp, error) {
+	client := pb.NewTagServiceClient(m.cli.Conn())
+	return client.GetAllTags(ctx, in, opts...)
 }
 
-// UpdateVerifyStatus 更新认证状态
-func (m *defaultVerifyService) UpdateVerifyStatus(ctx context.Context, in *UpdateVerifyStatusReq, opts ...grpc.CallOption) (*UpdateVerifyStatusResp, error) {
-	client := pb.NewVerifyServiceClient(m.cli.Conn())
-	return client.UpdateVerifyStatus(ctx, in, opts...)
+func (m *defaultTagService) GetTagsByIds(ctx context.Context, in *GetTagsByIdsReq, opts ...grpc.CallOption) (*GetTagsByIdsResp, error) {
+	client := pb.NewTagServiceClient(m.cli.Conn())
+	return client.GetTagsByIds(ctx, in, opts...)
+}
+
+func (m *defaultTagService) GetUserTags(ctx context.Context, in *GetUserTagsRep, opts ...grpc.CallOption) (*GetUserTagsResponse, error) {
+	client := pb.NewTagServiceClient(m.cli.Conn())
+	return client.GetUserTags(ctx, in, opts...)
 }
