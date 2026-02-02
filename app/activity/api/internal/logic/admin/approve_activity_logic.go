@@ -1,6 +1,3 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.9.2
-
 package admin
 
 import (
@@ -8,6 +5,7 @@ import (
 
 	"activity-platform/app/activity/api/internal/svc"
 	"activity-platform/app/activity/api/internal/types"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -28,7 +26,7 @@ func NewApproveActivityLogic(ctx context.Context, svcCtx *svc.ServiceContext) *A
 }
 
 func (l *ApproveActivityLogic) ApproveActivity(req *types.ApproveActivityReq) (resp *types.ApproveActivityResp, err error) {
-	// todo: add your logic here and delete this line
-
-	return
+	// MVP 版本：无后台管理系统，审核功能暂未开放
+	// 活动创建后直接发布，无需审核
+	return nil, errorx.ErrInvalidParams("MVP 版本暂未开放审核功能，活动创建后自动发布")
 }

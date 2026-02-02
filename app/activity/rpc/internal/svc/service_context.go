@@ -7,6 +7,7 @@ import (
 	"activity-platform/app/activity/model"
 	"activity-platform/app/activity/rpc/internal/config"
 	"activity-platform/app/user/rpc/client/creditservice"
+	"activity-platform/app/user/rpc/client/tagservice"
 	"activity-platform/app/user/rpc/client/verifyservice"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -25,14 +26,17 @@ type ServiceContext struct {
 	Redis *redis.Redis // Redis 客户端
 
 	// Model 层
-	ActivityModel  *model.ActivityModel
-	CategoryModel  *model.CategoryModel
-	TagModel       *model.TagModel
-	StatusLogModel *model.ActivityStatusLogModel
+	ActivityModel    *model.ActivityModel
+	CategoryModel    *model.CategoryModel
+	ActivityTagModel *model.ActivityTagModel      // 活动-标签关联表操作
+	TagCacheModel    *model.TagCacheModel         // 标签缓存（从用户服务同步）
+	TagStatsModel    *model.ActivityTagStatsModel // 活动标签统计
+	StatusLogModel   *model.ActivityStatusLogModel
 
 	// RPC 客户端（调用其他微服务）
 	CreditRpc creditservice.CreditService // 信用分服务
 	VerifyRpc verifyservice.VerifyService // 学生认证服务
+	TagRpc    tagservice.TagService       // 标签服务（用于同步标签数据）
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -42,10 +46,11 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	// 2. 初始化 Redis
 	rds := initRedis(c.Redis)
 
-	// 3. 初始化 User RPC 客户端
+	// 3. 初始化 User RPC 客户端（所有 User 服务共用同一个连接）
 	userRpcClient := zrpc.MustNewClient(c.UserRpc)
 	creditRpc := creditservice.NewCreditService(userRpcClient)
 	verifyRpc := verifyservice.NewVerifyService(userRpcClient)
+	tagRpc := tagservice.NewTagService(userRpcClient) // 标签服务客户端
 
 	// 4. 返回 ServiceContext
 	return &ServiceContext{
@@ -56,14 +61,17 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		Redis: rds,
 
 		// Model 层
-		ActivityModel:  model.NewActivityModel(db),
-		CategoryModel:  model.NewCategoryModel(db),
-		TagModel:       model.NewTagModel(db),
-		StatusLogModel: model.NewActivityStatusLogModel(db),
+		ActivityModel:    model.NewActivityModel(db),
+		CategoryModel:    model.NewCategoryModel(db),
+		ActivityTagModel: model.NewActivityTagModel(db),      // 活动-标签关联
+		TagCacheModel:    model.NewTagCacheModel(db),         // 标签缓存
+		TagStatsModel:    model.NewActivityTagStatsModel(db), // 标签统计
+		StatusLogModel:   model.NewActivityStatusLogModel(db),
 
 		// RPC 客户端
 		CreditRpc: creditRpc,
 		VerifyRpc: verifyRpc,
+		TagRpc:    tagRpc,
 	}
 }
 
