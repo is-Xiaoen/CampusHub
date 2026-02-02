@@ -47,6 +47,11 @@ service CreditService {
     // 业务逻辑: 返回用户当前的信用分、等级、特权信息
     rpc GetCreditInfo(GetCreditInfoReq) returns (GetCreditInfoResp);
 
+    // GetCreditLogs 获取信用变更记录列表
+    // 调用方: User API（信用分明细页面）
+    // 业务逻辑: 分页查询用户的信用变更记录，支持按类型和时间筛选
+    rpc GetCreditLogs(GetCreditLogsReq) returns (GetCreditLogsResp);
+
     // CanParticipate 校验是否允许报名
     // 调用方: Activity服务（报名模块）
     // 业务逻辑:
@@ -74,7 +79,10 @@ service CreditService {
     // 业务逻辑: 签到、爽约、活动结束等事件触发信用分变更
     // 幂等保证: 通过 source_id 实现幂等
     rpc UpdateScore(UpdateScoreReq) returns (UpdateScoreResp);
+
 }
+
+
 
 // ============================================================================
 // CreditService 消息定义
@@ -106,6 +114,60 @@ message GetCreditInfoResp {
     int64 created_at = 7;
     // 更新时间（Unix时间戳秒）
     int64 updated_at = 8;
+}
+
+// ==================== GetCreditLogs 获取信用变更记录列表 ====================
+
+// GetCreditLogsReq 获取信用变更记录请求
+message GetCreditLogsReq {
+    // 用户ID
+    int64 user_id = 1;
+    // 变动类型筛选（0=全部，其他值参见变动类型说明）
+    int32 change_type = 2;
+    // 开始时间戳（秒），0表示不限
+    int64 start_time = 3;
+    // 结束时间戳（秒），0表示不限
+    int64 end_time = 4;
+    // 页码，从1开始
+    int32 page = 5;
+    // 每页条数，默认20，最大50
+    int32 page_size = 6;
+}
+
+// CreditLogItem 信用变更记录项
+message CreditLogItem {
+    // 记录ID
+    int64 id = 1;
+    // 用户ID
+    int64 user_id = 2;
+    // 变动类型
+    int32 change_type = 3;
+    // 变动类型名称
+    string change_type_name = 4;
+    // 变动分值（正数加分，负数扣分）
+    int32 delta = 5;
+    // 业务来源ID
+    string source_id = 6;
+    // 变动原因
+    string reason = 7;
+    // 变动前分数
+    int32 before_score = 8;
+    // 变动后分数
+    int32 after_score = 9;
+    // 变动时间戳（秒）
+    int64 created_at = 10;
+}
+
+// GetCreditLogsResp 获取信用变更记录响应
+message GetCreditLogsResp {
+    // 记录列表
+    repeated CreditLogItem list = 1;
+    // 总记录数
+    int64 total = 2;
+    // 当前页码
+    int32 page = 3;
+    // 每页条数
+    int32 page_size = 4;
 }
 
 // ==================== CanParticipate 校验报名资格 ====================
@@ -349,3 +411,81 @@ message UpdateVerifyStatusResp {
 // Status 7: 已取消（用户主动取消，可重新申请）
 //
 // ============================================================================
+
+// 标签服务
+service TagService {
+    rpc GetAllTags(GetAllTagsReq) returns (GetAllTagsResp);
+
+    rpc GetTagsByIds(GetTagsByIdsReq) returns (GetTagsByIdsResp);
+
+    rpc GetUserTags(GetUserTagsRep)returns(GetUserTagsResponse);
+}
+
+message GetAllTagsReq {
+    // 上次同步时间戳（可选，用于增量同步）
+    // 0 表示全量同步
+    int64 since_timestamp = 1;
+}
+
+message GetAllTagsResp {
+    // 标签列表
+    repeated TagInfo tags = 1;
+    // 服务端当前时间戳（用于下次增量同步）
+    int64 server_timestamp = 2;
+}
+
+message GetTagsByIdsReq {
+    // 标签 ID 列表（最多 50 个）
+    repeated int64 ids = 1;
+}
+
+message GetTagsByIdsResp {
+    // 存在且启用的标签列表
+    repeated TagInfo tags = 1;
+    // 不存在或已禁用的标签 ID 列表
+    repeated int64 invalid_ids = 2;
+}
+
+message TagInfo {
+    uint64 id = 1;           // 标签 ID
+    string name = 2;        // 标签名称
+    string color = 3;       // 标签颜色
+    string icon = 4;        // 标签图标 URL
+    uint64 status = 5;       // 状态: 1 启用, 0 禁用
+    string description = 6; // 标签描述（可选）
+    int64 created_at = 7;   // 创建时间戳
+    int64 updated_at = 8;   // 更新时间戳
+}
+
+message GetUserTagsRep {}
+
+message GetUserTagsResponse {
+    uint64 id = 1;
+    string name = 2;
+}
+
+
+// 用户信息服务
+service UserBasicService {
+    rpc GetGroupUser(GetGroupUserRep)returns(GetGroupUserResponse);
+}
+
+message GetGroupUserRep {}
+
+message GetGroupUserResponse {
+    uint64 id = 1;
+    string avatar_url = 2;
+    string nickname = 3;
+}
+
+message UserInfo {
+    uint64 id = 1;
+    string qq_email = 2;
+    string nickname = 3;
+    string avatar_url = 4;
+    string introduction = 5;
+    uint64 status = 6;
+    uint64 age = 7;
+    uint64 gender = 8;
+}
+

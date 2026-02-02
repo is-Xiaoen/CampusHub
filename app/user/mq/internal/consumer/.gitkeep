@@ -1,0 +1,14 @@
+# 此目录预留给队友实现 Redis Stream 消费者
+# 
+# 需要实现的接口（参考）:
+# 
+# type Consumer interface {
+#     Start() error
+#     Stop() error
+#     OnMessage(handler func(ctx context.Context, msg Message) error)
+# }
+# 
+# type Message struct {
+#     ID     string            // Redis Stream 消息ID
+#     Values map[string]string // 消息内容
+# }

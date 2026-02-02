@@ -1,10 +1,16 @@
 module CampusHub
 
-go 1.24.0
-
-toolchain go1.24.5
+go 1.21
 
 require (
+	github.com/go-redis/redis/v8 v8.11.5
+	github.com/go-sql-driver/mysql v1.7.1
+	github.com/pkg/errors v0.9.1
+	github.com/zeromicro/go-zero v1.6.0
+	google.golang.org/grpc v1.64.0
+	google.golang.org/protobuf v1.33.0
+	gorm.io/driver/mysql v1.5.2
+	gorm.io/gorm v1.25.5
 	github.com/redis/go-redis/v9 v9.17.3
 	github.com/zeromicro/go-zero v1.9.4
 	google.golang.org/grpc v1.78.0
@@ -36,6 +42,10 @@ require (
 	github.com/grafana/pyroscope-go v1.2.7 // indirect
 	github.com/grafana/pyroscope-go/godeltaprof v0.1.9 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.0 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect

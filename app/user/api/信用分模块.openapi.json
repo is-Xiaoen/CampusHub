@@ -1,0 +1,322 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "默认模块",
+    "description": "仅包含权限校验逻辑的接口定义",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "信用分"
+    }
+  ],
+  "paths": {
+    "/credit/logs": {
+      "get": {
+        "summary": "查询信用变更记录",
+        "deprecated": false,
+        "description": "分页查询积分明细",
+        "operationId": "getCreditLogs",
+        "tags": [
+          "信用分"
+        ],
+        "parameters": [
+          {
+            "name": "changeType",
+            "in": "query",
+            "description": "变动类型筛选（1-注册初始化,2-正常履约,3-提前取消,4-临期取消,5-爽约,6-圆满举办,7-删除活动,99-管理员调整）",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "startTime",
+            "in": "query",
+            "description": "开始时间戳（秒）",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "endTime",
+            "in": "query",
+            "description": "结束时间戳（秒）",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "每页条数",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "description": "业务状态码",
+                      "example": 0
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "响应消息",
+                      "example": "success"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "list": {
+                          "type": "array",
+                          "description": "记录列表",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer",
+                                "format": "int64",
+                                "description": "记录ID",
+                                "example": 1001
+                              },
+                              "userId": {
+                                "type": "integer",
+                                "format": "int64",
+                                "description": "用户ID",
+                                "example": 10001
+                              },
+                              "changeType": {
+                                "type": "integer",
+                                "format": "int8",
+                                "description": "变动类型",
+                                "example": 2
+                              },
+                              "changeTypeName": {
+                                "type": "string",
+                                "description": "变动类型名称",
+                                "example": "正常履约"
+                              },
+                              "delta": {
+                                "type": "integer",
+                                "format": "int64",
+                                "description": "变动分值（正数加分，负数扣分）",
+                                "example": 2
+                              },
+                              "sourceId": {
+                                "type": "string",
+                                "description": "业务来源ID",
+                                "example": "activity:2001"
+                              },
+                              "reason": {
+                                "type": "string",
+                                "description": "变动原因",
+                                "example": "活动[周末篮球赛]签到成功"
+                              },
+                              "createdAt": {
+                                "type": "integer",
+                                "format": "int64",
+                                "description": "变动时间戳（秒）",
+                                "example": 1738137600
+                              }
+                            }
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "format": "int64",
+                          "description": "总记录数",
+                          "example": 25
+                        },
+                        "page": {
+                          "type": "integer",
+                          "description": "当前页码",
+                          "example": 1
+                        },
+                        "pageSize": {
+                          "type": "integer",
+                          "description": "每页条数",
+                          "example": 20
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "code": 0,
+                      "message": "success",
+                      "data": {
+                        "list": [
+                          {
+                            "id": 1001,
+                            "userId": 10001,
+                            "changeType": 2,
+                            "changeTypeName": "正常履约",
+                            "delta": 2,
+                            "sourceId": "activity:2001",
+                            "reason": "活动[周末篮球赛]签到成功",
+                            "createdAt": 1738137600
+                          },
+                          {
+                            "id": 1000,
+                            "userId": 10001,
+                            "changeType": 5,
+                            "changeTypeName": "爽约/未签到",
+                            "delta": -10,
+                            "sourceId": "activity:1998",
+                            "reason": "活动[读书分享会]未签到",
+                            "createdAt": 1737878400
+                          }
+                        ],
+                        "total": 25,
+                        "page": 1,
+                        "pageSize": 20
+                      }
+                    }
+                  },
+                  "2": {
+                    "summary": "空列表",
+                    "value": {
+                      "code": 0,
+                      "message": "success",
+                      "data": {
+                        "list": [],
+                        "total": 0,
+                        "page": 1,
+                        "pageSize": 20
+                      }
+                    }
+                  },
+                  "3": {
+                    "summary": "未登录",
+                    "value": {
+                      "code": 2001,
+                      "message": "请先登录"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "responses": {
+      "用户": {
+        "description": "",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "qq_email": {
+                  "type": "string"
+                },
+                "nickname": {
+                  "type": "string"
+                },
+                "avatar_url": {
+                  "type": "string"
+                },
+                "introduction": {
+                  "type": "string"
+                },
+                "gender": {
+                  "type": "string"
+                },
+                "age": {
+                  "type": "integer"
+                },
+                "latitude_longitude": {
+                  "type": "string"
+                },
+                "activities_num": {
+                  "type": "integer"
+                },
+                "initiate_num": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "qq_email",
+                "nickname",
+                "avatar_url",
+                "introduction",
+                "gender",
+                "age",
+                "latitude_longitude",
+                "activities_num",
+                "initiate_num"
+              ]
+            },
+            "examples": {
+              "示例 1": {
+                "summary": "示例 1",
+                "value": {
+                  "qq_email": "",
+                  "nickname": "",
+                  "avatar_url": "",
+                  "introduction": "",
+                  "gender": "",
+                  "age": 18,
+                  "latitude_longitude": "",
+                  "activities_num": 18,
+                  "initiate_num": 18
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT Token 认证"
+      }
+    }
+  },
+  "servers": [],
+  "security": []
+}
