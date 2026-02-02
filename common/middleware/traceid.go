@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"CampusHub/common/ctxdata"
+	"activity-platform/common/ctxdata"
 
 	"github.com/google/uuid"
 )
