@@ -28,9 +28,9 @@ type ServiceContext struct {
 	// Model 层
 	ActivityModel    *model.ActivityModel
 	CategoryModel    *model.CategoryModel
-	ActivityTagModel *model.ActivityTagModel       // 活动-标签关联表操作
-	TagCacheModel    *model.TagCacheModel          // 标签缓存（从用户服务同步）
-	TagStatsModel    *model.ActivityTagStatsModel  // 活动标签统计
+	ActivityTagModel *model.ActivityTagModel      // 活动-标签关联表操作
+	TagCacheModel    *model.TagCacheModel         // 标签缓存（从用户服务同步）
+	TagStatsModel    *model.ActivityTagStatsModel // 活动标签统计
 	StatusLogModel   *model.ActivityStatusLogModel
 
 	// RPC 客户端（调用其他微服务）

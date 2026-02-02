@@ -16,15 +16,15 @@ import (
 
 // TagCache 标签缓存（从用户服务同步）
 type TagCache struct {
-	ID          uint64 `gorm:"column:id;primaryKey" json:"id"`                              // 标签ID（与用户服务一致）
-	Name        string `gorm:"column:name;type:varchar(50);not null" json:"name"`           // 标签名称
-	Color       string `gorm:"column:color;type:varchar(20);not null" json:"color"`         // 标签颜色
-	Icon        string `gorm:"column:icon;type:varchar(255);not null" json:"icon"`          // 标签图标URL
-	Status      int8   `gorm:"column:status;default:1" json:"status"`                       // 状态: 1启用 0禁用
+	ID          uint64 `gorm:"column:id;primaryKey" json:"id"`                                   // 标签ID（与用户服务一致）
+	Name        string `gorm:"column:name;type:varchar(50);not null" json:"name"`                // 标签名称
+	Color       string `gorm:"column:color;type:varchar(20);not null" json:"color"`              // 标签颜色
+	Icon        string `gorm:"column:icon;type:varchar(255);not null" json:"icon"`               // 标签图标URL
+	Status      int8   `gorm:"column:status;default:1" json:"status"`                            // 状态: 1启用 0禁用
 	Description string `gorm:"column:description;type:varchar(200);not null" json:"description"` // 标签描述
-	SyncedAt    int64  `gorm:"column:synced_at;not null" json:"synced_at"`                  // 最后同步时间戳
-	CreatedAt   int64  `gorm:"column:created_at;not null" json:"created_at"`                // 原始创建时间
-	UpdatedAt   int64  `gorm:"column:updated_at;not null" json:"updated_at"`                // 原始更新时间
+	SyncedAt    int64  `gorm:"column:synced_at;not null" json:"synced_at"`                       // 最后同步时间戳
+	CreatedAt   int64  `gorm:"column:created_at;not null" json:"created_at"`                     // 原始创建时间
+	UpdatedAt   int64  `gorm:"column:updated_at;not null" json:"updated_at"`                     // 原始更新时间
 }
 
 func (TagCache) TableName() string {
