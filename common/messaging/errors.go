@@ -8,16 +8,16 @@ import (
 // 基础错误定义
 
 // ErrInvalidMessage 无效消息错误
-var ErrInvalidMessage = errors.New("invalid message")
+var ErrInvalidMessage = errors.New("无效消息")
 
 // ErrInvalidTopic 无效主题错误
-var ErrInvalidTopic = errors.New("invalid topic")
+var ErrInvalidTopic = errors.New("无效主题")
 
 // ErrTimeout 超时错误
-var ErrTimeout = errors.New("timeout")
+var ErrTimeout = errors.New("超时")
 
 // ErrConnectionFailed 连接失败错误
-var ErrConnectionFailed = errors.New("connection failed")
+var ErrConnectionFailed = errors.New("连接失败")
 
 // RetryableError 可重试错误接口
 type RetryableError interface {
