@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"activity-platform/common/messaging"
+	"CampusHub/common/messaging"
 )
 
 // DLQMiddleware 创建死信队列中间件

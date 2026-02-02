@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"activity-platform/common/messaging"
-	"activity-platform/common/messaging/middleware"
+	"CampusHub/common/messaging"
+	"CampusHub/common/messaging/middleware"
 
 	"github.com/redis/go-redis/v9"
 )

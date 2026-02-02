@@ -3,8 +3,8 @@ package redis
 import (
 	"context"
 
-	"activity-platform/common/messaging"
-	"activity-platform/common/messaging/backend"
+	"CampusHub/common/messaging"
+	"CampusHub/common/messaging/backend"
 
 	"github.com/redis/go-redis/v9"
 )
