@@ -13,27 +13,27 @@ func NewGoZeroMiddleware(serviceName string) message.HandlerMiddleware {
 		return func(msg *message.Message) ([]*message.Message, error) {
 			// 从消息中提取 trace_id 并注入到 context
 			ctx := msg.Context()
-			
+
 			// 提取 trace_id
 			if traceID := msg.Metadata.Get("trace_id"); traceID != "" {
 				ctx = WithTraceID(ctx, traceID)
 			}
-			
+
 			// 提取 span_id
 			if spanID := msg.Metadata.Get("span_id"); spanID != "" {
 				ctx = WithSpanID(ctx, spanID)
 			}
-			
+
 			// 注入服务名称
 			if serviceName != "" {
 				ctx = WithServiceName(ctx, serviceName)
 			}
-			
+
 			// 提取 source_service
 			if sourceService := msg.Metadata.Get("source_service"); sourceService != "" {
 				ctx = context.WithValue(ctx, "source_service", sourceService)
 			}
-			
+
 			// 更新消息的 context
 			msg.SetContext(ctx)
 
@@ -50,12 +50,12 @@ func InjectTraceID(ctx context.Context, msg *message.Message) {
 	if traceID := GetTraceID(ctx); traceID != "" {
 		msg.Metadata.Set("trace_id", traceID)
 	}
-	
+
 	// 注入 span_id
 	if spanID := GetSpanID(ctx); spanID != "" {
 		msg.Metadata.Set("span_id", spanID)
 	}
-	
+
 	// 注入 service_name
 	if serviceName := GetServiceName(ctx); serviceName != "" {
 		msg.Metadata.Set("source_service", serviceName)
