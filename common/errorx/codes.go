@@ -1,3 +1,13 @@
+/**
+ * @projectName: CampusHub
+ * @package: errorx
+ * @className: codes
+ * @author: lijunqi
+ * @description: 统一错误码定义
+ * @date: 2026-01-30
+ * @version: 1.0
+ */
+
 package errorx
 
 // 错误码规范：
@@ -8,10 +18,7 @@ package errorx
 // 4xxx    - 聊天服务错误
 
 const (
-	// 成功
-	CodeSuccess = 0
-
-	// ============ 通用错误 1xxx ============
+	CodeSuccess            = 0    // 成功
 	CodeInternalError      = 1000 // 内部服务器错误
 	CodeInvalidParams      = 1001 // 参数校验失败
 	CodeUnauthorized       = 1002 // 未授权访问
@@ -24,42 +31,84 @@ const (
 	CodeCacheError         = 1009 // 缓存错误
 	CodeRPCError           = 1010 // RPC调用失败
 
-	// ============ 用户服务错误 2xxx ============
-	// TODO(杨春路): 添加用户服务相关错误码
-	CodeLoginRequired = 2001 // 需要登录（auth中间件依赖）
-	CodeTokenInvalid  = 2002 // Token无效（auth中间件依赖）
-	CodeTokenExpired  = 2003 // Token已过期（auth中间件依赖）
+	// 用户服务 - 认证 2001-2010
+	CodeLoginRequired = 2001 // 需要登录
+	CodeTokenInvalid  = 2002 // Token无效
+	CodeTokenExpired  = 2003 // Token已过期
 
-	// ============ 活动服务错误 3xxx ============
-	// TODO(马肖阳): 添加活动服务相关错误码
+	// 用户服务 - 信用分 2101-2120
+	CodeCreditNotFound      = 2101 // 信用记录不存在
+	CodeCreditAlreadyInit   = 2102 // 信用分已初始化
+	CodeCreditBlacklist     = 2103 // 用户在黑名单中
+	CodeCreditRiskLimit     = 2104 // 风险用户已达每日限制
+	CodeCreditCannotPublish = 2105 // 信用分不足，无法发布
+	CodeCreditSourceDup     = 2106 // 信用变更来源重复
+	CodeCreditInvalidChange = 2107 // 无效的信用变更类型
 
-	// ============ 聊天服务错误 4xxx ============
-	// TODO(马华恩): 添加聊天服务相关错误码
+	// 用户服务 - 学生认证 2201-2220
+	CodeVerifyNotFound      = 2201 // 认证记录不存在
+	CodeVerifyAlreadyExist  = 2202 // 认证记录已存在
+	CodeVerifyNotVerified   = 2203 // 用户未通过学生认证
+	CodeVerifyStudentIDUsed = 2204 // 学号已被其他用户认证
+
+	// 活动服务 - 活动 3001-3050
+	CodeActivityNotFound         = 3001 // 活动不存在
+	CodeActivityStatusInvalid    = 3002 // 活动状态不允许此操作
+	CodeActivityTimeInvalid      = 3003 // 活动时间设置无效
+	CodeActivityConcurrentUpdate = 3004 // 活动并发更新冲突
+	CodeActivityPermissionDenied = 3005 // 无权限操作此活动
+	CodeActivityHasRegistration  = 3006 // 有报名记录不能删除
+
+	// 活动服务 - 分类 3101-3120
+	CodeCategoryNotFound = 3101 // 分类不存在
+	CodeCategoryDisabled = 3102 // 分类已禁用
+
+	// 活动服务 - 标签 3201-3220
+	CodeTagNotFound      = 3201 // 标签不存在
+	CodeTagLimitExceeded = 3202 // 标签数量超过限制
+
+	// 聊天服务 4xxx - TODO(马华恩)
 )
 
-// 错误码对应的默认消息
+// codeMessages 错误码对应的默认消息
 var codeMessages = map[int]string{
-	CodeSuccess: "success",
-
-	// 通用错误
-	CodeInternalError:      "内部服务器错误",
-	CodeInvalidParams:      "参数校验失败",
-	CodeUnauthorized:       "未授权访问",
-	CodeForbidden:          "禁止访问",
-	CodeNotFound:           "资源不存在",
-	CodeTooManyRequests:    "请求过于频繁，请稍后再试",
-	CodeServiceUnavailable: "服务暂不可用",
-	CodeTimeout:            "请求超时",
-	CodeDBError:            "数据库错误",
-	CodeCacheError:         "缓存错误",
-	CodeRPCError:           "服务调用失败",
-
-	// 用户服务错误（auth中间件依赖的最小集）
-	CodeLoginRequired: "请先登录",
-	CodeTokenInvalid:  "登录状态无效",
-	CodeTokenExpired:  "登录已过期",
-
-	// TODO: 其他错误码消息由各负责人添加
+	CodeSuccess:             "success",
+	CodeInternalError:       "内部服务器错误",
+	CodeInvalidParams:       "参数校验失败",
+	CodeUnauthorized:        "未授权访问",
+	CodeForbidden:           "禁止访问",
+	CodeNotFound:            "资源不存在",
+	CodeTooManyRequests:     "请求过于频繁，请稍后再试",
+	CodeServiceUnavailable:  "服务暂不可用",
+	CodeTimeout:             "请求超时",
+	CodeDBError:             "数据库错误",
+	CodeCacheError:          "缓存错误",
+	CodeRPCError:            "服务调用失败",
+	CodeLoginRequired:       "请先登录",
+	CodeTokenInvalid:        "登录状态无效",
+	CodeTokenExpired:        "登录已过期",
+	CodeCreditNotFound:      "信用记录不存在",
+	CodeCreditAlreadyInit:   "信用分已初始化",
+	CodeCreditBlacklist:     "您的账户信用分过低，已被限制操作",
+	CodeCreditRiskLimit:     "您的信用分处于风险区间，每日仅限报名1次",
+	CodeCreditCannotPublish: "信用分不足90分，暂时无法发布活动",
+	CodeCreditSourceDup:     "该操作已处理，请勿重复提交",
+	CodeCreditInvalidChange: "无效的信用变更类型",
+	CodeVerifyNotFound:      "认证记录不存在",
+	CodeVerifyAlreadyExist:  "认证记录已存在",
+	CodeVerifyNotVerified:   "请先完成学生认证",
+	CodeVerifyStudentIDUsed: "该学号已被其他用户认证",
+	// 活动服务
+	CodeActivityNotFound:         "活动不存在",
+	CodeActivityStatusInvalid:    "活动状态不允许此操作",
+	CodeActivityTimeInvalid:      "活动时间设置无效",
+	CodeActivityConcurrentUpdate: "操作冲突，请重试",
+	CodeActivityPermissionDenied: "无权限操作此活动",
+	CodeActivityHasRegistration:  "有报名记录的活动不能删除",
+	CodeCategoryNotFound:         "分类不存在",
+	CodeCategoryDisabled:         "分类已禁用",
+	CodeTagNotFound:              "标签不存在",
+	CodeTagLimitExceeded:         "最多选择5个标签",
 }
 
 // GetMessage 根据错误码获取默认消息
@@ -68,4 +117,12 @@ func GetMessage(code int) string {
 		return msg
 	}
 	return "未知错误"
+}
+
+// IsValidCode 判断是否为有效的业务错误码
+// 用于区分业务错误码和 gRPC 系统错误码
+// 业务错误码应该返回给前端，系统错误码（如 Unknown=2）应该隐藏
+func IsValidCode(code int) bool {
+	_, exists := codeMessages[code]
+	return exists
 }

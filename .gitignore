@@ -79,6 +79,7 @@ app/chat/rpc/etc/chat.yaml
 # ==================== 项目特定排除 ====================
 # 计划文档（可能包含敏感业务信息）
 docs/plan/
+context.md
 
 # 部署配置（包含敏感信息）
 deploy/docker/config/*.yaml

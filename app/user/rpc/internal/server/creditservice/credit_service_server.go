@@ -29,6 +29,12 @@ func (s *CreditServiceServer) GetCreditInfo(ctx context.Context, in *pb.GetCredi
 	return l.GetCreditInfo(in)
 }
 
+// GetCreditLogs 获取信用变更记录列表
+func (s *CreditServiceServer) GetCreditLogs(ctx context.Context, in *pb.GetCreditLogsReq) (*pb.GetCreditLogsResp, error) {
+	l := creditservicelogic.NewGetCreditLogsLogic(ctx, s.svcCtx)
+	return l.GetCreditLogs(in)
+}
+
 // CanParticipate 校验是否允许报名
 func (s *CreditServiceServer) CanParticipate(ctx context.Context, in *pb.CanParticipateReq) (*pb.CanParticipateResp, error) {
 	l := creditservicelogic.NewCanParticipateLogic(ctx, s.svcCtx)
