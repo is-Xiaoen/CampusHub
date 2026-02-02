@@ -1,41 +1,83 @@
 package middleware
 
 import (
-	"context"
 	"time"
 
-	"CampusHub/common/messaging"
+	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-// MetricsMiddleware 创建指标收集中间件
-// 自动收集消息处理的各项指标
-func MetricsMiddleware(collector messaging.MetricsCollector) messaging.Middleware {
-	return func(next messaging.HandlerFunc) messaging.HandlerFunc {
-		return func(ctx context.Context, msg *messaging.Message) error {
-			// 记录消息大小
-			messageSize := len(msg.Payload)
-			collector.ObserveMessageSize(msg.Topic, messageSize)
+var (
+	// messagesProcessed 消息处理计数器
+	messagesProcessed *prometheus.CounterVec
+	
+	// processingDuration 消息处理耗时直方图
+	processingDuration *prometheus.HistogramVec
+	
+	// messagesInFlight 正在处理的消息数量
+	messagesInFlight *prometheus.GaugeVec
+)
 
-			// 记录处理开始
+func init() {
+	messagesProcessed = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "messaging_messages_processed_total",
+			Help: "Total number of messages processed",
+		},
+		[]string{"service", "topic", "status"},
+	)
+
+	processingDuration = promauto.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "messaging_processing_duration_seconds",
+			Help:    "Message processing duration in seconds",
+			Buckets: prometheus.DefBuckets,
+		},
+		[]string{"service", "topic"},
+	)
+
+	messagesInFlight = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "messaging_messages_in_flight",
+			Help: "Number of messages currently being processed",
+		},
+		[]string{"service", "topic"},
+	)
+}
+
+// NewMetricsMiddleware 创建 Prometheus 指标中间件
+func NewMetricsMiddleware(serviceName string) message.HandlerMiddleware {
+	return func(h message.HandlerFunc) message.HandlerFunc {
+		return func(msg *message.Message) ([]*message.Message, error) {
+			// 从 metadata 获取 topic，如果没有则使用 "unknown"
+			topic := msg.Metadata.Get("topic")
+			if topic == "" {
+				topic = "unknown"
+			}
+
+			// 记录开始时间
 			start := time.Now()
+			
+			// 增加正在处理的消息数
+			messagesInFlight.WithLabelValues(serviceName, topic).Inc()
+			defer messagesInFlight.WithLabelValues(serviceName, topic).Dec()
 
 			// 调用处理器
-			err := next(ctx, msg)
+			msgs, err := h(msg)
 
-			// 记录处理时长
-			duration := time.Since(start)
+			// 记录处理耗时
+			duration := time.Since(start).Seconds()
+			processingDuration.WithLabelValues(serviceName, topic).Observe(duration)
 
-			// 记录处理指标
-			collector.RecordProcess(msg.Topic, duration, err)
-
-			// 记录消息计数
+			// 记录处理状态
 			status := "success"
 			if err != nil {
 				status = "error"
 			}
-			collector.IncrementMessageCount(msg.Topic, status)
+			messagesProcessed.WithLabelValues(serviceName, topic, status).Inc()
 
-			return err
+			return msgs, err
 		}
 	}
 }
