@@ -23,8 +23,8 @@ type Config struct {
 	// MySQL 数据库配置
 	MySQL MySQLConf
 
-	// Redis 缓存配置（复用go-zero内置配置）
-	Redis redis.RedisConf
+	// BizRedis 业务Redis缓存配置（避免与go-zero内置Redis冲突）
+	BizRedis redis.RedisConf
 
 	// JWT 认证配置
 	JWT JWTConf
@@ -55,13 +55,13 @@ type JWTConf struct {
 // SMSConf 短信服务配置
 type SMSConf struct {
 	// Provider 短信服务提供商：aliyun, tencent, mock
-	Provider string
+	Provider string `json:",optional,default=mock"`
 	// AccessKey 访问密钥ID
-	AccessKey string
+	AccessKey string `json:",optional"`
 	// SecretKey 访问密钥Secret
-	SecretKey string
+	SecretKey string `json:",optional"`
 	// SignName 短信签名
-	SignName string
+	SignName string `json:",optional"`
 	// TemplateCode 短信模板ID
-	TemplateCode string
+	TemplateCode string `json:",optional"`
 }

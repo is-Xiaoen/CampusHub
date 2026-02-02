@@ -21,7 +21,7 @@ func IncrViewCountHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 			return
 		}
 
-		l := public.NewIncrViewCountLogic(r.Context(), svcCtx)
+		l := public.NewIncrViewCountLogic(r.Context(), svcCtx).WithRequest(r)
 		resp, err := l.IncrViewCount(&req)
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
