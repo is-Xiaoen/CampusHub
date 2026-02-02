@@ -142,3 +142,45 @@ func (m *TagModel) FindIDsByActivityID(ctx context.Context, activityID uint64) (
 		Pluck("tag_id", &ids).Error
 	return ids, err
 }
+
+// ActivityTagInfo 活动标签关联信息（用于批量查询）
+type ActivityTagInfo struct {
+	ActivityID uint64
+	Tag
+}
+
+// FindByActivityIDs 批量获取多个活动的标签（避免 N+1 查询问题）
+//
+// 返回值：map[活动ID][]Tag
+//
+// SQL 示例：
+//
+//	SELECT at.activity_id, t.*
+//	FROM activity_tags at
+//	INNER JOIN tags t ON t.id = at.tag_id
+//	WHERE at.activity_id IN (1, 2, 3) AND t.status = 1
+func (m *TagModel) FindByActivityIDs(ctx context.Context, activityIDs []uint64) (map[uint64][]Tag, error) {
+	result := make(map[uint64][]Tag)
+	if len(activityIDs) == 0 {
+		return result, nil
+	}
+
+	// 批量查询所有活动的标签关联
+	var infos []ActivityTagInfo
+	err := m.db.WithContext(ctx).
+		Table("activity_tags at").
+		Select("at.activity_id, t.id, t.name, t.color, t.icon").
+		Joins("INNER JOIN tags t ON t.id = at.tag_id").
+		Where("at.activity_id IN ? AND t.status = ?", activityIDs, 1).
+		Scan(&infos).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 按活动 ID 分组
+	for _, info := range infos {
+		result[info.ActivityID] = append(result[info.ActivityID], info.Tag)
+	}
+
+	return result, nil
+}
