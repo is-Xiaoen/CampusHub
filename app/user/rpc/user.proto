@@ -80,17 +80,9 @@ service CreditService {
     // 幂等保证: 通过 source_id 实现幂等
     rpc UpdateScore(UpdateScoreReq) returns (UpdateScoreResp);
 
-    rpc GetUserIdAndTag(GetUserIdAndTagReq) returns(GetUserIdAndTagResponse);
 }
 
-message GetUserIdAndTagReq {}
 
-message GetUserIdAndTagResponse {
-    // 用户ID
-    uint64 user_id = 1;
-    // 用户标签
-    uint64 tag_id =2;
-}
 
 // ============================================================================
 // CreditService 消息定义
