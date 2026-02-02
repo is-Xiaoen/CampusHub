@@ -1,4 +1,4 @@
-CREATE TABLE `interest_tag` (
+CREATE TABLE `interest_tags` (
                                 `tag_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '标签主键ID，自增',
                                 `tag_name` VARCHAR(50) NOT NULL COMMENT '标签名称（如：运动、音乐、阅读）',
                                 `color` VARCHAR(20) DEFAULT '' COMMENT '标签颜色值（如十六进制#FFFFFF、RGB值等）',
