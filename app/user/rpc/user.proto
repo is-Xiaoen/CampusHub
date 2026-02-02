@@ -305,21 +305,58 @@ message UpdateScoreResp {
 // VerifyService 学生认证服务
 // ============================================================================
 // 提供学生身份认证相关的内部RPC接口
-// 调用方: Activity服务、Credit服务、MQ Consumer等
+// 调用方: User API、Activity服务、MQ Consumer等
+// 
+// 状态机说明：
+//   0:初始化  1:OCR审核中  2:待用户确认  3:人工审核中
+//   4:已通过  5:已拒绝     6:已超时      7:已取消  8:OCR失败
 // ============================================================================
 
 service VerifyService {
-    // ==================== 查询类接口 ====================
+    // ==================== 查询类接口（供 User API 调用） ====================
+
+    // GetVerifyCurrent 获取当前认证进度
+    // 调用方: User API（进入认证页面时调用）
+    // 业务逻辑: 返回用户当前的认证状态、可执行的操作、OCR识别数据等
+    rpc GetVerifyCurrent(GetVerifyCurrentReq) returns (GetVerifyCurrentResp);
+
+    // GetVerifyInfo 获取已通过的认证信息
+    // 调用方: User API（个人中心-认证信息页面）
+    // 业务逻辑: 仅返回已通过认证用户的脱敏信息
+    rpc GetVerifyInfo(GetVerifyInfoReq) returns (GetVerifyInfoResp);
 
     // IsVerified 查询用户是否已完成学生认证
     // 调用方: Activity服务（报名/发布活动前校验）
     // 场景: 需要确认用户学生身份时调用
     rpc IsVerified(IsVerifiedReq) returns (IsVerifiedResp);
 
-    // ==================== 写入类接口 ====================
+    // ==================== 写入类接口（供 User API 调用） ====================
+
+    // ApplyStudentVerify 提交学生认证申请
+    // 调用方: User API
+    // 业务逻辑:
+    //   1. 限流检查（20s内≤2次）
+    //   2. 唯一性校验（学校+学号）
+    //   3. 状态机校验
+    //   4. 创建记录并触发OCR
+    rpc ApplyStudentVerify(ApplyStudentVerifyReq) returns (ApplyStudentVerifyResp);
+
+    // ConfirmStudentVerify 用户确认/修改认证信息
+    // 调用方: User API
+    // 业务逻辑:
+    //   - 确认无误 -> 状态改为4（已通过）
+    //   - 修改信息 -> 状态改为3（人工审核）
+    rpc ConfirmStudentVerify(ConfirmStudentVerifyReq) returns (ConfirmStudentVerifyResp);
+
+    // CancelStudentVerify 取消认证申请
+    // 调用方: User API
+    // 业务逻辑: 状态改为7（已取消）
+    rpc CancelStudentVerify(CancelStudentVerifyReq) returns (CancelStudentVerifyResp);
+
+    // ==================== 内部接口（供 MQ Consumer / 定时任务 调用） ====================
 
     // UpdateVerifyStatus 更新认证状态
-    // 调用方: MQ Consumer（OCR回调、人工审核结果）
+    // 调用方: MQ Consumer（OCR回调、人工审核结果）、定时任务（超时处理）
     // 业务逻辑: 处理认证流程中的状态流转
     rpc UpdateVerifyStatus(UpdateVerifyStatusReq) returns (UpdateVerifyStatusResp);
 }
@@ -327,6 +364,72 @@ service VerifyService {
 // ============================================================================
 // VerifyService 消息定义
 // ============================================================================
+
+// ==================== GetVerifyCurrent 获取当前认证进度 ====================
+
+// GetVerifyCurrentReq 获取当前认证进度请求
+message GetVerifyCurrentReq {
+    // 用户ID
+    int64 user_id = 1;
+}
+
+// GetVerifyCurrentResp 获取当前认证进度响应
+message GetVerifyCurrentResp {
+    // 是否有认证记录
+    bool has_record = 1;
+    // 当前认证ID（无记录时为0）
+    int64 verify_id = 2;
+    // 当前状态码（-1=未申请,0=初始,1=OCR中,2=待确认,3=人工审核,4=通过,5=拒绝,6=超时,7=取消,8=OCR失败）
+    int32 status = 3;
+    // 状态描述
+    string status_desc = 4;
+    // 是否可以提交新申请
+    bool can_apply = 5;
+    // 是否可以确认/修改
+    bool can_confirm = 6;
+    // 是否可以取消
+    bool can_cancel = 7;
+    // 前端应执行的动作
+    // apply=显示申请表单, wait_ocr=等待OCR, confirm=显示确认页
+    // wait_manual=等待人工审核, done=认证完成, rejected=被拒绝可重新申请
+    string need_action = 8;
+    // OCR识别数据（待确认/已通过时返回）
+    VerifyOcrData verify_data = 9;
+    // 拒绝原因（被拒绝时返回）
+    string reject_reason = 10;
+    // 申请时间（Unix时间戳秒）
+    int64 created_at = 11;
+    // 最后更新时间（Unix时间戳秒）
+    int64 updated_at = 12;
+}
+
+// ==================== GetVerifyInfo 获取已通过的认证信息 ====================
+
+// GetVerifyInfoReq 获取认证信息请求
+message GetVerifyInfoReq {
+    // 用户ID
+    int64 user_id = 1;
+}
+
+// GetVerifyInfoResp 获取认证信息响应
+message GetVerifyInfoResp {
+    // 是否已认证
+    bool is_verified = 1;
+    // 认证ID
+    int64 verify_id = 2;
+    // 真实姓名（脱敏：张*）
+    string real_name = 3;
+    // 学校名称
+    string school_name = 4;
+    // 学号（脱敏：202301****）
+    string student_id = 5;
+    // 院系
+    string department = 6;
+    // 入学年份
+    string admission_year = 7;
+    // 认证通过时间（Unix时间戳秒）
+    int64 verified_at = 8;
+}
 
 // ==================== IsVerified 查询认证状态 ====================
 
@@ -352,6 +455,100 @@ message IsVerifiedResp {
     int64 verified_at = 6;
 }
 
+// ==================== ApplyStudentVerify 提交学生认证申请 ====================
+
+// ApplyStudentVerifyReq 提交认证申请请求
+message ApplyStudentVerifyReq {
+    // 用户ID
+    int64 user_id = 1;
+    // 真实姓名
+    string real_name = 2;
+    // 学校名称
+    string school_name = 3;
+    // 学号
+    string student_id = 4;
+    // 院系
+    string department = 5;
+    // 入学年份
+    string admission_year = 6;
+    // 学生证正面图片URL
+    string front_image_url = 7;
+    // 学生证详情面图片URL
+    string back_image_url = 8;
+}
+
+// ApplyStudentVerifyResp 提交认证申请响应
+message ApplyStudentVerifyResp {
+    // 认证申请ID
+    int64 verify_id = 1;
+    // 当前状态码（1=OCR审核中）
+    int32 status = 2;
+    // 状态描述
+    string status_desc = 3;
+    // 申请时间（Unix时间戳秒）
+    int64 created_at = 4;
+}
+
+// ==================== ConfirmStudentVerify 用户确认/修改 ====================
+
+// ConfirmStudentVerifyReq 确认/修改认证信息请求
+message ConfirmStudentVerifyReq {
+    // 用户ID（用于鉴权校验）
+    int64 user_id = 1;
+    // 认证申请ID
+    int64 verify_id = 2;
+    // true=确认无误，false=需要修改
+    bool is_confirmed = 3;
+    // 用户修改后的数据（is_confirmed=false时必填）
+    VerifyModifiedData modified_data = 4;
+}
+
+// VerifyModifiedData 用户修改后的数据
+message VerifyModifiedData {
+    // 真实姓名
+    string real_name = 1;
+    // 学校名称
+    string school_name = 2;
+    // 学号
+    string student_id = 3;
+    // 院系
+    string department = 4;
+    // 入学年份
+    string admission_year = 5;
+}
+
+// ConfirmStudentVerifyResp 确认/修改认证信息响应
+message ConfirmStudentVerifyResp {
+    // 认证申请ID
+    int64 verify_id = 1;
+    // 更新后的状态码（4=通过，3=人工审核）
+    int32 new_status = 2;
+    // 状态描述
+    string new_status_desc = 3;
+}
+
+// ==================== CancelStudentVerify 取消认证申请 ====================
+
+// CancelStudentVerifyReq 取消认证申请请求
+message CancelStudentVerifyReq {
+    // 用户ID（用于鉴权校验）
+    int64 user_id = 1;
+    // 认证申请ID
+    int64 verify_id = 2;
+    // 取消原因（可选）
+    string cancel_reason = 3;
+}
+
+// CancelStudentVerifyResp 取消认证申请响应
+message CancelStudentVerifyResp {
+    // 认证申请ID
+    int64 verify_id = 1;
+    // 更新后的状态码（7=已取消）
+    int32 new_status = 2;
+    // 状态描述
+    string new_status_desc = 3;
+}
+
 // ==================== UpdateVerifyStatus 更新认证状态 ====================
 
 // UpdateVerifyStatusReq 更新认证状态请求
@@ -361,7 +558,7 @@ message UpdateVerifyStatusReq {
     // 用户ID
     int64 user_id = 2;
     // 新状态
-    // 1-OCR审核中, 2-待确认, 3-人工审核中, 4-已通过, 5-已拒绝, 6-已超时, 7-已取消
+    // 1-OCR审核中, 2-待确认, 3-人工审核中, 4-已通过, 5-已拒绝, 6-已超时, 7-已取消, 8-OCR失败
     int32 new_status = 3;
     // OCR识别数据（状态为2-待确认时填充）
     VerifyOcrData ocr_data = 4;
@@ -384,6 +581,12 @@ message VerifyOcrData {
     string department = 4;
     // 入学年份
     string admission_year = 5;
+    // OCR平台
+    string ocr_platform = 6;
+    // OCR置信度
+    double ocr_confidence = 7;
+    // OCR原始响应JSON
+    string ocr_raw_json = 8;
 }
 
 // UpdateVerifyStatusResp 更新认证状态响应
@@ -401,60 +604,62 @@ message UpdateVerifyStatusResp {
 // ============================================================================
 //
 // Status -1: 未申请（无认证记录）
-// Status 0: 初始化（已创建记录，未开始处理）
+// Status 0: 初始化（可申请）
 // Status 1: OCR审核中（图片已上传，等待OCR识别）
 // Status 2: 待用户确认（OCR识别完成，等待用户确认/修改）
 // Status 3: 人工审核中（用户修改了信息，需人工复核）
-// Status 4: 已通过（认证成功）
-// Status 5: 已拒绝（认证失败，可重新申请）
-// Status 6: 已超时（超过确认时限，可重新申请）
+// Status 4: 已通过（认证成功，最终状态）
+// Status 5: 已拒绝（认证失败，24h后可重新申请）
+// Status 6: 已超时（10分钟未完成OCR，可重新申请）
 // Status 7: 已取消（用户主动取消，可重新申请）
+// Status 8: OCR失败（双OCR都失败，可重试）
+//
+// 状态流转规则：
+//   0(初始) -> 1(OCR审核中)
+//   1(OCR审核中) -> 2(待确认) | 6(超时) | 7(取消) | 8(OCR失败)
+//   2(待确认) -> 4(通过) | 3(人工审核) | 7(取消)
+//   3(人工审核) -> 4(通过) | 5(拒绝) | 7(取消)
+//   5,6,7,8 -> 0(初始) [允许重新申请]
 //
 // ============================================================================
 
-// 标签服务
+// ============================================================================
+// TagService 标签服务
+// ============================================================================
+
 service TagService {
     rpc GetAllTags(GetAllTagsReq) returns (GetAllTagsResp);
-
     rpc GetTagsByIds(GetTagsByIdsReq) returns (GetTagsByIdsResp);
-
-    rpc GetUserTags(GetUserTagsRep)returns(GetUserTagsResponse);
+    rpc GetUserTags(GetUserTagsRep) returns (GetUserTagsResponse);
 }
 
 message GetAllTagsReq {
-    // 上次同步时间戳（可选，用于增量同步）
-    // 0 表示全量同步
     int64 since_timestamp = 1;
 }
 
 message GetAllTagsResp {
-    // 标签列表
     repeated TagInfo tags = 1;
-    // 服务端当前时间戳（用于下次增量同步）
     int64 server_timestamp = 2;
 }
 
 message GetTagsByIdsReq {
-    // 标签 ID 列表（最多 50 个）
     repeated int64 ids = 1;
 }
 
 message GetTagsByIdsResp {
-    // 存在且启用的标签列表
     repeated TagInfo tags = 1;
-    // 不存在或已禁用的标签 ID 列表
     repeated int64 invalid_ids = 2;
 }
 
 message TagInfo {
-    uint64 id = 1;           // 标签 ID
-    string name = 2;        // 标签名称
-    string color = 3;       // 标签颜色
-    string icon = 4;        // 标签图标 URL
-    uint64 status = 5;       // 状态: 1 启用, 0 禁用
-    string description = 6; // 标签描述（可选）
-    int64 created_at = 7;   // 创建时间戳
-    int64 updated_at = 8;   // 更新时间戳
+    uint64 id = 1;
+    string name = 2;
+    string color = 3;
+    string icon = 4;
+    uint64 status = 5;
+    string description = 6;
+    int64 created_at = 7;
+    int64 updated_at = 8;
 }
 
 message GetUserTagsRep {}
@@ -464,10 +669,12 @@ message GetUserTagsResponse {
     string name = 2;
 }
 
+// ============================================================================
+// UserBasicService 用户信息服务
+// ============================================================================
 
-// 用户信息服务
 service UserBasicService {
-    rpc GetGroupUser(GetGroupUserRep)returns(GetGroupUserResponse);
+    rpc GetGroupUser(GetGroupUserRep) returns (GetGroupUserResponse);
 }
 
 message GetGroupUserRep {}
@@ -488,4 +695,3 @@ message UserInfo {
     uint64 age = 7;
     uint64 gender = 8;
 }
-

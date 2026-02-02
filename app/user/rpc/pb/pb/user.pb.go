@@ -1015,6 +1015,354 @@ func (x *UpdateScoreResp) GetNewLevel() int32 {
 	return 0
 }
 
+// GetVerifyCurrentReq 获取当前认证进度请求
+type GetVerifyCurrentReq struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户ID
+	UserId        int64 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetVerifyCurrentReq) Reset() {
+	*x = GetVerifyCurrentReq{}
+	mi := &file_user_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetVerifyCurrentReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetVerifyCurrentReq) ProtoMessage() {}
+
+func (x *GetVerifyCurrentReq) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetVerifyCurrentReq.ProtoReflect.Descriptor instead.
+func (*GetVerifyCurrentReq) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *GetVerifyCurrentReq) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+// GetVerifyCurrentResp 获取当前认证进度响应
+type GetVerifyCurrentResp struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否有认证记录
+	HasRecord bool `protobuf:"varint,1,opt,name=has_record,json=hasRecord,proto3" json:"has_record,omitempty"`
+	// 当前认证ID（无记录时为0）
+	VerifyId int64 `protobuf:"varint,2,opt,name=verify_id,json=verifyId,proto3" json:"verify_id,omitempty"`
+	// 当前状态码（-1=未申请,0=初始,1=OCR中,2=待确认,3=人工审核,4=通过,5=拒绝,6=超时,7=取消,8=OCR失败）
+	Status int32 `protobuf:"varint,3,opt,name=status,proto3" json:"status,omitempty"`
+	// 状态描述
+	StatusDesc string `protobuf:"bytes,4,opt,name=status_desc,json=statusDesc,proto3" json:"status_desc,omitempty"`
+	// 是否可以提交新申请
+	CanApply bool `protobuf:"varint,5,opt,name=can_apply,json=canApply,proto3" json:"can_apply,omitempty"`
+	// 是否可以确认/修改
+	CanConfirm bool `protobuf:"varint,6,opt,name=can_confirm,json=canConfirm,proto3" json:"can_confirm,omitempty"`
+	// 是否可以取消
+	CanCancel bool `protobuf:"varint,7,opt,name=can_cancel,json=canCancel,proto3" json:"can_cancel,omitempty"`
+	// 前端应执行的动作
+	// apply=显示申请表单, wait_ocr=等待OCR, confirm=显示确认页
+	// wait_manual=等待人工审核, done=认证完成, rejected=被拒绝可重新申请
+	NeedAction string `protobuf:"bytes,8,opt,name=need_action,json=needAction,proto3" json:"need_action,omitempty"`
+	// OCR识别数据（待确认/已通过时返回）
+	VerifyData *VerifyOcrData `protobuf:"bytes,9,opt,name=verify_data,json=verifyData,proto3" json:"verify_data,omitempty"`
+	// 拒绝原因（被拒绝时返回）
+	RejectReason string `protobuf:"bytes,10,opt,name=reject_reason,json=rejectReason,proto3" json:"reject_reason,omitempty"`
+	// 申请时间（Unix时间戳秒）
+	CreatedAt int64 `protobuf:"varint,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	// 最后更新时间（Unix时间戳秒）
+	UpdatedAt     int64 `protobuf:"varint,12,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetVerifyCurrentResp) Reset() {
+	*x = GetVerifyCurrentResp{}
+	mi := &file_user_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetVerifyCurrentResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetVerifyCurrentResp) ProtoMessage() {}
+
+func (x *GetVerifyCurrentResp) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetVerifyCurrentResp.ProtoReflect.Descriptor instead.
+func (*GetVerifyCurrentResp) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *GetVerifyCurrentResp) GetHasRecord() bool {
+	if x != nil {
+		return x.HasRecord
+	}
+	return false
+}
+
+func (x *GetVerifyCurrentResp) GetVerifyId() int64 {
+	if x != nil {
+		return x.VerifyId
+	}
+	return 0
+}
+
+func (x *GetVerifyCurrentResp) GetStatus() int32 {
+	if x != nil {
+		return x.Status
+	}
+	return 0
+}
+
+func (x *GetVerifyCurrentResp) GetStatusDesc() string {
+	if x != nil {
+		return x.StatusDesc
+	}
+	return ""
+}
+
+func (x *GetVerifyCurrentResp) GetCanApply() bool {
+	if x != nil {
+		return x.CanApply
+	}
+	return false
+}
+
+func (x *GetVerifyCurrentResp) GetCanConfirm() bool {
+	if x != nil {
+		return x.CanConfirm
+	}
+	return false
+}
+
+func (x *GetVerifyCurrentResp) GetCanCancel() bool {
+	if x != nil {
+		return x.CanCancel
+	}
+	return false
+}
+
+func (x *GetVerifyCurrentResp) GetNeedAction() string {
+	if x != nil {
+		return x.NeedAction
+	}
+	return ""
+}
+
+func (x *GetVerifyCurrentResp) GetVerifyData() *VerifyOcrData {
+	if x != nil {
+		return x.VerifyData
+	}
+	return nil
+}
+
+func (x *GetVerifyCurrentResp) GetRejectReason() string {
+	if x != nil {
+		return x.RejectReason
+	}
+	return ""
+}
+
+func (x *GetVerifyCurrentResp) GetCreatedAt() int64 {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return 0
+}
+
+func (x *GetVerifyCurrentResp) GetUpdatedAt() int64 {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return 0
+}
+
+// GetVerifyInfoReq 获取认证信息请求
+type GetVerifyInfoReq struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户ID
+	UserId        int64 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetVerifyInfoReq) Reset() {
+	*x = GetVerifyInfoReq{}
+	mi := &file_user_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetVerifyInfoReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetVerifyInfoReq) ProtoMessage() {}
+
+func (x *GetVerifyInfoReq) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetVerifyInfoReq.ProtoReflect.Descriptor instead.
+func (*GetVerifyInfoReq) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *GetVerifyInfoReq) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+// GetVerifyInfoResp 获取认证信息响应
+type GetVerifyInfoResp struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 是否已认证
+	IsVerified bool `protobuf:"varint,1,opt,name=is_verified,json=isVerified,proto3" json:"is_verified,omitempty"`
+	// 认证ID
+	VerifyId int64 `protobuf:"varint,2,opt,name=verify_id,json=verifyId,proto3" json:"verify_id,omitempty"`
+	// 真实姓名（脱敏：张*）
+	RealName string `protobuf:"bytes,3,opt,name=real_name,json=realName,proto3" json:"real_name,omitempty"`
+	// 学校名称
+	SchoolName string `protobuf:"bytes,4,opt,name=school_name,json=schoolName,proto3" json:"school_name,omitempty"`
+	// 学号（脱敏：202301****）
+	StudentId string `protobuf:"bytes,5,opt,name=student_id,json=studentId,proto3" json:"student_id,omitempty"`
+	// 院系
+	Department string `protobuf:"bytes,6,opt,name=department,proto3" json:"department,omitempty"`
+	// 入学年份
+	AdmissionYear string `protobuf:"bytes,7,opt,name=admission_year,json=admissionYear,proto3" json:"admission_year,omitempty"`
+	// 认证通过时间（Unix时间戳秒）
+	VerifiedAt    int64 `protobuf:"varint,8,opt,name=verified_at,json=verifiedAt,proto3" json:"verified_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetVerifyInfoResp) Reset() {
+	*x = GetVerifyInfoResp{}
+	mi := &file_user_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetVerifyInfoResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetVerifyInfoResp) ProtoMessage() {}
+
+func (x *GetVerifyInfoResp) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetVerifyInfoResp.ProtoReflect.Descriptor instead.
+func (*GetVerifyInfoResp) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *GetVerifyInfoResp) GetIsVerified() bool {
+	if x != nil {
+		return x.IsVerified
+	}
+	return false
+}
+
+func (x *GetVerifyInfoResp) GetVerifyId() int64 {
+	if x != nil {
+		return x.VerifyId
+	}
+	return 0
+}
+
+func (x *GetVerifyInfoResp) GetRealName() string {
+	if x != nil {
+		return x.RealName
+	}
+	return ""
+}
+
+func (x *GetVerifyInfoResp) GetSchoolName() string {
+	if x != nil {
+		return x.SchoolName
+	}
+	return ""
+}
+
+func (x *GetVerifyInfoResp) GetStudentId() string {
+	if x != nil {
+		return x.StudentId
+	}
+	return ""
+}
+
+func (x *GetVerifyInfoResp) GetDepartment() string {
+	if x != nil {
+		return x.Department
+	}
+	return ""
+}
+
+func (x *GetVerifyInfoResp) GetAdmissionYear() string {
+	if x != nil {
+		return x.AdmissionYear
+	}
+	return ""
+}
+
+func (x *GetVerifyInfoResp) GetVerifiedAt() int64 {
+	if x != nil {
+		return x.VerifiedAt
+	}
+	return 0
+}
+
 // IsVerifiedReq 查询学生认证状态请求
 type IsVerifiedReq struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -1026,7 +1374,7 @@ type IsVerifiedReq struct {
 
 func (x *IsVerifiedReq) Reset() {
 	*x = IsVerifiedReq{}
-	mi := &file_user_proto_msgTypes[13]
+	mi := &file_user_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1038,7 +1386,7 @@ func (x *IsVerifiedReq) String() string {
 func (*IsVerifiedReq) ProtoMessage() {}
 
 func (x *IsVerifiedReq) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[13]
+	mi := &file_user_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1051,7 +1399,7 @@ func (x *IsVerifiedReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IsVerifiedReq.ProtoReflect.Descriptor instead.
 func (*IsVerifiedReq) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{13}
+	return file_user_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *IsVerifiedReq) GetUserId() int64 {
@@ -1082,7 +1430,7 @@ type IsVerifiedResp struct {
 
 func (x *IsVerifiedResp) Reset() {
 	*x = IsVerifiedResp{}
-	mi := &file_user_proto_msgTypes[14]
+	mi := &file_user_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1094,7 +1442,7 @@ func (x *IsVerifiedResp) String() string {
 func (*IsVerifiedResp) ProtoMessage() {}
 
 func (x *IsVerifiedResp) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[14]
+	mi := &file_user_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1107,7 +1455,7 @@ func (x *IsVerifiedResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IsVerifiedResp.ProtoReflect.Descriptor instead.
 func (*IsVerifiedResp) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{14}
+	return file_user_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *IsVerifiedResp) GetIsVerified() bool {
@@ -1152,6 +1500,535 @@ func (x *IsVerifiedResp) GetVerifiedAt() int64 {
 	return 0
 }
 
+// ApplyStudentVerifyReq 提交认证申请请求
+type ApplyStudentVerifyReq struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户ID
+	UserId int64 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// 真实姓名
+	RealName string `protobuf:"bytes,2,opt,name=real_name,json=realName,proto3" json:"real_name,omitempty"`
+	// 学校名称
+	SchoolName string `protobuf:"bytes,3,opt,name=school_name,json=schoolName,proto3" json:"school_name,omitempty"`
+	// 学号
+	StudentId string `protobuf:"bytes,4,opt,name=student_id,json=studentId,proto3" json:"student_id,omitempty"`
+	// 院系
+	Department string `protobuf:"bytes,5,opt,name=department,proto3" json:"department,omitempty"`
+	// 入学年份
+	AdmissionYear string `protobuf:"bytes,6,opt,name=admission_year,json=admissionYear,proto3" json:"admission_year,omitempty"`
+	// 学生证正面图片URL
+	FrontImageUrl string `protobuf:"bytes,7,opt,name=front_image_url,json=frontImageUrl,proto3" json:"front_image_url,omitempty"`
+	// 学生证详情面图片URL
+	BackImageUrl  string `protobuf:"bytes,8,opt,name=back_image_url,json=backImageUrl,proto3" json:"back_image_url,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ApplyStudentVerifyReq) Reset() {
+	*x = ApplyStudentVerifyReq{}
+	mi := &file_user_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ApplyStudentVerifyReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApplyStudentVerifyReq) ProtoMessage() {}
+
+func (x *ApplyStudentVerifyReq) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApplyStudentVerifyReq.ProtoReflect.Descriptor instead.
+func (*ApplyStudentVerifyReq) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *ApplyStudentVerifyReq) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *ApplyStudentVerifyReq) GetRealName() string {
+	if x != nil {
+		return x.RealName
+	}
+	return ""
+}
+
+func (x *ApplyStudentVerifyReq) GetSchoolName() string {
+	if x != nil {
+		return x.SchoolName
+	}
+	return ""
+}
+
+func (x *ApplyStudentVerifyReq) GetStudentId() string {
+	if x != nil {
+		return x.StudentId
+	}
+	return ""
+}
+
+func (x *ApplyStudentVerifyReq) GetDepartment() string {
+	if x != nil {
+		return x.Department
+	}
+	return ""
+}
+
+func (x *ApplyStudentVerifyReq) GetAdmissionYear() string {
+	if x != nil {
+		return x.AdmissionYear
+	}
+	return ""
+}
+
+func (x *ApplyStudentVerifyReq) GetFrontImageUrl() string {
+	if x != nil {
+		return x.FrontImageUrl
+	}
+	return ""
+}
+
+func (x *ApplyStudentVerifyReq) GetBackImageUrl() string {
+	if x != nil {
+		return x.BackImageUrl
+	}
+	return ""
+}
+
+// ApplyStudentVerifyResp 提交认证申请响应
+type ApplyStudentVerifyResp struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 认证申请ID
+	VerifyId int64 `protobuf:"varint,1,opt,name=verify_id,json=verifyId,proto3" json:"verify_id,omitempty"`
+	// 当前状态码（1=OCR审核中）
+	Status int32 `protobuf:"varint,2,opt,name=status,proto3" json:"status,omitempty"`
+	// 状态描述
+	StatusDesc string `protobuf:"bytes,3,opt,name=status_desc,json=statusDesc,proto3" json:"status_desc,omitempty"`
+	// 申请时间（Unix时间戳秒）
+	CreatedAt     int64 `protobuf:"varint,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ApplyStudentVerifyResp) Reset() {
+	*x = ApplyStudentVerifyResp{}
+	mi := &file_user_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ApplyStudentVerifyResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApplyStudentVerifyResp) ProtoMessage() {}
+
+func (x *ApplyStudentVerifyResp) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApplyStudentVerifyResp.ProtoReflect.Descriptor instead.
+func (*ApplyStudentVerifyResp) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *ApplyStudentVerifyResp) GetVerifyId() int64 {
+	if x != nil {
+		return x.VerifyId
+	}
+	return 0
+}
+
+func (x *ApplyStudentVerifyResp) GetStatus() int32 {
+	if x != nil {
+		return x.Status
+	}
+	return 0
+}
+
+func (x *ApplyStudentVerifyResp) GetStatusDesc() string {
+	if x != nil {
+		return x.StatusDesc
+	}
+	return ""
+}
+
+func (x *ApplyStudentVerifyResp) GetCreatedAt() int64 {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return 0
+}
+
+// ConfirmStudentVerifyReq 确认/修改认证信息请求
+type ConfirmStudentVerifyReq struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户ID（用于鉴权校验）
+	UserId int64 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// 认证申请ID
+	VerifyId int64 `protobuf:"varint,2,opt,name=verify_id,json=verifyId,proto3" json:"verify_id,omitempty"`
+	// true=确认无误，false=需要修改
+	IsConfirmed bool `protobuf:"varint,3,opt,name=is_confirmed,json=isConfirmed,proto3" json:"is_confirmed,omitempty"`
+	// 用户修改后的数据（is_confirmed=false时必填）
+	ModifiedData  *VerifyModifiedData `protobuf:"bytes,4,opt,name=modified_data,json=modifiedData,proto3" json:"modified_data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ConfirmStudentVerifyReq) Reset() {
+	*x = ConfirmStudentVerifyReq{}
+	mi := &file_user_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ConfirmStudentVerifyReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ConfirmStudentVerifyReq) ProtoMessage() {}
+
+func (x *ConfirmStudentVerifyReq) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ConfirmStudentVerifyReq.ProtoReflect.Descriptor instead.
+func (*ConfirmStudentVerifyReq) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *ConfirmStudentVerifyReq) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *ConfirmStudentVerifyReq) GetVerifyId() int64 {
+	if x != nil {
+		return x.VerifyId
+	}
+	return 0
+}
+
+func (x *ConfirmStudentVerifyReq) GetIsConfirmed() bool {
+	if x != nil {
+		return x.IsConfirmed
+	}
+	return false
+}
+
+func (x *ConfirmStudentVerifyReq) GetModifiedData() *VerifyModifiedData {
+	if x != nil {
+		return x.ModifiedData
+	}
+	return nil
+}
+
+// VerifyModifiedData 用户修改后的数据
+type VerifyModifiedData struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 真实姓名
+	RealName string `protobuf:"bytes,1,opt,name=real_name,json=realName,proto3" json:"real_name,omitempty"`
+	// 学校名称
+	SchoolName string `protobuf:"bytes,2,opt,name=school_name,json=schoolName,proto3" json:"school_name,omitempty"`
+	// 学号
+	StudentId string `protobuf:"bytes,3,opt,name=student_id,json=studentId,proto3" json:"student_id,omitempty"`
+	// 院系
+	Department string `protobuf:"bytes,4,opt,name=department,proto3" json:"department,omitempty"`
+	// 入学年份
+	AdmissionYear string `protobuf:"bytes,5,opt,name=admission_year,json=admissionYear,proto3" json:"admission_year,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifyModifiedData) Reset() {
+	*x = VerifyModifiedData{}
+	mi := &file_user_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyModifiedData) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyModifiedData) ProtoMessage() {}
+
+func (x *VerifyModifiedData) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyModifiedData.ProtoReflect.Descriptor instead.
+func (*VerifyModifiedData) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *VerifyModifiedData) GetRealName() string {
+	if x != nil {
+		return x.RealName
+	}
+	return ""
+}
+
+func (x *VerifyModifiedData) GetSchoolName() string {
+	if x != nil {
+		return x.SchoolName
+	}
+	return ""
+}
+
+func (x *VerifyModifiedData) GetStudentId() string {
+	if x != nil {
+		return x.StudentId
+	}
+	return ""
+}
+
+func (x *VerifyModifiedData) GetDepartment() string {
+	if x != nil {
+		return x.Department
+	}
+	return ""
+}
+
+func (x *VerifyModifiedData) GetAdmissionYear() string {
+	if x != nil {
+		return x.AdmissionYear
+	}
+	return ""
+}
+
+// ConfirmStudentVerifyResp 确认/修改认证信息响应
+type ConfirmStudentVerifyResp struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 认证申请ID
+	VerifyId int64 `protobuf:"varint,1,opt,name=verify_id,json=verifyId,proto3" json:"verify_id,omitempty"`
+	// 更新后的状态码（4=通过，3=人工审核）
+	NewStatus int32 `protobuf:"varint,2,opt,name=new_status,json=newStatus,proto3" json:"new_status,omitempty"`
+	// 状态描述
+	NewStatusDesc string `protobuf:"bytes,3,opt,name=new_status_desc,json=newStatusDesc,proto3" json:"new_status_desc,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ConfirmStudentVerifyResp) Reset() {
+	*x = ConfirmStudentVerifyResp{}
+	mi := &file_user_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ConfirmStudentVerifyResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ConfirmStudentVerifyResp) ProtoMessage() {}
+
+func (x *ConfirmStudentVerifyResp) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ConfirmStudentVerifyResp.ProtoReflect.Descriptor instead.
+func (*ConfirmStudentVerifyResp) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *ConfirmStudentVerifyResp) GetVerifyId() int64 {
+	if x != nil {
+		return x.VerifyId
+	}
+	return 0
+}
+
+func (x *ConfirmStudentVerifyResp) GetNewStatus() int32 {
+	if x != nil {
+		return x.NewStatus
+	}
+	return 0
+}
+
+func (x *ConfirmStudentVerifyResp) GetNewStatusDesc() string {
+	if x != nil {
+		return x.NewStatusDesc
+	}
+	return ""
+}
+
+// CancelStudentVerifyReq 取消认证申请请求
+type CancelStudentVerifyReq struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 用户ID（用于鉴权校验）
+	UserId int64 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// 认证申请ID
+	VerifyId int64 `protobuf:"varint,2,opt,name=verify_id,json=verifyId,proto3" json:"verify_id,omitempty"`
+	// 取消原因（可选）
+	CancelReason  string `protobuf:"bytes,3,opt,name=cancel_reason,json=cancelReason,proto3" json:"cancel_reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelStudentVerifyReq) Reset() {
+	*x = CancelStudentVerifyReq{}
+	mi := &file_user_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelStudentVerifyReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelStudentVerifyReq) ProtoMessage() {}
+
+func (x *CancelStudentVerifyReq) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelStudentVerifyReq.ProtoReflect.Descriptor instead.
+func (*CancelStudentVerifyReq) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *CancelStudentVerifyReq) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *CancelStudentVerifyReq) GetVerifyId() int64 {
+	if x != nil {
+		return x.VerifyId
+	}
+	return 0
+}
+
+func (x *CancelStudentVerifyReq) GetCancelReason() string {
+	if x != nil {
+		return x.CancelReason
+	}
+	return ""
+}
+
+// CancelStudentVerifyResp 取消认证申请响应
+type CancelStudentVerifyResp struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// 认证申请ID
+	VerifyId int64 `protobuf:"varint,1,opt,name=verify_id,json=verifyId,proto3" json:"verify_id,omitempty"`
+	// 更新后的状态码（7=已取消）
+	NewStatus int32 `protobuf:"varint,2,opt,name=new_status,json=newStatus,proto3" json:"new_status,omitempty"`
+	// 状态描述
+	NewStatusDesc string `protobuf:"bytes,3,opt,name=new_status_desc,json=newStatusDesc,proto3" json:"new_status_desc,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelStudentVerifyResp) Reset() {
+	*x = CancelStudentVerifyResp{}
+	mi := &file_user_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelStudentVerifyResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelStudentVerifyResp) ProtoMessage() {}
+
+func (x *CancelStudentVerifyResp) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelStudentVerifyResp.ProtoReflect.Descriptor instead.
+func (*CancelStudentVerifyResp) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *CancelStudentVerifyResp) GetVerifyId() int64 {
+	if x != nil {
+		return x.VerifyId
+	}
+	return 0
+}
+
+func (x *CancelStudentVerifyResp) GetNewStatus() int32 {
+	if x != nil {
+		return x.NewStatus
+	}
+	return 0
+}
+
+func (x *CancelStudentVerifyResp) GetNewStatusDesc() string {
+	if x != nil {
+		return x.NewStatusDesc
+	}
+	return ""
+}
+
 // UpdateVerifyStatusReq 更新认证状态请求
 type UpdateVerifyStatusReq struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -1160,7 +2037,7 @@ type UpdateVerifyStatusReq struct {
 	// 用户ID
 	UserId int64 `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	// 新状态
-	// 1-OCR审核中, 2-待确认, 3-人工审核中, 4-已通过, 5-已拒绝, 6-已超时, 7-已取消
+	// 1-OCR审核中, 2-待确认, 3-人工审核中, 4-已通过, 5-已拒绝, 6-已超时, 7-已取消, 8-OCR失败
 	NewStatus int32 `protobuf:"varint,3,opt,name=new_status,json=newStatus,proto3" json:"new_status,omitempty"`
 	// OCR识别数据（状态为2-待确认时填充）
 	OcrData *VerifyOcrData `protobuf:"bytes,4,opt,name=ocr_data,json=ocrData,proto3" json:"ocr_data,omitempty"`
@@ -1175,7 +2052,7 @@ type UpdateVerifyStatusReq struct {
 
 func (x *UpdateVerifyStatusReq) Reset() {
 	*x = UpdateVerifyStatusReq{}
-	mi := &file_user_proto_msgTypes[15]
+	mi := &file_user_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1187,7 +2064,7 @@ func (x *UpdateVerifyStatusReq) String() string {
 func (*UpdateVerifyStatusReq) ProtoMessage() {}
 
 func (x *UpdateVerifyStatusReq) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[15]
+	mi := &file_user_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1200,7 +2077,7 @@ func (x *UpdateVerifyStatusReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateVerifyStatusReq.ProtoReflect.Descriptor instead.
 func (*UpdateVerifyStatusReq) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{15}
+	return file_user_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *UpdateVerifyStatusReq) GetVerifyId() int64 {
@@ -1258,13 +2135,19 @@ type VerifyOcrData struct {
 	Department string `protobuf:"bytes,4,opt,name=department,proto3" json:"department,omitempty"`
 	// 入学年份
 	AdmissionYear string `protobuf:"bytes,5,opt,name=admission_year,json=admissionYear,proto3" json:"admission_year,omitempty"`
+	// OCR平台
+	OcrPlatform string `protobuf:"bytes,6,opt,name=ocr_platform,json=ocrPlatform,proto3" json:"ocr_platform,omitempty"`
+	// OCR置信度
+	OcrConfidence float64 `protobuf:"fixed64,7,opt,name=ocr_confidence,json=ocrConfidence,proto3" json:"ocr_confidence,omitempty"`
+	// OCR原始响应JSON
+	OcrRawJson    string `protobuf:"bytes,8,opt,name=ocr_raw_json,json=ocrRawJson,proto3" json:"ocr_raw_json,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *VerifyOcrData) Reset() {
 	*x = VerifyOcrData{}
-	mi := &file_user_proto_msgTypes[16]
+	mi := &file_user_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1276,7 +2159,7 @@ func (x *VerifyOcrData) String() string {
 func (*VerifyOcrData) ProtoMessage() {}
 
 func (x *VerifyOcrData) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[16]
+	mi := &file_user_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1289,7 +2172,7 @@ func (x *VerifyOcrData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VerifyOcrData.ProtoReflect.Descriptor instead.
 func (*VerifyOcrData) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{16}
+	return file_user_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *VerifyOcrData) GetRealName() string {
@@ -1327,6 +2210,27 @@ func (x *VerifyOcrData) GetAdmissionYear() string {
 	return ""
 }
 
+func (x *VerifyOcrData) GetOcrPlatform() string {
+	if x != nil {
+		return x.OcrPlatform
+	}
+	return ""
+}
+
+func (x *VerifyOcrData) GetOcrConfidence() float64 {
+	if x != nil {
+		return x.OcrConfidence
+	}
+	return 0
+}
+
+func (x *VerifyOcrData) GetOcrRawJson() string {
+	if x != nil {
+		return x.OcrRawJson
+	}
+	return ""
+}
+
 // UpdateVerifyStatusResp 更新认证状态响应
 type UpdateVerifyStatusResp struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -1342,7 +2246,7 @@ type UpdateVerifyStatusResp struct {
 
 func (x *UpdateVerifyStatusResp) Reset() {
 	*x = UpdateVerifyStatusResp{}
-	mi := &file_user_proto_msgTypes[17]
+	mi := &file_user_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1354,7 +2258,7 @@ func (x *UpdateVerifyStatusResp) String() string {
 func (*UpdateVerifyStatusResp) ProtoMessage() {}
 
 func (x *UpdateVerifyStatusResp) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[17]
+	mi := &file_user_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1367,7 +2271,7 @@ func (x *UpdateVerifyStatusResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateVerifyStatusResp.ProtoReflect.Descriptor instead.
 func (*UpdateVerifyStatusResp) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{17}
+	return file_user_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *UpdateVerifyStatusResp) GetSuccess() bool {
@@ -1392,17 +2296,15 @@ func (x *UpdateVerifyStatusResp) GetAfterStatus() int32 {
 }
 
 type GetAllTagsReq struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 上次同步时间戳（可选，用于增量同步）
-	// 0 表示全量同步
-	SinceTimestamp int64 `protobuf:"varint,1,opt,name=since_timestamp,json=sinceTimestamp,proto3" json:"since_timestamp,omitempty"`
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	SinceTimestamp int64                  `protobuf:"varint,1,opt,name=since_timestamp,json=sinceTimestamp,proto3" json:"since_timestamp,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
 
 func (x *GetAllTagsReq) Reset() {
 	*x = GetAllTagsReq{}
-	mi := &file_user_proto_msgTypes[18]
+	mi := &file_user_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1414,7 +2316,7 @@ func (x *GetAllTagsReq) String() string {
 func (*GetAllTagsReq) ProtoMessage() {}
 
 func (x *GetAllTagsReq) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[18]
+	mi := &file_user_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1427,7 +2329,7 @@ func (x *GetAllTagsReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllTagsReq.ProtoReflect.Descriptor instead.
 func (*GetAllTagsReq) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{18}
+	return file_user_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *GetAllTagsReq) GetSinceTimestamp() int64 {
@@ -1438,18 +2340,16 @@ func (x *GetAllTagsReq) GetSinceTimestamp() int64 {
 }
 
 type GetAllTagsResp struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 标签列表
-	Tags []*TagInfo `protobuf:"bytes,1,rep,name=tags,proto3" json:"tags,omitempty"`
-	// 服务端当前时间戳（用于下次增量同步）
-	ServerTimestamp int64 `protobuf:"varint,2,opt,name=server_timestamp,json=serverTimestamp,proto3" json:"server_timestamp,omitempty"`
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Tags            []*TagInfo             `protobuf:"bytes,1,rep,name=tags,proto3" json:"tags,omitempty"`
+	ServerTimestamp int64                  `protobuf:"varint,2,opt,name=server_timestamp,json=serverTimestamp,proto3" json:"server_timestamp,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
 
 func (x *GetAllTagsResp) Reset() {
 	*x = GetAllTagsResp{}
-	mi := &file_user_proto_msgTypes[19]
+	mi := &file_user_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1461,7 +2361,7 @@ func (x *GetAllTagsResp) String() string {
 func (*GetAllTagsResp) ProtoMessage() {}
 
 func (x *GetAllTagsResp) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[19]
+	mi := &file_user_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1474,7 +2374,7 @@ func (x *GetAllTagsResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllTagsResp.ProtoReflect.Descriptor instead.
 func (*GetAllTagsResp) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{19}
+	return file_user_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *GetAllTagsResp) GetTags() []*TagInfo {
@@ -1492,16 +2392,15 @@ func (x *GetAllTagsResp) GetServerTimestamp() int64 {
 }
 
 type GetTagsByIdsReq struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 标签 ID 列表（最多 50 个）
-	Ids           []int64 `protobuf:"varint,1,rep,packed,name=ids,proto3" json:"ids,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Ids           []int64                `protobuf:"varint,1,rep,packed,name=ids,proto3" json:"ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetTagsByIdsReq) Reset() {
 	*x = GetTagsByIdsReq{}
-	mi := &file_user_proto_msgTypes[20]
+	mi := &file_user_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1513,7 +2412,7 @@ func (x *GetTagsByIdsReq) String() string {
 func (*GetTagsByIdsReq) ProtoMessage() {}
 
 func (x *GetTagsByIdsReq) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[20]
+	mi := &file_user_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1526,7 +2425,7 @@ func (x *GetTagsByIdsReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTagsByIdsReq.ProtoReflect.Descriptor instead.
 func (*GetTagsByIdsReq) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{20}
+	return file_user_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *GetTagsByIdsReq) GetIds() []int64 {
@@ -1537,18 +2436,16 @@ func (x *GetTagsByIdsReq) GetIds() []int64 {
 }
 
 type GetTagsByIdsResp struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// 存在且启用的标签列表
-	Tags []*TagInfo `protobuf:"bytes,1,rep,name=tags,proto3" json:"tags,omitempty"`
-	// 不存在或已禁用的标签 ID 列表
-	InvalidIds    []int64 `protobuf:"varint,2,rep,packed,name=invalid_ids,json=invalidIds,proto3" json:"invalid_ids,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Tags          []*TagInfo             `protobuf:"bytes,1,rep,name=tags,proto3" json:"tags,omitempty"`
+	InvalidIds    []int64                `protobuf:"varint,2,rep,packed,name=invalid_ids,json=invalidIds,proto3" json:"invalid_ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetTagsByIdsResp) Reset() {
 	*x = GetTagsByIdsResp{}
-	mi := &file_user_proto_msgTypes[21]
+	mi := &file_user_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1560,7 +2457,7 @@ func (x *GetTagsByIdsResp) String() string {
 func (*GetTagsByIdsResp) ProtoMessage() {}
 
 func (x *GetTagsByIdsResp) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[21]
+	mi := &file_user_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1573,7 +2470,7 @@ func (x *GetTagsByIdsResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTagsByIdsResp.ProtoReflect.Descriptor instead.
 func (*GetTagsByIdsResp) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{21}
+	return file_user_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *GetTagsByIdsResp) GetTags() []*TagInfo {
@@ -1592,21 +2489,21 @@ func (x *GetTagsByIdsResp) GetInvalidIds() []int64 {
 
 type TagInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`                                // 标签 ID
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`                             // 标签名称
-	Color         string                 `protobuf:"bytes,3,opt,name=color,proto3" json:"color,omitempty"`                           // 标签颜色
-	Icon          string                 `protobuf:"bytes,4,opt,name=icon,proto3" json:"icon,omitempty"`                             // 标签图标 URL
-	Status        uint64                 `protobuf:"varint,5,opt,name=status,proto3" json:"status,omitempty"`                        // 状态: 1 启用, 0 禁用
-	Description   string                 `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`               // 标签描述（可选）
-	CreatedAt     int64                  `protobuf:"varint,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"` // 创建时间戳
-	UpdatedAt     int64                  `protobuf:"varint,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"` // 更新时间戳
+	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Color         string                 `protobuf:"bytes,3,opt,name=color,proto3" json:"color,omitempty"`
+	Icon          string                 `protobuf:"bytes,4,opt,name=icon,proto3" json:"icon,omitempty"`
+	Status        uint64                 `protobuf:"varint,5,opt,name=status,proto3" json:"status,omitempty"`
+	Description   string                 `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`
+	CreatedAt     int64                  `protobuf:"varint,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     int64                  `protobuf:"varint,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *TagInfo) Reset() {
 	*x = TagInfo{}
-	mi := &file_user_proto_msgTypes[22]
+	mi := &file_user_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1618,7 +2515,7 @@ func (x *TagInfo) String() string {
 func (*TagInfo) ProtoMessage() {}
 
 func (x *TagInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[22]
+	mi := &file_user_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1631,7 +2528,7 @@ func (x *TagInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TagInfo.ProtoReflect.Descriptor instead.
 func (*TagInfo) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{22}
+	return file_user_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *TagInfo) GetId() uint64 {
@@ -1698,7 +2595,7 @@ type GetUserTagsRep struct {
 
 func (x *GetUserTagsRep) Reset() {
 	*x = GetUserTagsRep{}
-	mi := &file_user_proto_msgTypes[23]
+	mi := &file_user_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1710,7 +2607,7 @@ func (x *GetUserTagsRep) String() string {
 func (*GetUserTagsRep) ProtoMessage() {}
 
 func (x *GetUserTagsRep) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[23]
+	mi := &file_user_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1723,7 +2620,7 @@ func (x *GetUserTagsRep) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserTagsRep.ProtoReflect.Descriptor instead.
 func (*GetUserTagsRep) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{23}
+	return file_user_proto_rawDescGZIP(), []int{34}
 }
 
 type GetUserTagsResponse struct {
@@ -1736,7 +2633,7 @@ type GetUserTagsResponse struct {
 
 func (x *GetUserTagsResponse) Reset() {
 	*x = GetUserTagsResponse{}
-	mi := &file_user_proto_msgTypes[24]
+	mi := &file_user_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1748,7 +2645,7 @@ func (x *GetUserTagsResponse) String() string {
 func (*GetUserTagsResponse) ProtoMessage() {}
 
 func (x *GetUserTagsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[24]
+	mi := &file_user_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1761,7 +2658,7 @@ func (x *GetUserTagsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserTagsResponse.ProtoReflect.Descriptor instead.
 func (*GetUserTagsResponse) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{24}
+	return file_user_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *GetUserTagsResponse) GetId() uint64 {
@@ -1786,7 +2683,7 @@ type GetGroupUserRep struct {
 
 func (x *GetGroupUserRep) Reset() {
 	*x = GetGroupUserRep{}
-	mi := &file_user_proto_msgTypes[25]
+	mi := &file_user_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1798,7 +2695,7 @@ func (x *GetGroupUserRep) String() string {
 func (*GetGroupUserRep) ProtoMessage() {}
 
 func (x *GetGroupUserRep) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[25]
+	mi := &file_user_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1811,7 +2708,7 @@ func (x *GetGroupUserRep) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetGroupUserRep.ProtoReflect.Descriptor instead.
 func (*GetGroupUserRep) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{25}
+	return file_user_proto_rawDescGZIP(), []int{36}
 }
 
 type GetGroupUserResponse struct {
@@ -1825,7 +2722,7 @@ type GetGroupUserResponse struct {
 
 func (x *GetGroupUserResponse) Reset() {
 	*x = GetGroupUserResponse{}
-	mi := &file_user_proto_msgTypes[26]
+	mi := &file_user_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1837,7 +2734,7 @@ func (x *GetGroupUserResponse) String() string {
 func (*GetGroupUserResponse) ProtoMessage() {}
 
 func (x *GetGroupUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[26]
+	mi := &file_user_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1850,7 +2747,7 @@ func (x *GetGroupUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetGroupUserResponse.ProtoReflect.Descriptor instead.
 func (*GetGroupUserResponse) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{26}
+	return file_user_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *GetGroupUserResponse) GetId() uint64 {
@@ -1890,7 +2787,7 @@ type UserInfo struct {
 
 func (x *UserInfo) Reset() {
 	*x = UserInfo{}
-	mi := &file_user_proto_msgTypes[27]
+	mi := &file_user_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1902,7 +2799,7 @@ func (x *UserInfo) String() string {
 func (*UserInfo) ProtoMessage() {}
 
 func (x *UserInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[27]
+	mi := &file_user_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1915,7 +2812,7 @@ func (x *UserInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserInfo.ProtoReflect.Descriptor instead.
 func (*UserInfo) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{27}
+	return file_user_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *UserInfo) GetId() uint64 {
@@ -2058,7 +2955,48 @@ const file_user_proto_rawDesc = "" +
 	"\vafter_score\x18\x03 \x01(\x03R\n" +
 	"afterScore\x12\x14\n" +
 	"\x05delta\x18\x04 \x01(\x03R\x05delta\x12\x1b\n" +
-	"\tnew_level\x18\x05 \x01(\x05R\bnewLevel\"(\n" +
+	"\tnew_level\x18\x05 \x01(\x05R\bnewLevel\".\n" +
+	"\x13GetVerifyCurrentReq\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\"\xa2\x03\n" +
+	"\x14GetVerifyCurrentResp\x12\x1d\n" +
+	"\n" +
+	"has_record\x18\x01 \x01(\bR\thasRecord\x12\x1b\n" +
+	"\tverify_id\x18\x02 \x01(\x03R\bverifyId\x12\x16\n" +
+	"\x06status\x18\x03 \x01(\x05R\x06status\x12\x1f\n" +
+	"\vstatus_desc\x18\x04 \x01(\tR\n" +
+	"statusDesc\x12\x1b\n" +
+	"\tcan_apply\x18\x05 \x01(\bR\bcanApply\x12\x1f\n" +
+	"\vcan_confirm\x18\x06 \x01(\bR\n" +
+	"canConfirm\x12\x1d\n" +
+	"\n" +
+	"can_cancel\x18\a \x01(\bR\tcanCancel\x12\x1f\n" +
+	"\vneed_action\x18\b \x01(\tR\n" +
+	"needAction\x124\n" +
+	"\vverify_data\x18\t \x01(\v2\x13.user.VerifyOcrDataR\n" +
+	"verifyData\x12#\n" +
+	"\rreject_reason\x18\n" +
+	" \x01(\tR\frejectReason\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\v \x01(\x03R\tcreatedAt\x12\x1d\n" +
+	"\n" +
+	"updated_at\x18\f \x01(\x03R\tupdatedAt\"+\n" +
+	"\x10GetVerifyInfoReq\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\"\x96\x02\n" +
+	"\x11GetVerifyInfoResp\x12\x1f\n" +
+	"\vis_verified\x18\x01 \x01(\bR\n" +
+	"isVerified\x12\x1b\n" +
+	"\tverify_id\x18\x02 \x01(\x03R\bverifyId\x12\x1b\n" +
+	"\treal_name\x18\x03 \x01(\tR\brealName\x12\x1f\n" +
+	"\vschool_name\x18\x04 \x01(\tR\n" +
+	"schoolName\x12\x1d\n" +
+	"\n" +
+	"student_id\x18\x05 \x01(\tR\tstudentId\x12\x1e\n" +
+	"\n" +
+	"department\x18\x06 \x01(\tR\n" +
+	"department\x12%\n" +
+	"\x0eadmission_year\x18\a \x01(\tR\radmissionYear\x12\x1f\n" +
+	"\vverified_at\x18\b \x01(\x03R\n" +
+	"verifiedAt\"(\n" +
 	"\rIsVerifiedReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\"\xd9\x01\n" +
 	"\x0eIsVerifiedResp\x12\x1f\n" +
@@ -2073,7 +3011,56 @@ const file_user_proto_rawDesc = "" +
 	"department\x12%\n" +
 	"\x0eadmission_year\x18\x05 \x01(\tR\radmissionYear\x12\x1f\n" +
 	"\vverified_at\x18\x06 \x01(\x03R\n" +
-	"verifiedAt\"\xdd\x01\n" +
+	"verifiedAt\"\xa2\x02\n" +
+	"\x15ApplyStudentVerifyReq\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1b\n" +
+	"\treal_name\x18\x02 \x01(\tR\brealName\x12\x1f\n" +
+	"\vschool_name\x18\x03 \x01(\tR\n" +
+	"schoolName\x12\x1d\n" +
+	"\n" +
+	"student_id\x18\x04 \x01(\tR\tstudentId\x12\x1e\n" +
+	"\n" +
+	"department\x18\x05 \x01(\tR\n" +
+	"department\x12%\n" +
+	"\x0eadmission_year\x18\x06 \x01(\tR\radmissionYear\x12&\n" +
+	"\x0ffront_image_url\x18\a \x01(\tR\rfrontImageUrl\x12$\n" +
+	"\x0eback_image_url\x18\b \x01(\tR\fbackImageUrl\"\x8d\x01\n" +
+	"\x16ApplyStudentVerifyResp\x12\x1b\n" +
+	"\tverify_id\x18\x01 \x01(\x03R\bverifyId\x12\x16\n" +
+	"\x06status\x18\x02 \x01(\x05R\x06status\x12\x1f\n" +
+	"\vstatus_desc\x18\x03 \x01(\tR\n" +
+	"statusDesc\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\x04 \x01(\x03R\tcreatedAt\"\xb1\x01\n" +
+	"\x17ConfirmStudentVerifyReq\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1b\n" +
+	"\tverify_id\x18\x02 \x01(\x03R\bverifyId\x12!\n" +
+	"\fis_confirmed\x18\x03 \x01(\bR\visConfirmed\x12=\n" +
+	"\rmodified_data\x18\x04 \x01(\v2\x18.user.VerifyModifiedDataR\fmodifiedData\"\xb8\x01\n" +
+	"\x12VerifyModifiedData\x12\x1b\n" +
+	"\treal_name\x18\x01 \x01(\tR\brealName\x12\x1f\n" +
+	"\vschool_name\x18\x02 \x01(\tR\n" +
+	"schoolName\x12\x1d\n" +
+	"\n" +
+	"student_id\x18\x03 \x01(\tR\tstudentId\x12\x1e\n" +
+	"\n" +
+	"department\x18\x04 \x01(\tR\n" +
+	"department\x12%\n" +
+	"\x0eadmission_year\x18\x05 \x01(\tR\radmissionYear\"~\n" +
+	"\x18ConfirmStudentVerifyResp\x12\x1b\n" +
+	"\tverify_id\x18\x01 \x01(\x03R\bverifyId\x12\x1d\n" +
+	"\n" +
+	"new_status\x18\x02 \x01(\x05R\tnewStatus\x12&\n" +
+	"\x0fnew_status_desc\x18\x03 \x01(\tR\rnewStatusDesc\"s\n" +
+	"\x16CancelStudentVerifyReq\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1b\n" +
+	"\tverify_id\x18\x02 \x01(\x03R\bverifyId\x12#\n" +
+	"\rcancel_reason\x18\x03 \x01(\tR\fcancelReason\"}\n" +
+	"\x17CancelStudentVerifyResp\x12\x1b\n" +
+	"\tverify_id\x18\x01 \x01(\x03R\bverifyId\x12\x1d\n" +
+	"\n" +
+	"new_status\x18\x02 \x01(\x05R\tnewStatus\x12&\n" +
+	"\x0fnew_status_desc\x18\x03 \x01(\tR\rnewStatusDesc\"\xdd\x01\n" +
 	"\x15UpdateVerifyStatusReq\x12\x1b\n" +
 	"\tverify_id\x18\x01 \x01(\x03R\bverifyId\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\x03R\x06userId\x12\x1d\n" +
@@ -2081,7 +3068,7 @@ const file_user_proto_rawDesc = "" +
 	"new_status\x18\x03 \x01(\x05R\tnewStatus\x12.\n" +
 	"\bocr_data\x18\x04 \x01(\v2\x13.user.VerifyOcrDataR\aocrData\x12#\n" +
 	"\rreject_reason\x18\x05 \x01(\tR\frejectReason\x12\x1a\n" +
-	"\boperator\x18\x06 \x01(\tR\boperator\"\xb3\x01\n" +
+	"\boperator\x18\x06 \x01(\tR\boperator\"\x9f\x02\n" +
 	"\rVerifyOcrData\x12\x1b\n" +
 	"\treal_name\x18\x01 \x01(\tR\brealName\x12\x1f\n" +
 	"\vschool_name\x18\x02 \x01(\tR\n" +
@@ -2091,7 +3078,11 @@ const file_user_proto_rawDesc = "" +
 	"\n" +
 	"department\x18\x04 \x01(\tR\n" +
 	"department\x12%\n" +
-	"\x0eadmission_year\x18\x05 \x01(\tR\radmissionYear\"z\n" +
+	"\x0eadmission_year\x18\x05 \x01(\tR\radmissionYear\x12!\n" +
+	"\focr_platform\x18\x06 \x01(\tR\vocrPlatform\x12%\n" +
+	"\x0eocr_confidence\x18\a \x01(\x01R\rocrConfidence\x12 \n" +
+	"\focr_raw_json\x18\b \x01(\tR\n" +
+	"ocrRawJson\"z\n" +
 	"\x16UpdateVerifyStatusResp\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12#\n" +
 	"\rbefore_status\x18\x02 \x01(\x05R\fbeforeStatus\x12!\n" +
@@ -2146,10 +3137,15 @@ const file_user_proto_rawDesc = "" +
 	"CanPublish\x12\x13.user.CanPublishReq\x1a\x14.user.CanPublishResp\x127\n" +
 	"\n" +
 	"InitCredit\x12\x13.user.InitCreditReq\x1a\x14.user.InitCreditResp\x12:\n" +
-	"\vUpdateScore\x12\x14.user.UpdateScoreReq\x1a\x15.user.UpdateScoreResp2\x99\x01\n" +
-	"\rVerifyService\x127\n" +
+	"\vUpdateScore\x12\x14.user.UpdateScoreReq\x1a\x15.user.UpdateScoreResp2\xa2\x04\n" +
+	"\rVerifyService\x12I\n" +
+	"\x10GetVerifyCurrent\x12\x19.user.GetVerifyCurrentReq\x1a\x1a.user.GetVerifyCurrentResp\x12@\n" +
+	"\rGetVerifyInfo\x12\x16.user.GetVerifyInfoReq\x1a\x17.user.GetVerifyInfoResp\x127\n" +
 	"\n" +
 	"IsVerified\x12\x13.user.IsVerifiedReq\x1a\x14.user.IsVerifiedResp\x12O\n" +
+	"\x12ApplyStudentVerify\x12\x1b.user.ApplyStudentVerifyReq\x1a\x1c.user.ApplyStudentVerifyResp\x12U\n" +
+	"\x14ConfirmStudentVerify\x12\x1d.user.ConfirmStudentVerifyReq\x1a\x1e.user.ConfirmStudentVerifyResp\x12R\n" +
+	"\x13CancelStudentVerify\x12\x1c.user.CancelStudentVerifyReq\x1a\x1d.user.CancelStudentVerifyResp\x12O\n" +
 	"\x12UpdateVerifyStatus\x12\x1b.user.UpdateVerifyStatusReq\x1a\x1c.user.UpdateVerifyStatusResp2\xc4\x01\n" +
 	"\n" +
 	"TagService\x127\n" +
@@ -2172,71 +3168,94 @@ func file_user_proto_rawDescGZIP() []byte {
 	return file_user_proto_rawDescData
 }
 
-var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
+var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 39)
 var file_user_proto_goTypes = []any{
-	(*GetCreditInfoReq)(nil),       // 0: user.GetCreditInfoReq
-	(*GetCreditInfoResp)(nil),      // 1: user.GetCreditInfoResp
-	(*GetCreditLogsReq)(nil),       // 2: user.GetCreditLogsReq
-	(*CreditLogItem)(nil),          // 3: user.CreditLogItem
-	(*GetCreditLogsResp)(nil),      // 4: user.GetCreditLogsResp
-	(*CanParticipateReq)(nil),      // 5: user.CanParticipateReq
-	(*CanParticipateResp)(nil),     // 6: user.CanParticipateResp
-	(*CanPublishReq)(nil),          // 7: user.CanPublishReq
-	(*CanPublishResp)(nil),         // 8: user.CanPublishResp
-	(*InitCreditReq)(nil),          // 9: user.InitCreditReq
-	(*InitCreditResp)(nil),         // 10: user.InitCreditResp
-	(*UpdateScoreReq)(nil),         // 11: user.UpdateScoreReq
-	(*UpdateScoreResp)(nil),        // 12: user.UpdateScoreResp
-	(*IsVerifiedReq)(nil),          // 13: user.IsVerifiedReq
-	(*IsVerifiedResp)(nil),         // 14: user.IsVerifiedResp
-	(*UpdateVerifyStatusReq)(nil),  // 15: user.UpdateVerifyStatusReq
-	(*VerifyOcrData)(nil),          // 16: user.VerifyOcrData
-	(*UpdateVerifyStatusResp)(nil), // 17: user.UpdateVerifyStatusResp
-	(*GetAllTagsReq)(nil),          // 18: user.GetAllTagsReq
-	(*GetAllTagsResp)(nil),         // 19: user.GetAllTagsResp
-	(*GetTagsByIdsReq)(nil),        // 20: user.GetTagsByIdsReq
-	(*GetTagsByIdsResp)(nil),       // 21: user.GetTagsByIdsResp
-	(*TagInfo)(nil),                // 22: user.TagInfo
-	(*GetUserTagsRep)(nil),         // 23: user.GetUserTagsRep
-	(*GetUserTagsResponse)(nil),    // 24: user.GetUserTagsResponse
-	(*GetGroupUserRep)(nil),        // 25: user.GetGroupUserRep
-	(*GetGroupUserResponse)(nil),   // 26: user.GetGroupUserResponse
-	(*UserInfo)(nil),               // 27: user.UserInfo
+	(*GetCreditInfoReq)(nil),         // 0: user.GetCreditInfoReq
+	(*GetCreditInfoResp)(nil),        // 1: user.GetCreditInfoResp
+	(*GetCreditLogsReq)(nil),         // 2: user.GetCreditLogsReq
+	(*CreditLogItem)(nil),            // 3: user.CreditLogItem
+	(*GetCreditLogsResp)(nil),        // 4: user.GetCreditLogsResp
+	(*CanParticipateReq)(nil),        // 5: user.CanParticipateReq
+	(*CanParticipateResp)(nil),       // 6: user.CanParticipateResp
+	(*CanPublishReq)(nil),            // 7: user.CanPublishReq
+	(*CanPublishResp)(nil),           // 8: user.CanPublishResp
+	(*InitCreditReq)(nil),            // 9: user.InitCreditReq
+	(*InitCreditResp)(nil),           // 10: user.InitCreditResp
+	(*UpdateScoreReq)(nil),           // 11: user.UpdateScoreReq
+	(*UpdateScoreResp)(nil),          // 12: user.UpdateScoreResp
+	(*GetVerifyCurrentReq)(nil),      // 13: user.GetVerifyCurrentReq
+	(*GetVerifyCurrentResp)(nil),     // 14: user.GetVerifyCurrentResp
+	(*GetVerifyInfoReq)(nil),         // 15: user.GetVerifyInfoReq
+	(*GetVerifyInfoResp)(nil),        // 16: user.GetVerifyInfoResp
+	(*IsVerifiedReq)(nil),            // 17: user.IsVerifiedReq
+	(*IsVerifiedResp)(nil),           // 18: user.IsVerifiedResp
+	(*ApplyStudentVerifyReq)(nil),    // 19: user.ApplyStudentVerifyReq
+	(*ApplyStudentVerifyResp)(nil),   // 20: user.ApplyStudentVerifyResp
+	(*ConfirmStudentVerifyReq)(nil),  // 21: user.ConfirmStudentVerifyReq
+	(*VerifyModifiedData)(nil),       // 22: user.VerifyModifiedData
+	(*ConfirmStudentVerifyResp)(nil), // 23: user.ConfirmStudentVerifyResp
+	(*CancelStudentVerifyReq)(nil),   // 24: user.CancelStudentVerifyReq
+	(*CancelStudentVerifyResp)(nil),  // 25: user.CancelStudentVerifyResp
+	(*UpdateVerifyStatusReq)(nil),    // 26: user.UpdateVerifyStatusReq
+	(*VerifyOcrData)(nil),            // 27: user.VerifyOcrData
+	(*UpdateVerifyStatusResp)(nil),   // 28: user.UpdateVerifyStatusResp
+	(*GetAllTagsReq)(nil),            // 29: user.GetAllTagsReq
+	(*GetAllTagsResp)(nil),           // 30: user.GetAllTagsResp
+	(*GetTagsByIdsReq)(nil),          // 31: user.GetTagsByIdsReq
+	(*GetTagsByIdsResp)(nil),         // 32: user.GetTagsByIdsResp
+	(*TagInfo)(nil),                  // 33: user.TagInfo
+	(*GetUserTagsRep)(nil),           // 34: user.GetUserTagsRep
+	(*GetUserTagsResponse)(nil),      // 35: user.GetUserTagsResponse
+	(*GetGroupUserRep)(nil),          // 36: user.GetGroupUserRep
+	(*GetGroupUserResponse)(nil),     // 37: user.GetGroupUserResponse
+	(*UserInfo)(nil),                 // 38: user.UserInfo
 }
 var file_user_proto_depIdxs = []int32{
 	3,  // 0: user.GetCreditLogsResp.list:type_name -> user.CreditLogItem
-	16, // 1: user.UpdateVerifyStatusReq.ocr_data:type_name -> user.VerifyOcrData
-	22, // 2: user.GetAllTagsResp.tags:type_name -> user.TagInfo
-	22, // 3: user.GetTagsByIdsResp.tags:type_name -> user.TagInfo
-	0,  // 4: user.CreditService.GetCreditInfo:input_type -> user.GetCreditInfoReq
-	2,  // 5: user.CreditService.GetCreditLogs:input_type -> user.GetCreditLogsReq
-	5,  // 6: user.CreditService.CanParticipate:input_type -> user.CanParticipateReq
-	7,  // 7: user.CreditService.CanPublish:input_type -> user.CanPublishReq
-	9,  // 8: user.CreditService.InitCredit:input_type -> user.InitCreditReq
-	11, // 9: user.CreditService.UpdateScore:input_type -> user.UpdateScoreReq
-	13, // 10: user.VerifyService.IsVerified:input_type -> user.IsVerifiedReq
-	15, // 11: user.VerifyService.UpdateVerifyStatus:input_type -> user.UpdateVerifyStatusReq
-	18, // 12: user.TagService.GetAllTags:input_type -> user.GetAllTagsReq
-	20, // 13: user.TagService.GetTagsByIds:input_type -> user.GetTagsByIdsReq
-	23, // 14: user.TagService.GetUserTags:input_type -> user.GetUserTagsRep
-	25, // 15: user.UserBasicService.GetGroupUser:input_type -> user.GetGroupUserRep
-	1,  // 16: user.CreditService.GetCreditInfo:output_type -> user.GetCreditInfoResp
-	4,  // 17: user.CreditService.GetCreditLogs:output_type -> user.GetCreditLogsResp
-	6,  // 18: user.CreditService.CanParticipate:output_type -> user.CanParticipateResp
-	8,  // 19: user.CreditService.CanPublish:output_type -> user.CanPublishResp
-	10, // 20: user.CreditService.InitCredit:output_type -> user.InitCreditResp
-	12, // 21: user.CreditService.UpdateScore:output_type -> user.UpdateScoreResp
-	14, // 22: user.VerifyService.IsVerified:output_type -> user.IsVerifiedResp
-	17, // 23: user.VerifyService.UpdateVerifyStatus:output_type -> user.UpdateVerifyStatusResp
-	19, // 24: user.TagService.GetAllTags:output_type -> user.GetAllTagsResp
-	21, // 25: user.TagService.GetTagsByIds:output_type -> user.GetTagsByIdsResp
-	24, // 26: user.TagService.GetUserTags:output_type -> user.GetUserTagsResponse
-	26, // 27: user.UserBasicService.GetGroupUser:output_type -> user.GetGroupUserResponse
-	16, // [16:28] is the sub-list for method output_type
-	4,  // [4:16] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	27, // 1: user.GetVerifyCurrentResp.verify_data:type_name -> user.VerifyOcrData
+	22, // 2: user.ConfirmStudentVerifyReq.modified_data:type_name -> user.VerifyModifiedData
+	27, // 3: user.UpdateVerifyStatusReq.ocr_data:type_name -> user.VerifyOcrData
+	33, // 4: user.GetAllTagsResp.tags:type_name -> user.TagInfo
+	33, // 5: user.GetTagsByIdsResp.tags:type_name -> user.TagInfo
+	0,  // 6: user.CreditService.GetCreditInfo:input_type -> user.GetCreditInfoReq
+	2,  // 7: user.CreditService.GetCreditLogs:input_type -> user.GetCreditLogsReq
+	5,  // 8: user.CreditService.CanParticipate:input_type -> user.CanParticipateReq
+	7,  // 9: user.CreditService.CanPublish:input_type -> user.CanPublishReq
+	9,  // 10: user.CreditService.InitCredit:input_type -> user.InitCreditReq
+	11, // 11: user.CreditService.UpdateScore:input_type -> user.UpdateScoreReq
+	13, // 12: user.VerifyService.GetVerifyCurrent:input_type -> user.GetVerifyCurrentReq
+	15, // 13: user.VerifyService.GetVerifyInfo:input_type -> user.GetVerifyInfoReq
+	17, // 14: user.VerifyService.IsVerified:input_type -> user.IsVerifiedReq
+	19, // 15: user.VerifyService.ApplyStudentVerify:input_type -> user.ApplyStudentVerifyReq
+	21, // 16: user.VerifyService.ConfirmStudentVerify:input_type -> user.ConfirmStudentVerifyReq
+	24, // 17: user.VerifyService.CancelStudentVerify:input_type -> user.CancelStudentVerifyReq
+	26, // 18: user.VerifyService.UpdateVerifyStatus:input_type -> user.UpdateVerifyStatusReq
+	29, // 19: user.TagService.GetAllTags:input_type -> user.GetAllTagsReq
+	31, // 20: user.TagService.GetTagsByIds:input_type -> user.GetTagsByIdsReq
+	34, // 21: user.TagService.GetUserTags:input_type -> user.GetUserTagsRep
+	36, // 22: user.UserBasicService.GetGroupUser:input_type -> user.GetGroupUserRep
+	1,  // 23: user.CreditService.GetCreditInfo:output_type -> user.GetCreditInfoResp
+	4,  // 24: user.CreditService.GetCreditLogs:output_type -> user.GetCreditLogsResp
+	6,  // 25: user.CreditService.CanParticipate:output_type -> user.CanParticipateResp
+	8,  // 26: user.CreditService.CanPublish:output_type -> user.CanPublishResp
+	10, // 27: user.CreditService.InitCredit:output_type -> user.InitCreditResp
+	12, // 28: user.CreditService.UpdateScore:output_type -> user.UpdateScoreResp
+	14, // 29: user.VerifyService.GetVerifyCurrent:output_type -> user.GetVerifyCurrentResp
+	16, // 30: user.VerifyService.GetVerifyInfo:output_type -> user.GetVerifyInfoResp
+	18, // 31: user.VerifyService.IsVerified:output_type -> user.IsVerifiedResp
+	20, // 32: user.VerifyService.ApplyStudentVerify:output_type -> user.ApplyStudentVerifyResp
+	23, // 33: user.VerifyService.ConfirmStudentVerify:output_type -> user.ConfirmStudentVerifyResp
+	25, // 34: user.VerifyService.CancelStudentVerify:output_type -> user.CancelStudentVerifyResp
+	28, // 35: user.VerifyService.UpdateVerifyStatus:output_type -> user.UpdateVerifyStatusResp
+	30, // 36: user.TagService.GetAllTags:output_type -> user.GetAllTagsResp
+	32, // 37: user.TagService.GetTagsByIds:output_type -> user.GetTagsByIdsResp
+	35, // 38: user.TagService.GetUserTags:output_type -> user.GetUserTagsResponse
+	37, // 39: user.UserBasicService.GetGroupUser:output_type -> user.GetGroupUserResponse
+	23, // [23:40] is the sub-list for method output_type
+	6,  // [6:23] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_user_proto_init() }
@@ -2250,7 +3269,7 @@ func file_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_user_proto_rawDesc), len(file_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   28,
+			NumMessages:   39,
 			NumExtensions: 0,
 			NumServices:   4,
 		},

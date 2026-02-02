@@ -26,12 +26,8 @@ var UserStatusMap = map[int]string{
 }
 
 // ==================== 学生认证状态 ====================
-
-const (
-	VerifyStatusPending  = 0 // 待审核
-	VerifyStatusApproved = 1 // 已通过
-	VerifyStatusRejected = 2 // 已拒绝
-)
+// 已迁移到 verify.go 文件中，使用更完整的状态机定义
+// 请使用 constants.VerifyStatusXxx 常量
 
 // ==================== 活动状态（状态机） ====================
 //

@@ -169,3 +169,105 @@ func ErrCreditAlreadyInit() *BizError {
 func ErrCreditSourceDup() *BizError {
 	return New(CodeCreditSourceDup)
 }
+
+// ============ 学生认证相关错误 ============
+
+// ErrVerifyNotFound 认证记录不存在
+func ErrVerifyNotFound() *BizError {
+	return New(CodeVerifyNotFound)
+}
+
+// ErrVerifyAlreadyExist 认证记录已存在
+func ErrVerifyAlreadyExist() *BizError {
+	return New(CodeVerifyAlreadyExist)
+}
+
+// ErrVerifyNotVerified 用户未通过学生认证
+func ErrVerifyNotVerified() *BizError {
+	return New(CodeVerifyNotVerified)
+}
+
+// ErrVerifyStudentIDUsed 学号已被其他用户认证
+func ErrVerifyStudentIDUsed() *BizError {
+	return New(CodeVerifyStudentIDUsed)
+}
+
+// ErrVerifyCannotApply 当前状态不允许申请
+func ErrVerifyCannotApply() *BizError {
+	return New(CodeVerifyCannotApply)
+}
+
+// ErrVerifyCannotConfirm 当前状态不允许确认
+func ErrVerifyCannotConfirm() *BizError {
+	return New(CodeVerifyCannotConfirm)
+}
+
+// ErrVerifyCannotCancel 当前状态不允许取消
+func ErrVerifyCannotCancel() *BizError {
+	return New(CodeVerifyCannotCancel)
+}
+
+// ErrVerifyRateLimit 申请过于频繁
+func ErrVerifyRateLimit() *BizError {
+	return New(CodeVerifyRateLimit)
+}
+
+// ErrVerifyInvalidTransit 无效的状态转换
+func ErrVerifyInvalidTransit() *BizError {
+	return New(CodeVerifyInvalidTransit)
+}
+
+// ErrVerifyPermissionDeny 无权操作此认证记录
+func ErrVerifyPermissionDeny() *BizError {
+	return New(CodeVerifyPermissionDeny)
+}
+
+// ErrVerifyRejectCooldown 拒绝后冷却期内
+func ErrVerifyRejectCooldown() *BizError {
+	return New(CodeVerifyRejectCooldown)
+}
+
+// ============ OCR识别相关错误 ============
+
+// ErrOcrNetworkTimeout OCR服务网络超时
+func ErrOcrNetworkTimeout() *BizError {
+	return New(CodeOcrNetworkTimeout)
+}
+
+// ErrOcrImageInvalid 图片无效或无法识别
+func ErrOcrImageInvalid() *BizError {
+	return New(CodeOcrImageInvalid)
+}
+
+// ErrOcrImageInvalidWithMsg 图片无效（自定义消息）
+func ErrOcrImageInvalidWithMsg(msg string) *BizError {
+	if msg == "" {
+		return New(CodeOcrImageInvalid)
+	}
+	return NewWithMessage(CodeOcrImageInvalid, msg)
+}
+
+// ErrOcrRecognizeFailed OCR识别失败
+func ErrOcrRecognizeFailed() *BizError {
+	return New(CodeOcrRecognizeFailed)
+}
+
+// ErrOcrServiceUnavailable OCR服务不可用
+func ErrOcrServiceUnavailable() *BizError {
+	return New(CodeOcrServiceUnavailable)
+}
+
+// ErrOcrInsufficientBalance OCR服务余额不足
+func ErrOcrInsufficientBalance() *BizError {
+	return New(CodeOcrInsufficientBalance)
+}
+
+// ErrOcrEmptyResult OCR识别结果为空
+func ErrOcrEmptyResult() *BizError {
+	return New(CodeOcrEmptyResult)
+}
+
+// ErrOcrConfigInvalid OCR配置无效
+func ErrOcrConfigInvalid() *BizError {
+	return New(CodeOcrConfigInvalid)
+}

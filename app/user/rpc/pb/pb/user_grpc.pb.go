@@ -387,20 +387,51 @@ var CreditService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	VerifyService_IsVerified_FullMethodName         = "/user.VerifyService/IsVerified"
-	VerifyService_UpdateVerifyStatus_FullMethodName = "/user.VerifyService/UpdateVerifyStatus"
+	VerifyService_GetVerifyCurrent_FullMethodName     = "/user.VerifyService/GetVerifyCurrent"
+	VerifyService_GetVerifyInfo_FullMethodName        = "/user.VerifyService/GetVerifyInfo"
+	VerifyService_IsVerified_FullMethodName           = "/user.VerifyService/IsVerified"
+	VerifyService_ApplyStudentVerify_FullMethodName   = "/user.VerifyService/ApplyStudentVerify"
+	VerifyService_ConfirmStudentVerify_FullMethodName = "/user.VerifyService/ConfirmStudentVerify"
+	VerifyService_CancelStudentVerify_FullMethodName  = "/user.VerifyService/CancelStudentVerify"
+	VerifyService_UpdateVerifyStatus_FullMethodName   = "/user.VerifyService/UpdateVerifyStatus"
 )
 
 // VerifyServiceClient is the client API for VerifyService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type VerifyServiceClient interface {
+	// GetVerifyCurrent 获取当前认证进度
+	// 调用方: User API（进入认证页面时调用）
+	// 业务逻辑: 返回用户当前的认证状态、可执行的操作、OCR识别数据等
+	GetVerifyCurrent(ctx context.Context, in *GetVerifyCurrentReq, opts ...grpc.CallOption) (*GetVerifyCurrentResp, error)
+	// GetVerifyInfo 获取已通过的认证信息
+	// 调用方: User API（个人中心-认证信息页面）
+	// 业务逻辑: 仅返回已通过认证用户的脱敏信息
+	GetVerifyInfo(ctx context.Context, in *GetVerifyInfoReq, opts ...grpc.CallOption) (*GetVerifyInfoResp, error)
 	// IsVerified 查询用户是否已完成学生认证
 	// 调用方: Activity服务（报名/发布活动前校验）
 	// 场景: 需要确认用户学生身份时调用
 	IsVerified(ctx context.Context, in *IsVerifiedReq, opts ...grpc.CallOption) (*IsVerifiedResp, error)
+	// ApplyStudentVerify 提交学生认证申请
+	// 调用方: User API
+	// 业务逻辑:
+	//  1. 限流检查（20s内≤2次）
+	//  2. 唯一性校验（学校+学号）
+	//  3. 状态机校验
+	//  4. 创建记录并触发OCR
+	ApplyStudentVerify(ctx context.Context, in *ApplyStudentVerifyReq, opts ...grpc.CallOption) (*ApplyStudentVerifyResp, error)
+	// ConfirmStudentVerify 用户确认/修改认证信息
+	// 调用方: User API
+	// 业务逻辑:
+	//   - 确认无误 -> 状态改为4（已通过）
+	//   - 修改信息 -> 状态改为3（人工审核）
+	ConfirmStudentVerify(ctx context.Context, in *ConfirmStudentVerifyReq, opts ...grpc.CallOption) (*ConfirmStudentVerifyResp, error)
+	// CancelStudentVerify 取消认证申请
+	// 调用方: User API
+	// 业务逻辑: 状态改为7（已取消）
+	CancelStudentVerify(ctx context.Context, in *CancelStudentVerifyReq, opts ...grpc.CallOption) (*CancelStudentVerifyResp, error)
 	// UpdateVerifyStatus 更新认证状态
-	// 调用方: MQ Consumer（OCR回调、人工审核结果）
+	// 调用方: MQ Consumer（OCR回调、人工审核结果）、定时任务（超时处理）
 	// 业务逻辑: 处理认证流程中的状态流转
 	UpdateVerifyStatus(ctx context.Context, in *UpdateVerifyStatusReq, opts ...grpc.CallOption) (*UpdateVerifyStatusResp, error)
 }
@@ -413,10 +444,60 @@ func NewVerifyServiceClient(cc grpc.ClientConnInterface) VerifyServiceClient {
 	return &verifyServiceClient{cc}
 }
 
+func (c *verifyServiceClient) GetVerifyCurrent(ctx context.Context, in *GetVerifyCurrentReq, opts ...grpc.CallOption) (*GetVerifyCurrentResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetVerifyCurrentResp)
+	err := c.cc.Invoke(ctx, VerifyService_GetVerifyCurrent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *verifyServiceClient) GetVerifyInfo(ctx context.Context, in *GetVerifyInfoReq, opts ...grpc.CallOption) (*GetVerifyInfoResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetVerifyInfoResp)
+	err := c.cc.Invoke(ctx, VerifyService_GetVerifyInfo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *verifyServiceClient) IsVerified(ctx context.Context, in *IsVerifiedReq, opts ...grpc.CallOption) (*IsVerifiedResp, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(IsVerifiedResp)
 	err := c.cc.Invoke(ctx, VerifyService_IsVerified_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *verifyServiceClient) ApplyStudentVerify(ctx context.Context, in *ApplyStudentVerifyReq, opts ...grpc.CallOption) (*ApplyStudentVerifyResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ApplyStudentVerifyResp)
+	err := c.cc.Invoke(ctx, VerifyService_ApplyStudentVerify_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *verifyServiceClient) ConfirmStudentVerify(ctx context.Context, in *ConfirmStudentVerifyReq, opts ...grpc.CallOption) (*ConfirmStudentVerifyResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ConfirmStudentVerifyResp)
+	err := c.cc.Invoke(ctx, VerifyService_ConfirmStudentVerify_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *verifyServiceClient) CancelStudentVerify(ctx context.Context, in *CancelStudentVerifyReq, opts ...grpc.CallOption) (*CancelStudentVerifyResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CancelStudentVerifyResp)
+	err := c.cc.Invoke(ctx, VerifyService_CancelStudentVerify_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -437,12 +518,38 @@ func (c *verifyServiceClient) UpdateVerifyStatus(ctx context.Context, in *Update
 // All implementations must embed UnimplementedVerifyServiceServer
 // for forward compatibility.
 type VerifyServiceServer interface {
+	// GetVerifyCurrent 获取当前认证进度
+	// 调用方: User API（进入认证页面时调用）
+	// 业务逻辑: 返回用户当前的认证状态、可执行的操作、OCR识别数据等
+	GetVerifyCurrent(context.Context, *GetVerifyCurrentReq) (*GetVerifyCurrentResp, error)
+	// GetVerifyInfo 获取已通过的认证信息
+	// 调用方: User API（个人中心-认证信息页面）
+	// 业务逻辑: 仅返回已通过认证用户的脱敏信息
+	GetVerifyInfo(context.Context, *GetVerifyInfoReq) (*GetVerifyInfoResp, error)
 	// IsVerified 查询用户是否已完成学生认证
 	// 调用方: Activity服务（报名/发布活动前校验）
 	// 场景: 需要确认用户学生身份时调用
 	IsVerified(context.Context, *IsVerifiedReq) (*IsVerifiedResp, error)
+	// ApplyStudentVerify 提交学生认证申请
+	// 调用方: User API
+	// 业务逻辑:
+	//  1. 限流检查（20s内≤2次）
+	//  2. 唯一性校验（学校+学号）
+	//  3. 状态机校验
+	//  4. 创建记录并触发OCR
+	ApplyStudentVerify(context.Context, *ApplyStudentVerifyReq) (*ApplyStudentVerifyResp, error)
+	// ConfirmStudentVerify 用户确认/修改认证信息
+	// 调用方: User API
+	// 业务逻辑:
+	//   - 确认无误 -> 状态改为4（已通过）
+	//   - 修改信息 -> 状态改为3（人工审核）
+	ConfirmStudentVerify(context.Context, *ConfirmStudentVerifyReq) (*ConfirmStudentVerifyResp, error)
+	// CancelStudentVerify 取消认证申请
+	// 调用方: User API
+	// 业务逻辑: 状态改为7（已取消）
+	CancelStudentVerify(context.Context, *CancelStudentVerifyReq) (*CancelStudentVerifyResp, error)
 	// UpdateVerifyStatus 更新认证状态
-	// 调用方: MQ Consumer（OCR回调、人工审核结果）
+	// 调用方: MQ Consumer（OCR回调、人工审核结果）、定时任务（超时处理）
 	// 业务逻辑: 处理认证流程中的状态流转
 	UpdateVerifyStatus(context.Context, *UpdateVerifyStatusReq) (*UpdateVerifyStatusResp, error)
 	mustEmbedUnimplementedVerifyServiceServer()
@@ -455,8 +562,23 @@ type VerifyServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedVerifyServiceServer struct{}
 
+func (UnimplementedVerifyServiceServer) GetVerifyCurrent(context.Context, *GetVerifyCurrentReq) (*GetVerifyCurrentResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetVerifyCurrent not implemented")
+}
+func (UnimplementedVerifyServiceServer) GetVerifyInfo(context.Context, *GetVerifyInfoReq) (*GetVerifyInfoResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetVerifyInfo not implemented")
+}
 func (UnimplementedVerifyServiceServer) IsVerified(context.Context, *IsVerifiedReq) (*IsVerifiedResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method IsVerified not implemented")
+}
+func (UnimplementedVerifyServiceServer) ApplyStudentVerify(context.Context, *ApplyStudentVerifyReq) (*ApplyStudentVerifyResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method ApplyStudentVerify not implemented")
+}
+func (UnimplementedVerifyServiceServer) ConfirmStudentVerify(context.Context, *ConfirmStudentVerifyReq) (*ConfirmStudentVerifyResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method ConfirmStudentVerify not implemented")
+}
+func (UnimplementedVerifyServiceServer) CancelStudentVerify(context.Context, *CancelStudentVerifyReq) (*CancelStudentVerifyResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelStudentVerify not implemented")
 }
 func (UnimplementedVerifyServiceServer) UpdateVerifyStatus(context.Context, *UpdateVerifyStatusReq) (*UpdateVerifyStatusResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateVerifyStatus not implemented")
@@ -482,6 +604,42 @@ func RegisterVerifyServiceServer(s grpc.ServiceRegistrar, srv VerifyServiceServe
 	s.RegisterService(&VerifyService_ServiceDesc, srv)
 }
 
+func _VerifyService_GetVerifyCurrent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetVerifyCurrentReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VerifyServiceServer).GetVerifyCurrent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: VerifyService_GetVerifyCurrent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VerifyServiceServer).GetVerifyCurrent(ctx, req.(*GetVerifyCurrentReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _VerifyService_GetVerifyInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetVerifyInfoReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VerifyServiceServer).GetVerifyInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: VerifyService_GetVerifyInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VerifyServiceServer).GetVerifyInfo(ctx, req.(*GetVerifyInfoReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _VerifyService_IsVerified_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(IsVerifiedReq)
 	if err := dec(in); err != nil {
@@ -496,6 +654,60 @@ func _VerifyService_IsVerified_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(VerifyServiceServer).IsVerified(ctx, req.(*IsVerifiedReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _VerifyService_ApplyStudentVerify_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApplyStudentVerifyReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VerifyServiceServer).ApplyStudentVerify(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: VerifyService_ApplyStudentVerify_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VerifyServiceServer).ApplyStudentVerify(ctx, req.(*ApplyStudentVerifyReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _VerifyService_ConfirmStudentVerify_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConfirmStudentVerifyReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VerifyServiceServer).ConfirmStudentVerify(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: VerifyService_ConfirmStudentVerify_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VerifyServiceServer).ConfirmStudentVerify(ctx, req.(*ConfirmStudentVerifyReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _VerifyService_CancelStudentVerify_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelStudentVerifyReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VerifyServiceServer).CancelStudentVerify(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: VerifyService_CancelStudentVerify_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VerifyServiceServer).CancelStudentVerify(ctx, req.(*CancelStudentVerifyReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -526,8 +738,28 @@ var VerifyService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*VerifyServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "GetVerifyCurrent",
+			Handler:    _VerifyService_GetVerifyCurrent_Handler,
+		},
+		{
+			MethodName: "GetVerifyInfo",
+			Handler:    _VerifyService_GetVerifyInfo_Handler,
+		},
+		{
 			MethodName: "IsVerified",
 			Handler:    _VerifyService_IsVerified_Handler,
+		},
+		{
+			MethodName: "ApplyStudentVerify",
+			Handler:    _VerifyService_ApplyStudentVerify_Handler,
+		},
+		{
+			MethodName: "ConfirmStudentVerify",
+			Handler:    _VerifyService_ConfirmStudentVerify_Handler,
+		},
+		{
+			MethodName: "CancelStudentVerify",
+			Handler:    _VerifyService_CancelStudentVerify_Handler,
 		},
 		{
 			MethodName: "UpdateVerifyStatus",
@@ -547,8 +779,6 @@ const (
 // TagServiceClient is the client API for TagService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// 标签服务
 type TagServiceClient interface {
 	GetAllTags(ctx context.Context, in *GetAllTagsReq, opts ...grpc.CallOption) (*GetAllTagsResp, error)
 	GetTagsByIds(ctx context.Context, in *GetTagsByIdsReq, opts ...grpc.CallOption) (*GetTagsByIdsResp, error)
@@ -596,8 +826,6 @@ func (c *tagServiceClient) GetUserTags(ctx context.Context, in *GetUserTagsRep, 
 // TagServiceServer is the server API for TagService service.
 // All implementations must embed UnimplementedTagServiceServer
 // for forward compatibility.
-//
-// 标签服务
 type TagServiceServer interface {
 	GetAllTags(context.Context, *GetAllTagsReq) (*GetAllTagsResp, error)
 	GetTagsByIds(context.Context, *GetTagsByIdsReq) (*GetTagsByIdsResp, error)
@@ -727,8 +955,6 @@ const (
 // UserBasicServiceClient is the client API for UserBasicService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// 用户信息服务
 type UserBasicServiceClient interface {
 	GetGroupUser(ctx context.Context, in *GetGroupUserRep, opts ...grpc.CallOption) (*GetGroupUserResponse, error)
 }
@@ -754,8 +980,6 @@ func (c *userBasicServiceClient) GetGroupUser(ctx context.Context, in *GetGroupU
 // UserBasicServiceServer is the server API for UserBasicService service.
 // All implementations must embed UnimplementedUserBasicServiceServer
 // for forward compatibility.
-//
-// 用户信息服务
 type UserBasicServiceServer interface {
 	GetGroupUser(context.Context, *GetGroupUserRep) (*GetGroupUserResponse, error)
 	mustEmbedUnimplementedUserBasicServiceServer()
