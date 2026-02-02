@@ -9,7 +9,7 @@
 
 # Claude code
 .claude
-.messing_docs/CLAUDE.md
+CLAUDE.md
 
 # cursor code
 .cursor\rules\go-zero-CampusHub-rule.mdc
