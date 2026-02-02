@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"CampusHub/common/messaging"
+	"activity-platform/common/messaging"
 )
 
 // TracingConfig 追踪配置

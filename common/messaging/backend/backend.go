@@ -3,7 +3,7 @@ package backend
 import (
 	"context"
 
-	"CampusHub/common/messaging"
+	"activity-platform/common/messaging"
 )
 
 // Backend 定义了消息后端的抽象接口
