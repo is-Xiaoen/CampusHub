@@ -2,12 +2,54 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"time"
+
+	"activity-platform/app/activity/rpc/activity"
+	"activity-platform/app/activity/rpc/internal/config"
+	"activity-platform/app/activity/rpc/internal/server"
+	"activity-platform/app/activity/rpc/internal/svc"
+	"activity-platform/app/activity/rpc/internal/syncer"
+
+	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/service"
+	"github.com/zeromicro/go-zero/zrpc"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 var configFile = flag.String("f", "etc/activity.yaml", "配置文件路径")
 
 func main() {
+	flag.Parse()
 
+	// 1. 加载配置
+	var c config.Config
+	conf.MustLoad(*configFile, &c)
+
+	// 2. 初始化 ServiceContext
+	ctx := svc.NewServiceContext(c)
+
+	// 3. 启动标签同步器（从用户服务同步标签到本地缓存）
+	tagSyncer := syncer.NewTagSyncer(ctx.TagRpc, ctx.TagCacheModel, 5*time.Minute)
+	tagSyncer.Start()
+	defer tagSyncer.Stop()
+
+	// 4. 创建 RPC 服务
+	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
+		activity.RegisterActivityServiceServer(grpcServer, server.NewActivityServiceServer(ctx))
+
+		// 开发环境启用 gRPC 反射（便于调试）
+		if c.Mode == service.DevMode || c.Mode == service.TestMode {
+			reflection.Register(grpcServer)
+		}
+	})
+	defer s.Stop()
+
+	fmt.Printf("Starting activity rpc server at %s...\n", c.ListenOn)
+	logx.Infof("活动服务 RPC 启动: %s", c.ListenOn)
+	s.Start()
 }
 
 // 活动服务 RPC 入口

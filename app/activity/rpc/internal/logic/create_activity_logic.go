@@ -195,16 +195,31 @@ func (l *CreateActivityLogic) bindTags(tx *gorm.DB, activityID uint64, tagIds []
 		uniqueIds = uniqueIds[:5]
 	}
 
-	// 3. 调用 TagModel 绑定标签
-	if err := l.svcCtx.TagModel.BindToActivity(l.ctx, tx, activityID, uniqueIds); err != nil {
+	// 3. 验证标签是否存在（从 tag_cache 查询）
+	existIDs, invalidIDs, err := l.svcCtx.TagCacheModel.ExistsByIDs(l.ctx, uniqueIds)
+	if err != nil {
+		l.Errorf("验证标签失败: %v", err)
+		return err
+	}
+	if len(invalidIDs) > 0 {
+		l.Infof("[WARN] 部分标签不存在或已禁用: %v", invalidIDs)
+		// 只绑定存在的标签，忽略不存在的
+		uniqueIds = existIDs
+	}
+	if len(uniqueIds) == 0 {
+		return nil
+	}
+
+	// 4. 调用 ActivityTagModel 绑定标签（操作 activity_tags 关联表）
+	if err := l.svcCtx.ActivityTagModel.BindToActivity(l.ctx, tx, activityID, uniqueIds); err != nil {
 		l.Errorf("绑定标签失败: activityID=%d, err=%v", activityID, err)
 		return err
 	}
 
-	// 4. 更新标签使用次数（原子操作）
-	if err := l.svcCtx.TagModel.IncrUsageCount(l.ctx, uniqueIds, 1); err != nil {
-		l.Errorf("更新标签使用次数失败: %v", err)
-		// 不影响主流程，记录日志即可
+	// 5. 更新活动维度的标签使用统计（activity_tag_stats 表）
+	if err := l.svcCtx.TagStatsModel.BatchIncrActivityCount(l.ctx, tx, uniqueIds); err != nil {
+		l.Errorf("更新标签统计失败: %v", err)
+		// 不影响主流程，记录日志即可（统计数据可后续修复）
 	}
 
 	return nil
