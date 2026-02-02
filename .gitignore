@@ -14,6 +14,11 @@ CLAUDE.md
 # cursor code
 .cursor\rules\go-zero-CampusHub-rule.mdc
 
+# mess code
+.messing_docs
+common/messaging/tests
+.specify
+
 # Test binary
 *.test
 
