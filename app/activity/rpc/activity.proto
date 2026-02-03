@@ -117,7 +117,8 @@ service ActivityService {
   // GetTicketDetail 获取票券详情
   rpc GetTicketDetail(GetTicketDetailRequest) returns (GetTicketDetailResponse);
 
-
+  // GetRegisteredCount 获取报名数量
+  rpc GetRegisteredCount(GetRegisteredCountRequest) returns (GetRegisteredCountResponse);
 
 
 
@@ -273,10 +274,19 @@ message GetTicketDetailResponse {
   string qr_code_url = 6;     // 二维码图片URL
 }
 
+// ============================================================================
+// 获取报名活动数量
+// ============================================================================
 
+// 获取报名活动数量请求体
 
+message  GetRegisteredCountRequest {
+  int64 user_id = 1; // 用户ID
+}
 
-
+message  GetRegisteredCountResponse {
+  int32 count = 1; // 报名数量
+}
 
 
 // ============================================================================

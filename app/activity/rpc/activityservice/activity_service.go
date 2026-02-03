@@ -38,6 +38,8 @@ type (
 	GetActivityResp                = activity.GetActivityResp
 	GetHotActivitiesReq            = activity.GetHotActivitiesReq
 	GetHotActivitiesResp           = activity.GetHotActivitiesResp
+	GetRegisteredCountRequest      = activity.GetRegisteredCountRequest
+	GetRegisteredCountResponse     = activity.GetRegisteredCountResponse
 	GetTicketDetailRequest         = activity.GetTicketDetailRequest
 	GetTicketDetailResponse        = activity.GetTicketDetailResponse
 	GetTicketListRequest           = activity.GetTicketListRequest
@@ -81,6 +83,8 @@ type (
 		GetTicketList(ctx context.Context, in *GetTicketListRequest, opts ...grpc.CallOption) (*GetTicketListResponse, error)
 		// GetTicketDetail 获取票券详情
 		GetTicketDetail(ctx context.Context, in *GetTicketDetailRequest, opts ...grpc.CallOption) (*GetTicketDetailResponse, error)
+		// GetRegisteredCount 获取报名数量
+		GetRegisteredCount(ctx context.Context, in *GetRegisteredCountRequest, opts ...grpc.CallOption) (*GetRegisteredCountResponse, error)
 		// ==================== CRUD 接口 ====================
 		CreateActivity(ctx context.Context, in *CreateActivityReq, opts ...grpc.CallOption) (*CreateActivityResp, error)
 		UpdateActivity(ctx context.Context, in *UpdateActivityReq, opts ...grpc.CallOption) (*UpdateActivityResp, error)
@@ -153,6 +157,12 @@ func (m *defaultActivityService) GetTicketList(ctx context.Context, in *GetTicke
 func (m *defaultActivityService) GetTicketDetail(ctx context.Context, in *GetTicketDetailRequest, opts ...grpc.CallOption) (*GetTicketDetailResponse, error) {
 	client := activity.NewActivityServiceClient(m.cli.Conn())
 	return client.GetTicketDetail(ctx, in, opts...)
+}
+
+// GetRegisteredCount 获取报名数量
+func (m *defaultActivityService) GetRegisteredCount(ctx context.Context, in *GetRegisteredCountRequest, opts ...grpc.CallOption) (*GetRegisteredCountResponse, error) {
+	client := activity.NewActivityServiceClient(m.cli.Conn())
+	return client.GetRegisteredCount(ctx, in, opts...)
 }
 
 // ==================== CRUD 接口 ====================
