@@ -13,12 +13,14 @@ package svc
 import (
 	"time"
 
+	"activity-platform/app/activity/rpc/activityservice"
 	"activity-platform/app/user/model"
 	"activity-platform/app/user/rpc/internal/config"
 	"activity-platform/app/user/rpc/internal/ocr"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/zrpc"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -47,6 +49,11 @@ type ServiceContext struct {
 	// StudentVerificationModel 学生认证数据访问层
 	StudentVerificationModel model.IStudentVerificationModel
 
+	// ==================== RPC 服务 ====================
+
+	// ActivityRpc 活动服务 RPC 客户端
+	ActivityRpc activityservice.ActivityService
+
 	// ==================== OCR 服务 ====================
 
 	// OcrFactory OCR提供商工厂
@@ -65,6 +72,8 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	// 初始化OCR工厂
 	ocrFactory := initOcrFactory(c, rdb)
 
+	activityRpcClient := zrpc.MustNewClient(c.ActivityRpc)
+
 	return &ServiceContext{
 		Config: c,
 		DB:     db,
@@ -74,6 +83,8 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		UserCreditModel:          model.NewUserCreditModel(db),
 		CreditLogModel:           model.NewCreditLogModel(db),
 		StudentVerificationModel: model.NewStudentVerificationModel(db),
+
+		ActivityRpc: activityservice.NewActivityService(activityRpcClient),
 
 		// 注入 OCR 工厂
 		OcrFactory: ocrFactory,
