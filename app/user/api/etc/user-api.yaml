@@ -27,13 +27,26 @@ Auth:
   AccessExpire: 7200  # 2小时
 
 # ==================== RPC 服务配置 ====================
+# 直连模式（开发环境使用，绕过 Etcd）
 UserRpc:
-  Etcd:
-    Hosts:
-      - 192.168.10.4:2379
-    Key: user.rpc
+  Target: 127.0.0.1:9001
   NonBlock: true
   Timeout: 3000
+
+# Etcd 模式（生产环境使用）
+# UserRpc:
+#   Etcd:
+#     Hosts:
+#       - 192.168.10.4:2379
+#     Key: user.rpc
+#   NonBlock: true
+#   Timeout: 3000
+
+# ==================== Redis 配置 ====================
+BizRedis:
+  Host: 192.168.10.4:6379
+  Type: node
+  Pass: "123456"
 
 # ==================== 链路追踪（可选）====================
 # Telemetry:

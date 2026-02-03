@@ -23,8 +23,8 @@ type Config struct {
 	// MySQL 数据库配置
 	MySQL MySQLConf
 
-	// Redis 配置（同时用于缓存和 Stream）
-	Redis redis.RedisConf
+	// BizRedis 业务Redis配置（同时用于缓存和 Stream，避免与go-zero内置冲突）
+	BizRedis redis.RedisConf
 
 	// Redis Stream 消费者配置
 	// [待确认] 需要队友确定具体字段
