@@ -186,10 +186,10 @@ func (h *TagEventHandler) handleTagUpsert(ctx context.Context, event *TagEvent) 
 // handleTagDeleted 处理标签删除事件
 //
 // 关键操作（事务内）：
-//   1. 获取所有使用该标签的活动 ID
-//   2. 删除 activity_tags 关联记录
-//   3. 删除 activity_tag_stats 统计记录
-//   4. 删除 tag_cache 缓存记录
+//  1. 获取所有使用该标签的活动 ID
+//  2. 删除 activity_tags 关联记录
+//  3. 删除 activity_tag_stats 统计记录
+//  4. 删除 tag_cache 缓存记录
 //
 // 面试亮点：这里展示了"补偿机制"——删除标签时清理关联数据
 func (h *TagEventHandler) handleTagDeleted(ctx context.Context, event *TagEvent) error {
@@ -252,8 +252,8 @@ type TagUsageStats struct {
 // GetTagUsageStats 获取标签使用统计（供用户服务 RPC 调用）
 //
 // 这个方法可以：
-//   1. 被用户服务 RPC 调用（拉模式）
-//   2. 定时推送到用户服务（推模式）
+//  1. 被用户服务 RPC 调用（拉模式）
+//  2. 定时推送到用户服务（推模式）
 func (h *TagEventHandler) GetTagUsageStats(ctx context.Context, tagIDs []uint64) ([]TagUsageStats, error) {
 	if len(tagIDs) == 0 {
 		return []TagUsageStats{}, nil

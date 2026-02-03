@@ -31,8 +31,8 @@ type SyncerComponents struct {
 	TagReconciler   *TagReconciler   // 数据对账器
 
 	// 辅助组件
-	Alerter Alerter       // 告警器
-	Metrics *SyncMetrics  // 指标收集器
+	Alerter Alerter      // 告警器
+	Metrics *SyncMetrics // 指标收集器
 }
 
 // SyncerConfig 同步器配置
@@ -41,12 +41,12 @@ type SyncerConfig struct {
 	SyncIntervalMinutes int // 定时同步间隔（分钟），默认 5
 
 	// 对账配置
-	ReconcileEnabled bool   // 是否启用对账
-	ReconcileHour    int    // 对账执行时间（小时），默认 3（凌晨3点）
+	ReconcileEnabled bool // 是否启用对账
+	ReconcileHour    int  // 对账执行时间（小时），默认 3（凌晨3点）
 
 	// 告警配置
-	AlertWebhookURL   string // 告警 Webhook URL（为空则只记录日志）
-	AlertRatePerMin   int    // 每分钟最大告警数，默认 10
+	AlertWebhookURL string // 告警 Webhook URL（为空则只记录日志）
+	AlertRatePerMin int    // 每分钟最大告警数，默认 10
 
 	// 分布式锁配置
 	DistributedLockEnabled bool // 是否启用分布式锁（多实例部署时启用）
