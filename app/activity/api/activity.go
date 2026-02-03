@@ -4,12 +4,10 @@ import (
 	"flag"
 	"fmt"
 
+	"activity-platform/app/activity/api/internal/config"
+	"activity-platform/app/activity/api/internal/handler"
+	"activity-platform/app/activity/api/internal/svc"
 	"activity-platform/common/response"
-
-	// TODO(马肖阳): goctl 生成代码后取消注释
-	// "activity-platform/app/activity/api/internal/config"
-	// "activity-platform/app/activity/api/internal/handler"
-	// "activity-platform/app/activity/api/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/rest"
@@ -27,28 +25,23 @@ func main() {
 	// response.SetupGlobalOkHandler() // 可选：统一成功响应格式
 	// ============================================================================
 
-	// TODO(Xiaoen): goctl 生成代码后，取消下方注释，删除临时代码
-	//
-	// var c config.Config
-	// conf.MustLoad(*configFile, &c)
-	//
-	// server := rest.MustNewServer(c.RestConf)
-	// defer server.Stop()
-	//
-	// ctx := svc.NewServiceContext(c)
-	// handler.RegisterHandlers(server, ctx)
-	//
-	// fmt.Printf("Starting activity-api server at %s:%d...\n", c.Host, c.Port)
-	// server.Start()
-
-	// ============ 临时代码（goctl 生成后删除）============
-	var c struct {
-		rest.RestConf
-	}
+	// 1. 加载配置文件
+	var c config.Config
 	conf.MustLoad(*configFile, &c)
-	fmt.Printf("activity-api 骨架已就绪，等待 goctl 生成代码...\n")
-	fmt.Printf("请执行: cd app/activity/api && goctl api go -api desc/activity.api -dir . -style go_zero\n")
-	// ============ 临时代码结束 ============
+
+	// 2. 创建 REST 服务器
+	server := rest.MustNewServer(c.RestConf)
+	defer server.Stop()
+
+	// 3. 初始化服务上下文
+	ctx := svc.NewServiceContext(c)
+
+	// 4. 注册路由处理器
+	handler.RegisterHandlers(server, ctx)
+
+	// 5. 启动服务
+	fmt.Printf("Starting activity-api server at %s:%d...\n", c.Host, c.Port)
+	server.Start()
 }
 
 // 活动服务 API 入口
