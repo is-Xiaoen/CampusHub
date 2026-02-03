@@ -21,7 +21,7 @@ import "ticket.api"
 service activity-api {
 	@doc "活动列表"
 	@handler ListActivity
-	get /list (ListActivityReq) returns (ListActivityResp)
+	get /lists (ListActivityReq) returns (ListActivityResp)
 
 	@doc "活动详情"
 	@handler GetActivity
