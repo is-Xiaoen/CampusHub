@@ -45,11 +45,27 @@ const (
 	CodeCreditSourceDup     = 2106 // 信用变更来源重复
 	CodeCreditInvalidChange = 2107 // 无效的信用变更类型
 
-	// 用户服务 - 学生认证 2201-2220
-	CodeVerifyNotFound      = 2201 // 认证记录不存在
-	CodeVerifyAlreadyExist  = 2202 // 认证记录已存在
-	CodeVerifyNotVerified   = 2203 // 用户未通过学生认证
-	CodeVerifyStudentIDUsed = 2204 // 学号已被其他用户认证
+	// 用户服务 - 学生认证 2201-2230
+	CodeVerifyNotFound       = 2201 // 认证记录不存在
+	CodeVerifyAlreadyExist   = 2202 // 认证记录已存在
+	CodeVerifyNotVerified    = 2203 // 用户未通过学生认证
+	CodeVerifyStudentIDUsed  = 2204 // 学号已被其他用户认证
+	CodeVerifyCannotApply    = 2205 // 当前状态不允许申请
+	CodeVerifyCannotConfirm  = 2206 // 当前状态不允许确认
+	CodeVerifyCannotCancel   = 2207 // 当前状态不允许取消
+	CodeVerifyRateLimit      = 2208 // 申请过于频繁
+	CodeVerifyInvalidTransit = 2209 // 无效的状态转换
+	CodeVerifyPermissionDeny = 2210 // 无权操作此认证记录
+	CodeVerifyRejectCooldown = 2211 // 拒绝后冷却期内，暂不能申请
+
+	// 用户服务 - OCR识别 2231-2250
+	CodeOcrNetworkTimeout      = 2231 // OCR服务网络超时
+	CodeOcrImageInvalid        = 2232 // 图片无效或无法识别
+	CodeOcrRecognizeFailed     = 2233 // OCR识别失败
+	CodeOcrServiceUnavailable  = 2234 // OCR服务不可用
+	CodeOcrInsufficientBalance = 2235 // OCR服务余额不足
+	CodeOcrEmptyResult         = 2236 // OCR识别结果为空
+	CodeOcrConfigInvalid       = 2237 // OCR配置无效
 
 	// 活动服务 - 活动 3001-3050
 	CodeActivityNotFound         = 3001 // 活动不存在
@@ -109,6 +125,21 @@ var codeMessages = map[int]string{
 	CodeCategoryDisabled:         "分类已禁用",
 	CodeTagNotFound:              "标签不存在",
 	CodeTagLimitExceeded:         "最多选择5个标签",
+	// 学生认证
+	CodeVerifyCannotApply:      "当前状态不允许申请认证",
+	CodeVerifyCannotConfirm:    "当前状态不允许确认认证",
+	CodeVerifyCannotCancel:     "当前状态不允许取消认证",
+	CodeVerifyRateLimit:        "申请过于频繁，请20秒后再试",
+	CodeVerifyInvalidTransit:   "无效的状态转换",
+	CodeVerifyPermissionDeny:   "无权操作此认证记录",
+	CodeVerifyRejectCooldown:   "您的认证申请被拒绝后24小时内不能重新申请",
+	CodeOcrNetworkTimeout:      "识别服务繁忙，请稍后重试",
+	CodeOcrImageInvalid:        "图片无效，请上传清晰的学生证照片",
+	CodeOcrRecognizeFailed:     "识别失败，请重新上传照片",
+	CodeOcrServiceUnavailable:  "识别服务暂不可用，请稍后重试",
+	CodeOcrInsufficientBalance: "识别服务暂不可用，请联系管理员",
+	CodeOcrEmptyResult:         "未能识别到有效信息，请上传清晰的学生证照片",
+	CodeOcrConfigInvalid:       "识别服务配置错误，请联系管理员",
 }
 
 // GetMessage 根据错误码获取默认消息

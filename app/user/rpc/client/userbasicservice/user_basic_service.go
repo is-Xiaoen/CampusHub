@@ -14,34 +14,45 @@ import (
 )
 
 type (
-	CanParticipateReq      = pb.CanParticipateReq
-	CanParticipateResp     = pb.CanParticipateResp
-	CanPublishReq          = pb.CanPublishReq
-	CanPublishResp         = pb.CanPublishResp
-	CreditLogItem          = pb.CreditLogItem
-	GetAllTagsReq          = pb.GetAllTagsReq
-	GetAllTagsResp         = pb.GetAllTagsResp
-	GetCreditInfoReq       = pb.GetCreditInfoReq
-	GetCreditInfoResp      = pb.GetCreditInfoResp
-	GetCreditLogsReq       = pb.GetCreditLogsReq
-	GetCreditLogsResp      = pb.GetCreditLogsResp
-	GetGroupUserRep        = pb.GetGroupUserRep
-	GetGroupUserResponse   = pb.GetGroupUserResponse
-	GetTagsByIdsReq        = pb.GetTagsByIdsReq
-	GetTagsByIdsResp       = pb.GetTagsByIdsResp
-	GetUserTagsRep         = pb.GetUserTagsRep
-	GetUserTagsResponse    = pb.GetUserTagsResponse
-	InitCreditReq          = pb.InitCreditReq
-	InitCreditResp         = pb.InitCreditResp
-	IsVerifiedReq          = pb.IsVerifiedReq
-	IsVerifiedResp         = pb.IsVerifiedResp
-	TagInfo                = pb.TagInfo
-	UpdateScoreReq         = pb.UpdateScoreReq
-	UpdateScoreResp        = pb.UpdateScoreResp
-	UpdateVerifyStatusReq  = pb.UpdateVerifyStatusReq
-	UpdateVerifyStatusResp = pb.UpdateVerifyStatusResp
-	UserInfo               = pb.UserInfo
-	VerifyOcrData          = pb.VerifyOcrData
+	ApplyStudentVerifyReq    = pb.ApplyStudentVerifyReq
+	ApplyStudentVerifyResp   = pb.ApplyStudentVerifyResp
+	CanParticipateReq        = pb.CanParticipateReq
+	CanParticipateResp       = pb.CanParticipateResp
+	CanPublishReq            = pb.CanPublishReq
+	CanPublishResp           = pb.CanPublishResp
+	CancelStudentVerifyReq   = pb.CancelStudentVerifyReq
+	CancelStudentVerifyResp  = pb.CancelStudentVerifyResp
+	ConfirmStudentVerifyReq  = pb.ConfirmStudentVerifyReq
+	ConfirmStudentVerifyResp = pb.ConfirmStudentVerifyResp
+	CreditLogItem            = pb.CreditLogItem
+	GetAllTagsReq            = pb.GetAllTagsReq
+	GetAllTagsResp           = pb.GetAllTagsResp
+	GetCreditInfoReq         = pb.GetCreditInfoReq
+	GetCreditInfoResp        = pb.GetCreditInfoResp
+	GetCreditLogsReq         = pb.GetCreditLogsReq
+	GetCreditLogsResp        = pb.GetCreditLogsResp
+	GetGroupUserRep          = pb.GetGroupUserRep
+	GetGroupUserResponse     = pb.GetGroupUserResponse
+	GetTagsByIdsReq          = pb.GetTagsByIdsReq
+	GetTagsByIdsResp         = pb.GetTagsByIdsResp
+	GetUserTagsRep           = pb.GetUserTagsRep
+	GetUserTagsResponse      = pb.GetUserTagsResponse
+	GetVerifyCurrentReq      = pb.GetVerifyCurrentReq
+	GetVerifyCurrentResp     = pb.GetVerifyCurrentResp
+	GetVerifyInfoReq         = pb.GetVerifyInfoReq
+	GetVerifyInfoResp        = pb.GetVerifyInfoResp
+	InitCreditReq            = pb.InitCreditReq
+	InitCreditResp           = pb.InitCreditResp
+	IsVerifiedReq            = pb.IsVerifiedReq
+	IsVerifiedResp           = pb.IsVerifiedResp
+	TagInfo                  = pb.TagInfo
+	UpdateScoreReq           = pb.UpdateScoreReq
+	UpdateScoreResp          = pb.UpdateScoreResp
+	UpdateVerifyStatusReq    = pb.UpdateVerifyStatusReq
+	UpdateVerifyStatusResp   = pb.UpdateVerifyStatusResp
+	UserInfo                 = pb.UserInfo
+	VerifyModifiedData       = pb.VerifyModifiedData
+	VerifyOcrData            = pb.VerifyOcrData
 
 	UserBasicService interface {
 		GetGroupUser(ctx context.Context, in *GetGroupUserRep, opts ...grpc.CallOption) (*GetGroupUserResponse, error)

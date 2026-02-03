@@ -20,27 +20,27 @@ import (
 // UserStatus 用户状态
 const (
 	// UserStatusDisabled 禁用
-	UserStatusDisabled uint64 = 0
+	UserStatusDisabled int64 = 0
 	// UserStatusNormal 正常
-	UserStatusNormal uint64 = 1
+	UserStatusNormal int64 = 1
 	// UserStatusDeleted 注销
-	UserStatusDeleted uint64 = 2
+	UserStatusDeleted int64 = 2
 )
 
 // UserGender 用户性别
 const (
 	// UserGenderUnknown 未知
-	UserGenderUnknown uint64 = 0
+	UserGenderUnknown int64 = 0
 	// UserGenderMale 男
-	UserGenderMale uint64 = 1
+	UserGenderMale int64 = 1
 	// UserGenderFemale 女
-	UserGenderFemale uint64 = 2
+	UserGenderFemale int64 = 2
 )
 
 // User 用户基础信息实体
 type User struct {
 	// 用户主键ID
-	UserID uint64 `gorm:"primaryKey;autoIncrement;column:user_id" json:"user_id"`
+	UserID int64 `gorm:"primaryKey;autoIncrement;column:user_id" json:"user_id"`
 	// QQ邮箱（用户登录/标识用）
 	QQEmail string `gorm:"uniqueIndex:uk_qqemail;column:QQemail;size:100;not null" json:"qq_email"`
 	// 用户昵称
@@ -50,13 +50,13 @@ type User struct {
 	// 用户个人简介
 	Introduction string `gorm:"column:introduction;size:500;default:''" json:"introduction"`
 	// 用户状态：0-禁用，1-正常，2-注销
-	Status uint64 `gorm:"column:status;not null;default:1" json:"status"`
+	Status int64 `gorm:"column:status;not null;default:1" json:"status"`
 	// 用户密码
 	Password string `gorm:"column:password;size:255;not null" json:"-"`
 	// 性别：0-未知，1-男，2-女
-	Gender uint64 `gorm:"column:gender;default:0" json:"gender"`
+	Gender int64 `gorm:"column:gender;default:0" json:"gender"`
 	// 用户年龄
-	Age uint64 `gorm:"column:age;default:0" json:"age"`
+	Age int64 `gorm:"column:age;default:0" json:"age"`
 	// 用户创建时间
 	CreateTime time.Time `gorm:"column:create_time;autoCreateTime" json:"create_time"`
 	// 用户信息更新时间
