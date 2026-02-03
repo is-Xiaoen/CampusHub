@@ -125,6 +125,18 @@ func (m *ActivityModel) FindByID(ctx context.Context, id uint64) (*Activity, err
 	return &activity, nil
 }
 
+// FindByIDs 批量查询活动
+func (m *ActivityModel) FindByIDs(ctx context.Context, ids []uint64) ([]Activity, error) {
+	if len(ids) == 0 {
+		return []Activity{}, nil
+	}
+	var activities []Activity
+	err := m.db.WithContext(ctx).
+		Where("id IN ?", ids).
+		Find(&activities).Error
+	return activities, err
+}
+
 // FindByIDForUpdate 查询并加行锁（用于状态机）
 func (m *ActivityModel) FindByIDForUpdate(ctx context.Context, tx *gorm.DB, id uint64) (*Activity, error) {
 	var activity Activity
