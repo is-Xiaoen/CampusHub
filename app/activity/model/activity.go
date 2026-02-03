@@ -68,8 +68,8 @@ type Activity struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// 关联数据（非数据库字段）
-	Tags         []Tag  `gorm:"-" json:"tags,omitempty"`
-	CategoryName string `gorm:"-" json:"category_name,omitempty"`
+	Tags         []TagCache `gorm:"-" json:"tags,omitempty"`
+	CategoryName string     `gorm:"-" json:"category_name,omitempty"`
 }
 
 func (Activity) TableName() string {
@@ -123,6 +123,18 @@ func (m *ActivityModel) FindByID(ctx context.Context, id uint64) (*Activity, err
 		return nil, err
 	}
 	return &activity, nil
+}
+
+// FindByIDs 批量查询活动
+func (m *ActivityModel) FindByIDs(ctx context.Context, ids []uint64) ([]Activity, error) {
+	if len(ids) == 0 {
+		return []Activity{}, nil
+	}
+	var activities []Activity
+	err := m.db.WithContext(ctx).
+		Where("id IN ?", ids).
+		Find(&activities).Error
+	return activities, err
 }
 
 // FindByIDForUpdate 查询并加行锁（用于状态机）

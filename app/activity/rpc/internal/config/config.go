@@ -14,6 +14,16 @@ type Config struct {
 
 	// RPC 客户端（服务间调用）
 	UserRpc zrpc.RpcClientConf // User 服务 RPC 客户端
+
+	// ==================== 高并发、熔断限流配置 ====================
+	RegistrationLimit struct {
+		Rate  int `json:",default=100"` // 每秒允许的请求数
+		Burst int `json:",default=200"` // 突发容量
+	}
+
+	RegistrationBreaker struct {
+		Name string `json:",default=activity-registration"` // 熔断器名称
+	}
 }
 
 // MySQLConfig 数据库配置
