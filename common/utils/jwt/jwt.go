@@ -6,65 +6,118 @@
 
 package jwt
 
-import "errors"
+import (
+	"context"
+	"errors"
+	"fmt"
+	"time"
 
-// ==================== 类型定义（存根，供编译通过） ====================
+	"github.com/golang-jwt/jwt/v4"
+)
 
-// JwtConfig JWT 配置
-// TODO(杨春路): 完善配置项
-type JwtConfig struct {
-	AccessSecret  string
-	RefreshSecret string
-	AccessExpire  int64
-	RefreshExpire int64
+type Role string
+
+const (
+	RoleUser  Role = "user"
+	RoleAdmin Role = "admin"
+)
+
+var (
+	ErrInvalidRole = errors.New("invalid role")
+)
+
+type AuthConfig struct {
+	AccessSecret string
+	AccessExpire int64
 }
 
-// Claims 自定义 JWT Claims
-// TODO(杨春路): 完善 Claims 结构
 type Claims struct {
-	UserID int64
-	Phone  string
+	UserId int64 `json:"userId"`
+	Role   Role  `json:"role"`
+	jwt.RegisteredClaims
 }
 
-// TokenPair Token 对
-type TokenPair struct {
-	AccessToken  string
-	RefreshToken string
-	ExpiresAt    int64
+type TokenResult struct {
+	Token    string
+	ExpireAt int64
 }
 
-// ==================== 错误定义 ====================
-
-var ErrTokenExpired = errors.New("token expired")
-
-// ==================== 待实现方法（存根） ====================
-
-// GenerateTokenPair 生成 Token 对
-// TODO(杨春路): 实现 JWT 双 Token 生成
-func GenerateTokenPair(config *JwtConfig, userID int64, phone string) (*TokenPair, error) {
-	panic("TODO: 杨春路实现")
+func GenerateShortToken(userId int64, role Role, cfg AuthConfig) (TokenResult, error) {
+	return generateToken(userId, role, cfg, time.Now())
 }
 
-// ParseAccessToken 解析 Access Token
-// TODO(杨春路): 实现 Access Token 解析
-func ParseAccessToken(config *JwtConfig, tokenString string) (*Claims, error) {
-	panic("TODO: 杨春路实现")
+func GenerateLongToken(userId int64, role Role, cfg AuthConfig) (TokenResult, error) {
+	return generateToken(userId, role, cfg, time.Now())
 }
 
-// ParseRefreshToken 解析 Refresh Token
-// TODO(杨春路): 实现 Refresh Token 解析
-func ParseRefreshToken(config *JwtConfig, tokenString string) (*Claims, error) {
-	panic("TODO: 杨春路实现")
+func IsAdmin(ctx context.Context) bool {
+	role, ok := GetRoleFromContext(ctx)
+	return ok && role == RoleAdmin
 }
 
-// RefreshTokenPair 刷新 Token 对
-// TODO(杨春路): 实现 Token 刷新
-func RefreshTokenPair(config *JwtConfig, refreshTokenString string) (*TokenPair, error) {
-	panic("TODO: 杨春路实现")
+func IsUser(ctx context.Context) bool {
+	role, ok := GetRoleFromContext(ctx)
+	return ok && role == RoleUser
 }
 
-// IsTokenExpired 判断是否是过期错误
-// TODO(杨春路): 实现过期判断
-func IsTokenExpired(err error) bool {
-	return errors.Is(err, ErrTokenExpired)
+func GetRoleFromContext(ctx context.Context) (Role, bool) {
+	if ctx == nil {
+		return "", false
+	}
+	value := ctx.Value("role")
+	switch v := value.(type) {
+	case string:
+		return Role(v), v != ""
+	case []byte:
+		if len(v) == 0 {
+			return "", false
+		}
+		return Role(string(v)), true
+	default:
+		if value == nil {
+			return "", false
+		}
+		role := fmt.Sprint(value)
+		if role == "" {
+			return "", false
+		}
+		return Role(role), true
+	}
+}
+
+func ValidateRole(role Role) error {
+	if role != RoleUser && role != RoleAdmin {
+		return ErrInvalidRole
+	}
+	return nil
+}
+
+func generateToken(userId int64, role Role, cfg AuthConfig, now time.Time) (TokenResult, error) {
+	if err := ValidateRole(role); err != nil {
+		return TokenResult{}, err
+	}
+	if cfg.AccessSecret == "" || cfg.AccessExpire <= 0 {
+		return TokenResult{}, errors.New("invalid auth config")
+	}
+
+	expireAt := now.Add(time.Duration(cfg.AccessExpire) * time.Second)
+	claims := Claims{
+		UserId: userId,
+		Role:   role,
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(expireAt),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	signed, err := token.SignedString([]byte(cfg.AccessSecret))
+	if err != nil {
+		return TokenResult{}, err
+	}
+
+	return TokenResult{
+		Token:    signed,
+		ExpireAt: claims.ExpiresAt.Unix(),
+	}, nil
 }
