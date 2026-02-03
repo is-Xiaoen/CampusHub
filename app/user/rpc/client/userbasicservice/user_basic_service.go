@@ -22,11 +22,15 @@ type (
 	CanPublishResp           = pb.CanPublishResp
 	CancelStudentVerifyReq   = pb.CancelStudentVerifyReq
 	CancelStudentVerifyResp  = pb.CancelStudentVerifyResp
+	CheckCaptchaReq          = pb.CheckCaptchaReq
+	CheckCaptchaResponse     = pb.CheckCaptchaResponse
 	ConfirmStudentVerifyReq  = pb.ConfirmStudentVerifyReq
 	ConfirmStudentVerifyResp = pb.ConfirmStudentVerifyResp
 	CreditLogItem            = pb.CreditLogItem
 	GetAllTagsReq            = pb.GetAllTagsReq
 	GetAllTagsResp           = pb.GetAllTagsResp
+	GetCaptchaConfigReq      = pb.GetCaptchaConfigReq
+	GetCaptchaConfigResponse = pb.GetCaptchaConfigResponse
 	GetCreditInfoReq         = pb.GetCreditInfoReq
 	GetCreditInfoResp        = pb.GetCreditInfoResp
 	GetCreditLogsReq         = pb.GetCreditLogsReq

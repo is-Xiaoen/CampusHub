@@ -777,3 +777,29 @@ message RefreshReq {
 message RefreshResponse {
     string access_token = 1;
 }
+
+// 验证码服务
+service CaptchaService {
+    rpc GetCaptchaConfig(GetCaptchaConfigReq) returns(GetCaptchaConfigResponse);
+    rpc CheckCaptcha(CheckCaptchaReq) returns(CheckCaptchaResponse);
+}
+
+// 获取验证码配置信息
+message GetCaptchaConfigReq{
+}
+
+message GetCaptchaConfigResponse{
+    string captcha_id = 1;
+}
+
+// 校验验证码是否正确
+message CheckCaptchaReq{
+    string lotNumber = 1;
+    string captchaOutput = 2;
+    string passToken = 3;
+    string genTime = 4;
+}
+
+message CheckCaptchaResponse{
+    bool isValid = 1;
+}
