@@ -14,8 +14,10 @@ import (
 	"activity-platform/app/activity/model"
 	"activity-platform/app/activity/rpc/activity"
 	"activity-platform/app/activity/rpc/internal/svc"
+	"activity-platform/app/user/rpc/client/tagservice"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc/metadata"
 )
 
 type VerifyTicketLogic struct {
@@ -43,6 +45,8 @@ const (
 	recommendCacheTTLSeconds = 300
 	recommendMaxPop          = 10000
 	recommendMaxCandidates   = 1000
+	recommendUserTagSample   = 50
+	recommendUserTagMax      = 20
 )
 
 // RecommendActivitiesInput 活动推荐算法入参
@@ -99,6 +103,16 @@ func (l *VerifyTicketLogic) RecommendActivities(in *RecommendActivitiesInput) ([
 		return []int64{}, nil
 	}
 
+	activityIDs := make([]uint64, 0, len(activities))
+	for _, act := range activities {
+		activityIDs = append(activityIDs, act.ID)
+	}
+	tagsMap, err := l.getActivityTagsMap(activityIDs)
+	if err != nil {
+		l.Infof("[WARNING] 批量获取活动标签失败: err=%v", err)
+		tagsMap = nil
+	}
+
 	scores := make([]scoredActivity, len(activities))
 	workerCount := 16
 	if len(activities) < workerCount {
@@ -113,7 +127,12 @@ func (l *VerifyTicketLogic) RecommendActivities(in *RecommendActivitiesInput) ([
 			defer wg.Done()
 			for idx := range jobs {
 				act := activities[idx]
-				activityTags := l.getActivityTags(int64(act.ID))
+				var activityTags []string
+				if tagsMap != nil {
+					activityTags = tagsMap[act.ID]
+				} else {
+					activityTags = l.getActivityTags(int64(act.ID))
+				}
 
 				tagScore := calculateTagScore(userTags, activityTags)
 				popScore := calculatePopScore(act.CurrentParticipants, act.ViewCount)
@@ -239,7 +258,14 @@ func haversineDistance(lat1, lng1, lat2, lng2 float64) float64 {
 
 // getUserProfile 获取用户画像（占位：待用户服务完成）
 func (l *VerifyTicketLogic) getUserProfile(userID int64) ([]string, float64, float64, bool) {
-	return []string{}, 0, 0, false
+	if userID <= 0 {
+		return []string{}, 0, 0, false
+	}
+	userTags := l.getUserTagsFromRPC(userID)
+	if len(userTags) == 0 {
+		userTags = l.getUserTagsFromRegistrations(userID)
+	}
+	return userTags, 0, 0, false
 }
 
 // getActivityTags 获取活动标签（占位：待活动标签关联完善）
@@ -247,7 +273,7 @@ func (l *VerifyTicketLogic) getActivityTags(activityID int64) []string {
 	if activityID <= 0 {
 		return []string{}
 	}
-	tags, err := l.svcCtx.TagModel.FindByActivityID(l.ctx, uint64(activityID))
+	tags, err := l.svcCtx.TagCacheModel.FindByActivityID(l.ctx, uint64(activityID))
 	if err != nil {
 		l.Infof("[WARNING] 获取活动标签失败: activityId=%d, err=%v", activityID, err)
 		return []string{}
@@ -255,11 +281,11 @@ func (l *VerifyTicketLogic) getActivityTags(activityID int64) []string {
 	if len(tags) == 0 {
 		return []string{}
 	}
-	result := make([]string, len(tags))
-	for i, tag := range tags {
-		result[i] = tag.Name
+	result := make([]string, 0, len(tags))
+	for _, tag := range tags {
+		result = append(result, tag.Name)
 	}
-	return result
+	return normalizeTags(result)
 }
 
 // getCandidateActivities 获取候选活动（报名中的活动）
@@ -317,4 +343,165 @@ func (l *VerifyTicketLogic) getCandidateActivities(userID int64, limit int) ([]m
 		return nil, err
 	}
 	return activities, nil
+}
+
+// getUserTagsFromRPC 通过用户服务获取用户标签
+func (l *VerifyTicketLogic) getUserTagsFromRPC(userID int64) []string {
+	if l.svcCtx.TagRpc == nil || userID <= 0 {
+		return []string{}
+	}
+
+	ctx, cancel := context.WithTimeout(l.ctx, 2*time.Second)
+	defer cancel()
+	ctx = metadata.AppendToOutgoingContext(ctx, "user_id", fmt.Sprintf("%d", userID))
+
+	resp, err := l.svcCtx.TagRpc.GetUserTags(ctx, &tagservice.GetUserTagsRep{})
+	if err != nil {
+		l.Infof("[WARNING] 获取用户标签失败: userId=%d, err=%v", userID, err)
+		return []string{}
+	}
+	if resp == nil {
+		return []string{}
+	}
+
+	names := splitTagNames(resp.GetName())
+	if len(names) == 0 && resp.GetId() > 0 {
+		if tag, err := l.svcCtx.TagCacheModel.FindByID(l.ctx, resp.GetId()); err == nil && tag != nil {
+			names = []string{tag.Name}
+		}
+	}
+	return normalizeTags(names)
+}
+
+// getUserTagsFromRegistrations 从报名历史推断用户标签
+func (l *VerifyTicketLogic) getUserTagsFromRegistrations(userID int64) []string {
+	regs, err := l.svcCtx.ActivityRegistrationModel.ListByUserID(l.ctx, uint64(userID), 0, recommendUserTagSample)
+	if err != nil {
+		l.Infof("[WARNING] 查询用户报名记录失败: userId=%d, err=%v", userID, err)
+		return []string{}
+	}
+	if len(regs) == 0 {
+		return []string{}
+	}
+
+	activityIDs := make([]uint64, 0, len(regs))
+	seen := make(map[uint64]struct{}, len(regs))
+	for _, reg := range regs {
+		if _, ok := seen[reg.ActivityID]; ok {
+			continue
+		}
+		seen[reg.ActivityID] = struct{}{}
+		activityIDs = append(activityIDs, reg.ActivityID)
+	}
+	if len(activityIDs) == 0 {
+		return []string{}
+	}
+
+	tagsMap, err := l.svcCtx.TagCacheModel.FindByActivityIDs(l.ctx, activityIDs)
+	if err != nil {
+		l.Infof("[WARNING] 查询活动标签失败: userId=%d, err=%v", userID, err)
+		return []string{}
+	}
+
+	frequency := make(map[string]int)
+	for _, tags := range tagsMap {
+		for _, tag := range tags {
+			name := normalizeTagName(tag.Name)
+			if name == "" {
+				continue
+			}
+			frequency[name]++
+		}
+	}
+	if len(frequency) == 0 {
+		return []string{}
+	}
+
+	type pair struct {
+		name  string
+		count int
+	}
+	list := make([]pair, 0, len(frequency))
+	for name, count := range frequency {
+		list = append(list, pair{name: name, count: count})
+	}
+	sort.Slice(list, func(i, j int) bool {
+		if list[i].count == list[j].count {
+			return list[i].name < list[j].name
+		}
+		return list[i].count > list[j].count
+	})
+
+	limit := recommendUserTagMax
+	if limit > len(list) {
+		limit = len(list)
+	}
+	names := make([]string, 0, limit)
+	for i := 0; i < limit; i++ {
+		names = append(names, list[i].name)
+	}
+	return names
+}
+
+// getActivityTagsMap 批量获取活动标签
+func (l *VerifyTicketLogic) getActivityTagsMap(activityIDs []uint64) (map[uint64][]string, error) {
+	if len(activityIDs) == 0 {
+		return map[uint64][]string{}, nil
+	}
+	tagsMap, err := l.svcCtx.TagCacheModel.FindByActivityIDs(l.ctx, activityIDs)
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[uint64][]string, len(tagsMap))
+	for activityID, tags := range tagsMap {
+		names := make([]string, 0, len(tags))
+		for _, tag := range tags {
+			names = append(names, tag.Name)
+		}
+		result[activityID] = normalizeTags(names)
+	}
+	return result, nil
+}
+
+func splitTagNames(raw string) []string {
+	if strings.TrimSpace(raw) == "" {
+		return []string{}
+	}
+	parts := strings.FieldsFunc(raw, func(r rune) bool {
+		switch r {
+		case ',', '，', ';', '；', '|', '/', '\\':
+			return true
+		default:
+			return false
+		}
+	})
+	return parts
+}
+
+func normalizeTags(tags []string) []string {
+	if len(tags) == 0 {
+		return []string{}
+	}
+	uniq := make(map[string]struct{}, len(tags))
+	result := make([]string, 0, len(tags))
+	for _, tag := range tags {
+		name := normalizeTagName(tag)
+		if name == "" {
+			continue
+		}
+		if _, ok := uniq[name]; ok {
+			continue
+		}
+		uniq[name] = struct{}{}
+		result = append(result, name)
+	}
+	return result
+}
+
+func normalizeTagName(tag string) string {
+	name := strings.TrimSpace(tag)
+	if name == "" {
+		return ""
+	}
+	return strings.ToLower(name)
 }
