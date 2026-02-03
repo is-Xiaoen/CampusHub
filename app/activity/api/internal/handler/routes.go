@@ -9,6 +9,7 @@ import (
 	activity "activity-platform/app/activity/api/internal/handler/activity"
 	admin "activity-platform/app/activity/api/internal/handler/admin"
 	public "activity-platform/app/activity/api/internal/handler/public"
+	ticket "activity-platform/app/activity/api/internal/handler/ticket"
 	"activity-platform/app/activity/api/internal/svc"
 
 	"github.com/zeromicro/go-zero/rest"
@@ -131,6 +132,49 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: public.ListTagHandler(serverCtx),
 			},
 		},
+		rest.WithPrefix("/api/v1/activity"),
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				// 取消报名活动
+				Method:  http.MethodPost,
+				Path:    "/cancel",
+				Handler: ticket.CancelActivitiesHandler(serverCtx),
+			},
+			{
+				// 获取待参加/已参加活动列表
+				Method:  http.MethodGet,
+				Path:    "/list",
+				Handler: ticket.GetActivityListHandler(serverCtx),
+			},
+			{
+				// 报名活动
+				Method:  http.MethodPost,
+				Path:    "/register",
+				Handler: ticket.RegisterActivityHandler(serverCtx),
+			},
+			{
+				// 获取个人票券列表
+				Method:  http.MethodGet,
+				Path:    "/tickets",
+				Handler: ticket.GetTicketListHandler(serverCtx),
+			},
+			{
+				// 获取票券详情
+				Method:  http.MethodGet,
+				Path:    "/tickets/detail",
+				Handler: ticket.GetTicketDetailHandler(serverCtx),
+			},
+			{
+				// 核销票券
+				Method:  http.MethodPost,
+				Path:    "/verify",
+				Handler: ticket.VerifyTicketHandler(serverCtx),
+			},
+		},
+		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
 		rest.WithPrefix("/api/v1/activity"),
 	)
 }
