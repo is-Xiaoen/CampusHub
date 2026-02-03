@@ -6,20 +6,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// Tag 标签模型
-type Tag struct {
-	ID         uint64 `gorm:"primaryKey;autoIncrement" json:"id"`
-	Name       string `gorm:"type:varchar(30);uniqueIndex;not null;comment:标签名称" json:"name"`
-	Color      string `gorm:"type:varchar(20);default:'orange';comment:标签颜色主题"    json:"color"`
-	Icon       string `gorm:"type:varchar(50);default:'';comment:标签图标" json:"icon"`
-	UsageCount uint32 `gorm:"default:0;comment:使用次数"  json:"usage_count"`
-	Status     int8   `gorm:"default:1;comment:状态: 1启用 0禁用" json:"status"`
-	CreatedAt  int64  `gorm:"autoCreateTime" json:"created_at"`
-}
-
-func (Tag) TableName() string {
-	return "tags"
-}
+// ==================== ActivityTag 活动-标签关联模型 ====================
+//
+// 说明：
+//   - 标签元数据（名称、颜色、图标）由用户服务维护，存储在 tag_cache 表
+//   - 本文件只负责活动与标签的关联关系（activity_tags 表）
+//   - 标签统计数据由 activity_tag_stats 表维护
 
 // ActivityTag 活动-标签关联表
 type ActivityTag struct {
@@ -33,84 +25,32 @@ func (ActivityTag) TableName() string {
 	return "activity_tags"
 }
 
-// ==================== TagModel 数据访问层 ====================
+// ==================== ActivityTagModel 数据访问层 ====================
+//
+// 职责：管理活动与标签的关联关系
+// 注意：标签验证和查询请使用 TagCacheModel
 
-type TagModel struct {
+type ActivityTagModel struct {
 	db *gorm.DB
 }
 
-func NewTagModel(db *gorm.DB) *TagModel {
-	return &TagModel{db: db}
-}
-
-// FindAll 获取所有启用的标签
-func (m *TagModel) FindAll(ctx context.Context) ([]Tag, error) {
-	var tags []Tag
-	err := m.db.WithContext(ctx).
-		Where("status = ?", 1).
-		Order("usage_count DESC, id ASC").
-		Find(&tags).Error
-	return tags, err
-}
-
-// FindHot 获取热门标签（按使用次数）
-func (m *TagModel) FindHot(ctx context.Context, limit int) ([]Tag, error) {
-	if limit <= 0 {
-		limit = 10
-	}
-	var tags []Tag
-	err := m.db.WithContext(ctx).
-		Where("status = ?", 1).
-		Order("usage_count DESC").
-		Limit(limit).
-		Find(&tags).Error
-	return tags, err
-}
-
-// FindByIDs 根据ID列表查询
-func (m *TagModel) FindByIDs(ctx context.Context, ids []uint64) ([]Tag, error) {
-	if len(ids) == 0 {
-		return []Tag{}, nil
-	}
-	var tags []Tag
-	err := m.db.WithContext(ctx).
-		Where("id IN ? AND status = ?", ids, 1).
-		Find(&tags).Error
-	return tags, err
-}
-
-// IncrUsageCount 增加使用次数（原子操作）
-func (m *TagModel) IncrUsageCount(ctx context.Context, ids []uint64, delta int) error {
-	if len(ids) == 0 {
-		return nil
-	}
-	return m.db.WithContext(ctx).
-		Model(&Tag{}).
-		Where("id IN ?", ids).
-		Update("usage_count", gorm.Expr("usage_count + ?",
-			delta)).Error
-}
-
-// FindByActivityID 获取活动的所有标签
-func (m *TagModel) FindByActivityID(ctx context.Context,
-	activityID uint64) ([]Tag, error) {
-	var tags []Tag
-	err := m.db.WithContext(ctx).
-		Table("tags t").
-		Select("t.*").
-		Joins("INNER JOIN activity_tags at ON t.id = at.tag_id").
-		Where("at.activity_id = ? AND t.status = ?", activityID,
-			1).
-		Find(&tags).Error
-	return tags, err
+func NewActivityTagModel(db *gorm.DB) *ActivityTagModel {
+	return &ActivityTagModel{db: db}
 }
 
 // BindToActivity 绑定标签到活动（事务内使用）
-func (m *TagModel) BindToActivity(ctx context.Context, tx *gorm.DB, activityID uint64, tagIDs []uint64) error {
+//
+// 参数：
+//   - tx: 事务对象
+//   - activityID: 活动 ID
+//   - tagIDs: 标签 ID 列表（最多 5 个）
+//
+// 注意：调用前应先使用 TagCacheModel.ExistsByIDs 验证标签存在性
+func (m *ActivityTagModel) BindToActivity(ctx context.Context, tx *gorm.DB, activityID uint64, tagIDs []uint64) error {
 	if len(tagIDs) == 0 {
 		return nil
 	}
-	// 最多5个标签
+	// 最多 5 个标签
 	if len(tagIDs) > 5 {
 		tagIDs = tagIDs[:5]
 	}
@@ -127,14 +67,20 @@ func (m *TagModel) BindToActivity(ctx context.Context, tx *gorm.DB, activityID u
 }
 
 // UnbindFromActivity 解绑活动的所有标签（事务内使用）
-func (m *TagModel) UnbindFromActivity(ctx context.Context, tx *gorm.DB, activityID uint64) error {
+//
+// 参数：
+//   - tx: 事务对象
+//   - activityID: 活动 ID
+func (m *ActivityTagModel) UnbindFromActivity(ctx context.Context, tx *gorm.DB, activityID uint64) error {
 	return tx.WithContext(ctx).
 		Where("activity_id = ?", activityID).
 		Delete(&ActivityTag{}).Error
 }
 
-// FindIDsByActivityID 获取活动关联的标签ID列表
-func (m *TagModel) FindIDsByActivityID(ctx context.Context, activityID uint64) ([]uint64, error) {
+// FindIDsByActivityID 获取活动关联的标签 ID 列表
+//
+// 用途：删除活动时获取关联的标签 ID，用于更新统计
+func (m *ActivityTagModel) FindIDsByActivityID(ctx context.Context, activityID uint64) ([]uint64, error) {
 	var ids []uint64
 	err := m.db.WithContext(ctx).
 		Model(&ActivityTag{}).
@@ -143,44 +89,12 @@ func (m *TagModel) FindIDsByActivityID(ctx context.Context, activityID uint64) (
 	return ids, err
 }
 
-// ActivityTagInfo 活动标签关联信息（用于批量查询）
-type ActivityTagInfo struct {
-	ActivityID uint64
-	Tag
-}
-
-// FindByActivityIDs 批量获取多个活动的标签（避免 N+1 查询问题）
-//
-// 返回值：map[活动ID][]Tag
-//
-// SQL 示例：
-//
-//	SELECT at.activity_id, t.*
-//	FROM activity_tags at
-//	INNER JOIN tags t ON t.id = at.tag_id
-//	WHERE at.activity_id IN (1, 2, 3) AND t.status = 1
-func (m *TagModel) FindByActivityIDs(ctx context.Context, activityIDs []uint64) (map[uint64][]Tag, error) {
-	result := make(map[uint64][]Tag)
-	if len(activityIDs) == 0 {
-		return result, nil
-	}
-
-	// 批量查询所有活动的标签关联
-	var infos []ActivityTagInfo
+// CountByActivityID 获取活动关联的标签数量
+func (m *ActivityTagModel) CountByActivityID(ctx context.Context, activityID uint64) (int64, error) {
+	var count int64
 	err := m.db.WithContext(ctx).
-		Table("activity_tags at").
-		Select("at.activity_id, t.id, t.name, t.color, t.icon").
-		Joins("INNER JOIN tags t ON t.id = at.tag_id").
-		Where("at.activity_id IN ? AND t.status = ?", activityIDs, 1).
-		Scan(&infos).Error
-	if err != nil {
-		return nil, err
-	}
-
-	// 按活动 ID 分组
-	for _, info := range infos {
-		result[info.ActivityID] = append(result[info.ActivityID], info.Tag)
-	}
-
-	return result, nil
+		Model(&ActivityTag{}).
+		Where("activity_id = ?", activityID).
+		Count(&count).Error
+	return count, err
 }

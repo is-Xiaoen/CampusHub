@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	mysqlerr "github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
 )
 
@@ -27,7 +28,20 @@ const (
 var (
 	ErrRegistrationNotFound = errors.New("报名记录不存在")
 	ErrAttendStatusInvalid  = errors.New("参加状态无效")
+	ErrActivityQuotaFull    = errors.New("活动名额已满")
 )
+
+// TicketPayload 票券生成入参
+type TicketPayload struct {
+	TicketCode string
+	TicketUUID string
+	TotpSecret string
+}
+
+// RegisterWithTicketResult 报名结果
+type RegisterWithTicketResult struct {
+	AlreadyRegistered bool
+}
 
 // ==================== ActivityRegistration 报名记录模型 ====================
 
@@ -80,6 +94,24 @@ func (m *ActivityRegistrationModel) FindByID(ctx context.Context, id uint64) (*A
 func (m *ActivityRegistrationModel) FindByActivityUser(ctx context.Context, activityID, userID uint64) (*ActivityRegistration, error) {
 	var reg ActivityRegistration
 	err := m.db.WithContext(ctx).
+		Where("activity_id = ? AND user_id = ?", activityID, userID).
+		First(&reg).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrRegistrationNotFound
+		}
+		return nil, err
+	}
+	return &reg, nil
+}
+
+// FindByActivityUserTx 根据活动ID和用户ID查询（事务内）
+func (m *ActivityRegistrationModel) FindByActivityUserTx(ctx context.Context, tx *gorm.DB, activityID, userID uint64) (*ActivityRegistration, error) {
+	if tx == nil {
+		return nil, errors.New("tx is nil")
+	}
+	var reg ActivityRegistration
+	err := tx.WithContext(ctx).
 		Where("activity_id = ? AND user_id = ?", activityID, userID).
 		First(&reg).Error
 	if err != nil {
@@ -191,6 +223,142 @@ func (m *ActivityRegistrationModel) CountByActivityID(ctx context.Context, activ
 	return count, err
 }
 
+// ReopenIfCanceledOrFailed 将取消/失败报名恢复为成功（事务内）
+func (m *ActivityRegistrationModel) ReopenIfCanceledOrFailed(ctx context.Context, tx *gorm.DB, id uint64) (bool, error) {
+	if tx == nil {
+		return false, errors.New("tx is nil")
+	}
+	result := tx.WithContext(ctx).
+		Model(&ActivityRegistration{}).
+		Where("id = ? AND status IN ?", id, []int8{RegistrationStatusCanceled, RegistrationStatusFailed}).
+		Updates(map[string]interface{}{
+			"status":      RegistrationStatusSuccess,
+			"cancel_time": int64(0),
+		})
+	if result.Error != nil {
+		return false, result.Error
+	}
+	return result.RowsAffected > 0, nil
+}
+
+// OccupyActivityQuota 报名成功占用名额（当前报名人数+1）
+func (m *ActivityRegistrationModel) OccupyActivityQuota(ctx context.Context, tx *gorm.DB, activityID uint64) error {
+	if tx == nil {
+		return errors.New("tx is nil")
+	}
+	result := tx.WithContext(ctx).
+		Model(&Activity{}).
+		Where("id = ? AND (max_participants = 0 OR current_participants < max_participants)", activityID).
+		Update("current_participants", gorm.Expr("current_participants + 1"))
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return ErrActivityQuotaFull
+	}
+	return nil
+}
+
+// RegisterWithTicket 创建或恢复报名并生成票券（事务内）
+func (m *ActivityRegistrationModel) RegisterWithTicket(
+	ctx context.Context,
+	activityID,
+	userID uint64,
+	gen func() (*TicketPayload, error),
+) (*RegisterWithTicketResult, error) {
+	if gen == nil {
+		return nil, errors.New("ticket generator is nil")
+	}
+	result := &RegisterWithTicketResult{}
+	err := m.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		reg := &ActivityRegistration{
+			ActivityID: activityID,
+			UserID:     userID,
+			Status:     RegistrationStatusSuccess,
+		}
+		if err := tx.Create(reg).Error; err != nil {
+			if !isDuplicateKeyErr(err) {
+				return err
+			}
+			existing, err := m.FindByActivityUserTx(ctx, tx, activityID, userID)
+			if err != nil {
+				return err
+			}
+			if existing.Status == RegistrationStatusSuccess {
+				result.AlreadyRegistered = true
+				return nil
+			}
+			if existing.Status != RegistrationStatusCanceled && existing.Status != RegistrationStatusFailed {
+				result.AlreadyRegistered = true
+				return nil
+			}
+			reopened, err := m.ReopenIfCanceledOrFailed(ctx, tx, existing.ID)
+			if err != nil {
+				return err
+			}
+			if !reopened {
+				result.AlreadyRegistered = true
+				return nil
+			}
+			reg = existing
+		}
+
+		if result.AlreadyRegistered {
+			return nil
+		}
+
+		if err := m.OccupyActivityQuota(ctx, tx, activityID); err != nil {
+			return err
+		}
+
+		// 先尝试复用已有票券（按报名记录ID更新）
+		reuse := tx.WithContext(ctx).
+			Model(&ActivityTicket{}).
+			Where("registration_id = ?", reg.ID).
+			Updates(map[string]interface{}{
+				"status":            TicketStatusUnused,
+				"used_time":         int64(0),
+				"used_location":     "",
+				"check_in_snapshot": "",
+			})
+		if reuse.Error != nil {
+			return reuse.Error
+		}
+		if reuse.RowsAffected > 0 {
+			return nil
+		}
+
+		for i := 0; i < 3; i++ {
+			payload, err := gen()
+			if err != nil {
+				return err
+			}
+			ticket := &ActivityTicket{
+				ActivityID:     activityID,
+				UserID:         userID,
+				RegistrationID: reg.ID,
+				TicketCode:     payload.TicketCode,
+				TicketUUID:     payload.TicketUUID,
+				TotpSecret:     payload.TotpSecret,
+				Status:         TicketStatusUnused,
+			}
+			if err := tx.Create(ticket).Error; err != nil {
+				if isDuplicateKeyErr(err) {
+					continue
+				}
+				return err
+			}
+			return nil
+		}
+
+		return errors.New("生成票据失败")
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 // UpdateStatus 更新报名状态
 func (m *ActivityRegistrationModel) UpdateStatus(ctx context.Context, id uint64, status int8) error {
 	result := m.db.WithContext(ctx).
@@ -204,6 +372,20 @@ func (m *ActivityRegistrationModel) UpdateStatus(ctx context.Context, id uint64,
 		return ErrRegistrationNotFound
 	}
 	return nil
+}
+
+func isDuplicateKeyErr(err error) bool {
+	if err == nil {
+		return false
+	}
+	if errors.Is(err, gorm.ErrDuplicatedKey) {
+		return true
+	}
+	var mysqlErr *mysqlerr.MySQLError
+	if errors.As(err, &mysqlErr) {
+		return mysqlErr.Number == 1062
+	}
+	return false
 }
 
 // Cancel 取消报名（更新状态和取消时间）

@@ -419,69 +419,70 @@ func (l *UpdateActivityLogic) validateTimeLogic(registerStartTime, registerEndTi
 
 // updateTags 更新标签（在事务内执行）
 func (l *UpdateActivityLogic) updateTags(tx *gorm.DB, activityID uint64, tagIds []int64, activityData *model.Activity) error {
-	// 1. 获取旧标签ID（用于计数更新）
-	oldTags, err := l.svcCtx.TagModel.FindByActivityID(l.ctx, activityID)
+	// 1. 获取旧标签ID（用于统计更新）
+	oldTagIDs, err := l.svcCtx.ActivityTagModel.FindIDsByActivityID(l.ctx, activityID)
 	if err != nil {
-		l.Errorf("获取旧标签失败: activityID=%d, err=%v", activityID, err)
+		l.Errorf("获取旧标签ID失败: activityID=%d, err=%v", activityID, err)
 		// 继续执行，不影响主流程
-	}
-	oldTagIDs := make([]uint64, len(oldTags))
-	for i, tag := range oldTags {
-		oldTagIDs[i] = tag.ID
+		oldTagIDs = nil
 	}
 
 	// 2. 删除旧绑定
-	if err := l.svcCtx.TagModel.UnbindFromActivity(l.ctx, tx, activityID); err != nil {
+	if err := l.svcCtx.ActivityTagModel.UnbindFromActivity(l.ctx, tx, activityID); err != nil {
 		l.Errorf("解绑旧标签失败: activityID=%d, err=%v", activityID, err)
 		return err
 	}
 
-	// 3. 绑定新标签
-	if len(tagIds) > 0 {
-		// 去重并过滤无效ID
-		seen := make(map[int64]bool)
-		uniqueIds := make([]uint64, 0, len(tagIds))
-		for _, id := range tagIds {
-			if id > 0 && !seen[id] {
-				seen[id] = true
-				uniqueIds = append(uniqueIds, uint64(id))
-			}
+	// 3. 去重并过滤无效ID
+	seen := make(map[int64]bool)
+	uniqueIds := make([]uint64, 0, len(tagIds))
+	for _, id := range tagIds {
+		if id > 0 && !seen[id] {
+			seen[id] = true
+			uniqueIds = append(uniqueIds, uint64(id))
 		}
+	}
 
-		// 限制最多5个
-		if len(uniqueIds) > 5 {
-			uniqueIds = uniqueIds[:5]
+	// 限制最多5个
+	if len(uniqueIds) > 5 {
+		uniqueIds = uniqueIds[:5]
+	}
+
+	// 4. 验证标签是否存在（从 tag_cache 查询）
+	if len(uniqueIds) > 0 {
+		existIDs, invalidIDs, err := l.svcCtx.TagCacheModel.ExistsByIDs(l.ctx, uniqueIds)
+		if err != nil {
+			l.Errorf("验证标签失败: %v", err)
+			return err
 		}
-
-		if len(uniqueIds) > 0 {
-			if err := l.svcCtx.TagModel.BindToActivity(l.ctx, tx, activityID, uniqueIds); err != nil {
-				l.Errorf("绑定新标签失败: activityID=%d, err=%v", activityID, err)
-				return err
-			}
-
-			// 4. 更新标签使用计数
-			// 先减少旧标签计数
-			if len(oldTagIDs) > 0 {
-				if err := l.svcCtx.TagModel.IncrUsageCount(l.ctx, oldTagIDs, -1); err != nil {
-					l.Errorf("减少旧标签使用次数失败: %v", err)
-					// 不影响主流程
-				}
-			}
-			// 再增加新标签计数
-			if err := l.svcCtx.TagModel.IncrUsageCount(l.ctx, uniqueIds, 1); err != nil {
-				l.Errorf("增加新标签使用次数失败: %v", err)
-				// 不影响主流程
-			}
-		} else if len(oldTagIDs) > 0 {
-			// 新标签为空但旧标签不为空，减少旧标签计数
-			if err := l.svcCtx.TagModel.IncrUsageCount(l.ctx, oldTagIDs, -1); err != nil {
-				l.Errorf("减少旧标签使用次数失败: %v", err)
-			}
+		if len(invalidIDs) > 0 {
+			l.Infof("[WARN] 部分标签不存在或已禁用: %v", invalidIDs)
+			// 只绑定存在的标签，忽略不存在的
+			uniqueIds = existIDs
 		}
-	} else if len(oldTagIDs) > 0 {
-		// 清空所有标签，减少旧标签计数
-		if err := l.svcCtx.TagModel.IncrUsageCount(l.ctx, oldTagIDs, -1); err != nil {
-			l.Errorf("减少旧标签使用次数失败: %v", err)
+	}
+
+	// 5. 绑定新标签
+	if len(uniqueIds) > 0 {
+		if err := l.svcCtx.ActivityTagModel.BindToActivity(l.ctx, tx, activityID, uniqueIds); err != nil {
+			l.Errorf("绑定新标签失败: activityID=%d, err=%v", activityID, err)
+			return err
+		}
+	}
+
+	// 6. 更新活动标签统计（activity_tag_stats 表）
+	// 先减少旧标签的 activity_count
+	if len(oldTagIDs) > 0 {
+		if err := l.svcCtx.TagStatsModel.BatchDecrActivityCount(l.ctx, tx, oldTagIDs); err != nil {
+			l.Errorf("减少旧标签统计失败: %v", err)
+			// 不影响主流程，统计数据可后续修复
+		}
+	}
+	// 再增加新标签的 activity_count
+	if len(uniqueIds) > 0 {
+		if err := l.svcCtx.TagStatsModel.BatchIncrActivityCount(l.ctx, tx, uniqueIds); err != nil {
+			l.Errorf("增加新标签统计失败: %v", err)
+			// 不影响主流程，统计数据可后续修复
 		}
 	}
 
