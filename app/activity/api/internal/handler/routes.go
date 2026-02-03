@@ -116,7 +116,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			{
 				// 活动列表
 				Method:  http.MethodGet,
-				Path:    "/list",
+				Path:    "/lists",
 				Handler: public.ListActivityHandler(serverCtx),
 			},
 			{
