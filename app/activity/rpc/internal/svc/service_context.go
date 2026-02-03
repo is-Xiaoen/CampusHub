@@ -54,8 +54,8 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	// 1. 初始化数据库连接
 	db := initDB(c.MySQL)
 
-	// 2. 初始化 Redis
-	rds := initRedis(c.Redis)
+	// 2. 初始化业务 Redis（缓存、分布式锁等）
+	rds := initRedis(c.BizRedis)
 
 	// 3. 初始化限流/熔断
 	registrationLimiter := limit.NewTokenLimiter(
