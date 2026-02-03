@@ -27,7 +27,10 @@ type Config struct {
 	BizRedis redis.RedisConf
 
 	// JWT 认证配置（必填）
-	JWT JWTConf
+	Auth AuthConf
+
+	// JWT 刷新配置（必填）
+	RefreshAuth AuthConf
 
 	// SMS 短信服务配置（可选，默认 mock 模式）
 	SMS SMSConf `json:",optional"`
@@ -43,16 +46,12 @@ type MySQLConf struct {
 	DataSource string
 }
 
-// JWTConf JWT认证配置
-type JWTConf struct {
+// AuthConf JWT认证配置
+type AuthConf struct {
 	// AccessSecret AccessToken签名密钥（至少32字符）
 	AccessSecret string
-	// RefreshSecret RefreshToken签名密钥（至少32字符）
-	RefreshSecret string
 	// AccessExpire AccessToken过期时间（秒），默认7200（2小时）
 	AccessExpire int64
-	// RefreshExpire RefreshToken过期时间（秒），默认604800（7天）
-	RefreshExpire int64
 }
 
 // SMSConf 短信服务配置

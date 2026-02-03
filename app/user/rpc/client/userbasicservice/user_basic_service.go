@@ -31,7 +31,7 @@ type (
 	GetCreditInfoResp        = pb.GetCreditInfoResp
 	GetCreditLogsReq         = pb.GetCreditLogsReq
 	GetCreditLogsResp        = pb.GetCreditLogsResp
-	GetGroupUserRep          = pb.GetGroupUserRep
+	GetGroupUserReq          = pb.GetGroupUserReq
 	GetGroupUserResponse     = pb.GetGroupUserResponse
 	GetTagsByIdsReq          = pb.GetTagsByIdsReq
 	GetTagsByIdsResp         = pb.GetTagsByIdsResp
@@ -41,10 +41,21 @@ type (
 	GetVerifyCurrentResp     = pb.GetVerifyCurrentResp
 	GetVerifyInfoReq         = pb.GetVerifyInfoReq
 	GetVerifyInfoResp        = pb.GetVerifyInfoResp
+	GroupUserInfo            = pb.GroupUserInfo
 	InitCreditReq            = pb.InitCreditReq
 	InitCreditResp           = pb.InitCreditResp
+	InterestTag              = pb.InterestTag
 	IsVerifiedReq            = pb.IsVerifiedReq
 	IsVerifiedResp           = pb.IsVerifiedResp
+	LoginReq                 = pb.LoginReq
+	LoginResponse            = pb.LoginResponse
+	LoginUserInfo            = pb.LoginUserInfo
+	LogoutReq                = pb.LogoutReq
+	LogoutResponse           = pb.LogoutResponse
+	RefreshReq               = pb.RefreshReq
+	RefreshResponse          = pb.RefreshResponse
+	RegisterReq              = pb.RegisterReq
+	RegisterResponse         = pb.RegisterResponse
 	TagInfo                  = pb.TagInfo
 	UpdateScoreReq           = pb.UpdateScoreReq
 	UpdateScoreResp          = pb.UpdateScoreResp
@@ -55,7 +66,16 @@ type (
 	VerifyOcrData            = pb.VerifyOcrData
 
 	UserBasicService interface {
-		GetGroupUser(ctx context.Context, in *GetGroupUserRep, opts ...grpc.CallOption) (*GetGroupUserResponse, error)
+		// 批量获取群聊用户的信息
+		GetGroupUser(ctx context.Context, in *GetGroupUserReq, opts ...grpc.CallOption) (*GetGroupUserResponse, error)
+		// 用户登录
+		Login(ctx context.Context, in *LoginReq, opts ...grpc.CallOption) (*LoginResponse, error)
+		// 用户登出
+		Logout(ctx context.Context, in *LogoutReq, opts ...grpc.CallOption) (*LogoutResponse, error)
+		// 用户注册
+		Register(ctx context.Context, in *RegisterReq, opts ...grpc.CallOption) (*RegisterResponse, error)
+		// 刷新短token
+		RefreshToken(ctx context.Context, in *RefreshReq, opts ...grpc.CallOption) (*RefreshResponse, error)
 	}
 
 	defaultUserBasicService struct {
@@ -69,7 +89,32 @@ func NewUserBasicService(cli zrpc.Client) UserBasicService {
 	}
 }
 
-func (m *defaultUserBasicService) GetGroupUser(ctx context.Context, in *GetGroupUserRep, opts ...grpc.CallOption) (*GetGroupUserResponse, error) {
+// 批量获取群聊用户的信息
+func (m *defaultUserBasicService) GetGroupUser(ctx context.Context, in *GetGroupUserReq, opts ...grpc.CallOption) (*GetGroupUserResponse, error) {
 	client := pb.NewUserBasicServiceClient(m.cli.Conn())
 	return client.GetGroupUser(ctx, in, opts...)
+}
+
+// 用户登录
+func (m *defaultUserBasicService) Login(ctx context.Context, in *LoginReq, opts ...grpc.CallOption) (*LoginResponse, error) {
+	client := pb.NewUserBasicServiceClient(m.cli.Conn())
+	return client.Login(ctx, in, opts...)
+}
+
+// 用户登出
+func (m *defaultUserBasicService) Logout(ctx context.Context, in *LogoutReq, opts ...grpc.CallOption) (*LogoutResponse, error) {
+	client := pb.NewUserBasicServiceClient(m.cli.Conn())
+	return client.Logout(ctx, in, opts...)
+}
+
+// 用户注册
+func (m *defaultUserBasicService) Register(ctx context.Context, in *RegisterReq, opts ...grpc.CallOption) (*RegisterResponse, error) {
+	client := pb.NewUserBasicServiceClient(m.cli.Conn())
+	return client.Register(ctx, in, opts...)
+}
+
+// 刷新短token
+func (m *defaultUserBasicService) RefreshToken(ctx context.Context, in *RefreshReq, opts ...grpc.CallOption) (*RefreshResponse, error) {
+	client := pb.NewUserBasicServiceClient(m.cli.Conn())
+	return client.RefreshToken(ctx, in, opts...)
 }
