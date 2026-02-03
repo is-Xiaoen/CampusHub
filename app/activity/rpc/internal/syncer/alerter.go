@@ -55,9 +55,9 @@ func (a *LogAlerter) SendAlert(ctx context.Context, level AlertLevel, title, con
 //
 // 通过 HTTP POST 发送告警到外部服务（钉钉、飞书、企业微信等）
 type WebhookAlerter struct {
-	webhookURL string        // Webhook URL
-	httpClient *http.Client  // HTTP 客户端
-	rateLimit  *rateLimiter  // 限流器
+	webhookURL string       // Webhook URL
+	httpClient *http.Client // HTTP 客户端
+	rateLimit  *rateLimiter // 限流器
 }
 
 // WebhookMessage Webhook 消息格式

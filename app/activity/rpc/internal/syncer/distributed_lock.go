@@ -35,12 +35,12 @@ type DistributedLock interface {
 
 // RedisLock Redis 分布式锁实现
 type RedisLock struct {
-	rds        *redis.Redis
-	key        string        // 锁的 key
-	token      string        // 锁的 token（用于安全释放）
-	ttl        time.Duration // 锁的过期时间
-	stopRenew  chan struct{} // 停止续期信号
-	renewDone  chan struct{} // 续期协程退出信号
+	rds       *redis.Redis
+	key       string        // 锁的 key
+	token     string        // 锁的 token（用于安全释放）
+	ttl       time.Duration // 锁的过期时间
+	stopRenew chan struct{} // 停止续期信号
+	renewDone chan struct{} // 续期协程退出信号
 }
 
 // NewRedisLock 创建 Redis 分布式锁
