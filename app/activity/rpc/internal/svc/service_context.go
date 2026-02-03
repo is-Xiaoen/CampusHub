@@ -1,6 +1,7 @@
 package svc
 
 import (
+	"fmt"
 	"time"
 
 	"activity-platform/app/activity/model"
@@ -31,27 +32,30 @@ type ServiceContext struct {
 	RegistrationBreaker breaker.Breaker
 
 	// Model 层
-	ActivityModel    *model.ActivityModel
-	CategoryModel    *model.CategoryModel
-	ActivityTagModel *model.ActivityTagModel      // 活动-标签关联表操作
-	TagCacheModel    *model.TagCacheModel         // 标签缓存（从用户服务同步）
-	TagStatsModel    *model.ActivityTagStatsModel // 活动标签统计
-	StatusLogModel   *model.ActivityStatusLogModel
+	ActivityModel             *model.ActivityModel
+	CategoryModel             *model.CategoryModel
+	ActivityTagModel          *model.ActivityTagModel      // 活动-标签关联表操作
+	TagCacheModel             *model.TagCacheModel         // 标签缓存（从用户服务同步）
+	TagModel                  *model.TagModel              // 活动标签查询（兼容层）
+	TagStatsModel             *model.ActivityTagStatsModel // 活动标签统计
+	StatusLogModel            *model.ActivityStatusLogModel
+	ActivityRegistrationModel *model.ActivityRegistrationModel
+	ActivityTicketModel       *model.ActivityTicketModel
 
 	// RPC 客户端（调用其他微服务）
 	CreditRpc     creditservice.CreditService // 信用分服务
 	VerifyService verifyservice.VerifyService // 学生认证服务
-	CreditRpc creditservice.CreditService // 信用分服务
-	VerifyRpc verifyservice.VerifyService // 学生认证服务
-	TagRpc    tagservice.TagService       // 标签服务（用于同步标签数据）
+	VerifyRpc     verifyservice.VerifyService // 学生认证服务
+	TagRpc        tagservice.TagService       // 标签服务（用于同步标签数据）
+
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
 	// 1. 初始化数据库连接
-	db := initDB(c.MySQL.DataSource)
+	db := initDB(c.MySQL)
 
 	// 2. 初始化 Redis
-	rds := initRedis(c.Redis.RedisConf)
+	rds := initRedis(c.Redis)
 
 	// 3. 初始化限流/熔断
 	registrationLimiter := limit.NewTokenLimiter(
@@ -83,12 +87,12 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		RegistrationBreaker: registrationBreaker,
 
 		// Model 层
-		ActivityModel:    model.NewActivityModel(db),
-		CategoryModel:    model.NewCategoryModel(db),
-		ActivityTagModel: model.NewActivityTagModel(db),      // 活动-标签关联
-		TagCacheModel:    model.NewTagCacheModel(db),         // 标签缓存
-		TagStatsModel:    model.NewActivityTagStatsModel(db), // 标签统计
-		StatusLogModel:   model.NewActivityStatusLogModel(db),
+		ActivityModel:             model.NewActivityModel(db),
+		CategoryModel:             model.NewCategoryModel(db),
+		ActivityTagModel:          model.NewActivityTagModel(db),      // 活动-标签关联
+		TagCacheModel:             model.NewTagCacheModel(db),         // 标签缓存
+		TagStatsModel:             model.NewActivityTagStatsModel(db), // 标签统计
+		StatusLogModel:            model.NewActivityStatusLogModel(db),
 		TagModel:                  model.NewTagModel(db),
 		ActivityRegistrationModel: model.NewActivityRegistrationModel(db),
 		ActivityTicketModel:       model.NewActivityTicketModel(db),
@@ -96,22 +100,15 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		// RPC 客户端
 		CreditRpc:     creditRpc,
 		VerifyService: verifyRpc,
-		TagRpc:    tagRpc,
+		TagRpc:        tagRpc,
 	}
 }
 
 // 初始化函数
 
 // initDB 初始化数据库连接
-func initDB(c config.MySQLConfig) *gorm.DB {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		c.Username,
-		c.Password,
-		c.Host,
-		c.Port,
-		c.Database,
-	)
-
+func initDB(mysqlConf config.MySQLConfig) *gorm.DB {
+	dsn := buildMySQLDSN(mysqlConf)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info), // 开发环境打印 SQL
 	})
@@ -125,9 +122,21 @@ func initDB(c config.MySQLConfig) *gorm.DB {
 	if err != nil {
 		panic(err)
 	}
-	sqlDB.SetMaxOpenConns(100)
-	sqlDB.SetMaxIdleConns(10)
-	sqlDB.SetConnMaxLifetime(time.Hour)
+	maxOpenConns := mysqlConf.MaxOpenConns
+	if maxOpenConns <= 0 {
+		maxOpenConns = 100
+	}
+	maxIdleConns := mysqlConf.MaxIdleConns
+	if maxIdleConns <= 0 {
+		maxIdleConns = 10
+	}
+	connMaxLifetime := mysqlConf.ConnMaxLifetime
+	if connMaxLifetime <= 0 {
+		connMaxLifetime = 3600
+	}
+	sqlDB.SetMaxOpenConns(maxOpenConns)
+	sqlDB.SetMaxIdleConns(maxIdleConns)
+	sqlDB.SetConnMaxLifetime(time.Duration(connMaxLifetime) * time.Second)
 
 	logx.Info("数据库连接成功")
 	return db
@@ -138,4 +147,15 @@ func initRedis(c redis.RedisConf) *redis.Redis {
 	rds := redis.MustNewRedis(c)
 	logx.Info("Redis 连接成功")
 	return rds
+}
+
+func buildMySQLDSN(c config.MySQLConfig) string {
+	return fmt.Sprintf(
+		"%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=true&loc=Local",
+		c.Username,
+		c.Password,
+		c.Host,
+		c.Port,
+		c.Database,
+	)
 }
