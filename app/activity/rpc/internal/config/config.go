@@ -7,10 +7,12 @@ import (
 
 type Config struct {
 	zrpc.RpcServerConf // go-zero RPC 服务配置（含 Etcd、Log、Telemetry 等）
+	// 注意：RpcServerConf 内置了 Redis redis.RedisKeyConf 用于 Auth 认证
+	// 如果不开启 Auth，可以不配置
 
 	// 数据存储
-	MySQL MySQLConfig     // MySQL 配置
-	Redis redis.RedisConf // Redis 配置（go-zero 内置结构）
+	MySQL    MySQLConfig     // MySQL 配置
+	BizRedis redis.RedisConf // 业务 Redis（缓存、分布式锁、热门活动等）
 
 	// RPC 客户端（服务间调用）
 	UserRpc zrpc.RpcClientConf // User 服务 RPC 客户端
