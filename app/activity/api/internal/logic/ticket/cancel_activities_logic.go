@@ -8,6 +8,9 @@ import (
 
 	"activity-platform/app/activity/api/internal/svc"
 	"activity-platform/app/activity/api/internal/types"
+	"activity-platform/app/activity/rpc/activityservice"
+	"activity-platform/common/ctxdata"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -28,7 +31,28 @@ func NewCancelActivitiesLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 func (l *CancelActivitiesLogic) CancelActivities(req *types.CancelActivityRequest) (resp *types.CancelActivityResponse, err error) {
-	// todo: add your logic here and delete this line
+	// 1. 获取当前用户 ID
+	userID := ctxdata.GetUserIDFromCtx(l.ctx)
+	if userID <= 0 {
+		return nil, errorx.ErrUnauthorized()
+	}
 
-	return
+	// 2. 参数校验
+	if req.ActivityId <= 0 {
+		return nil, errorx.ErrInvalidParams(errMsgActivityIDInvalid)
+	}
+
+	// 3. 调用 RPC 服务
+	rpcResp, err := l.svcCtx.ActivityRpc.CancelActivities(l.ctx, &activityservice.CancelActivityRequest{
+		ActivityId: req.ActivityId,
+	})
+	if err != nil {
+		l.Errorf("RPC CancelActivities failed: activityId=%d, userID=%d, err=%v", req.ActivityId, userID, err)
+		return nil, errorx.FromError(err)
+	}
+
+	// 4. 返回响应
+	return &types.CancelActivityResponse{
+		Result: rpcResp.Result,
+	}, nil
 }
