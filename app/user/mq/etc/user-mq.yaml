@@ -22,7 +22,7 @@ MySQL:
   DataSource: root:123456@tcp(192.168.10.4:3308)/campushub_user?charset=utf8mb4&parseTime=true&loc=Local
 
 # Redis 配置（同时用于缓存和 Stream）
-Redis:
+BizRedis:
   Host: 192.168.10.4:6379
   Type: node
   Pass: "123456"

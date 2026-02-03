@@ -20,15 +20,15 @@ import (
 // TagStatus 标签状态
 const (
 	// TagStatusDisabled 禁用
-	TagStatusDisabled uint64 = 0
+	TagStatusDisabled int64 = 0
 	// TagStatusNormal 正常
-	TagStatusNormal uint64 = 1
+	TagStatusNormal int64 = 1
 )
 
 // InterestTag 兴趣标签实体
 type InterestTag struct {
 	// 标签主键ID
-	TagID uint64 `gorm:"primaryKey;autoIncrement;column:tag_id" json:"tag_id"`
+	TagID int64 `gorm:"primaryKey;autoIncrement;column:tag_id" json:"tag_id"`
 	// 标签名称
 	TagName string `gorm:"uniqueIndex:uk_tag_name;column:tag_name;size:50;not null" json:"tag_name"`
 	// 标签颜色值
@@ -36,9 +36,9 @@ type InterestTag struct {
 	// 标签图标线上URL地址
 	Icon string `gorm:"column:icon;size:255;default:''" json:"icon"`
 	// 标签被用户使用的总次数
-	UsageCount uint64 `gorm:"column:usage_count;default:0" json:"usage_count"`
+	UsageCount int64 `gorm:"column:usage_count;default:0" json:"usage_count"`
 	// 标签状态：0-禁用，1-正常
-	Status uint64 `gorm:"column:status;default:1" json:"status"`
+	Status int64 `gorm:"column:status;default:1" json:"status"`
 	// 标签描述
 	TagDesc string `gorm:"column:tag_desc;size:200;default:''" json:"tag_desc"`
 	// 标签创建时间
