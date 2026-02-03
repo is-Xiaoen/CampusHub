@@ -14,6 +14,16 @@ type Config struct {
 
 	// RPC 客户端（服务间调用）
 	UserRpc zrpc.RpcClientConf // User 服务 RPC 客户端
+
+	// ==================== 高并发、熔断限流配置 ====================
+	RegistrationLimit struct {
+		Rate  int `json:",default=100"` // 每秒允许的请求数
+		Burst int `json:",default=200"` // 突发容量
+	}
+
+	RegistrationBreaker struct {
+		Name string `json:",default=activity-registration"` // 熔断器名称
+	}
 }
 
 // MySQLConfig 数据库配置
@@ -26,13 +36,4 @@ type MySQLConfig struct {
 	MaxOpenConns    int `json:",default=100"`  // 最大打开连接数
 	MaxIdleConns    int `json:",default=10"`   // 最大空闲连接数
 	ConnMaxLifetime int `json:",default=3600"` // 连接生命周期（秒）
-}
-
-// ==================== 高并发、熔断限流配置 ====================
-type RegistrationLimit struct {
-	Rate  int `json:",default=100"` // 每秒允许的请求数
-	Burst int `json:",default=200"` // 突发容量
-}
-type RegistrationBreaker struct {
-	Name string `json:",default=activity-registration"` // 熔断器名称
 }
