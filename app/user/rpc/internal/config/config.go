@@ -32,6 +32,9 @@ type Config struct {
 	// JWT 刷新配置（必填）
 	RefreshAuth AuthConf
 
+	// ActivityRpc 活动服务RPC客户端配置（必填）
+	ActivityRpc zrpc.RpcClientConf
+
 	// SMS 短信服务配置（可选，默认 mock 模式）
 	SMS SMSConf `json:",optional"`
 
