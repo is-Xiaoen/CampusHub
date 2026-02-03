@@ -48,7 +48,7 @@ func (m *RoleAuthMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		var status int8
+		var status int64
 		err := m.db.WithContext(ctx).
 			Table("users").
 			Select("status").
