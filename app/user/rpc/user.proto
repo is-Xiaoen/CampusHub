@@ -732,9 +732,6 @@ message LogoutReq {
 }
 
 message LogoutResponse {
-    int64 code = 1;
-    bool success = 2;
-    string message = 3;
 }
 
 // 用户注册
