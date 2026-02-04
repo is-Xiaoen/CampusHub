@@ -116,6 +116,15 @@ func (l *SubmitActivityLogic) SubmitActivity(in *activity.SubmitActivityReq) (*a
 		}
 	}
 
+	// 异步同步到 ES（发布后需要被搜索到）
+	if l.svcCtx.SyncService != nil {
+		// 重新查询最新数据用于同步
+		updatedActivity, err := l.svcCtx.ActivityModel.FindByID(l.ctx, uint64(in.Id))
+		if err == nil {
+			l.svcCtx.SyncService.IndexActivityAsync(updatedActivity)
+		}
+	}
+
 	l.Infof("活动提交成功（MVP自动发布）: id=%d, status=%d->%d",
 		in.Id, activityData.Status, model.StatusPublished)
 
