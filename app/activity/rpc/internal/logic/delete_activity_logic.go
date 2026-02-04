@@ -110,6 +110,11 @@ func (l *DeleteActivityLogic) DeleteActivity(in *activity.DeleteActivityReq) (*a
 		}
 	}
 
+	// 异步从 ES 删除文档
+	if l.svcCtx.SyncService != nil {
+		l.svcCtx.SyncService.DeleteActivityAsync(uint64(in.Id))
+	}
+
 	l.Infof("活动删除成功: id=%d, operatorId=%d, isAdmin=%v",
 		in.Id, in.OperatorId, in.IsAdmin)
 
