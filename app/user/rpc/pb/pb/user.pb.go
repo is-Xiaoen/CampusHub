@@ -3681,7 +3681,13 @@ func (x *CheckCaptchaReq) GetGenTime() string {
 
 type CheckCaptchaResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	IsValid       bool                   `protobuf:"varint,1,opt,name=isValid,proto3" json:"isValid,omitempty"`
+	Result        string                 `protobuf:"bytes,1,opt,name=result,proto3" json:"result,omitempty"`                                    // "success" 或 "fail"
+	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`                                    // 失败原因
+	CaptchaId     string                 `protobuf:"bytes,3,opt,name=captcha_id,json=captchaId,proto3" json:"captcha_id,omitempty"`             // 验证码ID
+	LotNumber     string                 `protobuf:"bytes,4,opt,name=lot_number,json=lotNumber,proto3" json:"lot_number,omitempty"`             // 流水号
+	CaptchaOutput string                 `protobuf:"bytes,5,opt,name=captcha_output,json=captchaOutput,proto3" json:"captcha_output,omitempty"` // 验证输出
+	PassToken     string                 `protobuf:"bytes,6,opt,name=pass_token,json=passToken,proto3" json:"pass_token,omitempty"`             // 验证凭证
+	GenTime       string                 `protobuf:"bytes,7,opt,name=gen_time,json=genTime,proto3" json:"gen_time,omitempty"`                   // 生成时间
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3716,11 +3722,53 @@ func (*CheckCaptchaResponse) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{53}
 }
 
-func (x *CheckCaptchaResponse) GetIsValid() bool {
+func (x *CheckCaptchaResponse) GetResult() string {
 	if x != nil {
-		return x.IsValid
+		return x.Result
 	}
-	return false
+	return ""
+}
+
+func (x *CheckCaptchaResponse) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+func (x *CheckCaptchaResponse) GetCaptchaId() string {
+	if x != nil {
+		return x.CaptchaId
+	}
+	return ""
+}
+
+func (x *CheckCaptchaResponse) GetLotNumber() string {
+	if x != nil {
+		return x.LotNumber
+	}
+	return ""
+}
+
+func (x *CheckCaptchaResponse) GetCaptchaOutput() string {
+	if x != nil {
+		return x.CaptchaOutput
+	}
+	return ""
+}
+
+func (x *CheckCaptchaResponse) GetPassToken() string {
+	if x != nil {
+		return x.PassToken
+	}
+	return ""
+}
+
+func (x *CheckCaptchaResponse) GetGenTime() string {
+	if x != nil {
+		return x.GenTime
+	}
+	return ""
 }
 
 var File_user_proto protoreflect.FileDescriptor
@@ -4036,9 +4084,18 @@ const file_user_proto_rawDesc = "" +
 	"\tlotNumber\x18\x01 \x01(\tR\tlotNumber\x12$\n" +
 	"\rcaptchaOutput\x18\x02 \x01(\tR\rcaptchaOutput\x12\x1c\n" +
 	"\tpassToken\x18\x03 \x01(\tR\tpassToken\x12\x18\n" +
-	"\agenTime\x18\x04 \x01(\tR\agenTime\"0\n" +
-	"\x14CheckCaptchaResponse\x12\x18\n" +
-	"\aisValid\x18\x01 \x01(\bR\aisValid2\x86\x03\n" +
+	"\agenTime\x18\x04 \x01(\tR\agenTime\"\xe5\x01\n" +
+	"\x14CheckCaptchaResponse\x12\x16\n" +
+	"\x06result\x18\x01 \x01(\tR\x06result\x12\x16\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason\x12\x1d\n" +
+	"\n" +
+	"captcha_id\x18\x03 \x01(\tR\tcaptchaId\x12\x1d\n" +
+	"\n" +
+	"lot_number\x18\x04 \x01(\tR\tlotNumber\x12%\n" +
+	"\x0ecaptcha_output\x18\x05 \x01(\tR\rcaptchaOutput\x12\x1d\n" +
+	"\n" +
+	"pass_token\x18\x06 \x01(\tR\tpassToken\x12\x19\n" +
+	"\bgen_time\x18\a \x01(\tR\agenTime2\x86\x03\n" +
 	"\rCreditService\x12@\n" +
 	"\rGetCreditInfo\x12\x16.user.GetCreditInfoReq\x1a\x17.user.GetCreditInfoResp\x12@\n" +
 	"\rGetCreditLogs\x12\x16.user.GetCreditLogsReq\x1a\x17.user.GetCreditLogsResp\x12C\n" +
