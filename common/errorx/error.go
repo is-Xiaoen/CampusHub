@@ -151,6 +151,11 @@ func ErrUnauthorized() *BizError {
 	return New(CodeUnauthorized)
 }
 
+// ErrInvalidToken Token无效
+func ErrInvalidToken() *BizError {
+	return New(CodeTokenInvalid)
+}
+
 // NewDefaultError 创建默认业务错误（通常用于提示用户）
 func NewDefaultError(msg string) *BizError {
 	return NewWithMessage(CodeInvalidParams, msg)
