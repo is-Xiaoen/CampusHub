@@ -1357,3 +1357,143 @@ var CaptchaService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "user.proto",
 }
+
+const (
+	QQEmail_SendQQEmail_FullMethodName  = "/user.QQEmail/SendQQEmail"
+	QQEmail_CheckQQEmail_FullMethodName = "/user.QQEmail/CheckQQEmail"
+)
+
+// QQEmailClient is the client API for QQEmail service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type QQEmailClient interface {
+	SendQQEmail(ctx context.Context, in *SendQQEmailReq, opts ...grpc.CallOption) (*SendQQEmailResponse, error)
+	CheckQQEmail(ctx context.Context, in *CheckQQEmailReq, opts ...grpc.CallOption) (*CheckQQEmailResponse, error)
+}
+
+type qQEmailClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewQQEmailClient(cc grpc.ClientConnInterface) QQEmailClient {
+	return &qQEmailClient{cc}
+}
+
+func (c *qQEmailClient) SendQQEmail(ctx context.Context, in *SendQQEmailReq, opts ...grpc.CallOption) (*SendQQEmailResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SendQQEmailResponse)
+	err := c.cc.Invoke(ctx, QQEmail_SendQQEmail_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *qQEmailClient) CheckQQEmail(ctx context.Context, in *CheckQQEmailReq, opts ...grpc.CallOption) (*CheckQQEmailResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CheckQQEmailResponse)
+	err := c.cc.Invoke(ctx, QQEmail_CheckQQEmail_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// QQEmailServer is the server API for QQEmail service.
+// All implementations must embed UnimplementedQQEmailServer
+// for forward compatibility.
+type QQEmailServer interface {
+	SendQQEmail(context.Context, *SendQQEmailReq) (*SendQQEmailResponse, error)
+	CheckQQEmail(context.Context, *CheckQQEmailReq) (*CheckQQEmailResponse, error)
+	mustEmbedUnimplementedQQEmailServer()
+}
+
+// UnimplementedQQEmailServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedQQEmailServer struct{}
+
+func (UnimplementedQQEmailServer) SendQQEmail(context.Context, *SendQQEmailReq) (*SendQQEmailResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SendQQEmail not implemented")
+}
+func (UnimplementedQQEmailServer) CheckQQEmail(context.Context, *CheckQQEmailReq) (*CheckQQEmailResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CheckQQEmail not implemented")
+}
+func (UnimplementedQQEmailServer) mustEmbedUnimplementedQQEmailServer() {}
+func (UnimplementedQQEmailServer) testEmbeddedByValue()                 {}
+
+// UnsafeQQEmailServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to QQEmailServer will
+// result in compilation errors.
+type UnsafeQQEmailServer interface {
+	mustEmbedUnimplementedQQEmailServer()
+}
+
+func RegisterQQEmailServer(s grpc.ServiceRegistrar, srv QQEmailServer) {
+	// If the following call panics, it indicates UnimplementedQQEmailServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&QQEmail_ServiceDesc, srv)
+}
+
+func _QQEmail_SendQQEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendQQEmailReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QQEmailServer).SendQQEmail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QQEmail_SendQQEmail_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QQEmailServer).SendQQEmail(ctx, req.(*SendQQEmailReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QQEmail_CheckQQEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckQQEmailReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QQEmailServer).CheckQQEmail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QQEmail_CheckQQEmail_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QQEmailServer).CheckQQEmail(ctx, req.(*CheckQQEmailReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// QQEmail_ServiceDesc is the grpc.ServiceDesc for QQEmail service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var QQEmail_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "user.QQEmail",
+	HandlerType: (*QQEmailServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "SendQQEmail",
+			Handler:    _QQEmail_SendQQEmail_Handler,
+		},
+		{
+			MethodName: "CheckQQEmail",
+			Handler:    _QQEmail_CheckQQEmail_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "user.proto",
+}

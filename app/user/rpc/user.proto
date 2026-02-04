@@ -806,10 +806,35 @@ message CheckCaptchaResponse{
     CaptchaArgs captcha_args = 3; // 嵌套对象 "captcha_args"
 }
 
-message CaptchaArgs {
+message CaptchaArgs{
     string captcha_id = 1;     // "captcha_id"
     string lot_number = 2;     // "lot_number"
     string captcha_output = 3; // "captcha_output"
     string pass_token = 4;     // "pass_token"
     string gen_time = 5;       // "gen_time"
+}
+
+service QQEmail{
+    rpc SendQQEmail(SendQQEmailReq) returns(SendQQEmailResponse);
+    rpc CheckQQEmail(CheckQQEmailReq) returns(CheckQQEmailResponse);
+}
+
+// 发送QQ邮箱
+message SendQQEmailReq{
+    string qq_email =1;
+    string scene =2;
+}
+
+message SendQQEmailResponse{
+
+}
+
+// 校验QQ邮箱
+message CheckQQEmailReq{
+    string qq_code =1;
+    string scene =2;
+}
+
+message CheckQQEmailResponse{
+    bool isValid =1;
 }

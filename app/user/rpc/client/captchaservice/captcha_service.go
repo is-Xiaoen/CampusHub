@@ -25,6 +25,8 @@ type (
 	CaptchaArgs              = pb.CaptchaArgs
 	CheckCaptchaReq          = pb.CheckCaptchaReq
 	CheckCaptchaResponse     = pb.CheckCaptchaResponse
+	CheckQQEmailReq          = pb.CheckQQEmailReq
+	CheckQQEmailResponse     = pb.CheckQQEmailResponse
 	ConfirmStudentVerifyReq  = pb.ConfirmStudentVerifyReq
 	ConfirmStudentVerifyResp = pb.ConfirmStudentVerifyResp
 	CreditLogItem            = pb.CreditLogItem
@@ -61,6 +63,8 @@ type (
 	RefreshResponse          = pb.RefreshResponse
 	RegisterReq              = pb.RegisterReq
 	RegisterResponse         = pb.RegisterResponse
+	SendQQEmailReq           = pb.SendQQEmailReq
+	SendQQEmailResponse      = pb.SendQQEmailResponse
 	TagInfo                  = pb.TagInfo
 	UpdateScoreReq           = pb.UpdateScoreReq
 	UpdateScoreResp          = pb.UpdateScoreResp

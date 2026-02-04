@@ -2,7 +2,7 @@
 // goctl 1.9.2
 // Source: user.proto
 
-package creditservice
+package qqemail
 
 import (
 	"context"
@@ -74,64 +74,28 @@ type (
 	VerifyModifiedData       = pb.VerifyModifiedData
 	VerifyOcrData            = pb.VerifyOcrData
 
-	CreditService interface {
-		// GetCreditInfo 获取用户信用信息
-		GetCreditInfo(ctx context.Context, in *GetCreditInfoReq, opts ...grpc.CallOption) (*GetCreditInfoResp, error)
-		// GetCreditLogs 获取信用变更记录列表
-		GetCreditLogs(ctx context.Context, in *GetCreditLogsReq, opts ...grpc.CallOption) (*GetCreditLogsResp, error)
-		// CanParticipate 校验是否允许报名
-		CanParticipate(ctx context.Context, in *CanParticipateReq, opts ...grpc.CallOption) (*CanParticipateResp, error)
-		// CanPublish 校验是否允许发布活动
-		CanPublish(ctx context.Context, in *CanPublishReq, opts ...grpc.CallOption) (*CanPublishResp, error)
-		// InitCredit 初始化信用分
-		InitCredit(ctx context.Context, in *InitCreditReq, opts ...grpc.CallOption) (*InitCreditResp, error)
-		// UpdateScore 变更信用分
-		UpdateScore(ctx context.Context, in *UpdateScoreReq, opts ...grpc.CallOption) (*UpdateScoreResp, error)
+	QQEmail interface {
+		SendQQEmail(ctx context.Context, in *SendQQEmailReq, opts ...grpc.CallOption) (*SendQQEmailResponse, error)
+		CheckQQEmail(ctx context.Context, in *CheckQQEmailReq, opts ...grpc.CallOption) (*CheckQQEmailResponse, error)
 	}
 
-	defaultCreditService struct {
+	defaultQQEmail struct {
 		cli zrpc.Client
 	}
 )
 
-func NewCreditService(cli zrpc.Client) CreditService {
-	return &defaultCreditService{
+func NewQQEmail(cli zrpc.Client) QQEmail {
+	return &defaultQQEmail{
 		cli: cli,
 	}
 }
 
-// GetCreditInfo 获取用户信用信息
-func (m *defaultCreditService) GetCreditInfo(ctx context.Context, in *GetCreditInfoReq, opts ...grpc.CallOption) (*GetCreditInfoResp, error) {
-	client := pb.NewCreditServiceClient(m.cli.Conn())
-	return client.GetCreditInfo(ctx, in, opts...)
+func (m *defaultQQEmail) SendQQEmail(ctx context.Context, in *SendQQEmailReq, opts ...grpc.CallOption) (*SendQQEmailResponse, error) {
+	client := pb.NewQQEmailClient(m.cli.Conn())
+	return client.SendQQEmail(ctx, in, opts...)
 }
 
-// GetCreditLogs 获取信用变更记录列表
-func (m *defaultCreditService) GetCreditLogs(ctx context.Context, in *GetCreditLogsReq, opts ...grpc.CallOption) (*GetCreditLogsResp, error) {
-	client := pb.NewCreditServiceClient(m.cli.Conn())
-	return client.GetCreditLogs(ctx, in, opts...)
-}
-
-// CanParticipate 校验是否允许报名
-func (m *defaultCreditService) CanParticipate(ctx context.Context, in *CanParticipateReq, opts ...grpc.CallOption) (*CanParticipateResp, error) {
-	client := pb.NewCreditServiceClient(m.cli.Conn())
-	return client.CanParticipate(ctx, in, opts...)
-}
-
-// CanPublish 校验是否允许发布活动
-func (m *defaultCreditService) CanPublish(ctx context.Context, in *CanPublishReq, opts ...grpc.CallOption) (*CanPublishResp, error) {
-	client := pb.NewCreditServiceClient(m.cli.Conn())
-	return client.CanPublish(ctx, in, opts...)
-}
-
-// InitCredit 初始化信用分
-func (m *defaultCreditService) InitCredit(ctx context.Context, in *InitCreditReq, opts ...grpc.CallOption) (*InitCreditResp, error) {
-	client := pb.NewCreditServiceClient(m.cli.Conn())
-	return client.InitCredit(ctx, in, opts...)
-}
-
-// UpdateScore 变更信用分
-func (m *defaultCreditService) UpdateScore(ctx context.Context, in *UpdateScoreReq, opts ...grpc.CallOption) (*UpdateScoreResp, error) {
-	client := pb.NewCreditServiceClient(m.cli.Conn())
-	return client.UpdateScore(ctx, in, opts...)
+func (m *defaultQQEmail) CheckQQEmail(ctx context.Context, in *CheckQQEmailReq, opts ...grpc.CallOption) (*CheckQQEmailResponse, error) {
+	client := pb.NewQQEmailClient(m.cli.Conn())
+	return client.CheckQQEmail(ctx, in, opts...)
 }
