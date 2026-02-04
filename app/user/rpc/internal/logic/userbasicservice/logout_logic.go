@@ -9,23 +9,23 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-type GetGroupUserLogic struct {
+type LogoutLogic struct {
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 	logx.Logger
 }
 
-func NewGetGroupUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetGroupUserLogic {
-	return &GetGroupUserLogic{
+func NewLogoutLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LogoutLogic {
+	return &LogoutLogic{
 		ctx:    ctx,
 		svcCtx: svcCtx,
 		Logger: logx.WithContext(ctx),
 	}
 }
 
-// 批量获取群聊用户的信息
-func (l *GetGroupUserLogic) GetGroupUser(in *pb.GetGroupUserReq) (*pb.GetGroupUserResponse, error) {
+// 用户登出
+func (l *LogoutLogic) Logout(in *pb.LogoutReq) (*pb.LogoutResponse, error) {
 	// todo: add your logic here and delete this line
 
-	return &pb.GetGroupUserResponse{}, nil
+	return &pb.LogoutResponse{}, nil
 }

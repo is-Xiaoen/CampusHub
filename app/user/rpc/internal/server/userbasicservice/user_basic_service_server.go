@@ -23,7 +23,32 @@ func NewUserBasicServiceServer(svcCtx *svc.ServiceContext) *UserBasicServiceServ
 	}
 }
 
-func (s *UserBasicServiceServer) GetGroupUser(ctx context.Context, in *pb.GetGroupUserRep) (*pb.GetGroupUserResponse, error) {
+// 批量获取群聊用户的信息
+func (s *UserBasicServiceServer) GetGroupUser(ctx context.Context, in *pb.GetGroupUserReq) (*pb.GetGroupUserResponse, error) {
 	l := userbasicservicelogic.NewGetGroupUserLogic(ctx, s.svcCtx)
 	return l.GetGroupUser(in)
+}
+
+// 用户登录
+func (s *UserBasicServiceServer) Login(ctx context.Context, in *pb.LoginReq) (*pb.LoginResponse, error) {
+	l := userbasicservicelogic.NewLoginLogic(ctx, s.svcCtx)
+	return l.Login(in)
+}
+
+// 用户登出
+func (s *UserBasicServiceServer) Logout(ctx context.Context, in *pb.LogoutReq) (*pb.LogoutResponse, error) {
+	l := userbasicservicelogic.NewLogoutLogic(ctx, s.svcCtx)
+	return l.Logout(in)
+}
+
+// 用户注册
+func (s *UserBasicServiceServer) Register(ctx context.Context, in *pb.RegisterReq) (*pb.RegisterResponse, error) {
+	l := userbasicservicelogic.NewRegisterLogic(ctx, s.svcCtx)
+	return l.Register(in)
+}
+
+// 刷新短token
+func (s *UserBasicServiceServer) RefreshToken(ctx context.Context, in *pb.RefreshReq) (*pb.RefreshResponse, error) {
+	l := userbasicservicelogic.NewRefreshTokenLogic(ctx, s.svcCtx)
+	return l.RefreshToken(in)
 }

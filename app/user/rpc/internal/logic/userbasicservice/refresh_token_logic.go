@@ -9,23 +9,23 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-type GetGroupUserLogic struct {
+type RefreshTokenLogic struct {
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 	logx.Logger
 }
 
-func NewGetGroupUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetGroupUserLogic {
-	return &GetGroupUserLogic{
+func NewRefreshTokenLogic(ctx context.Context, svcCtx *svc.ServiceContext) *RefreshTokenLogic {
+	return &RefreshTokenLogic{
 		ctx:    ctx,
 		svcCtx: svcCtx,
 		Logger: logx.WithContext(ctx),
 	}
 }
 
-// 批量获取群聊用户的信息
-func (l *GetGroupUserLogic) GetGroupUser(in *pb.GetGroupUserReq) (*pb.GetGroupUserResponse, error) {
+// 刷新短token
+func (l *RefreshTokenLogic) RefreshToken(in *pb.RefreshReq) (*pb.RefreshResponse, error) {
 	// todo: add your logic here and delete this line
 
-	return &pb.GetGroupUserResponse{}, nil
+	return &pb.RefreshResponse{}, nil
 }
