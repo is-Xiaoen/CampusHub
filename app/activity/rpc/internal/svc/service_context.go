@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"activity-platform/app/activity/model"
+	"activity-platform/app/activity/rpc/internal/cache"
 	"activity-platform/app/activity/rpc/internal/config"
 	"activity-platform/app/user/rpc/client/creditservice"
 	"activity-platform/app/user/rpc/client/tagservice"
@@ -42,12 +43,16 @@ type ServiceContext struct {
 	ActivityRegistrationModel *model.ActivityRegistrationModel
 	ActivityTicketModel       *model.ActivityTicketModel
 
+	// ==================== 缓存服务 ====================
+	ActivityCache *cache.ActivityCache // 活动详情缓存
+	CategoryCache *cache.CategoryCache // 分类列表缓存
+	HotCache      *cache.HotCache      // 热门活动缓存
+
 	// RPC 客户端（调用其他微服务）
 	CreditRpc     creditservice.CreditService // 信用分服务
 	VerifyService verifyservice.VerifyService // 学生认证服务
 	VerifyRpc     verifyservice.VerifyService // 学生认证服务
 	TagRpc        tagservice.TagService       // 标签服务（用于同步标签数据）
-
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -68,13 +73,18 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		breaker.WithName(c.RegistrationBreaker.Name),
 	)
 
-	// 3. 初始化 User RPC 客户端（所有 User 服务共用同一个连接）
+	// 4. 初始化 User RPC 客户端（所有 User 服务共用同一个连接）
 	userRpcClient := zrpc.MustNewClient(c.UserRpc)
 	creditRpc := creditservice.NewCreditService(userRpcClient)
 	verifyRpc := verifyservice.NewVerifyService(userRpcClient)
 	tagRpc := tagservice.NewTagService(userRpcClient) // 标签服务客户端
 
-	// 4. 返回 ServiceContext
+	// 5. 初始化缓存服务
+	activityCache := cache.NewActivityCache(rds, db)
+	categoryCache := cache.NewCategoryCache(rds, db)
+	hotCache := cache.NewHotCache(rds, db)
+
+	// 6. 返回 ServiceContext
 	return &ServiceContext{
 		Config: c,
 
@@ -96,6 +106,11 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		TagModel:                  model.NewTagModel(db),
 		ActivityRegistrationModel: model.NewActivityRegistrationModel(db),
 		ActivityTicketModel:       model.NewActivityTicketModel(db),
+
+		// 缓存服务
+		ActivityCache: activityCache,
+		CategoryCache: categoryCache,
+		HotCache:      hotCache,
 
 		// RPC 客户端
 		CreditRpc:     creditRpc,
