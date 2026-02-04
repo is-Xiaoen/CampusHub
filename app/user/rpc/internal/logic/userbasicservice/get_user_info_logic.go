@@ -30,7 +30,7 @@ func NewGetUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetUs
 // 获取用户的信息
 func (l *GetUserInfoLogic) GetUserInfo(in *pb.GetUserInfoReq) (*pb.GetUserInfoResponse, error) {
 	// 1. 查询用户基础信息
-	user, err := l.svcCtx.UserModel.FindOne(l.ctx, int64(in.UserId))
+	user, err := l.svcCtx.UserModel.FindByUserID(l.ctx, int64(in.UserId))
 	if err != nil {
 		if strings.Contains(err.Error(), "record not found") {
 			return nil, errorx.NewDefaultError("用户不存在")
