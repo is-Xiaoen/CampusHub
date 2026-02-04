@@ -3907,8 +3907,9 @@ func (*SendQQEmailResponse) Descriptor() ([]byte, []int) {
 // 校验QQ邮箱
 type CheckQQEmailReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	QqCode        string                 `protobuf:"bytes,1,opt,name=qq_code,json=qqCode,proto3" json:"qq_code,omitempty"`
-	Scene         string                 `protobuf:"bytes,2,opt,name=scene,proto3" json:"scene,omitempty"`
+	QqEmail       string                 `protobuf:"bytes,1,opt,name=qq_email,json=qqEmail,proto3" json:"qq_email,omitempty"`
+	QqCode        string                 `protobuf:"bytes,2,opt,name=qq_code,json=qqCode,proto3" json:"qq_code,omitempty"`
+	Scene         string                 `protobuf:"bytes,3,opt,name=scene,proto3" json:"scene,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3941,6 +3942,13 @@ func (x *CheckQQEmailReq) ProtoReflect() protoreflect.Message {
 // Deprecated: Use CheckQQEmailReq.ProtoReflect.Descriptor instead.
 func (*CheckQQEmailReq) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{57}
+}
+
+func (x *CheckQQEmailReq) GetQqEmail() string {
+	if x != nil {
+		return x.QqEmail
+	}
+	return ""
 }
 
 func (x *CheckQQEmailReq) GetQqCode() string {
@@ -4331,10 +4339,11 @@ const file_user_proto_rawDesc = "" +
 	"\x0eSendQQEmailReq\x12\x19\n" +
 	"\bqq_email\x18\x01 \x01(\tR\aqqEmail\x12\x14\n" +
 	"\x05scene\x18\x02 \x01(\tR\x05scene\"\x15\n" +
-	"\x13SendQQEmailResponse\"@\n" +
-	"\x0fCheckQQEmailReq\x12\x17\n" +
-	"\aqq_code\x18\x01 \x01(\tR\x06qqCode\x12\x14\n" +
-	"\x05scene\x18\x02 \x01(\tR\x05scene\"0\n" +
+	"\x13SendQQEmailResponse\"[\n" +
+	"\x0fCheckQQEmailReq\x12\x19\n" +
+	"\bqq_email\x18\x01 \x01(\tR\aqqEmail\x12\x17\n" +
+	"\aqq_code\x18\x02 \x01(\tR\x06qqCode\x12\x14\n" +
+	"\x05scene\x18\x03 \x01(\tR\x05scene\"0\n" +
 	"\x14CheckQQEmailResponse\x12\x18\n" +
 	"\aisValid\x18\x01 \x01(\bR\aisValid2\x86\x03\n" +
 	"\rCreditService\x12@\n" +
