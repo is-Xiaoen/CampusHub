@@ -7,9 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"activity-platform/app/activity/rpc/activity"
 	captchaservicelogic "activity-platform/app/user/rpc/internal/logic/captchaservice"
-	creditservicelogic "activity-platform/app/user/rpc/internal/logic/creditservice"
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
 	"activity-platform/common/errorx"
@@ -81,94 +79,45 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 		return nil, errorx.NewSystemError("系统繁忙，请稍后再试")
 	}
 
-	// 4. 获取附加信息
-	// 4.1 信用分 (用于isStudentVerified? 用户需求如此，暂且获取)
-	// 注意：这里按照用户需求调用 GetCreditInfo 逻辑
-	getCreditLogic := creditservicelogic.NewGetCreditInfoLogic(l.ctx, l.svcCtx)
-	creditResp, err := getCreditLogic.GetCreditInfo(&pb.GetCreditInfoReq{
-		UserId: user.UserID,
+	// 4. 获取用户详细信息 (调用 GetUserInfoLogic 复用逻辑)
+	getUserInfoLogic := NewGetUserInfoLogic(l.ctx, l.svcCtx)
+	userInfoResp, err := getUserInfoLogic.GetUserInfo(&pb.GetUserInfoReq{
+		UserId: int64(user.UserID),
 	})
 	if err != nil {
-		l.Logger.Errorf("GetCreditInfo failed: %v", err)
-	} else {
-		l.Logger.Infof("User credit score: %d", creditResp.Score)
-	}
-
-	// 4.2 真实的学生认证状态 (通过StudentVerificationModel)
-	// StudentVerificationModel.IsVerified 
-	isVerified, err := l.svcCtx.StudentVerificationModel.IsVerified(l.ctx, user.UserID)
-	if err != nil {
-		l.Logger.Errorf("Check IsVerified failed: %v", err)
-		isVerified = false
-	}
-
-	// 4.3 活动统计 (ActivityRpc)
-	registeredCountResp, err := l.svcCtx.ActivityRpc.GetRegisteredCount(l.ctx, &activity.GetRegisteredCountRequest{
-		UserId: user.UserID,
-	})
-	var activitiesNum uint32
-	if err == nil {
-		activitiesNum = uint32(registeredCountResp.Count)
-	} else {
-		l.Logger.Errorf("GetRegisteredCount failed: %v", err)
-	}
-
-	publishedResp, err := l.svcCtx.ActivityRpc.GetUserPublishedActivities(l.ctx, &activity.GetUserPublishedActivitiesReq{
-		UserId:   user.UserID,
-		Page:     1,
-		PageSize: 1, // 只需要总数? 接口似乎返回List和Pagination
-	})
-	var initiateNum uint32
-	if err == nil && publishedResp.Pagination != nil {
-		initiateNum = uint32(publishedResp.Pagination.Total)
-	} else {
-		l.Logger.Errorf("GetUserPublishedActivities failed: %v", err)
-	}
-
-	// 4.4 兴趣标签 (Database)
-	relations, err := l.svcCtx.UserInterestRelationModel.ListByUserID(l.ctx, user.UserID)
-	var interestTags []*pb.InterestTag
-	if err == nil {
-		for _, rel := range relations {
-			tag, err := l.svcCtx.InterestTagModel.FindByID(l.ctx, rel.TagID)
-			if err == nil && tag != nil {
-				interestTags = append(interestTags, &pb.InterestTag{
-					Id:       uint64(tag.TagID),
-					TagName:  tag.TagName,
-					TagColor: tag.Color,
-					TagIcon:  tag.Icon,
-				})
-			}
+		// 即使获取详情失败，登录也算成功，只是信息不全? 或者记录日志返回基础信息
+		// 这里选择记录日志，返回基础信息，或者让 GetUserInfoLogic 保证尽可能返回数据
+		l.Logger.Errorf("GetUserInfo failed during login: %v", err)
+		// 如果必须返回 UserInfo，可以手动构造一个基础的，或者直接返回错误取决于业务
+		// 既然 GetUserInfoLogic 内部处理了错误并返回 errorx，这里如果报错可能说明系统问题或用户不存在
+		// 鉴于 user 已经查到了，GetUserInfo 应该能查到。
+		// 为了健壮性，这里如果失败，我们还是返回一个基础的 UserInfo
+		var genderStr string
+		switch user.Gender {
+		case 1:
+			genderStr = "男"
+		case 2:
+			genderStr = "女"
+		default:
+			genderStr = "未知"
 		}
-	}
-
-	// 5. 组装响应
-	var genderStr string
-	switch user.Gender {
-	case 1:
-		genderStr = "男"
-	case 2:
-		genderStr = "女"
-	default:
-		genderStr = "未知"
+		userInfoResp = &pb.GetUserInfoResponse{
+			UserInfo: &pb.UserInfo{
+				UserId:       uint64(user.UserID),
+				Nickname:     user.Nickname,
+				AvatarUrl:    user.AvatarURL,
+				Introduction: user.Introduction,
+				Gender:       genderStr,
+				Age:          strconv.FormatInt(user.Age, 10),
+			},
+		}
 	}
 
 	return &pb.LoginResponse{
 		AccessToken:  shortToken.Token,
 		RefreshToken: longToken.Token,
 		UserInfo: &pb.LoginUserInfo{
-			UserInfo: &pb.UserInfo{
-				UserId:            uint64(user.UserID),
-				Nickname:          user.Nickname,
-				AvatarUrl:         user.AvatarURL,
-				Introduction:      user.Introduction,
-				Gender:            genderStr,
-				Age:               strconv.FormatInt(user.Age, 10),
-				ActivitiesNum:     activitiesNum,
-				IsStudentVerified: isVerified,
-				InitiateNum:       initiateNum,
-				InterestTags:      interestTags,
-			},
+			UserInfo: userInfoResp.UserInfo,
 		},
 	}, nil
 }
