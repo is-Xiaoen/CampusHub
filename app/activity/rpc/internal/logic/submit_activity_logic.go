@@ -109,6 +109,13 @@ func (l *SubmitActivityLogic) SubmitActivity(in *activity.SubmitActivityReq) (*a
 		return nil, errorx.ErrDBError(err)
 	}
 
+	// 删除缓存（状态变更成功后）
+	if l.svcCtx.ActivityCache != nil {
+		if err := l.svcCtx.ActivityCache.Invalidate(l.ctx, uint64(in.Id)); err != nil {
+			l.Infof("[WARNING] 删除活动缓存失败: id=%d, err=%v", in.Id, err)
+		}
+	}
+
 	l.Infof("活动提交成功（MVP自动发布）: id=%d, status=%d->%d",
 		in.Id, activityData.Status, model.StatusPublished)
 
