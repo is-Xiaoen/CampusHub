@@ -151,6 +151,16 @@ func ErrUnauthorized() *BizError {
 	return New(CodeUnauthorized)
 }
 
+// NewDefaultError 创建默认业务错误（通常用于提示用户）
+func NewDefaultError(msg string) *BizError {
+	return NewWithMessage(CodeInvalidParams, msg)
+}
+
+// NewSystemError 创建系统错误
+func NewSystemError(msg string) *BizError {
+	return NewWithMessage(CodeInternalError, msg)
+}
+
 // ErrForbidden 禁止访问
 func ErrForbidden() *BizError {
 	return New(CodeForbidden)
