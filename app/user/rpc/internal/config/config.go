@@ -32,6 +32,8 @@ type Config struct {
 	// JWT 刷新配置（必填）
 	RefreshAuth AuthConf
 
+	Captcha CaptchaConf
+
 	// ActivityRpc 活动服务RPC客户端配置（必填）
 	ActivityRpc zrpc.RpcClientConf
 
@@ -55,6 +57,11 @@ type AuthConf struct {
 	AccessSecret string
 	// AccessExpire AccessToken过期时间（秒），默认7200（2小时）
 	AccessExpire int64
+}
+
+type CaptchaConf struct {
+	CaptchaId  string
+	CaptchaKey string
 }
 
 // SMSConf 短信服务配置

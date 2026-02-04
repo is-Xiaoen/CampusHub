@@ -801,5 +801,11 @@ message CheckCaptchaReq{
 }
 
 message CheckCaptchaResponse{
-    bool isValid = 1;
+    string result = 1;         // "success" 或 "fail"
+    string reason = 2;         // 失败原因
+    string captcha_id = 3;     // 验证码ID
+    string lot_number = 4;     // 流水号
+    string captcha_output = 5; // 验证输出
+    string pass_token = 6;     // 验证凭证
+    string gen_time = 7;       // 生成时间
 }

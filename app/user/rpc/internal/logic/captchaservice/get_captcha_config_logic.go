@@ -24,7 +24,7 @@ func NewGetCaptchaConfigLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 func (l *GetCaptchaConfigLogic) GetCaptchaConfig(in *pb.GetCaptchaConfigReq) (*pb.GetCaptchaConfigResponse, error) {
-	// todo: add your logic here and delete this line
-
-	return &pb.GetCaptchaConfigResponse{}, nil
+	return &pb.GetCaptchaConfigResponse{
+		CaptchaId: l.svcCtx.Config.Captcha.CaptchaId,
+	}, nil
 }
