@@ -668,6 +668,10 @@ message GetUserTagsReq {
 }
 
 message GetUserTagsResponse {
+    repeated UserTag tags = 1;
+}
+
+message UserTag {
     uint64 id = 1;
     string name = 2;
 }

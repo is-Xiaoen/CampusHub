@@ -73,6 +73,7 @@ type (
 	UpdateVerifyStatusReq    = pb.UpdateVerifyStatusReq
 	UpdateVerifyStatusResp   = pb.UpdateVerifyStatusResp
 	UserInfo                 = pb.UserInfo
+	UserTag                  = pb.UserTag
 	VerifyModifiedData       = pb.VerifyModifiedData
 	VerifyOcrData            = pb.VerifyOcrData
 

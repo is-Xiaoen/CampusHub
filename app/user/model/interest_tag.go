@@ -68,6 +68,8 @@ type IInterestTagModel interface {
 	ListAll(ctx context.Context) ([]*InterestTag, error)
 	// ListSince 查询指定时间后更新的标签
 	ListSince(ctx context.Context, sinceTime time.Time) ([]*InterestTag, error)
+	// FindBasicInfoByIDs 根据ID列表批量查询基础信息(仅ID和Name)
+	FindBasicInfoByIDs(ctx context.Context, tagIDs []int64) ([]*InterestTag, error)
 	// Update 更新标签
 	Update(ctx context.Context, tag *InterestTag) error
 	// IncrementUsageCount 增加使用次数
@@ -157,6 +159,19 @@ func (m *InterestTagModel) ListSince(ctx context.Context, sinceTime time.Time) (
 	err := m.db.WithContext(ctx).
 		Where("status = ? AND update_time > ?", TagStatusNormal, sinceTime).
 		Order("usage_count DESC").
+		Find(&tags).Error
+	if err != nil {
+		return nil, err
+	}
+	return tags, nil
+}
+
+// FindBasicInfoByIDs 根据ID列表批量查询基础信息(仅ID和Name)
+func (m *InterestTagModel) FindBasicInfoByIDs(ctx context.Context, tagIDs []int64) ([]*InterestTag, error) {
+	var tags []*InterestTag
+	err := m.db.WithContext(ctx).
+		Select("tag_id", "tag_name").
+		Where("tag_id IN ?", tagIDs).
 		Find(&tags).Error
 	if err != nil {
 		return nil, err
