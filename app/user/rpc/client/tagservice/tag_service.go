@@ -31,7 +31,7 @@ type (
 	GetCreditInfoResp        = pb.GetCreditInfoResp
 	GetCreditLogsReq         = pb.GetCreditLogsReq
 	GetCreditLogsResp        = pb.GetCreditLogsResp
-	GetGroupUserRep          = pb.GetGroupUserRep
+	GetGroupUserReq          = pb.GetGroupUserReq
 	GetGroupUserResponse     = pb.GetGroupUserResponse
 	GetTagsByIdsReq          = pb.GetTagsByIdsReq
 	GetTagsByIdsResp         = pb.GetTagsByIdsResp
@@ -41,10 +41,21 @@ type (
 	GetVerifyCurrentResp     = pb.GetVerifyCurrentResp
 	GetVerifyInfoReq         = pb.GetVerifyInfoReq
 	GetVerifyInfoResp        = pb.GetVerifyInfoResp
+	GroupUserInfo            = pb.GroupUserInfo
 	InitCreditReq            = pb.InitCreditReq
 	InitCreditResp           = pb.InitCreditResp
+	InterestTag              = pb.InterestTag
 	IsVerifiedReq            = pb.IsVerifiedReq
 	IsVerifiedResp           = pb.IsVerifiedResp
+	LoginReq                 = pb.LoginReq
+	LoginResponse            = pb.LoginResponse
+	LoginUserInfo            = pb.LoginUserInfo
+	LogoutReq                = pb.LogoutReq
+	LogoutResponse           = pb.LogoutResponse
+	RefreshReq               = pb.RefreshReq
+	RefreshResponse          = pb.RefreshResponse
+	RegisterReq              = pb.RegisterReq
+	RegisterResponse         = pb.RegisterResponse
 	TagInfo                  = pb.TagInfo
 	UpdateScoreReq           = pb.UpdateScoreReq
 	UpdateScoreResp          = pb.UpdateScoreResp
@@ -55,6 +66,7 @@ type (
 	VerifyOcrData            = pb.VerifyOcrData
 
 	TagService interface {
+		// 马肖阳的标签接口
 		GetAllTags(ctx context.Context, in *GetAllTagsReq, opts ...grpc.CallOption) (*GetAllTagsResp, error)
 		GetTagsByIds(ctx context.Context, in *GetTagsByIdsReq, opts ...grpc.CallOption) (*GetTagsByIdsResp, error)
 		GetUserTags(ctx context.Context, in *GetUserTagsRep, opts ...grpc.CallOption) (*GetUserTagsResponse, error)
@@ -71,6 +83,7 @@ func NewTagService(cli zrpc.Client) TagService {
 	}
 }
 
+// 马肖阳的标签接口
 func (m *defaultTagService) GetAllTags(ctx context.Context, in *GetAllTagsReq, opts ...grpc.CallOption) (*GetAllTagsResp, error) {
 	client := pb.NewTagServiceClient(m.cli.Conn())
 	return client.GetAllTags(ctx, in, opts...)
