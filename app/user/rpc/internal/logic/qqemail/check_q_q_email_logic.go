@@ -51,13 +51,13 @@ func (l *CheckQQEmailLogic) CheckQQEmail(in *pb.CheckQQEmailReq) (*pb.CheckQQEma
 			return nil, errorx.NewDefaultError("验证码错误")
 		}
 
-		// 第一次错误设置过期时间，跟随验证码有效期（假设这里设为5分钟，覆盖大部分场景）
+		// 第一次错误设置过期时间，跟随验证码有效期（3分钟）
 		if count == 1 {
-			l.svcCtx.Redis.Expire(l.ctx, errKey, 5*time.Minute)
+			l.svcCtx.Redis.Expire(l.ctx, errKey, 3*time.Minute)
 		}
 
-		// 输错3次以上（即第4次错误时，或者大于3次时），清除验证码
-		if count > 3 {
+		// 输错3次（即第3次错误时），清除验证码
+		if count >= 3 {
 			l.svcCtx.Redis.Del(l.ctx, key, errKey)
 			return nil, errorx.NewDefaultError("验证码错误次数过多，请重新获取")
 		}

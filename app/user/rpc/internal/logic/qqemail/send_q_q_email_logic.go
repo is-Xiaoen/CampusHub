@@ -33,18 +33,29 @@ func (l *SendQQEmailLogic) SendQQEmail(in *pb.SendQQEmailReq) (*pb.SendQQEmailRe
 	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 	code := fmt.Sprintf("%06d", rnd.Intn(1000000))
 
-	// 2. 尝试存储到Redis (SetNX: 只有不存在时才设置成功，原子操作实现频率限制)
-	key := fmt.Sprintf("captcha:email:%s:%s", in.Scene, in.QqEmail)
-	success, err := l.svcCtx.Redis.SetNX(l.ctx, key, code, 2*time.Minute).Result()
+	// 2. 频率限制：1小时内最多发送10次
+	limitKey := fmt.Sprintf("captcha:email:limit:%s", in.QqEmail)
+	count, err := l.svcCtx.Redis.Incr(l.ctx, limitKey).Result()
 	if err != nil {
-		l.Logger.Errorf("Redis SetNX failed: %v", err)
+		l.Logger.Errorf("Redis Incr failed: %v", err)
 		return nil, errorx.NewSystemError("系统繁忙，请稍后再试")
 	}
-	if !success {
-		return nil, errorx.NewDefaultError("验证码发送太频繁，请2分钟后再试")
+	if count == 1 {
+		l.svcCtx.Redis.Expire(l.ctx, limitKey, time.Hour)
+	}
+	if count > 10 {
+		return nil, errorx.NewDefaultError("验证码发送太频繁，请1小时后再试")
 	}
 
-	// 3. 发送邮件
+	// 3. 存储验证码到Redis (有效期3分钟)
+	key := fmt.Sprintf("captcha:email:%s:%s", in.Scene, in.QqEmail)
+	err = l.svcCtx.Redis.Set(l.ctx, key, code, 3*time.Minute).Err()
+	if err != nil {
+		l.Logger.Errorf("Redis Set failed: %v", err)
+		return nil, errorx.NewSystemError("系统繁忙，请稍后再试")
+	}
+
+	// 4. 发送邮件
 	emailCfg := email.EmailConfig{
 		Host:     l.svcCtx.Config.Email.Host,
 		Port:     l.svcCtx.Config.Email.Port,
