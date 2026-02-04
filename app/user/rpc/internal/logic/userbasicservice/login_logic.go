@@ -95,7 +95,7 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 	}
 
 	// 4.2 真实的学生认证状态 (通过StudentVerificationModel)
-	// StudentVerificationModel.IsVerified 才是正解。
+	// StudentVerificationModel.IsVerified 
 	isVerified, err := l.svcCtx.StudentVerificationModel.IsVerified(l.ctx, user.UserID)
 	if err != nil {
 		l.Logger.Errorf("Check IsVerified failed: %v", err)
