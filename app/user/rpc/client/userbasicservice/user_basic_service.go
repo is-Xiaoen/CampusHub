@@ -42,6 +42,8 @@ type (
 	GetGroupUserResponse     = pb.GetGroupUserResponse
 	GetTagsByIdsReq          = pb.GetTagsByIdsReq
 	GetTagsByIdsResp         = pb.GetTagsByIdsResp
+	GetUserInfoReq           = pb.GetUserInfoReq
+	GetUserInfoResponse      = pb.GetUserInfoResponse
 	GetUserTagsRep           = pb.GetUserTagsRep
 	GetUserTagsResponse      = pb.GetUserTagsResponse
 	GetVerifyCurrentReq      = pb.GetVerifyCurrentReq
@@ -85,6 +87,8 @@ type (
 		Register(ctx context.Context, in *RegisterReq, opts ...grpc.CallOption) (*RegisterResponse, error)
 		// 刷新短token
 		RefreshToken(ctx context.Context, in *RefreshReq, opts ...grpc.CallOption) (*RefreshResponse, error)
+		// 获取用户的信息
+		GetUserInfo(ctx context.Context, in *GetUserInfoReq, opts ...grpc.CallOption) (*GetUserInfoResponse, error)
 	}
 
 	defaultUserBasicService struct {
@@ -126,4 +130,10 @@ func (m *defaultUserBasicService) Register(ctx context.Context, in *RegisterReq,
 func (m *defaultUserBasicService) RefreshToken(ctx context.Context, in *RefreshReq, opts ...grpc.CallOption) (*RefreshResponse, error) {
 	client := pb.NewUserBasicServiceClient(m.cli.Conn())
 	return client.RefreshToken(ctx, in, opts...)
+}
+
+// 获取用户的信息
+func (m *defaultUserBasicService) GetUserInfo(ctx context.Context, in *GetUserInfoReq, opts ...grpc.CallOption) (*GetUserInfoResponse, error) {
+	client := pb.NewUserBasicServiceClient(m.cli.Conn())
+	return client.GetUserInfo(ctx, in, opts...)
 }

@@ -956,6 +956,7 @@ const (
 	UserBasicService_Logout_FullMethodName       = "/user.UserBasicService/Logout"
 	UserBasicService_Register_FullMethodName     = "/user.UserBasicService/Register"
 	UserBasicService_RefreshToken_FullMethodName = "/user.UserBasicService/RefreshToken"
+	UserBasicService_GetUserInfo_FullMethodName  = "/user.UserBasicService/GetUserInfo"
 )
 
 // UserBasicServiceClient is the client API for UserBasicService service.
@@ -972,6 +973,8 @@ type UserBasicServiceClient interface {
 	Register(ctx context.Context, in *RegisterReq, opts ...grpc.CallOption) (*RegisterResponse, error)
 	// 刷新短token
 	RefreshToken(ctx context.Context, in *RefreshReq, opts ...grpc.CallOption) (*RefreshResponse, error)
+	// 获取用户的信息
+	GetUserInfo(ctx context.Context, in *GetUserInfoReq, opts ...grpc.CallOption) (*GetUserInfoResponse, error)
 }
 
 type userBasicServiceClient struct {
@@ -1032,6 +1035,16 @@ func (c *userBasicServiceClient) RefreshToken(ctx context.Context, in *RefreshRe
 	return out, nil
 }
 
+func (c *userBasicServiceClient) GetUserInfo(ctx context.Context, in *GetUserInfoReq, opts ...grpc.CallOption) (*GetUserInfoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUserInfoResponse)
+	err := c.cc.Invoke(ctx, UserBasicService_GetUserInfo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserBasicServiceServer is the server API for UserBasicService service.
 // All implementations must embed UnimplementedUserBasicServiceServer
 // for forward compatibility.
@@ -1046,6 +1059,8 @@ type UserBasicServiceServer interface {
 	Register(context.Context, *RegisterReq) (*RegisterResponse, error)
 	// 刷新短token
 	RefreshToken(context.Context, *RefreshReq) (*RefreshResponse, error)
+	// 获取用户的信息
+	GetUserInfo(context.Context, *GetUserInfoReq) (*GetUserInfoResponse, error)
 	mustEmbedUnimplementedUserBasicServiceServer()
 }
 
@@ -1070,6 +1085,9 @@ func (UnimplementedUserBasicServiceServer) Register(context.Context, *RegisterRe
 }
 func (UnimplementedUserBasicServiceServer) RefreshToken(context.Context, *RefreshReq) (*RefreshResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RefreshToken not implemented")
+}
+func (UnimplementedUserBasicServiceServer) GetUserInfo(context.Context, *GetUserInfoReq) (*GetUserInfoResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetUserInfo not implemented")
 }
 func (UnimplementedUserBasicServiceServer) mustEmbedUnimplementedUserBasicServiceServer() {}
 func (UnimplementedUserBasicServiceServer) testEmbeddedByValue()                          {}
@@ -1182,6 +1200,24 @@ func _UserBasicService_RefreshToken_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserBasicService_GetUserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserInfoReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserBasicServiceServer).GetUserInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserBasicService_GetUserInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserBasicServiceServer).GetUserInfo(ctx, req.(*GetUserInfoReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserBasicService_ServiceDesc is the grpc.ServiceDesc for UserBasicService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1208,6 +1244,10 @@ var UserBasicService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RefreshToken",
 			Handler:    _UserBasicService_RefreshToken_Handler,
+		},
+		{
+			MethodName: "GetUserInfo",
+			Handler:    _UserBasicService_GetUserInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

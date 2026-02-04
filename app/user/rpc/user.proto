@@ -685,6 +685,8 @@ service UserBasicService {
     rpc Register(RegisterReq) returns (RegisterResponse);
     // 刷新短token
     rpc RefreshToken(RefreshReq) returns(RefreshResponse);
+    // 获取用户的信息
+    rpc GetUserInfo(GetUserInfoReq) returns(GetUserInfoResponse);
 }
 
 message GetGroupUserReq {
@@ -723,14 +725,6 @@ message LoginUserInfo {
     UserInfo user_info = 1;
 }
 
-message InterestTag {
-    uint64 id = 1;
-    string tag_name = 2;        // 对应 "tagName"
-    string tag_icon = 3;        // 对应 "tagIcon"
-    string tag_desc = 4;        // 对应 "tagDesc"
-    string tag_color = 5;       // 对应 "tagColor"
-}
-
 // 用户登出
 message LogoutReq {
     int64 user_id = 1;// 从token解析的id
@@ -753,6 +747,24 @@ message RegisterReq {
 
 message RegisterResponse {
     UserInfo user_info = 1;
+}
+
+// 获取用户信息
+message GetUserInfoReq {
+    int64 user_id = 1;
+}
+
+message GetUserInfoResponse {
+    UserInfo user_info = 1;
+}
+
+// 公用结构体
+message InterestTag {
+    uint64 id = 1;
+    string tag_name = 2;        // 对应 "tagName"
+    string tag_icon = 3;        // 对应 "tagIcon"
+    string tag_desc = 4;        // 对应 "tagDesc"
+    string tag_color = 5;       // 对应 "tagColor"
 }
 
 message UserInfo {

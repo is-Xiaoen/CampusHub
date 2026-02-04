@@ -52,3 +52,9 @@ func (s *UserBasicServiceServer) RefreshToken(ctx context.Context, in *pb.Refres
 	l := userbasicservicelogic.NewRefreshTokenLogic(ctx, s.svcCtx)
 	return l.RefreshToken(in)
 }
+
+// 获取用户的信息
+func (s *UserBasicServiceServer) GetUserInfo(ctx context.Context, in *pb.GetUserInfoReq) (*pb.GetUserInfoResponse, error) {
+	l := userbasicservicelogic.NewGetUserInfoLogic(ctx, s.svcCtx)
+	return l.GetUserInfo(in)
+}
