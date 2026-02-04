@@ -14,6 +14,7 @@ import (
 	"activity-platform/common/utils/encrypt"
 	"activity-platform/common/utils/jwt"
 
+	"github.com/google/uuid"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -58,23 +59,27 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 		return nil, errorx.NewDefaultError("账号或密码错误")
 	}
 
-	if user.Status == 0 { // 假设0是禁用
+	if user.Status == 0 { // 0是禁用
 		return nil, errorx.NewDefaultError("账号已被禁用")
 	}
 
 	// 3. 生成Token
-	shortToken, err := jwt.GenerateShortToken(user.UserID, jwt.RoleUser, jwt.AuthConfig(l.svcCtx.Config.Auth))
+	accessJwtId := uuid.New().String()
+	refreshJwtId := uuid.New().String()
+
+	shortToken, err := jwt.GenerateShortToken(user.UserID, jwt.RoleUser, jwt.AuthConfig(l.svcCtx.Config.Auth), accessJwtId, refreshJwtId)
 	if err != nil {
 		return nil, errorx.NewSystemError("Token生成失败")
 	}
-	longToken, err := jwt.GenerateLongToken(user.UserID, jwt.RoleUser, jwt.AuthConfig(l.svcCtx.Config.RefreshAuth))
+	longToken, err := jwt.GenerateLongToken(user.UserID, jwt.RoleUser, jwt.AuthConfig(l.svcCtx.Config.RefreshAuth), accessJwtId, refreshJwtId)
 	if err != nil {
 		return nil, errorx.NewSystemError("Token生成失败")
 	}
 
 	// 记录长token到redis
-	refreshTokenKey := fmt.Sprintf("refresh_token:%d", user.UserID)
-	if err := l.svcCtx.Redis.Set(l.ctx, refreshTokenKey, longToken.Token, time.Duration(l.svcCtx.Config.RefreshAuth.AccessExpire)*time.Second).Err(); err != nil {
+	// key: token:refresh:{refreshJwtId}  value: userId
+	refreshTokenKey := fmt.Sprintf("token:refresh:%s", refreshJwtId)
+	if err := l.svcCtx.Redis.Set(l.ctx, refreshTokenKey, user.UserID, time.Duration(l.svcCtx.Config.RefreshAuth.AccessExpire)*time.Second).Err(); err != nil {
 		l.Logger.Errorf("Set refresh token to redis failed: %v", err)
 		return nil, errorx.NewSystemError("系统繁忙，请稍后再试")
 	}
@@ -86,12 +91,7 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 	})
 	if err != nil {
 		// 即使获取详情失败，登录也算成功，只是信息不全
-		// 这里选择记录日志，返回基础信息，或者让 GetUserInfoLogic 保证尽可能返回数据
 		l.Logger.Errorf("GetUserInfo failed during login: %v", err)
-		// 如果必须返回 UserInfo，可以手动构造一个基础的，或者直接返回错误取决于业务
-		// 既然 GetUserInfoLogic 内部处理了错误并返回 errorx，这里如果报错可能说明系统问题或用户不存在
-		// 鉴于 user 已经查到了，GetUserInfo 应该能查到。
-		// 为了健壮性，这里如果失败，我们还是返回一个基础的 UserInfo
 		var genderStr string
 		switch user.Gender {
 		case 1:

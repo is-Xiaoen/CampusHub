@@ -14,6 +14,7 @@ import (
 	"activity-platform/common/utils/encrypt"
 	"activity-platform/common/utils/jwt"
 
+	"github.com/google/uuid"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -73,20 +74,24 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 	}
 
 	// 4. 生成Token (自动登录)
-	shortToken, err := jwt.GenerateShortToken(newUser.UserID, jwt.RoleUser, jwt.AuthConfig(l.svcCtx.Config.Auth))
+	accessJwtId := uuid.New().String()
+	refreshJwtId := uuid.New().String()
+
+	shortToken, err := jwt.GenerateShortToken(newUser.UserID, jwt.RoleUser, jwt.AuthConfig(l.svcCtx.Config.Auth), accessJwtId, refreshJwtId)
 	if err != nil {
 		l.Logger.Errorf("Generate short token failed: %v", err)
 		return nil, errorx.NewSystemError("注册成功但登录失败，请尝试重新登录")
 	}
-	longToken, err := jwt.GenerateLongToken(newUser.UserID, jwt.RoleUser, jwt.AuthConfig(l.svcCtx.Config.RefreshAuth))
+	longToken, err := jwt.GenerateLongToken(newUser.UserID, jwt.RoleUser, jwt.AuthConfig(l.svcCtx.Config.RefreshAuth), accessJwtId, refreshJwtId)
 	if err != nil {
 		l.Logger.Errorf("Generate long token failed: %v", err)
 		return nil, errorx.NewSystemError("注册成功但登录失败，请尝试重新登录")
 	}
 
 	// 记录长token到redis
-	refreshTokenKey := fmt.Sprintf("refresh_token:%d", newUser.UserID)
-	if err := l.svcCtx.Redis.Set(l.ctx, refreshTokenKey, longToken.Token, time.Duration(l.svcCtx.Config.RefreshAuth.AccessExpire)*time.Second).Err(); err != nil {
+	// key: token:refresh:{refreshJwtId}  value: userId
+	refreshTokenKey := fmt.Sprintf("token:refresh:%s", refreshJwtId)
+	if err := l.svcCtx.Redis.Set(l.ctx, refreshTokenKey, newUser.UserID, time.Duration(l.svcCtx.Config.RefreshAuth.AccessExpire)*time.Second).Err(); err != nil {
 		l.Logger.Errorf("Set refresh token to redis failed: %v", err)
 		// 不影响主流程，因为已经注册成功且返回了token
 	}
