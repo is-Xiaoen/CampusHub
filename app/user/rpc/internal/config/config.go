@@ -42,6 +42,9 @@ type Config struct {
 
 	// Ocr OCR 识别服务配置（可选，不配置则禁用）
 	Ocr OcrConf `json:",optional"`
+
+	// Email 邮件服务配置
+	Email EmailConf `json:",optional"`
 }
 
 // MySQLConf MySQL数据库配置
@@ -100,6 +103,15 @@ type TencentOcrConf struct {
 	Endpoint string `json:",optional"`
 	// Timeout 超时时间（秒）
 	Timeout int `json:",default=30"`
+}
+
+type EmailConf struct {
+	Host     string
+	Port     int
+	Username string
+	Password string
+	FromName string
+	Subject  string
 }
 
 // AliyunOcrConf 阿里云 OCR 配置
