@@ -102,7 +102,12 @@ func (l *CreateActivityLogic) CreateActivity(in *activity.CreateActivityReq) (*a
 
 	l.Infof("活动创建成功: id=%d, title=%s, status=%d", activityData.ID, activityData.Title, activityData.Status)
 
-	// 6. 返回结果
+	// 6. 异步同步到 ES（仅发布状态需要同步）
+	if activityData.Status == model.StatusPublished && l.svcCtx.SyncService != nil {
+		l.svcCtx.SyncService.IndexActivityAsync(activityData)
+	}
+
+	// 7. 返回结果
 	return &activity.CreateActivityResp{
 		Id:     int64(activityData.ID),
 		Status: int32(activityData.Status),
