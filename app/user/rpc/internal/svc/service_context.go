@@ -43,6 +43,15 @@ type ServiceContext struct {
 	// UserCreditModel 用户信用分数据访问层
 	UserCreditModel model.IUserCreditModel
 
+	// UserModel 用户基础信息数据访问层
+	UserModel model.IUserModel
+
+	// UserInterestRelationModel 用户兴趣标签关联数据访问层
+	UserInterestRelationModel model.IUserInterestRelationModel
+
+	// InterestTagModel 兴趣标签数据访问层
+	InterestTagModel model.IInterestTagModel
+
 	// CreditLogModel 信用变更记录数据访问层
 	CreditLogModel model.ICreditLogModel
 
@@ -80,9 +89,12 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		Redis:  rdb,
 
 		// 注入 Model
-		UserCreditModel:          model.NewUserCreditModel(db),
-		CreditLogModel:           model.NewCreditLogModel(db),
-		StudentVerificationModel: model.NewStudentVerificationModel(db),
+		UserCreditModel:           model.NewUserCreditModel(db),
+		UserModel:                 model.NewUserModel(db),
+		UserInterestRelationModel: model.NewUserInterestRelationModel(db),
+		InterestTagModel:          model.NewInterestTagModel(db),
+		CreditLogModel:            model.NewCreditLogModel(db),
+		StudentVerificationModel:  model.NewStudentVerificationModel(db),
 
 		ActivityRpc: activityservice.NewActivityService(activityRpcClient),
 

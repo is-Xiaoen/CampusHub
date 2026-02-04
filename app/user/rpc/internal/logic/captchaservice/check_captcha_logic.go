@@ -33,9 +33,17 @@ func NewCheckCaptchaLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Chec
 
 // geetestResponse 极验响应结构
 type geetestResponse struct {
-	Result      string                 `json:"result"`
-	Reason      string                 `json:"reason"`
-	CaptchaArgs map[string]interface{} `json:"captcha_args"`
+	Result      string       `json:"result"`
+	Reason      string       `json:"reason"`
+	CaptchaArgs *captchaArgs `json:"captcha_args"`
+}
+
+type captchaArgs struct {
+	CaptchaId     string `json:"captcha_id"`
+	LotNumber     string `json:"lot_number"`
+	CaptchaOutput string `json:"captcha_output"`
+	PassToken     string `json:"pass_token"`
+	GenTime       string `json:"gen_time"`
 }
 
 func (l *CheckCaptchaLogic) CheckCaptcha(in *pb.CheckCaptchaReq) (*pb.CheckCaptchaResponse, error) {
@@ -99,21 +107,12 @@ func (l *CheckCaptchaLogic) CheckCaptcha(in *pb.CheckCaptchaReq) (*pb.CheckCaptc
 
 	// 填充 CaptchaArgs（如果有）
 	if gtResp.CaptchaArgs != nil {
-		rpcResp.CaptchaArgs = &pb.CaptchaArgs{}
-		if v, ok := gtResp.CaptchaArgs["captcha_id"].(string); ok {
-			rpcResp.CaptchaArgs.CaptchaId = v
-		}
-		if v, ok := gtResp.CaptchaArgs["lot_number"].(string); ok {
-			rpcResp.CaptchaArgs.LotNumber = v
-		}
-		if v, ok := gtResp.CaptchaArgs["captcha_output"].(string); ok {
-			rpcResp.CaptchaArgs.CaptchaOutput = v
-		}
-		if v, ok := gtResp.CaptchaArgs["pass_token"].(string); ok {
-			rpcResp.CaptchaArgs.PassToken = v
-		}
-		if v, ok := gtResp.CaptchaArgs["gen_time"].(string); ok {
-			rpcResp.CaptchaArgs.GenTime = v
+		rpcResp.CaptchaArgs = &pb.CaptchaArgs{
+			CaptchaId:     gtResp.CaptchaArgs.CaptchaId,
+			LotNumber:     gtResp.CaptchaArgs.LotNumber,
+			CaptchaOutput: gtResp.CaptchaArgs.CaptchaOutput,
+			PassToken:     gtResp.CaptchaArgs.PassToken,
+			GenTime:       gtResp.CaptchaArgs.GenTime,
 		}
 	}
 
