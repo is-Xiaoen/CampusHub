@@ -127,6 +127,14 @@ func (l *UpdateActivityLogic) UpdateActivity(in *activity.UpdateActivityReq) (*a
 		finalStatus = newStatus
 	}
 
+	// 删除缓存（更新成功后）
+	if l.svcCtx.ActivityCache != nil {
+		if err := l.svcCtx.ActivityCache.Invalidate(l.ctx, uint64(in.Id)); err != nil {
+			// 缓存删除失败不影响主流程，记录日志即可
+			l.Infof("[WARNING] 删除活动缓存失败: id=%d, err=%v", in.Id, err)
+		}
+	}
+
 	l.Infof("活动更新成功: id=%d, status=%d, newVersion=%d", in.Id, finalStatus, finalVersion)
 
 	return &activity.UpdateActivityResp{
