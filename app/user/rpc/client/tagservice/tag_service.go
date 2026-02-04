@@ -22,6 +22,7 @@ type (
 	CanPublishResp           = pb.CanPublishResp
 	CancelStudentVerifyReq   = pb.CancelStudentVerifyReq
 	CancelStudentVerifyResp  = pb.CancelStudentVerifyResp
+	CaptchaArgs              = pb.CaptchaArgs
 	CheckCaptchaReq          = pb.CheckCaptchaReq
 	CheckCaptchaResponse     = pb.CheckCaptchaResponse
 	ConfirmStudentVerifyReq  = pb.ConfirmStudentVerifyReq
