@@ -772,6 +772,7 @@ message UserInfo {
 // 刷新token
 message RefreshReq {
     string refresh_token = 1;
+    int64 user_id =2;
 }
 
 message RefreshResponse {
