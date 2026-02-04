@@ -801,11 +801,15 @@ message CheckCaptchaReq{
 }
 
 message CheckCaptchaResponse{
-    string result = 1;         // "success" 或 "fail"
-    string reason = 2;         // 失败原因
-    string captcha_id = 3;     // 验证码ID
-    string lot_number = 4;     // 流水号
-    string captcha_output = 5; // 验证输出
-    string pass_token = 6;     // 验证凭证
-    string gen_time = 7;       // 生成时间
+    string result = 1;          // "result": "success" 或 "fail"
+    string reason = 2;          // "reason": 失败原因
+    CaptchaArgs captcha_args = 3; // 嵌套对象 "captcha_args"
+}
+
+message CaptchaArgs {
+    string captcha_id = 1;     // "captcha_id"
+    string lot_number = 2;     // "lot_number"
+    string captcha_output = 3; // "captcha_output"
+    string pass_token = 4;     // "pass_token"
+    string gen_time = 5;       // "gen_time"
 }
