@@ -9,6 +9,7 @@ import (
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -27,8 +28,8 @@ func NewCheckQQEmailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Chec
 }
 
 func (l *CheckQQEmailLogic) CheckQQEmail(in *pb.CheckQQEmailReq) (*pb.CheckQQEmailResponse, error) {
-	key := fmt.Sprintf("captcha:email:%s:%s", in.Scene, in.QqCode)
-	errKey := fmt.Sprintf("captcha:email:err:%s:%s", in.Scene, in.QqCode)
+	key := fmt.Sprintf("captcha:email:%s:%s", in.Scene, in.QqEmail)
+	errKey := fmt.Sprintf("captcha:email:err:%s:%s", in.Scene, in.QqEmail)
 
 	// 1. 获取验证码
 	val, err := l.svcCtx.Redis.Get(l.ctx, key).Result()
