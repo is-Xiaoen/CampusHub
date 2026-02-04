@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -32,8 +33,10 @@ type AuthConfig struct {
 }
 
 type Claims struct {
-	UserId int64 `json:"userId"`
-	Role   Role  `json:"role"`
+	UserId       int64  `json:"userId"`
+	Role         Role   `json:"role"`
+	AccessJwtId  string `json:"accessJwtId"`
+	RefreshJwtId string `json:"refreshJwtId"`
 	jwt.RegisteredClaims
 }
 
@@ -42,12 +45,12 @@ type TokenResult struct {
 	ExpireAt int64
 }
 
-func GenerateShortToken(userId int64, role Role, cfg AuthConfig) (TokenResult, error) {
-	return generateToken(userId, role, cfg, time.Now())
+func GenerateShortToken(userId int64, role Role, cfg AuthConfig, accessId, refreshId string) (TokenResult, error) {
+	return generateToken(userId, role, cfg, time.Now(), accessId, refreshId)
 }
 
-func GenerateLongToken(userId int64, role Role, cfg AuthConfig) (TokenResult, error) {
-	return generateToken(userId, role, cfg, time.Now())
+func GenerateLongToken(userId int64, role Role, cfg AuthConfig, accessId, refreshId string) (TokenResult, error) {
+	return generateToken(userId, role, cfg, time.Now(), accessId, refreshId)
 }
 
 func IsAdmin(ctx context.Context) bool {
@@ -92,7 +95,7 @@ func ValidateRole(role Role) error {
 	return nil
 }
 
-func generateToken(userId int64, role Role, cfg AuthConfig, now time.Time) (TokenResult, error) {
+func generateToken(userId int64, role Role, cfg AuthConfig, now time.Time, accessId, refreshId string) (TokenResult, error) {
 	if err := ValidateRole(role); err != nil {
 		return TokenResult{}, err
 	}
@@ -102,8 +105,10 @@ func generateToken(userId int64, role Role, cfg AuthConfig, now time.Time) (Toke
 
 	expireAt := now.Add(time.Duration(cfg.AccessExpire) * time.Second)
 	claims := Claims{
-		UserId: userId,
-		Role:   role,
+		UserId:       userId,
+		Role:         role,
+		AccessJwtId:  accessId,
+		RefreshJwtId: refreshId,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(expireAt),
@@ -134,4 +139,18 @@ func ParseToken(tokenString string, secret string) (*Claims, error) {
 		return claims, nil
 	}
 	return nil, errors.New("invalid token")
+}
+
+func CheckTokenBlacklist(ctx context.Context, rdb *redis.Client, tokenStr string, secret string) (bool, error) {
+	claims, err := ParseToken(tokenStr, secret)
+	if err != nil {
+		return false, err
+	}
+
+	key := fmt.Sprintf("token:blacklist:access:%s", claims.AccessJwtId)
+	exists, err := rdb.Exists(ctx, key).Result()
+	if err != nil {
+		return false, err
+	}
+	return exists > 0, nil
 }
