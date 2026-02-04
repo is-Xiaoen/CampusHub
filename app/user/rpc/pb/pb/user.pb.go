@@ -3069,9 +3069,6 @@ func (x *LogoutReq) GetAccessToken() string {
 
 type LogoutResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          int64                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
-	Success       bool                   `protobuf:"varint,2,opt,name=success,proto3" json:"success,omitempty"`
-	Message       string                 `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3104,27 +3101,6 @@ func (x *LogoutResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use LogoutResponse.ProtoReflect.Descriptor instead.
 func (*LogoutResponse) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{43}
-}
-
-func (x *LogoutResponse) GetCode() int64 {
-	if x != nil {
-		return x.Code
-	}
-	return 0
-}
-
-func (x *LogoutResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *LogoutResponse) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
 }
 
 // 用户注册
@@ -4383,11 +4359,8 @@ const file_user_proto_rawDesc = "" +
 	"\tuser_info\x18\x01 \x01(\v2\x0e.user.UserInfoR\buserInfo\"G\n" +
 	"\tLogoutReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12!\n" +
-	"\faccess_token\x18\x02 \x01(\tR\vaccessToken\"X\n" +
-	"\x0eLogoutResponse\x12\x12\n" +
-	"\x04code\x18\x01 \x01(\x03R\x04code\x12\x18\n" +
-	"\asuccess\x18\x02 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x03 \x01(\tR\amessage\"y\n" +
+	"\faccess_token\x18\x02 \x01(\tR\vaccessToken\"\x10\n" +
+	"\x0eLogoutResponse\"y\n" +
 	"\vRegisterReq\x12\x19\n" +
 	"\bqq_email\x18\x01 \x01(\tR\aqqEmail\x12\x17\n" +
 	"\aqq_code\x18\x02 \x01(\tR\x06qqCode\x12\x1a\n" +
