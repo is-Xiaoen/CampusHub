@@ -34,7 +34,7 @@ func (s *TagServiceServer) GetTagsByIds(ctx context.Context, in *pb.GetTagsByIds
 	return l.GetTagsByIds(in)
 }
 
-func (s *TagServiceServer) GetUserTags(ctx context.Context, in *pb.GetUserTagsRep) (*pb.GetUserTagsResponse, error) {
+func (s *TagServiceServer) GetUserTags(ctx context.Context, in *pb.GetUserTagsReq) (*pb.GetUserTagsResponse, error) {
 	l := tagservicelogic.NewGetUserTagsLogic(ctx, s.svcCtx)
 	return l.GetUserTags(in)
 }

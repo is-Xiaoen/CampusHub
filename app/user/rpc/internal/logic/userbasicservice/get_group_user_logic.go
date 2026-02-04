@@ -25,7 +25,26 @@ func NewGetGroupUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetG
 
 // 批量获取群聊用户的信息
 func (l *GetGroupUserLogic) GetGroupUser(in *pb.GetGroupUserReq) (*pb.GetGroupUserResponse, error) {
-	// todo: add your logic here and delete this line
+	if len(in.Ids) == 0 {
+		return &pb.GetGroupUserResponse{}, nil
+	}
 
-	return &pb.GetGroupUserResponse{}, nil
+	users, err := l.svcCtx.UserModel.FindByIDs(l.ctx, in.Ids)
+	if err != nil {
+		l.Logger.Errorf("FindByIDs failed: %v", err)
+		return nil, err
+	}
+
+	var respUsers []*pb.GroupUserInfo
+	for _, u := range users {
+		respUsers = append(respUsers, &pb.GroupUserInfo{
+			Id:        uint64(u.UserID),
+			Nickname:  u.Nickname,
+			AvatarUrl: u.AvatarURL,
+		})
+	}
+
+	return &pb.GetGroupUserResponse{
+		Users: respUsers,
+	}, nil
 }

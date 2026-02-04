@@ -44,7 +44,7 @@ type (
 	GetTagsByIdsResp         = pb.GetTagsByIdsResp
 	GetUserInfoReq           = pb.GetUserInfoReq
 	GetUserInfoResponse      = pb.GetUserInfoResponse
-	GetUserTagsRep           = pb.GetUserTagsRep
+	GetUserTagsReq           = pb.GetUserTagsReq
 	GetUserTagsResponse      = pb.GetUserTagsResponse
 	GetVerifyCurrentReq      = pb.GetVerifyCurrentReq
 	GetVerifyCurrentResp     = pb.GetVerifyCurrentResp

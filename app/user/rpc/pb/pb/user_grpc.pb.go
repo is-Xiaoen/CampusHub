@@ -783,7 +783,7 @@ type TagServiceClient interface {
 	// 马肖阳的标签接口
 	GetAllTags(ctx context.Context, in *GetAllTagsReq, opts ...grpc.CallOption) (*GetAllTagsResp, error)
 	GetTagsByIds(ctx context.Context, in *GetTagsByIdsReq, opts ...grpc.CallOption) (*GetTagsByIdsResp, error)
-	GetUserTags(ctx context.Context, in *GetUserTagsRep, opts ...grpc.CallOption) (*GetUserTagsResponse, error)
+	GetUserTags(ctx context.Context, in *GetUserTagsReq, opts ...grpc.CallOption) (*GetUserTagsResponse, error)
 }
 
 type tagServiceClient struct {
@@ -814,7 +814,7 @@ func (c *tagServiceClient) GetTagsByIds(ctx context.Context, in *GetTagsByIdsReq
 	return out, nil
 }
 
-func (c *tagServiceClient) GetUserTags(ctx context.Context, in *GetUserTagsRep, opts ...grpc.CallOption) (*GetUserTagsResponse, error) {
+func (c *tagServiceClient) GetUserTags(ctx context.Context, in *GetUserTagsReq, opts ...grpc.CallOption) (*GetUserTagsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetUserTagsResponse)
 	err := c.cc.Invoke(ctx, TagService_GetUserTags_FullMethodName, in, out, cOpts...)
@@ -831,7 +831,7 @@ type TagServiceServer interface {
 	// 马肖阳的标签接口
 	GetAllTags(context.Context, *GetAllTagsReq) (*GetAllTagsResp, error)
 	GetTagsByIds(context.Context, *GetTagsByIdsReq) (*GetTagsByIdsResp, error)
-	GetUserTags(context.Context, *GetUserTagsRep) (*GetUserTagsResponse, error)
+	GetUserTags(context.Context, *GetUserTagsReq) (*GetUserTagsResponse, error)
 	mustEmbedUnimplementedTagServiceServer()
 }
 
@@ -848,7 +848,7 @@ func (UnimplementedTagServiceServer) GetAllTags(context.Context, *GetAllTagsReq)
 func (UnimplementedTagServiceServer) GetTagsByIds(context.Context, *GetTagsByIdsReq) (*GetTagsByIdsResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetTagsByIds not implemented")
 }
-func (UnimplementedTagServiceServer) GetUserTags(context.Context, *GetUserTagsRep) (*GetUserTagsResponse, error) {
+func (UnimplementedTagServiceServer) GetUserTags(context.Context, *GetUserTagsReq) (*GetUserTagsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetUserTags not implemented")
 }
 func (UnimplementedTagServiceServer) mustEmbedUnimplementedTagServiceServer() {}
@@ -909,7 +909,7 @@ func _TagService_GetTagsByIds_Handler(srv interface{}, ctx context.Context, dec 
 }
 
 func _TagService_GetUserTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetUserTagsRep)
+	in := new(GetUserTagsReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -921,7 +921,7 @@ func _TagService_GetUserTags_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: TagService_GetUserTags_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TagServiceServer).GetUserTags(ctx, req.(*GetUserTagsRep))
+		return srv.(TagServiceServer).GetUserTags(ctx, req.(*GetUserTagsReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
