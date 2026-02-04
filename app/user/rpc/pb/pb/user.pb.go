@@ -3444,6 +3444,7 @@ func (x *UserInfo) GetInterestTags() []*InterestTag {
 type RefreshReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RefreshToken  string                 `protobuf:"bytes,1,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
+	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3483,6 +3484,13 @@ func (x *RefreshReq) GetRefreshToken() string {
 		return x.RefreshToken
 	}
 	return ""
+}
+
+func (x *RefreshReq) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
 }
 
 type RefreshResponse struct {
@@ -4114,10 +4122,11 @@ const file_user_proto_rawDesc = "" +
 	"\x06credit\x18\t \x01(\x03R\x06credit\x12.\n" +
 	"\x13is_student_verified\x18\n" +
 	" \x01(\bR\x11isStudentVerified\x126\n" +
-	"\rinterest_tags\x18\v \x03(\v2\x11.user.InterestTagR\finterestTags\"1\n" +
+	"\rinterest_tags\x18\v \x03(\v2\x11.user.InterestTagR\finterestTags\"J\n" +
 	"\n" +
 	"RefreshReq\x12#\n" +
-	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"4\n" +
+	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\x03R\x06userId\"4\n" +
 	"\x0fRefreshResponse\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\"\x15\n" +
 	"\x13GetCaptchaConfigReq\"9\n" +
