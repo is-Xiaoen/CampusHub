@@ -135,6 +135,15 @@ func (l *UpdateActivityLogic) UpdateActivity(in *activity.UpdateActivityReq) (*a
 		}
 	}
 
+	// 异步同步到 ES（公开状态需要同步）
+	if l.svcCtx.SyncService != nil {
+		// 重新查询最新数据用于同步
+		updatedActivity, err := l.svcCtx.ActivityModel.FindByID(l.ctx, uint64(in.Id))
+		if err == nil && updatedActivity.IsPublic() {
+			l.svcCtx.SyncService.IndexActivityAsync(updatedActivity)
+		}
+	}
+
 	l.Infof("活动更新成功: id=%d, status=%d, newVersion=%d", in.Id, finalStatus, finalVersion)
 
 	return &activity.UpdateActivityResp{
