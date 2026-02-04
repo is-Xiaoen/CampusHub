@@ -663,7 +663,9 @@ message TagInfo {
     int64 updated_at = 8;
 }
 
-message GetUserTagsReq {}
+message GetUserTagsReq {
+    int64 user_id =1;
+}
 
 message GetUserTagsResponse {
     uint64 id = 1;
