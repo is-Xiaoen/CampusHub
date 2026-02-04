@@ -631,7 +631,7 @@ service TagService {
     // 马肖阳的标签接口
     rpc GetAllTags(GetAllTagsReq) returns (GetAllTagsResp);
     rpc GetTagsByIds(GetTagsByIdsReq) returns (GetTagsByIdsResp);
-    rpc GetUserTags(GetUserTagsRep) returns (GetUserTagsResponse);
+    rpc GetUserTags(GetUserTagsReq) returns (GetUserTagsResponse);
 }
 
 message GetAllTagsReq {
@@ -663,7 +663,7 @@ message TagInfo {
     int64 updated_at = 8;
 }
 
-message GetUserTagsRep {}
+message GetUserTagsReq {}
 
 message GetUserTagsResponse {
     uint64 id = 1;
