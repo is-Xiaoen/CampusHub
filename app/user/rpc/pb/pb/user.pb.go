@@ -2587,26 +2587,27 @@ func (x *TagInfo) GetUpdatedAt() int64 {
 	return 0
 }
 
-type GetUserTagsRep struct {
+type GetUserTagsReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetUserTagsRep) Reset() {
-	*x = GetUserTagsRep{}
+func (x *GetUserTagsReq) Reset() {
+	*x = GetUserTagsReq{}
 	mi := &file_user_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetUserTagsRep) String() string {
+func (x *GetUserTagsReq) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetUserTagsRep) ProtoMessage() {}
+func (*GetUserTagsReq) ProtoMessage() {}
 
-func (x *GetUserTagsRep) ProtoReflect() protoreflect.Message {
+func (x *GetUserTagsReq) ProtoReflect() protoreflect.Message {
 	mi := &file_user_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2618,15 +2619,21 @@ func (x *GetUserTagsRep) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetUserTagsRep.ProtoReflect.Descriptor instead.
-func (*GetUserTagsRep) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetUserTagsReq.ProtoReflect.Descriptor instead.
+func (*GetUserTagsReq) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *GetUserTagsReq) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
 }
 
 type GetUserTagsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Tags          []*TagInfo             `protobuf:"bytes,1,rep,name=tags,proto3" json:"tags,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2661,18 +2668,11 @@ func (*GetUserTagsResponse) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{35}
 }
 
-func (x *GetUserTagsResponse) GetId() uint64 {
+func (x *GetUserTagsResponse) GetTags() []*TagInfo {
 	if x != nil {
-		return x.Id
+		return x.Tags
 	}
-	return 0
-}
-
-func (x *GetUserTagsResponse) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
+	return nil
 }
 
 type GetGroupUserReq struct {
@@ -4328,11 +4328,11 @@ const file_user_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\a \x01(\x03R\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18\b \x01(\x03R\tupdatedAt\"\x10\n" +
-	"\x0eGetUserTagsRep\"9\n" +
-	"\x13GetUserTagsResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\"#\n" +
+	"updated_at\x18\b \x01(\x03R\tupdatedAt\")\n" +
+	"\x0eGetUserTagsReq\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\"8\n" +
+	"\x13GetUserTagsResponse\x12!\n" +
+	"\x04tags\x18\x01 \x03(\v2\r.user.TagInfoR\x04tags\"#\n" +
 	"\x0fGetGroupUserReq\x12\x10\n" +
 	"\x03ids\x18\x01 \x03(\x03R\x03ids\"A\n" +
 	"\x14GetGroupUserResponse\x12)\n" +
@@ -4454,7 +4454,7 @@ const file_user_proto_rawDesc = "" +
 	"\n" +
 	"GetAllTags\x12\x13.user.GetAllTagsReq\x1a\x14.user.GetAllTagsResp\x12=\n" +
 	"\fGetTagsByIds\x12\x15.user.GetTagsByIdsReq\x1a\x16.user.GetTagsByIdsResp\x12>\n" +
-	"\vGetUserTags\x12\x14.user.GetUserTagsRep\x1a\x19.user.GetUserTagsResponse2\xe4\x02\n" +
+	"\vGetUserTags\x12\x14.user.GetUserTagsReq\x1a\x19.user.GetUserTagsResponse2\xe4\x02\n" +
 	"\x10UserBasicService\x12A\n" +
 	"\fGetGroupUser\x12\x15.user.GetGroupUserReq\x1a\x1a.user.GetGroupUserResponse\x12,\n" +
 	"\x05Login\x12\x0e.user.LoginReq\x1a\x13.user.LoginResponse\x12/\n" +
@@ -4517,7 +4517,7 @@ var file_user_proto_goTypes = []any{
 	(*GetTagsByIdsReq)(nil),          // 31: user.GetTagsByIdsReq
 	(*GetTagsByIdsResp)(nil),         // 32: user.GetTagsByIdsResp
 	(*TagInfo)(nil),                  // 33: user.TagInfo
-	(*GetUserTagsRep)(nil),           // 34: user.GetUserTagsRep
+	(*GetUserTagsReq)(nil),           // 34: user.GetUserTagsReq
 	(*GetUserTagsResponse)(nil),      // 35: user.GetUserTagsResponse
 	(*GetGroupUserReq)(nil),          // 36: user.GetGroupUserReq
 	(*GetGroupUserResponse)(nil),     // 37: user.GetGroupUserResponse
@@ -4552,70 +4552,71 @@ var file_user_proto_depIdxs = []int32{
 	27, // 3: user.UpdateVerifyStatusReq.ocr_data:type_name -> user.VerifyOcrData
 	33, // 4: user.GetAllTagsResp.tags:type_name -> user.TagInfo
 	33, // 5: user.GetTagsByIdsResp.tags:type_name -> user.TagInfo
-	38, // 6: user.GetGroupUserResponse.users:type_name -> user.GroupUserInfo
-	41, // 7: user.LoginResponse.user_info:type_name -> user.LoginUserInfo
-	49, // 8: user.LoginUserInfo.user_info:type_name -> user.UserInfo
-	49, // 9: user.RegisterResponse.user_info:type_name -> user.UserInfo
-	49, // 10: user.GetUserInfoResponse.user_info:type_name -> user.UserInfo
-	48, // 11: user.UserInfo.interest_tags:type_name -> user.InterestTag
-	56, // 12: user.CheckCaptchaResponse.captcha_args:type_name -> user.CaptchaArgs
-	0,  // 13: user.CreditService.GetCreditInfo:input_type -> user.GetCreditInfoReq
-	2,  // 14: user.CreditService.GetCreditLogs:input_type -> user.GetCreditLogsReq
-	5,  // 15: user.CreditService.CanParticipate:input_type -> user.CanParticipateReq
-	7,  // 16: user.CreditService.CanPublish:input_type -> user.CanPublishReq
-	9,  // 17: user.CreditService.InitCredit:input_type -> user.InitCreditReq
-	11, // 18: user.CreditService.UpdateScore:input_type -> user.UpdateScoreReq
-	13, // 19: user.VerifyService.GetVerifyCurrent:input_type -> user.GetVerifyCurrentReq
-	15, // 20: user.VerifyService.GetVerifyInfo:input_type -> user.GetVerifyInfoReq
-	17, // 21: user.VerifyService.IsVerified:input_type -> user.IsVerifiedReq
-	19, // 22: user.VerifyService.ApplyStudentVerify:input_type -> user.ApplyStudentVerifyReq
-	21, // 23: user.VerifyService.ConfirmStudentVerify:input_type -> user.ConfirmStudentVerifyReq
-	24, // 24: user.VerifyService.CancelStudentVerify:input_type -> user.CancelStudentVerifyReq
-	26, // 25: user.VerifyService.UpdateVerifyStatus:input_type -> user.UpdateVerifyStatusReq
-	29, // 26: user.TagService.GetAllTags:input_type -> user.GetAllTagsReq
-	31, // 27: user.TagService.GetTagsByIds:input_type -> user.GetTagsByIdsReq
-	34, // 28: user.TagService.GetUserTags:input_type -> user.GetUserTagsRep
-	36, // 29: user.UserBasicService.GetGroupUser:input_type -> user.GetGroupUserReq
-	39, // 30: user.UserBasicService.Login:input_type -> user.LoginReq
-	42, // 31: user.UserBasicService.Logout:input_type -> user.LogoutReq
-	44, // 32: user.UserBasicService.Register:input_type -> user.RegisterReq
-	50, // 33: user.UserBasicService.RefreshToken:input_type -> user.RefreshReq
-	46, // 34: user.UserBasicService.GetUserInfo:input_type -> user.GetUserInfoReq
-	52, // 35: user.CaptchaService.GetCaptchaConfig:input_type -> user.GetCaptchaConfigReq
-	54, // 36: user.CaptchaService.CheckCaptcha:input_type -> user.CheckCaptchaReq
-	57, // 37: user.QQEmail.SendQQEmail:input_type -> user.SendQQEmailReq
-	59, // 38: user.QQEmail.CheckQQEmail:input_type -> user.CheckQQEmailReq
-	1,  // 39: user.CreditService.GetCreditInfo:output_type -> user.GetCreditInfoResp
-	4,  // 40: user.CreditService.GetCreditLogs:output_type -> user.GetCreditLogsResp
-	6,  // 41: user.CreditService.CanParticipate:output_type -> user.CanParticipateResp
-	8,  // 42: user.CreditService.CanPublish:output_type -> user.CanPublishResp
-	10, // 43: user.CreditService.InitCredit:output_type -> user.InitCreditResp
-	12, // 44: user.CreditService.UpdateScore:output_type -> user.UpdateScoreResp
-	14, // 45: user.VerifyService.GetVerifyCurrent:output_type -> user.GetVerifyCurrentResp
-	16, // 46: user.VerifyService.GetVerifyInfo:output_type -> user.GetVerifyInfoResp
-	18, // 47: user.VerifyService.IsVerified:output_type -> user.IsVerifiedResp
-	20, // 48: user.VerifyService.ApplyStudentVerify:output_type -> user.ApplyStudentVerifyResp
-	23, // 49: user.VerifyService.ConfirmStudentVerify:output_type -> user.ConfirmStudentVerifyResp
-	25, // 50: user.VerifyService.CancelStudentVerify:output_type -> user.CancelStudentVerifyResp
-	28, // 51: user.VerifyService.UpdateVerifyStatus:output_type -> user.UpdateVerifyStatusResp
-	30, // 52: user.TagService.GetAllTags:output_type -> user.GetAllTagsResp
-	32, // 53: user.TagService.GetTagsByIds:output_type -> user.GetTagsByIdsResp
-	35, // 54: user.TagService.GetUserTags:output_type -> user.GetUserTagsResponse
-	37, // 55: user.UserBasicService.GetGroupUser:output_type -> user.GetGroupUserResponse
-	40, // 56: user.UserBasicService.Login:output_type -> user.LoginResponse
-	43, // 57: user.UserBasicService.Logout:output_type -> user.LogoutResponse
-	45, // 58: user.UserBasicService.Register:output_type -> user.RegisterResponse
-	51, // 59: user.UserBasicService.RefreshToken:output_type -> user.RefreshResponse
-	47, // 60: user.UserBasicService.GetUserInfo:output_type -> user.GetUserInfoResponse
-	53, // 61: user.CaptchaService.GetCaptchaConfig:output_type -> user.GetCaptchaConfigResponse
-	55, // 62: user.CaptchaService.CheckCaptcha:output_type -> user.CheckCaptchaResponse
-	58, // 63: user.QQEmail.SendQQEmail:output_type -> user.SendQQEmailResponse
-	60, // 64: user.QQEmail.CheckQQEmail:output_type -> user.CheckQQEmailResponse
-	39, // [39:65] is the sub-list for method output_type
-	13, // [13:39] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	33, // 6: user.GetUserTagsResponse.tags:type_name -> user.TagInfo
+	38, // 7: user.GetGroupUserResponse.users:type_name -> user.GroupUserInfo
+	41, // 8: user.LoginResponse.user_info:type_name -> user.LoginUserInfo
+	49, // 9: user.LoginUserInfo.user_info:type_name -> user.UserInfo
+	49, // 10: user.RegisterResponse.user_info:type_name -> user.UserInfo
+	49, // 11: user.GetUserInfoResponse.user_info:type_name -> user.UserInfo
+	48, // 12: user.UserInfo.interest_tags:type_name -> user.InterestTag
+	56, // 13: user.CheckCaptchaResponse.captcha_args:type_name -> user.CaptchaArgs
+	0,  // 14: user.CreditService.GetCreditInfo:input_type -> user.GetCreditInfoReq
+	2,  // 15: user.CreditService.GetCreditLogs:input_type -> user.GetCreditLogsReq
+	5,  // 16: user.CreditService.CanParticipate:input_type -> user.CanParticipateReq
+	7,  // 17: user.CreditService.CanPublish:input_type -> user.CanPublishReq
+	9,  // 18: user.CreditService.InitCredit:input_type -> user.InitCreditReq
+	11, // 19: user.CreditService.UpdateScore:input_type -> user.UpdateScoreReq
+	13, // 20: user.VerifyService.GetVerifyCurrent:input_type -> user.GetVerifyCurrentReq
+	15, // 21: user.VerifyService.GetVerifyInfo:input_type -> user.GetVerifyInfoReq
+	17, // 22: user.VerifyService.IsVerified:input_type -> user.IsVerifiedReq
+	19, // 23: user.VerifyService.ApplyStudentVerify:input_type -> user.ApplyStudentVerifyReq
+	21, // 24: user.VerifyService.ConfirmStudentVerify:input_type -> user.ConfirmStudentVerifyReq
+	24, // 25: user.VerifyService.CancelStudentVerify:input_type -> user.CancelStudentVerifyReq
+	26, // 26: user.VerifyService.UpdateVerifyStatus:input_type -> user.UpdateVerifyStatusReq
+	29, // 27: user.TagService.GetAllTags:input_type -> user.GetAllTagsReq
+	31, // 28: user.TagService.GetTagsByIds:input_type -> user.GetTagsByIdsReq
+	34, // 29: user.TagService.GetUserTags:input_type -> user.GetUserTagsReq
+	36, // 30: user.UserBasicService.GetGroupUser:input_type -> user.GetGroupUserReq
+	39, // 31: user.UserBasicService.Login:input_type -> user.LoginReq
+	42, // 32: user.UserBasicService.Logout:input_type -> user.LogoutReq
+	44, // 33: user.UserBasicService.Register:input_type -> user.RegisterReq
+	50, // 34: user.UserBasicService.RefreshToken:input_type -> user.RefreshReq
+	46, // 35: user.UserBasicService.GetUserInfo:input_type -> user.GetUserInfoReq
+	52, // 36: user.CaptchaService.GetCaptchaConfig:input_type -> user.GetCaptchaConfigReq
+	54, // 37: user.CaptchaService.CheckCaptcha:input_type -> user.CheckCaptchaReq
+	57, // 38: user.QQEmail.SendQQEmail:input_type -> user.SendQQEmailReq
+	59, // 39: user.QQEmail.CheckQQEmail:input_type -> user.CheckQQEmailReq
+	1,  // 40: user.CreditService.GetCreditInfo:output_type -> user.GetCreditInfoResp
+	4,  // 41: user.CreditService.GetCreditLogs:output_type -> user.GetCreditLogsResp
+	6,  // 42: user.CreditService.CanParticipate:output_type -> user.CanParticipateResp
+	8,  // 43: user.CreditService.CanPublish:output_type -> user.CanPublishResp
+	10, // 44: user.CreditService.InitCredit:output_type -> user.InitCreditResp
+	12, // 45: user.CreditService.UpdateScore:output_type -> user.UpdateScoreResp
+	14, // 46: user.VerifyService.GetVerifyCurrent:output_type -> user.GetVerifyCurrentResp
+	16, // 47: user.VerifyService.GetVerifyInfo:output_type -> user.GetVerifyInfoResp
+	18, // 48: user.VerifyService.IsVerified:output_type -> user.IsVerifiedResp
+	20, // 49: user.VerifyService.ApplyStudentVerify:output_type -> user.ApplyStudentVerifyResp
+	23, // 50: user.VerifyService.ConfirmStudentVerify:output_type -> user.ConfirmStudentVerifyResp
+	25, // 51: user.VerifyService.CancelStudentVerify:output_type -> user.CancelStudentVerifyResp
+	28, // 52: user.VerifyService.UpdateVerifyStatus:output_type -> user.UpdateVerifyStatusResp
+	30, // 53: user.TagService.GetAllTags:output_type -> user.GetAllTagsResp
+	32, // 54: user.TagService.GetTagsByIds:output_type -> user.GetTagsByIdsResp
+	35, // 55: user.TagService.GetUserTags:output_type -> user.GetUserTagsResponse
+	37, // 56: user.UserBasicService.GetGroupUser:output_type -> user.GetGroupUserResponse
+	40, // 57: user.UserBasicService.Login:output_type -> user.LoginResponse
+	43, // 58: user.UserBasicService.Logout:output_type -> user.LogoutResponse
+	45, // 59: user.UserBasicService.Register:output_type -> user.RegisterResponse
+	51, // 60: user.UserBasicService.RefreshToken:output_type -> user.RefreshResponse
+	47, // 61: user.UserBasicService.GetUserInfo:output_type -> user.GetUserInfoResponse
+	53, // 62: user.CaptchaService.GetCaptchaConfig:output_type -> user.GetCaptchaConfigResponse
+	55, // 63: user.CaptchaService.CheckCaptcha:output_type -> user.CheckCaptchaResponse
+	58, // 64: user.QQEmail.SendQQEmail:output_type -> user.SendQQEmailResponse
+	60, // 65: user.QQEmail.CheckQQEmail:output_type -> user.CheckQQEmailResponse
+	40, // [40:66] is the sub-list for method output_type
+	14, // [14:40] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_user_proto_init() }

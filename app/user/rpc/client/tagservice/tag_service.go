@@ -44,7 +44,7 @@ type (
 	GetTagsByIdsResp         = pb.GetTagsByIdsResp
 	GetUserInfoReq           = pb.GetUserInfoReq
 	GetUserInfoResponse      = pb.GetUserInfoResponse
-	GetUserTagsRep           = pb.GetUserTagsRep
+	GetUserTagsReq           = pb.GetUserTagsReq
 	GetUserTagsResponse      = pb.GetUserTagsResponse
 	GetVerifyCurrentReq      = pb.GetVerifyCurrentReq
 	GetVerifyCurrentResp     = pb.GetVerifyCurrentResp
@@ -80,7 +80,7 @@ type (
 		// 马肖阳的标签接口
 		GetAllTags(ctx context.Context, in *GetAllTagsReq, opts ...grpc.CallOption) (*GetAllTagsResp, error)
 		GetTagsByIds(ctx context.Context, in *GetTagsByIdsReq, opts ...grpc.CallOption) (*GetTagsByIdsResp, error)
-		GetUserTags(ctx context.Context, in *GetUserTagsRep, opts ...grpc.CallOption) (*GetUserTagsResponse, error)
+		GetUserTags(ctx context.Context, in *GetUserTagsReq, opts ...grpc.CallOption) (*GetUserTagsResponse, error)
 	}
 
 	defaultTagService struct {
@@ -105,7 +105,7 @@ func (m *defaultTagService) GetTagsByIds(ctx context.Context, in *GetTagsByIdsRe
 	return client.GetTagsByIds(ctx, in, opts...)
 }
 
-func (m *defaultTagService) GetUserTags(ctx context.Context, in *GetUserTagsRep, opts ...grpc.CallOption) (*GetUserTagsResponse, error) {
+func (m *defaultTagService) GetUserTags(ctx context.Context, in *GetUserTagsReq, opts ...grpc.CallOption) (*GetUserTagsResponse, error) {
 	client := pb.NewTagServiceClient(m.cli.Conn())
 	return client.GetUserTags(ctx, in, opts...)
 }

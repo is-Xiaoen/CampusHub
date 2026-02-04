@@ -58,12 +58,16 @@ type IInterestTagModel interface {
 	Create(ctx context.Context, tag *InterestTag) error
 	// FindByID 根据标签ID查询
 	FindByID(ctx context.Context, tagID int64) (*InterestTag, error)
+	// FindByIDs 根据ID列表批量查询
+	FindByIDs(ctx context.Context, tagIDs []int64) ([]*InterestTag, error)
 	// FindByName 根据标签名称查询
 	FindByName(ctx context.Context, tagName string) (*InterestTag, error)
 	// List 查询标签列表
 	List(ctx context.Context, offset, limit int) ([]*InterestTag, error)
 	// ListAll 查询所有可用标签
 	ListAll(ctx context.Context) ([]*InterestTag, error)
+	// ListSince 查询指定时间后更新的标签
+	ListSince(ctx context.Context, sinceTime time.Time) ([]*InterestTag, error)
 	// Update 更新标签
 	Update(ctx context.Context, tag *InterestTag) error
 	// IncrementUsageCount 增加使用次数
@@ -98,6 +102,18 @@ func (m *InterestTagModel) FindByID(ctx context.Context, tagID int64) (*Interest
 	return &tag, nil
 }
 
+// FindByIDs 根据ID列表批量查询
+func (m *InterestTagModel) FindByIDs(ctx context.Context, tagIDs []int64) ([]*InterestTag, error) {
+	var tags []*InterestTag
+	err := m.db.WithContext(ctx).
+		Where("tag_id IN ?", tagIDs).
+		Find(&tags).Error
+	if err != nil {
+		return nil, err
+	}
+	return tags, nil
+}
+
 // FindByName 根据标签名称查询
 func (m *InterestTagModel) FindByName(ctx context.Context, tagName string) (*InterestTag, error) {
 	var tag InterestTag
@@ -127,6 +143,19 @@ func (m *InterestTagModel) ListAll(ctx context.Context) ([]*InterestTag, error) 
 	var tags []*InterestTag
 	err := m.db.WithContext(ctx).
 		Where("status = ?", TagStatusNormal).
+		Order("usage_count DESC").
+		Find(&tags).Error
+	if err != nil {
+		return nil, err
+	}
+	return tags, nil
+}
+
+// ListSince 查询指定时间后更新的标签
+func (m *InterestTagModel) ListSince(ctx context.Context, sinceTime time.Time) ([]*InterestTag, error) {
+	var tags []*InterestTag
+	err := m.db.WithContext(ctx).
+		Where("status = ? AND update_time > ?", TagStatusNormal, sinceTime).
 		Order("usage_count DESC").
 		Find(&tags).Error
 	if err != nil {
