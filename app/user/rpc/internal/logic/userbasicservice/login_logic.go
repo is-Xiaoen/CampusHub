@@ -85,7 +85,7 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 		UserId: int64(user.UserID),
 	})
 	if err != nil {
-		// 即使获取详情失败，登录也算成功，只是信息不全? 或者记录日志返回基础信息
+		// 即使获取详情失败，登录也算成功，只是信息不全
 		// 这里选择记录日志，返回基础信息，或者让 GetUserInfoLogic 保证尽可能返回数据
 		l.Logger.Errorf("GetUserInfo failed during login: %v", err)
 		// 如果必须返回 UserInfo，可以手动构造一个基础的，或者直接返回错误取决于业务

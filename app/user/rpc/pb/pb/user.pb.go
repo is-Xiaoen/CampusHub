@@ -3198,7 +3198,9 @@ func (x *RegisterReq) GetNickname() string {
 
 type RegisterResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserInfo      *UserInfo              `protobuf:"bytes,1,opt,name=user_info,json=userInfo,proto3" json:"user_info,omitempty"`
+	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`    // 对应 "accessToken"
+	RefreshToken  string                 `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"` // 对应 "refreshToken"
+	UserInfo      *UserInfo              `protobuf:"bytes,3,opt,name=user_info,json=userInfo,proto3" json:"user_info,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3231,6 +3233,20 @@ func (x *RegisterResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use RegisterResponse.ProtoReflect.Descriptor instead.
 func (*RegisterResponse) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{45}
+}
+
+func (x *RegisterResponse) GetAccessToken() string {
+	if x != nil {
+		return x.AccessToken
+	}
+	return ""
+}
+
+func (x *RegisterResponse) GetRefreshToken() string {
+	if x != nil {
+		return x.RefreshToken
+	}
+	return ""
 }
 
 func (x *RegisterResponse) GetUserInfo() *UserInfo {
@@ -4376,9 +4392,11 @@ const file_user_proto_rawDesc = "" +
 	"\bqq_email\x18\x01 \x01(\tR\aqqEmail\x12\x17\n" +
 	"\aqq_code\x18\x02 \x01(\tR\x06qqCode\x12\x1a\n" +
 	"\bpassword\x18\x03 \x01(\tR\bpassword\x12\x1a\n" +
-	"\bnickname\x18\x04 \x01(\tR\bnickname\"?\n" +
-	"\x10RegisterResponse\x12+\n" +
-	"\tuser_info\x18\x01 \x01(\v2\x0e.user.UserInfoR\buserInfo\")\n" +
+	"\bnickname\x18\x04 \x01(\tR\bnickname\"\x87\x01\n" +
+	"\x10RegisterResponse\x12!\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
+	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\x12+\n" +
+	"\tuser_info\x18\x03 \x01(\v2\x0e.user.UserInfoR\buserInfo\")\n" +
 	"\x0eGetUserInfoReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\"B\n" +
 	"\x13GetUserInfoResponse\x12+\n" +

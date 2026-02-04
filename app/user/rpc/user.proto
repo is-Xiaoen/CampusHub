@@ -746,7 +746,9 @@ message RegisterReq {
 }
 
 message RegisterResponse {
-    UserInfo user_info = 1;
+    string access_token = 1;    // 对应 "accessToken"
+    string refresh_token = 2;   // 对应 "refreshToken"
+    UserInfo user_info = 3;
 }
 
 // 获取用户信息
