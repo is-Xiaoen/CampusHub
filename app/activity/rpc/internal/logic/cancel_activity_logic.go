@@ -121,6 +121,13 @@ func (l *CancelActivityLogic) CancelActivity(in *activity.CancelActivityReq) (*a
 		return nil, errorx.ErrDBError(err)
 	}
 
+	// 删除缓存（状态变更成功后）
+	if l.svcCtx.ActivityCache != nil {
+		if err := l.svcCtx.ActivityCache.Invalidate(l.ctx, uint64(in.Id)); err != nil {
+			l.Infof("[WARNING] 删除活动缓存失败: id=%d, err=%v", in.Id, err)
+		}
+	}
+
 	l.Infof("活动取消成功: id=%d, operatorId=%d, isAdmin=%v, fromStatus=%d(%s), reason=%s",
 		in.Id, in.OperatorId, in.IsAdmin, oldStatus, model.StatusText[oldStatus], in.Reason)
 

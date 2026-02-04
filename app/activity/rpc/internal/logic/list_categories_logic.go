@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 
+	"activity-platform/app/activity/model"
 	"activity-platform/app/activity/rpc/activity"
 	"activity-platform/app/activity/rpc/internal/svc"
 	"activity-platform/common/errorx"
@@ -49,11 +50,24 @@ func NewListCategoriesLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Li
 //
 // 错误码：
 //   - 无特殊错误码，数据库错误返回通用错误
+//
+// 缓存策略：
+//   - 使用 CategoryCache（TTL 30min）
+//   - 分类数据变化少，使用较长 TTL
 func (l *ListCategoriesLogic) ListCategories(in *activity.ListCategoriesReq) (*activity.ListCategoriesResp, error) {
 	l.Logger.Info("ListCategories 请求")
 
-	// 查询所有启用的分类
-	categories, err := l.svcCtx.CategoryModel.FindAll(l.ctx)
+	// 查询所有启用的分类（优先从缓存获取）
+	var categories []model.Category
+	var err error
+
+	if l.svcCtx.CategoryCache != nil {
+		categories, err = l.svcCtx.CategoryCache.GetList(l.ctx)
+	} else {
+		// 缓存服务未初始化，降级查 DB
+		categories, err = l.svcCtx.CategoryModel.FindAll(l.ctx)
+	}
+
 	if err != nil {
 		l.Logger.Errorf("查询分类失败: %v", err)
 		return nil, errorx.ErrDBError(err)

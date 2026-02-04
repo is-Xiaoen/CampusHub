@@ -31,12 +31,15 @@ func main() {
 	// 2. 初始化 ServiceContext
 	ctx := svc.NewServiceContext(c)
 
-	// 3. 启动标签同步器（从用户服务同步标签到本地缓存）
+	// 3. 缓存预热（异步执行，不阻塞启动）
+	ctx.WarmupCacheAsync()
+
+	// 4. 启动标签同步器（从用户服务同步标签到本地缓存）
 	tagSyncer := syncer.NewTagSyncer(ctx.TagRpc, ctx.TagCacheModel, 5*time.Minute)
 	tagSyncer.Start()
 	defer tagSyncer.Stop()
 
-	// 4. 创建 RPC 服务
+	// 5. 创建 RPC 服务
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
 		activity.RegisterActivityServiceServer(grpcServer, server.NewActivityServiceServer(ctx))
 
