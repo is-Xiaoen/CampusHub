@@ -831,8 +831,9 @@ message SendQQEmailResponse{
 
 // 校验QQ邮箱
 message CheckQQEmailReq{
-    string qq_code =1;
-    string scene =2;
+    string qq_email =1;
+    string qq_code =2;
+    string scene =3;
 }
 
 message CheckQQEmailResponse{

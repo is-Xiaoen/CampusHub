@@ -1,15 +1,14 @@
 package qqemaillogic
 
 import (
+	"activity-platform/common/errorx"
 	"context"
 	"fmt"
 	"time"
 
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
-	"activity-platform/common/errorx"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -67,6 +66,5 @@ func (l *CheckQQEmailLogic) CheckQQEmail(in *pb.CheckQQEmailReq) (*pb.CheckQQEma
 
 	// 3. 验证成功，清除验证码和错误次数
 	l.svcCtx.Redis.Del(l.ctx, key, errKey)
-
 	return &pb.CheckQQEmailResponse{}, nil
 }
