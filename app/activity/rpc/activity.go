@@ -7,6 +7,7 @@ import (
 
 	"activity-platform/app/activity/rpc/activity"
 	"activity-platform/app/activity/rpc/internal/config"
+	"activity-platform/app/activity/rpc/internal/cron"
 	"activity-platform/app/activity/rpc/internal/server"
 	"activity-platform/app/activity/rpc/internal/svc"
 	"activity-platform/app/activity/rpc/internal/syncer"
@@ -39,7 +40,17 @@ func main() {
 	tagSyncer.Start()
 	defer tagSyncer.Stop()
 
-	// 5. 创建 RPC 服务
+	// 5. 启动状态自动流转定时任务
+	statusCron := cron.NewStatusCron(
+		ctx.Redis,
+		ctx.DB,
+		ctx.ActivityModel,
+		ctx.StatusLogModel,
+	)
+	statusCron.Start()
+	defer statusCron.Stop()
+
+	// 6. 创建 RPC 服务
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
 		activity.RegisterActivityServiceServer(grpcServer, server.NewActivityServiceServer(ctx))
 
