@@ -3815,6 +3815,192 @@ func (x *CaptchaArgs) GetGenTime() string {
 	return ""
 }
 
+// 发送QQ邮箱
+type SendQQEmailReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	QqEmail       string                 `protobuf:"bytes,1,opt,name=qq_email,json=qqEmail,proto3" json:"qq_email,omitempty"`
+	Scene         string                 `protobuf:"bytes,2,opt,name=scene,proto3" json:"scene,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SendQQEmailReq) Reset() {
+	*x = SendQQEmailReq{}
+	mi := &file_user_proto_msgTypes[55]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendQQEmailReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendQQEmailReq) ProtoMessage() {}
+
+func (x *SendQQEmailReq) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[55]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendQQEmailReq.ProtoReflect.Descriptor instead.
+func (*SendQQEmailReq) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{55}
+}
+
+func (x *SendQQEmailReq) GetQqEmail() string {
+	if x != nil {
+		return x.QqEmail
+	}
+	return ""
+}
+
+func (x *SendQQEmailReq) GetScene() string {
+	if x != nil {
+		return x.Scene
+	}
+	return ""
+}
+
+type SendQQEmailResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SendQQEmailResponse) Reset() {
+	*x = SendQQEmailResponse{}
+	mi := &file_user_proto_msgTypes[56]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendQQEmailResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendQQEmailResponse) ProtoMessage() {}
+
+func (x *SendQQEmailResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[56]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendQQEmailResponse.ProtoReflect.Descriptor instead.
+func (*SendQQEmailResponse) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{56}
+}
+
+// 校验QQ邮箱
+type CheckQQEmailReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	QqCode        string                 `protobuf:"bytes,1,opt,name=qq_code,json=qqCode,proto3" json:"qq_code,omitempty"`
+	Scene         string                 `protobuf:"bytes,2,opt,name=scene,proto3" json:"scene,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CheckQQEmailReq) Reset() {
+	*x = CheckQQEmailReq{}
+	mi := &file_user_proto_msgTypes[57]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CheckQQEmailReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckQQEmailReq) ProtoMessage() {}
+
+func (x *CheckQQEmailReq) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[57]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckQQEmailReq.ProtoReflect.Descriptor instead.
+func (*CheckQQEmailReq) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{57}
+}
+
+func (x *CheckQQEmailReq) GetQqCode() string {
+	if x != nil {
+		return x.QqCode
+	}
+	return ""
+}
+
+func (x *CheckQQEmailReq) GetScene() string {
+	if x != nil {
+		return x.Scene
+	}
+	return ""
+}
+
+type CheckQQEmailResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	IsValid       bool                   `protobuf:"varint,1,opt,name=isValid,proto3" json:"isValid,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CheckQQEmailResponse) Reset() {
+	*x = CheckQQEmailResponse{}
+	mi := &file_user_proto_msgTypes[58]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CheckQQEmailResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckQQEmailResponse) ProtoMessage() {}
+
+func (x *CheckQQEmailResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[58]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckQQEmailResponse.ProtoReflect.Descriptor instead.
+func (*CheckQQEmailResponse) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{58}
+}
+
+func (x *CheckQQEmailResponse) GetIsValid() bool {
+	if x != nil {
+		return x.IsValid
+	}
+	return false
+}
+
 var File_user_proto protoreflect.FileDescriptor
 
 const file_user_proto_rawDesc = "" +
@@ -4141,7 +4327,16 @@ const file_user_proto_rawDesc = "" +
 	"\x0ecaptcha_output\x18\x03 \x01(\tR\rcaptchaOutput\x12\x1d\n" +
 	"\n" +
 	"pass_token\x18\x04 \x01(\tR\tpassToken\x12\x19\n" +
-	"\bgen_time\x18\x05 \x01(\tR\agenTime2\x86\x03\n" +
+	"\bgen_time\x18\x05 \x01(\tR\agenTime\"A\n" +
+	"\x0eSendQQEmailReq\x12\x19\n" +
+	"\bqq_email\x18\x01 \x01(\tR\aqqEmail\x12\x14\n" +
+	"\x05scene\x18\x02 \x01(\tR\x05scene\"\x15\n" +
+	"\x13SendQQEmailResponse\"@\n" +
+	"\x0fCheckQQEmailReq\x12\x17\n" +
+	"\aqq_code\x18\x01 \x01(\tR\x06qqCode\x12\x14\n" +
+	"\x05scene\x18\x02 \x01(\tR\x05scene\"0\n" +
+	"\x14CheckQQEmailResponse\x12\x18\n" +
+	"\aisValid\x18\x01 \x01(\bR\aisValid2\x86\x03\n" +
 	"\rCreditService\x12@\n" +
 	"\rGetCreditInfo\x12\x16.user.GetCreditInfoReq\x1a\x17.user.GetCreditInfoResp\x12@\n" +
 	"\rGetCreditLogs\x12\x16.user.GetCreditLogsReq\x1a\x17.user.GetCreditLogsResp\x12C\n" +
@@ -4174,7 +4369,10 @@ const file_user_proto_rawDesc = "" +
 	"\fRefreshToken\x12\x10.user.RefreshReq\x1a\x15.user.RefreshResponse2\xa2\x01\n" +
 	"\x0eCaptchaService\x12M\n" +
 	"\x10GetCaptchaConfig\x12\x19.user.GetCaptchaConfigReq\x1a\x1e.user.GetCaptchaConfigResponse\x12A\n" +
-	"\fCheckCaptcha\x12\x15.user.CheckCaptchaReq\x1a\x1a.user.CheckCaptchaResponseB\x06Z\x04./pbb\x06proto3"
+	"\fCheckCaptcha\x12\x15.user.CheckCaptchaReq\x1a\x1a.user.CheckCaptchaResponse2\x8c\x01\n" +
+	"\aQQEmail\x12>\n" +
+	"\vSendQQEmail\x12\x14.user.SendQQEmailReq\x1a\x19.user.SendQQEmailResponse\x12A\n" +
+	"\fCheckQQEmail\x12\x15.user.CheckQQEmailReq\x1a\x1a.user.CheckQQEmailResponseB\x06Z\x04./pbb\x06proto3"
 
 var (
 	file_user_proto_rawDescOnce sync.Once
@@ -4188,7 +4386,7 @@ func file_user_proto_rawDescGZIP() []byte {
 	return file_user_proto_rawDescData
 }
 
-var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 55)
+var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 59)
 var file_user_proto_goTypes = []any{
 	(*GetCreditInfoReq)(nil),         // 0: user.GetCreditInfoReq
 	(*GetCreditInfoResp)(nil),        // 1: user.GetCreditInfoResp
@@ -4245,6 +4443,10 @@ var file_user_proto_goTypes = []any{
 	(*CheckCaptchaReq)(nil),          // 52: user.CheckCaptchaReq
 	(*CheckCaptchaResponse)(nil),     // 53: user.CheckCaptchaResponse
 	(*CaptchaArgs)(nil),              // 54: user.CaptchaArgs
+	(*SendQQEmailReq)(nil),           // 55: user.SendQQEmailReq
+	(*SendQQEmailResponse)(nil),      // 56: user.SendQQEmailResponse
+	(*CheckQQEmailReq)(nil),          // 57: user.CheckQQEmailReq
+	(*CheckQQEmailResponse)(nil),     // 58: user.CheckQQEmailResponse
 }
 var file_user_proto_depIdxs = []int32{
 	3,  // 0: user.GetCreditLogsResp.list:type_name -> user.CreditLogItem
@@ -4282,31 +4484,35 @@ var file_user_proto_depIdxs = []int32{
 	48, // 32: user.UserBasicService.RefreshToken:input_type -> user.RefreshReq
 	50, // 33: user.CaptchaService.GetCaptchaConfig:input_type -> user.GetCaptchaConfigReq
 	52, // 34: user.CaptchaService.CheckCaptcha:input_type -> user.CheckCaptchaReq
-	1,  // 35: user.CreditService.GetCreditInfo:output_type -> user.GetCreditInfoResp
-	4,  // 36: user.CreditService.GetCreditLogs:output_type -> user.GetCreditLogsResp
-	6,  // 37: user.CreditService.CanParticipate:output_type -> user.CanParticipateResp
-	8,  // 38: user.CreditService.CanPublish:output_type -> user.CanPublishResp
-	10, // 39: user.CreditService.InitCredit:output_type -> user.InitCreditResp
-	12, // 40: user.CreditService.UpdateScore:output_type -> user.UpdateScoreResp
-	14, // 41: user.VerifyService.GetVerifyCurrent:output_type -> user.GetVerifyCurrentResp
-	16, // 42: user.VerifyService.GetVerifyInfo:output_type -> user.GetVerifyInfoResp
-	18, // 43: user.VerifyService.IsVerified:output_type -> user.IsVerifiedResp
-	20, // 44: user.VerifyService.ApplyStudentVerify:output_type -> user.ApplyStudentVerifyResp
-	23, // 45: user.VerifyService.ConfirmStudentVerify:output_type -> user.ConfirmStudentVerifyResp
-	25, // 46: user.VerifyService.CancelStudentVerify:output_type -> user.CancelStudentVerifyResp
-	28, // 47: user.VerifyService.UpdateVerifyStatus:output_type -> user.UpdateVerifyStatusResp
-	30, // 48: user.TagService.GetAllTags:output_type -> user.GetAllTagsResp
-	32, // 49: user.TagService.GetTagsByIds:output_type -> user.GetTagsByIdsResp
-	35, // 50: user.TagService.GetUserTags:output_type -> user.GetUserTagsResponse
-	37, // 51: user.UserBasicService.GetGroupUser:output_type -> user.GetGroupUserResponse
-	40, // 52: user.UserBasicService.Login:output_type -> user.LoginResponse
-	44, // 53: user.UserBasicService.Logout:output_type -> user.LogoutResponse
-	46, // 54: user.UserBasicService.Register:output_type -> user.RegisterResponse
-	49, // 55: user.UserBasicService.RefreshToken:output_type -> user.RefreshResponse
-	51, // 56: user.CaptchaService.GetCaptchaConfig:output_type -> user.GetCaptchaConfigResponse
-	53, // 57: user.CaptchaService.CheckCaptcha:output_type -> user.CheckCaptchaResponse
-	35, // [35:58] is the sub-list for method output_type
-	12, // [12:35] is the sub-list for method input_type
+	55, // 35: user.QQEmail.SendQQEmail:input_type -> user.SendQQEmailReq
+	57, // 36: user.QQEmail.CheckQQEmail:input_type -> user.CheckQQEmailReq
+	1,  // 37: user.CreditService.GetCreditInfo:output_type -> user.GetCreditInfoResp
+	4,  // 38: user.CreditService.GetCreditLogs:output_type -> user.GetCreditLogsResp
+	6,  // 39: user.CreditService.CanParticipate:output_type -> user.CanParticipateResp
+	8,  // 40: user.CreditService.CanPublish:output_type -> user.CanPublishResp
+	10, // 41: user.CreditService.InitCredit:output_type -> user.InitCreditResp
+	12, // 42: user.CreditService.UpdateScore:output_type -> user.UpdateScoreResp
+	14, // 43: user.VerifyService.GetVerifyCurrent:output_type -> user.GetVerifyCurrentResp
+	16, // 44: user.VerifyService.GetVerifyInfo:output_type -> user.GetVerifyInfoResp
+	18, // 45: user.VerifyService.IsVerified:output_type -> user.IsVerifiedResp
+	20, // 46: user.VerifyService.ApplyStudentVerify:output_type -> user.ApplyStudentVerifyResp
+	23, // 47: user.VerifyService.ConfirmStudentVerify:output_type -> user.ConfirmStudentVerifyResp
+	25, // 48: user.VerifyService.CancelStudentVerify:output_type -> user.CancelStudentVerifyResp
+	28, // 49: user.VerifyService.UpdateVerifyStatus:output_type -> user.UpdateVerifyStatusResp
+	30, // 50: user.TagService.GetAllTags:output_type -> user.GetAllTagsResp
+	32, // 51: user.TagService.GetTagsByIds:output_type -> user.GetTagsByIdsResp
+	35, // 52: user.TagService.GetUserTags:output_type -> user.GetUserTagsResponse
+	37, // 53: user.UserBasicService.GetGroupUser:output_type -> user.GetGroupUserResponse
+	40, // 54: user.UserBasicService.Login:output_type -> user.LoginResponse
+	44, // 55: user.UserBasicService.Logout:output_type -> user.LogoutResponse
+	46, // 56: user.UserBasicService.Register:output_type -> user.RegisterResponse
+	49, // 57: user.UserBasicService.RefreshToken:output_type -> user.RefreshResponse
+	51, // 58: user.CaptchaService.GetCaptchaConfig:output_type -> user.GetCaptchaConfigResponse
+	53, // 59: user.CaptchaService.CheckCaptcha:output_type -> user.CheckCaptchaResponse
+	56, // 60: user.QQEmail.SendQQEmail:output_type -> user.SendQQEmailResponse
+	58, // 61: user.QQEmail.CheckQQEmail:output_type -> user.CheckQQEmailResponse
+	37, // [37:62] is the sub-list for method output_type
+	12, // [12:37] is the sub-list for method input_type
 	12, // [12:12] is the sub-list for extension type_name
 	12, // [12:12] is the sub-list for extension extendee
 	0,  // [0:12] is the sub-list for field type_name
@@ -4323,9 +4529,9 @@ func file_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_user_proto_rawDesc), len(file_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   55,
+			NumMessages:   59,
 			NumExtensions: 0,
-			NumServices:   5,
+			NumServices:   6,
 		},
 		GoTypes:           file_user_proto_goTypes,
 		DependencyIndexes: file_user_proto_depIdxs,
