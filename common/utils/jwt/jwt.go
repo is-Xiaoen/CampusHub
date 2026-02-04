@@ -121,3 +121,17 @@ func generateToken(userId int64, role Role, cfg AuthConfig, now time.Time) (Toke
 		ExpireAt: claims.ExpiresAt.Unix(),
 	}, nil
 }
+
+func ParseToken(tokenString string, secret string) (*Claims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(secret), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
+		return claims, nil
+	}
+	return nil, errors.New("invalid token")
+}
