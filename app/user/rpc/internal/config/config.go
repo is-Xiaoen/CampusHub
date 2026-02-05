@@ -45,6 +45,18 @@ type Config struct {
 
 	// Email 邮件服务配置
 	Email EmailConf `json:",optional"`
+
+	// Qiniu 七牛云配置
+	Qiniu QiniuConf `json:",optional"`
+}
+
+// QiniuConf 七牛云配置
+type QiniuConf struct {
+	AccessKey string
+	SecretKey string
+	Bucket    string
+	Domain    string
+	Zone      string
 }
 
 // MySQLConf MySQL数据库配置
