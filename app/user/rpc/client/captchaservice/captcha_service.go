@@ -32,6 +32,10 @@ type (
 	CreditLogItem            = pb.CreditLogItem
 	DeleteFileReq            = pb.DeleteFileReq
 	DeleteFileResponse       = pb.DeleteFileResponse
+	DeleteUserReq            = pb.DeleteUserReq
+	DeleteUserResponse       = pb.DeleteUserResponse
+	ForgetPasswordReq        = pb.ForgetPasswordReq
+	ForgetPasswordResponse   = pb.ForgetPasswordResponse
 	GetAllTagsReq            = pb.GetAllTagsReq
 	GetAllTagsResp           = pb.GetAllTagsResp
 	GetCaptchaConfigReq      = pb.GetCaptchaConfigReq

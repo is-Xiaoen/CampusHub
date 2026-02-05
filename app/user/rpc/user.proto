@@ -717,6 +717,31 @@ service UserBasicService {
     rpc UpdatePassword(UpdatePasswordReq) returns(UpdatePasswordResponse);
     // 修改用户信息
     rpc UpdateUserInfo(UpdateUserInfoReq) returns(UpdateUserInfoResponse);
+    // 用户注销自己
+    rpc DeleteUser(DeleteUserReq) returns(DeleteUserResponse);
+    // 用户忘记密码
+    rpc ForgetPassword(ForgetPasswordReq) returns(ForgetPasswordResponse);
+}
+
+// 用户忘记密码
+message ForgetPasswordReq{
+    string qq_code =1;
+    string new_password =2;
+    int64 user_id =3;
+}
+
+message ForgetPasswordResponse{
+    bool success =1;
+}
+
+// 用户注销自己
+message DeleteUserReq{
+    int64 user_id =1;
+    string qq_code =2;
+}
+
+message DeleteUserResponse{
+    bool success =1;
 }
 
 // 修改用户密码

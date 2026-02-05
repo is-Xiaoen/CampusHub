@@ -70,3 +70,15 @@ func (s *UserBasicServiceServer) UpdateUserInfo(ctx context.Context, in *pb.Upda
 	l := userbasicservicelogic.NewUpdateUserInfoLogic(ctx, s.svcCtx)
 	return l.UpdateUserInfo(in)
 }
+
+// 用户注销自己
+func (s *UserBasicServiceServer) DeleteUser(ctx context.Context, in *pb.DeleteUserReq) (*pb.DeleteUserResponse, error) {
+	l := userbasicservicelogic.NewDeleteUserLogic(ctx, s.svcCtx)
+	return l.DeleteUser(in)
+}
+
+// 用户忘记密码
+func (s *UserBasicServiceServer) ForgetPassword(ctx context.Context, in *pb.ForgetPasswordReq) (*pb.ForgetPasswordResponse, error) {
+	l := userbasicservicelogic.NewForgetPasswordLogic(ctx, s.svcCtx)
+	return l.ForgetPassword(in)
+}

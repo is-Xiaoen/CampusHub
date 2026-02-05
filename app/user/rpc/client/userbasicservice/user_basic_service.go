@@ -32,6 +32,10 @@ type (
 	CreditLogItem            = pb.CreditLogItem
 	DeleteFileReq            = pb.DeleteFileReq
 	DeleteFileResponse       = pb.DeleteFileResponse
+	DeleteUserReq            = pb.DeleteUserReq
+	DeleteUserResponse       = pb.DeleteUserResponse
+	ForgetPasswordReq        = pb.ForgetPasswordReq
+	ForgetPasswordResponse   = pb.ForgetPasswordResponse
 	GetAllTagsReq            = pb.GetAllTagsReq
 	GetAllTagsResp           = pb.GetAllTagsResp
 	GetCaptchaConfigReq      = pb.GetCaptchaConfigReq
@@ -105,6 +109,10 @@ type (
 		UpdatePassword(ctx context.Context, in *UpdatePasswordReq, opts ...grpc.CallOption) (*UpdatePasswordResponse, error)
 		// 修改用户信息
 		UpdateUserInfo(ctx context.Context, in *UpdateUserInfoReq, opts ...grpc.CallOption) (*UpdateUserInfoResponse, error)
+		// 用户注销自己
+		DeleteUser(ctx context.Context, in *DeleteUserReq, opts ...grpc.CallOption) (*DeleteUserResponse, error)
+		// 用户忘记密码
+		ForgetPassword(ctx context.Context, in *ForgetPasswordReq, opts ...grpc.CallOption) (*ForgetPasswordResponse, error)
 	}
 
 	defaultUserBasicService struct {
@@ -164,4 +172,16 @@ func (m *defaultUserBasicService) UpdatePassword(ctx context.Context, in *Update
 func (m *defaultUserBasicService) UpdateUserInfo(ctx context.Context, in *UpdateUserInfoReq, opts ...grpc.CallOption) (*UpdateUserInfoResponse, error) {
 	client := pb.NewUserBasicServiceClient(m.cli.Conn())
 	return client.UpdateUserInfo(ctx, in, opts...)
+}
+
+// 用户注销自己
+func (m *defaultUserBasicService) DeleteUser(ctx context.Context, in *DeleteUserReq, opts ...grpc.CallOption) (*DeleteUserResponse, error) {
+	client := pb.NewUserBasicServiceClient(m.cli.Conn())
+	return client.DeleteUser(ctx, in, opts...)
+}
+
+// 用户忘记密码
+func (m *defaultUserBasicService) ForgetPassword(ctx context.Context, in *ForgetPasswordReq, opts ...grpc.CallOption) (*ForgetPasswordResponse, error) {
+	client := pb.NewUserBasicServiceClient(m.cli.Conn())
+	return client.ForgetPassword(ctx, in, opts...)
 }
