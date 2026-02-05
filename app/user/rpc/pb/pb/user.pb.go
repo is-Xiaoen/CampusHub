@@ -5003,6 +5003,104 @@ func (x *DeleteFileResponse) GetSuccess() bool {
 	return false
 }
 
+// TagUsageCountReq 标签计数请求
+type TagUsageCountReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TagIds        []int64                `protobuf:"varint,1,rep,packed,name=tag_ids,json=tagIds,proto3" json:"tag_ids,omitempty"` // 标签ID列表
+	Delta         int32                  `protobuf:"varint,2,opt,name=delta,proto3" json:"delta,omitempty"`                        // 变化量（正数增加，负数减少）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TagUsageCountReq) Reset() {
+	*x = TagUsageCountReq{}
+	mi := &file_user_proto_msgTypes[50]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TagUsageCountReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TagUsageCountReq) ProtoMessage() {}
+
+func (x *TagUsageCountReq) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[50]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TagUsageCountReq.ProtoReflect.Descriptor instead.
+func (*TagUsageCountReq) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{50}
+}
+
+func (x *TagUsageCountReq) GetTagIds() []int64 {
+	if x != nil {
+		return x.TagIds
+	}
+	return nil
+}
+
+func (x *TagUsageCountReq) GetDelta() int32 {
+	if x != nil {
+		return x.Delta
+	}
+	return 0
+}
+
+// TagUsageCountResp 标签计数响应
+type TagUsageCountResp struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"` // 是否成功
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TagUsageCountResp) Reset() {
+	*x = TagUsageCountResp{}
+	mi := &file_user_proto_msgTypes[51]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TagUsageCountResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TagUsageCountResp) ProtoMessage() {}
+
+func (x *TagUsageCountResp) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[51]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TagUsageCountResp.ProtoReflect.Descriptor instead.
+func (*TagUsageCountResp) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{51}
+}
+
+func (x *TagUsageCountResp) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_user_proto protoreflect.FileDescriptor
 
 const file_user_proto_rawDesc = "" +
@@ -5401,6 +5499,12 @@ const file_user_proto_rawDesc = "" +
 	"\bfile_url\x18\x01 \x01(\tR\afileUrl\".\n" +
 	"\x12DeleteFileResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess2\x86\x03\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\"A\n" +
+	"\x10TagUsageCountReq\x12\x17\n" +
+	"\atag_ids\x18\x01 \x03(\x03R\x06tagIds\x12\x14\n" +
+	"\x05delta\x18\x02 \x01(\x05R\x05delta\"-\n" +
+	"\x11TagUsageCountResp\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\x86\x03\n" +
 	"\rCreditService\x12@\n" +
 	"\rGetCreditInfo\x12\x16.user.GetCreditInfoReq\x1a\x17.user.GetCreditInfoResp\x12@\n" +
 	"\rGetCreditLogs\x12\x16.user.GetCreditLogsReq\x1a\x17.user.GetCreditLogsResp\x12C\n" +
@@ -5449,6 +5553,10 @@ const file_user_proto_rawDesc = "" +
 	"UploadFile\x12\x13.user.UploadFileReq\x1a\x18.user.UploadFileResponse\x12;\n" +
 	"\n" +
 	"DeleteFile\x12\x13.user.DeleteFileReq\x1a\x18.user.DeleteFileResponseB\x06Z\x04./pbb\x06proto3"
+	"\fRefreshToken\x12\x10.user.RefreshReq\x1a\x15.user.RefreshResponse2\x9e\x01\n" +
+	"\x10TagBranchService\x12D\n" +
+	"\x11IncrTagUsageCount\x12\x16.user.TagUsageCountReq\x1a\x17.user.TagUsageCountResp\x12D\n" +
+	"\x11DecrTagUsageCount\x12\x16.user.TagUsageCountReq\x1a\x17.user.TagUsageCountRespB\x06Z\x04./pbb\x06proto3"
 
 var (
 	file_user_proto_rawDescOnce sync.Once
@@ -5463,6 +5571,7 @@ func file_user_proto_rawDescGZIP() []byte {
 }
 
 var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 77)
+var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 52)
 var file_user_proto_goTypes = []any{
 	(*GetCreditInfoReq)(nil),         // 0: user.GetCreditInfoReq
 	(*GetCreditInfoResp)(nil),        // 1: user.GetCreditInfoResp
@@ -5541,12 +5650,93 @@ var file_user_proto_goTypes = []any{
 	(*UploadFileResponse)(nil),       // 74: user.UploadFileResponse
 	(*DeleteFileReq)(nil),            // 75: user.DeleteFileReq
 	(*DeleteFileResponse)(nil),       // 76: user.DeleteFileResponse
+	(*GetAllTagsReq)(nil),            // 29: user.GetAllTagsReq
+	(*GetAllTagsResp)(nil),           // 30: user.GetAllTagsResp
+	(*GetTagsByIdsReq)(nil),          // 31: user.GetTagsByIdsReq
+	(*GetTagsByIdsResp)(nil),         // 32: user.GetTagsByIdsResp
+	(*TagInfo)(nil),                  // 33: user.TagInfo
+	(*GetUserTagsRep)(nil),           // 34: user.GetUserTagsRep
+	(*GetUserTagsResponse)(nil),      // 35: user.GetUserTagsResponse
+	(*GetGroupUserReq)(nil),          // 36: user.GetGroupUserReq
+	(*GetGroupUserResponse)(nil),     // 37: user.GetGroupUserResponse
+	(*GroupUserInfo)(nil),            // 38: user.GroupUserInfo
+	(*LoginReq)(nil),                 // 39: user.LoginReq
+	(*LoginResponse)(nil),            // 40: user.LoginResponse
+	(*LoginUserInfo)(nil),            // 41: user.LoginUserInfo
+	(*InterestTag)(nil),              // 42: user.InterestTag
+	(*LogoutReq)(nil),                // 43: user.LogoutReq
+	(*LogoutResponse)(nil),           // 44: user.LogoutResponse
+	(*RegisterReq)(nil),              // 45: user.RegisterReq
+	(*RegisterResponse)(nil),         // 46: user.RegisterResponse
+	(*UserInfo)(nil),                 // 47: user.UserInfo
+	(*RefreshReq)(nil),               // 48: user.RefreshReq
+	(*RefreshResponse)(nil),          // 49: user.RefreshResponse
+	(*TagUsageCountReq)(nil),         // 50: user.TagUsageCountReq
+	(*TagUsageCountResp)(nil),        // 51: user.TagUsageCountResp
 }
 var file_user_proto_depIdxs = []int32{
 	3,  // 0: user.GetCreditLogsResp.list:type_name -> user.CreditLogItem
 	27, // 1: user.GetVerifyCurrentResp.verify_data:type_name -> user.VerifyOcrData
 	22, // 2: user.ConfirmStudentVerifyReq.modified_data:type_name -> user.VerifyModifiedData
 	27, // 3: user.UpdateVerifyStatusReq.ocr_data:type_name -> user.VerifyOcrData
+	33, // 4: user.GetAllTagsResp.tags:type_name -> user.TagInfo
+	33, // 5: user.GetTagsByIdsResp.tags:type_name -> user.TagInfo
+	38, // 6: user.GetGroupUserResponse.users:type_name -> user.GroupUserInfo
+	41, // 7: user.LoginResponse.user_info:type_name -> user.LoginUserInfo
+	47, // 8: user.LoginUserInfo.user_info:type_name -> user.UserInfo
+	47, // 9: user.RegisterResponse.user_info:type_name -> user.UserInfo
+	42, // 10: user.UserInfo.interest_tags:type_name -> user.InterestTag
+	0,  // 11: user.CreditService.GetCreditInfo:input_type -> user.GetCreditInfoReq
+	2,  // 12: user.CreditService.GetCreditLogs:input_type -> user.GetCreditLogsReq
+	5,  // 13: user.CreditService.CanParticipate:input_type -> user.CanParticipateReq
+	7,  // 14: user.CreditService.CanPublish:input_type -> user.CanPublishReq
+	9,  // 15: user.CreditService.InitCredit:input_type -> user.InitCreditReq
+	11, // 16: user.CreditService.UpdateScore:input_type -> user.UpdateScoreReq
+	13, // 17: user.VerifyService.GetVerifyCurrent:input_type -> user.GetVerifyCurrentReq
+	15, // 18: user.VerifyService.GetVerifyInfo:input_type -> user.GetVerifyInfoReq
+	17, // 19: user.VerifyService.IsVerified:input_type -> user.IsVerifiedReq
+	19, // 20: user.VerifyService.ApplyStudentVerify:input_type -> user.ApplyStudentVerifyReq
+	21, // 21: user.VerifyService.ConfirmStudentVerify:input_type -> user.ConfirmStudentVerifyReq
+	24, // 22: user.VerifyService.CancelStudentVerify:input_type -> user.CancelStudentVerifyReq
+	26, // 23: user.VerifyService.UpdateVerifyStatus:input_type -> user.UpdateVerifyStatusReq
+	29, // 24: user.TagService.GetAllTags:input_type -> user.GetAllTagsReq
+	31, // 25: user.TagService.GetTagsByIds:input_type -> user.GetTagsByIdsReq
+	34, // 26: user.TagService.GetUserTags:input_type -> user.GetUserTagsRep
+	36, // 27: user.UserBasicService.GetGroupUser:input_type -> user.GetGroupUserReq
+	39, // 28: user.UserBasicService.Login:input_type -> user.LoginReq
+	43, // 29: user.UserBasicService.Logout:input_type -> user.LogoutReq
+	45, // 30: user.UserBasicService.Register:input_type -> user.RegisterReq
+	48, // 31: user.UserBasicService.RefreshToken:input_type -> user.RefreshReq
+	50, // 32: user.TagBranchService.IncrTagUsageCount:input_type -> user.TagUsageCountReq
+	50, // 33: user.TagBranchService.DecrTagUsageCount:input_type -> user.TagUsageCountReq
+	1,  // 34: user.CreditService.GetCreditInfo:output_type -> user.GetCreditInfoResp
+	4,  // 35: user.CreditService.GetCreditLogs:output_type -> user.GetCreditLogsResp
+	6,  // 36: user.CreditService.CanParticipate:output_type -> user.CanParticipateResp
+	8,  // 37: user.CreditService.CanPublish:output_type -> user.CanPublishResp
+	10, // 38: user.CreditService.InitCredit:output_type -> user.InitCreditResp
+	12, // 39: user.CreditService.UpdateScore:output_type -> user.UpdateScoreResp
+	14, // 40: user.VerifyService.GetVerifyCurrent:output_type -> user.GetVerifyCurrentResp
+	16, // 41: user.VerifyService.GetVerifyInfo:output_type -> user.GetVerifyInfoResp
+	18, // 42: user.VerifyService.IsVerified:output_type -> user.IsVerifiedResp
+	20, // 43: user.VerifyService.ApplyStudentVerify:output_type -> user.ApplyStudentVerifyResp
+	23, // 44: user.VerifyService.ConfirmStudentVerify:output_type -> user.ConfirmStudentVerifyResp
+	25, // 45: user.VerifyService.CancelStudentVerify:output_type -> user.CancelStudentVerifyResp
+	28, // 46: user.VerifyService.UpdateVerifyStatus:output_type -> user.UpdateVerifyStatusResp
+	30, // 47: user.TagService.GetAllTags:output_type -> user.GetAllTagsResp
+	32, // 48: user.TagService.GetTagsByIds:output_type -> user.GetTagsByIdsResp
+	35, // 49: user.TagService.GetUserTags:output_type -> user.GetUserTagsResponse
+	37, // 50: user.UserBasicService.GetGroupUser:output_type -> user.GetGroupUserResponse
+	40, // 51: user.UserBasicService.Login:output_type -> user.LoginResponse
+	44, // 52: user.UserBasicService.Logout:output_type -> user.LogoutResponse
+	46, // 53: user.UserBasicService.Register:output_type -> user.RegisterResponse
+	49, // 54: user.UserBasicService.RefreshToken:output_type -> user.RefreshResponse
+	51, // 55: user.TagBranchService.IncrTagUsageCount:output_type -> user.TagUsageCountResp
+	51, // 56: user.TagBranchService.DecrTagUsageCount:output_type -> user.TagUsageCountResp
+	34, // [34:57] is the sub-list for method output_type
+	11, // [11:34] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 	31, // 4: user.UpdateUserTagResponse.tags:type_name -> user.TagBasicInfo
 	36, // 5: user.GetAllTagsResp.tags:type_name -> user.TagInfo
 	36, // 6: user.GetTagsByIdsResp.tags:type_name -> user.TagInfo
@@ -5642,8 +5832,10 @@ func file_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_user_proto_rawDesc), len(file_user_proto_rawDesc)),
 			NumEnums:      0,
+			NumMessages:   52,
 			NumMessages:   77,
 			NumExtensions: 0,
+			NumServices:   5,
 			NumServices:   7,
 		},
 		GoTypes:           file_user_proto_goTypes,

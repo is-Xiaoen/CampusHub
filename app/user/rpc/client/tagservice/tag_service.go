@@ -77,6 +77,8 @@ type (
 	TagInfo                  = pb.TagInfo
 	UpdatePasswordReq        = pb.UpdatePasswordReq
 	UpdatePasswordResponse   = pb.UpdatePasswordResponse
+	TagUsageCountReq         = pb.TagUsageCountReq
+	TagUsageCountResp        = pb.TagUsageCountResp
 	UpdateScoreReq           = pb.UpdateScoreReq
 	UpdateScoreResp          = pb.UpdateScoreResp
 	UpdateUserInfoReq        = pb.UpdateUserInfoReq

@@ -5,7 +5,10 @@ import (
 	"time"
 
 	"activity-platform/app/activity/model"
+	"activity-platform/app/activity/rpc/internal/cache"
 	"activity-platform/app/activity/rpc/internal/config"
+	"activity-platform/app/activity/rpc/internal/dtm"
+	"activity-platform/app/activity/rpc/internal/search"
 	"activity-platform/app/user/rpc/client/creditservice"
 	"activity-platform/app/user/rpc/client/tagservice"
 	"activity-platform/app/user/rpc/client/verifyservice"
@@ -42,12 +45,23 @@ type ServiceContext struct {
 	ActivityRegistrationModel *model.ActivityRegistrationModel
 	ActivityTicketModel       *model.ActivityTicketModel
 
+	// ==================== 缓存服务 ====================
+	ActivityCache *cache.ActivityCache // 活动详情缓存
+	CategoryCache *cache.CategoryCache // 分类列表缓存
+	HotCache      *cache.HotCache      // 热门活动缓存
+
+	// ==================== ES 搜索服务 ====================
+	ESClient    *search.ESClientWithBreaker // ES 客户端（带熔断器）
+	SyncService *search.SyncService         // ES 数据同步服务
+
+	// ==================== DTM 分布式事务 ====================
+	DTMClient *dtm.Client // DTM 客户端（可为 nil，表示未启用）
+
 	// RPC 客户端（调用其他微服务）
 	CreditRpc     creditservice.CreditService // 信用分服务
 	VerifyService verifyservice.VerifyService // 学生认证服务
 	VerifyRpc     verifyservice.VerifyService // 学生认证服务
 	TagRpc        tagservice.TagService       // 标签服务（用于同步标签数据）
-
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -68,13 +82,65 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		breaker.WithName(c.RegistrationBreaker.Name),
 	)
 
-	// 3. 初始化 User RPC 客户端（所有 User 服务共用同一个连接）
+	// 4. 初始化 User RPC 客户端（所有 User 服务共用同一个连接）
 	userRpcClient := zrpc.MustNewClient(c.UserRpc)
 	creditRpc := creditservice.NewCreditService(userRpcClient)
 	verifyRpc := verifyservice.NewVerifyService(userRpcClient)
 	tagRpc := tagservice.NewTagService(userRpcClient) // 标签服务客户端
 
-	// 4. 返回 ServiceContext
+	// 5. 初始化缓存服务
+	activityCache := cache.NewActivityCache(rds, db)
+	categoryCache := cache.NewCategoryCache(rds, db)
+	hotCache := cache.NewHotCache(rds, db)
+
+	// 6. 初始化 Model 层（提前初始化，供 ES 同步服务使用）
+	tagCacheModel := model.NewTagCacheModel(db)
+	categoryModel := model.NewCategoryModel(db)
+
+	// 7. 初始化 ES 搜索服务（可选）
+	var esClient *search.ESClientWithBreaker
+	var syncService *search.SyncService
+
+	if c.Elasticsearch.Enabled {
+		var err error
+		esClient, err = search.NewESClientWithBreaker(search.ESConfig{
+			Enabled:       c.Elasticsearch.Enabled,
+			Hosts:         c.Elasticsearch.Hosts,
+			Username:      c.Elasticsearch.Username,
+			Password:      c.Elasticsearch.Password,
+			IndexName:     c.Elasticsearch.IndexName,
+			MaxRetries:    c.Elasticsearch.MaxRetries,
+			HealthTimeout: c.Elasticsearch.HealthTimeout,
+		})
+		if err != nil {
+			logx.Errorf("[ServiceContext] ES 初始化失败: %v，搜索将降级到 MySQL", err)
+			// 不 panic，降级处理：ESClient 为 nil，搜索接口降级到 MySQL
+		} else if esClient != nil && esClient.IsEnabled() {
+			// ES 初始化成功，创建同步服务
+			syncService = search.NewSyncService(esClient.ESClient, db, tagCacheModel, categoryModel)
+			logx.Info("[ServiceContext] ES 搜索服务初始化成功")
+		}
+	} else {
+		logx.Info("[ServiceContext] ES 未启用，搜索将使用 MySQL LIKE")
+	}
+
+	// 8. 初始化 DTM 客户端（可选）
+	var dtmClient *dtm.Client
+	if c.DTM.Enabled {
+		dtmClient = dtm.NewClient(dtm.Config{
+			Enabled:        c.DTM.Enabled,
+			Server:         c.DTM.Server,
+			HTTPServer:     c.DTM.HTTPServer,
+			Timeout:        time.Duration(c.DTM.Timeout) * time.Second,
+			ActivityRpcURL: c.DTM.ActivityRpcURL,
+			UserRpcURL:     c.DTM.UserRpcURL,
+		})
+		logx.Info("[ServiceContext] DTM 客户端初始化成功")
+	} else {
+		logx.Info("[ServiceContext] DTM 未启用，创建活动将返回服务不可用错误")
+	}
+
+	// 9. 返回 ServiceContext
 	return &ServiceContext{
 		Config: c,
 
@@ -88,14 +154,26 @@ func NewServiceContext(c config.Config) *ServiceContext {
 
 		// Model 层
 		ActivityModel:             model.NewActivityModel(db),
-		CategoryModel:             model.NewCategoryModel(db),
+		CategoryModel:             categoryModel,
 		ActivityTagModel:          model.NewActivityTagModel(db),      // 活动-标签关联
-		TagCacheModel:             model.NewTagCacheModel(db),         // 标签缓存
+		TagCacheModel:             tagCacheModel,                      // 标签缓存
 		TagStatsModel:             model.NewActivityTagStatsModel(db), // 标签统计
 		StatusLogModel:            model.NewActivityStatusLogModel(db),
 		TagModel:                  model.NewTagModel(db),
 		ActivityRegistrationModel: model.NewActivityRegistrationModel(db),
 		ActivityTicketModel:       model.NewActivityTicketModel(db),
+
+		// 缓存服务
+		ActivityCache: activityCache,
+		CategoryCache: categoryCache,
+		HotCache:      hotCache,
+
+		// ES 搜索服务
+		ESClient:    esClient,
+		SyncService: syncService,
+
+		// DTM 分布式事务
+		DTMClient: dtmClient,
 
 		// RPC 客户端
 		CreditRpc:     creditRpc,

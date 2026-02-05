@@ -3,13 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	"time"
 
 	"activity-platform/app/activity/rpc/activity"
 	"activity-platform/app/activity/rpc/internal/config"
+	"activity-platform/app/activity/rpc/internal/cron"
 	"activity-platform/app/activity/rpc/internal/server"
+	activitybranchserver "activity-platform/app/activity/rpc/internal/server/activitybranchservice"
 	"activity-platform/app/activity/rpc/internal/svc"
-	"activity-platform/app/activity/rpc/internal/syncer"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -31,14 +31,31 @@ func main() {
 	// 2. 初始化 ServiceContext
 	ctx := svc.NewServiceContext(c)
 
-	// 3. 启动标签同步器（从用户服务同步标签到本地缓存）
-	tagSyncer := syncer.NewTagSyncer(ctx.TagRpc, ctx.TagCacheModel, 5*time.Minute)
-	tagSyncer.Start()
-	defer tagSyncer.Stop()
+	// 3. 缓存预热（异步执行，不阻塞启动）
+	ctx.WarmupCacheAsync()
 
-	// 4. 创建 RPC 服务
+	// 4. 启动状态自动流转定时任务
+	statusCron := cron.NewStatusCron(
+		ctx.Redis,
+		ctx.DB,
+		ctx.ActivityModel,
+		ctx.StatusLogModel,
+	)
+	statusCron.Start()
+	defer statusCron.Stop()
+
+	// 5. DTM 客户端关闭（如果启用）
+	if ctx.DTMClient != nil {
+		defer ctx.DTMClient.Close()
+	}
+
+	// 6. 创建 RPC 服务
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
+		// 注册 ActivityService（外部接口）- 使用根目录 logic 的实现
 		activity.RegisterActivityServiceServer(grpcServer, server.NewActivityServiceServer(ctx))
+
+		// 注册 ActivityBranchService（DTM 分支操作接口）
+		activity.RegisterActivityBranchServiceServer(grpcServer, activitybranchserver.NewActivityBranchServiceServer(ctx))
 
 		// 开发环境启用 gRPC 反射（便于调试）
 		if c.Mode == service.DevMode || c.Mode == service.TestMode {

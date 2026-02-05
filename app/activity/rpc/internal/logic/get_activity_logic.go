@@ -30,18 +30,33 @@ func NewGetActivityLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetAc
 //
 // 业务逻辑：
 //  1. 参数校验（ID 必须大于 0）
-//  2. 查询活动基本信息
+//  2. 查询活动基本信息（优先从缓存获取）
 //  3. 权限校验（非公开状态需要是组织者或管理员）
 //  4. 聚合关联数据（分类名称、标签列表）
 //  5. 构建响应（手机号脱敏）
+//
+// 缓存策略：
+//   - 活动详情使用 ActivityCache（TTL 5min）
+//   - 分类名称使用 CategoryCache（TTL 30min）
+//   - 缓存失效：更新/删除活动时主动删除
 func (l *GetActivityLogic) GetActivity(in *activity.GetActivityReq) (*activity.GetActivityResp, error) {
 	// 1. 参数校验
 	if in.Id <= 0 {
 		return nil, errorx.ErrInvalidParams("活动ID无效")
 	}
 
-	// 2. 查询活动基本信息
-	activityData, err := l.svcCtx.ActivityModel.FindByID(l.ctx, uint64(in.Id))
+	// 2. 查询活动基本信息（优先从缓存获取）
+	var activityData *model.Activity
+	var err error
+
+	// 优先使用缓存
+	if l.svcCtx.ActivityCache != nil {
+		activityData, err = l.svcCtx.ActivityCache.GetByID(l.ctx, uint64(in.Id))
+	} else {
+		// 缓存服务未初始化，降级查 DB
+		activityData, err = l.svcCtx.ActivityModel.FindByID(l.ctx, uint64(in.Id))
+	}
+
 	if err != nil {
 		if errors.Is(err, model.ErrActivityNotFound) {
 			return nil, errorx.New(errorx.CodeActivityNotFound)
@@ -62,15 +77,25 @@ func (l *GetActivityLogic) GetActivity(in *activity.GetActivityReq) (*activity.G
 		}
 	}
 
-	// 4. 查询分类名称
+	// 4. 查询分类名称（优先从缓存获取）
 	var categoryName string
-	category, err := l.svcCtx.CategoryModel.FindByID(l.ctx, activityData.CategoryID)
-	if err != nil {
-		// 分类可能被删除或禁用，记录日志但不影响主流程
-		l.Infof("[WARNING] 查询分类失败: category_id=%d, err=%v", activityData.CategoryID, err)
-		categoryName = "未知分类"
+	if l.svcCtx.CategoryCache != nil {
+		category, err := l.svcCtx.CategoryCache.GetByID(l.ctx, activityData.CategoryID)
+		if err != nil {
+			l.Infof("[WARNING] 查询分类失败: category_id=%d, err=%v", activityData.CategoryID, err)
+			categoryName = "未知分类"
+		} else {
+			categoryName = category.Name
+		}
 	} else {
-		categoryName = category.Name
+		// 缓存服务未初始化，降级查 DB
+		category, err := l.svcCtx.CategoryModel.FindByID(l.ctx, activityData.CategoryID)
+		if err != nil {
+			l.Infof("[WARNING] 查询分类失败: category_id=%d, err=%v", activityData.CategoryID, err)
+			categoryName = "未知分类"
+		} else {
+			categoryName = category.Name
+		}
 	}
 
 	// 5. 查询标签列表（从 tag_cache 表）

@@ -127,6 +127,23 @@ func (l *UpdateActivityLogic) UpdateActivity(in *activity.UpdateActivityReq) (*a
 		finalStatus = newStatus
 	}
 
+	// 删除缓存（更新成功后）
+	if l.svcCtx.ActivityCache != nil {
+		if err := l.svcCtx.ActivityCache.Invalidate(l.ctx, uint64(in.Id)); err != nil {
+			// 缓存删除失败不影响主流程，记录日志即可
+			l.Infof("[WARNING] 删除活动缓存失败: id=%d, err=%v", in.Id, err)
+		}
+	}
+
+	// 异步同步到 ES（公开状态需要同步）
+	if l.svcCtx.SyncService != nil {
+		// 重新查询最新数据用于同步
+		updatedActivity, err := l.svcCtx.ActivityModel.FindByID(l.ctx, uint64(in.Id))
+		if err == nil && updatedActivity.IsPublic() {
+			l.svcCtx.SyncService.IndexActivityAsync(updatedActivity)
+		}
+	}
+
 	l.Infof("活动更新成功: id=%d, status=%d, newVersion=%d", in.Id, finalStatus, finalVersion)
 
 	return &activity.UpdateActivityResp{

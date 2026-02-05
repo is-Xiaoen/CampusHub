@@ -1,0 +1,70 @@
+# ============================================================================
+# 活动服务 API 配置 - 生产环境
+# ============================================================================
+#
+# 部署位置: /opt/campushub/config/activity-api.yaml
+#
+# 重要：Auth.AccessSecret 必须与 user-api 一致！
+#
+# ============================================================================
+
+Name: activity-api
+Host: 0.0.0.0
+Port: 8002
+MaxConns: 10000
+CpuThreshold: 900
+Timeout: 3000
+
+# ==================== 内置中间件开关 ====================
+Middlewares:
+  Breaker: true
+  Shedding: true
+  MaxConns: true
+
+# 日志配置
+Log:
+  ServiceName: activity-api
+  Mode: file
+  Encoding: json
+  Level: info
+  Path: /opt/campushub/logs
+
+# ==================== JWT 配置（必须与 user-api 一致）====================
+Auth:
+  AccessSecret: "your-access-secret-key-change-in-production-32chars"
+  AccessExpire: 7200
+
+# ==================== RPC 服务配置 ====================
+ActivityRpc:
+  Etcd:
+    Hosts:
+      - 192.168.10.4:2379
+    Key: activity.rpc
+  NonBlock: true
+  Timeout: 3000
+
+UserRpc:
+  Etcd:
+    Hosts:
+      - 192.168.10.4:2379
+    Key: user.rpc
+  NonBlock: true
+  Timeout: 3000
+
+# ==================== 高并发、熔断限流配置 ====================
+RegistrationLimit:
+  Rate: 100
+  Burst: 200
+
+RegistrationBreaker:
+  Name: activity-registration
+  Requests: 100
+  ErrorRate: 0.5
+  Timeout: 60
+
+# ==================== 链路追踪 ====================
+Telemetry:
+  Name: activity-api
+  Endpoint: http://192.168.10.4:14268/api/traces
+  Sampler: 1.0
+  Batcher: jaeger
