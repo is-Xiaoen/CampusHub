@@ -17,9 +17,11 @@ CLAUDE.md
 # mess code
 .messing_docs
 common/messaging/tests
+common/messaging/README.md
 .specify
 specs
 tools
+docs/batch_query_network.md
 
 # Test binary
 *.test
