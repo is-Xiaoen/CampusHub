@@ -60,13 +60,23 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Path:    "/register",
 				Handler: base.RegisterHandler(serverCtx),
 			},
-			{
-				// 忘记密码
-				Method:  http.MethodPost,
-				Path:    "/users/info/password/qq_email",
-				Handler: base.ForgetPasswordHandler(serverCtx),
-			},
 		},
+		rest.WithPrefix("/api/v1"),
+	)
+
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.UserRoleMiddleware},
+			[]rest.Route{
+				{
+					// 忘记密码
+					Method:  http.MethodPost,
+					Path:    "/users/info/password/qq_email",
+					Handler: base.ForgetPasswordHandler(serverCtx),
+				},
+			}...,
+		),
+		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
 		rest.WithPrefix("/api/v1"),
 	)
 

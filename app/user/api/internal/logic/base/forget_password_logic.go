@@ -1,6 +1,3 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.9.2
-
 package base
 
 import (
@@ -8,6 +5,8 @@ import (
 
 	"activity-platform/app/user/api/internal/svc"
 	"activity-platform/app/user/api/internal/types"
+	"activity-platform/app/user/rpc/client/userbasicservice"
+	ctxUtils "activity-platform/common/utils/context"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -28,7 +27,23 @@ func NewForgetPasswordLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Fo
 }
 
 func (l *ForgetPasswordLogic) ForgetPassword(req *types.ForgetPasswordReq) (resp *types.ForgetPasswordResp, err error) {
-	// todo: add your logic here and delete this line
+	// 从上下文获取 userId（go-zero jwt:Auth 自动注入）
+	userId, err := ctxUtils.GetUserIdFromCtx(l.ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	return
+	// 调用 RPC 层忘记密码
+	rpcResp, err := l.svcCtx.UserBasicServiceRpc.ForgetPassword(l.ctx, &userbasicservice.ForgetPasswordReq{
+		QqCode:      req.QqCode,
+		NewPassword: req.NewPassword,
+		UserId:      userId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.ForgetPasswordResp{
+		Success: rpcResp.Success,
+	}, nil
 }
