@@ -79,28 +79,40 @@ services:
   # ==================== DTM 分布式事务管理器 ====================
   # 面试亮点：SAGA 模式、子事务屏障、跨服务数据一致性
   # 文档：https://en.dtm.pub/
+  #
+  # 注意：如果 MySQL 是独立部署的（非本 compose 管理），请使用下方的"独立部署"命令
+  #
+  # 独立部署 DTM（MySQL 已单独运行时）：
+  # docker run -d --name activity-dtm --restart unless-stopped \
+  #   -p 36789:36789 -p 36790:36790 \
+  #   -e STORE_DRIVER=mysql \
+  #   -e STORE_HOST=192.168.10.4 \
+  #   -e STORE_PORT=3308 \
+  #   -e STORE_USER=root \
+  #   -e STORE_PASSWORD=123456 \
+  #   -e STORE_DB=dtm \
+  #   yedf/dtm:latest
+  #
   dtm:
     image: yedf/dtm:latest
     container_name: activity-dtm
     restart: unless-stopped
     environment:
       # 存储配置（使用 MySQL 持久化事务状态）
+      # 注意：根据你的实际 MySQL 配置修改
       STORE_DRIVER: mysql
-      STORE_HOST: mysql
-      STORE_PORT: 3306
+      STORE_HOST: 192.168.10.4   # MySQL 主机地址
+      STORE_PORT: 3308           # MySQL 端口
       STORE_USER: root
-      STORE_PASSWORD: root123456
+      STORE_PASSWORD: "123456"   # MySQL 密码
       STORE_DB: dtm
       # 时区
       TZ: Asia/Shanghai
     ports:
       - "36789:36789"  # HTTP 接口（管理界面、健康检查）
       - "36790:36790"  # gRPC 接口（业务服务调用）
-    depends_on:
-      mysql:
-        condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:36789/api/ping"]
+      test: ["CMD", "curl", "-f", "http://localhost:36789/api/ping"]
       interval: 10s
       timeout: 5s
       retries: 5

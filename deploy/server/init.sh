@@ -64,10 +64,10 @@ install_base() {
     log_info "安装基础工具..."
 
     if [[ "$PKG_MGR" == "yum" ]]; then
-        yum install -y git wget curl net-tools
+        yum install -y git curl net-tools nc
     elif [[ "$PKG_MGR" == "apt" ]]; then
         apt update
-        apt install -y git wget curl net-tools
+        apt install -y git curl net-tools netcat
     fi
 }
 
@@ -89,9 +89,9 @@ install_go() {
 
     log_info "安装 Go $GO_VERSION..."
 
-    # 下载
+    # 下载（使用 curl，兼容性更好）
     cd /tmp
-    wget -q "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
+    curl -LO "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
 
     # 安装
     rm -rf /usr/local/go
