@@ -628,10 +628,29 @@ message UpdateVerifyStatusResp {
 // ============================================================================
 
 service TagService {
-    // 马肖阳的标签接口
     rpc GetAllTags(GetAllTagsReq) returns (GetAllTagsResp);
     rpc GetTagsByIds(GetTagsByIdsReq) returns (GetTagsByIdsResp);
     rpc GetUserTags(GetUserTagsReq) returns (GetUserTagsResponse);
+    // 修改用户兴趣
+    rpc UpdateUserTag(UpdateUserTagReq) returns(UpdateUserTagResponse);
+}
+
+// 修改用户兴趣
+message UpdateUserTagReq{
+    repeated int64 ids =1;
+}
+
+message UpdateUserTagResponse{
+    repeated TagBasicInfo tags =1;
+}
+
+// 给前端展示的信息
+message TagBasicInfo{
+    uint64 id = 1;
+    string name = 2;
+    string color = 3;
+    string icon = 4;
+    string description = 6;
 }
 
 message GetAllTagsReq {
@@ -693,7 +712,44 @@ service UserBasicService {
     rpc RefreshToken(RefreshReq) returns(RefreshResponse);
     // 获取用户的信息
     rpc GetUserInfo(GetUserInfoReq) returns(GetUserInfoResponse);
+    // 修改用户密码
+    rpc UpdatePassword(UpdatePasswordReq) returns(UpdatePasswordResponse);
+    // 修改用户信息
+    rpc UpdateUserInfo(UpdateUserInfoReq) returns(UpdateUserInfoResponse);
 }
+
+// 修改用户密码
+message UpdatePasswordReq{
+    string origin_password =1;
+    string new_password =2;
+}
+
+message UpdatePasswordResponse{
+}
+
+// 修改用户信息
+message UpdateUserInfoReq{
+    int64 user_id =1;
+    int64 nickname =2;
+    string introduce =3;
+    int64 gender =4;
+    string avatar_url =5;
+    int64 age= 6;
+    repeated int64 tag_ids =7;
+}
+
+message UpdateUserInfoResponse{
+    int64 user_id =1;
+    int64 nickname =2;
+    string introduce =3;
+    int64 gender =4;
+    string avatar_url =5;
+    int64 age= 6;
+    repeated int64 tag_ids =7;
+}
+
+
+
 
 message GetGroupUserReq {
     // 使用 repeated 表示数组/列表
@@ -855,4 +911,28 @@ message CheckQQEmailReq{
 
 message CheckQQEmailResponse{
     bool isValid =1;
+}
+
+service UploadToQiNiu{
+    rpc UploadFile(UploadFileReq) returns(UploadFileResponse);
+    rpc DeleteFile(DeleteFileReq) returns(DeleteFileResponse);
+}
+
+// 上传文件
+message UploadFileReq{
+    string file_name =1;
+    bytes file_data =2;
+}
+
+message UploadFileResponse{
+    string file_url =1;
+}
+
+// 删除文件
+message DeleteFileReq{
+    string file_url =1;
+}
+
+message DeleteFileResponse{
+    bool success =1;
 }

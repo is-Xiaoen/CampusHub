@@ -58,3 +58,15 @@ func (s *UserBasicServiceServer) GetUserInfo(ctx context.Context, in *pb.GetUser
 	l := userbasicservicelogic.NewGetUserInfoLogic(ctx, s.svcCtx)
 	return l.GetUserInfo(in)
 }
+
+// 修改用户密码
+func (s *UserBasicServiceServer) UpdatePassword(ctx context.Context, in *pb.UpdatePasswordReq) (*pb.UpdatePasswordResponse, error) {
+	l := userbasicservicelogic.NewUpdatePasswordLogic(ctx, s.svcCtx)
+	return l.UpdatePassword(in)
+}
+
+// 修改用户信息
+func (s *UserBasicServiceServer) UpdateUserInfo(ctx context.Context, in *pb.UpdateUserInfoReq) (*pb.UpdateUserInfoResponse, error) {
+	l := userbasicservicelogic.NewUpdateUserInfoLogic(ctx, s.svcCtx)
+	return l.UpdateUserInfo(in)
+}

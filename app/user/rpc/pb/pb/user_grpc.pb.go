@@ -771,19 +771,21 @@ var VerifyService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	TagService_GetAllTags_FullMethodName   = "/user.TagService/GetAllTags"
-	TagService_GetTagsByIds_FullMethodName = "/user.TagService/GetTagsByIds"
-	TagService_GetUserTags_FullMethodName  = "/user.TagService/GetUserTags"
+	TagService_GetAllTags_FullMethodName    = "/user.TagService/GetAllTags"
+	TagService_GetTagsByIds_FullMethodName  = "/user.TagService/GetTagsByIds"
+	TagService_GetUserTags_FullMethodName   = "/user.TagService/GetUserTags"
+	TagService_UpdateUserTag_FullMethodName = "/user.TagService/UpdateUserTag"
 )
 
 // TagServiceClient is the client API for TagService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TagServiceClient interface {
-	// 马肖阳的标签接口
 	GetAllTags(ctx context.Context, in *GetAllTagsReq, opts ...grpc.CallOption) (*GetAllTagsResp, error)
 	GetTagsByIds(ctx context.Context, in *GetTagsByIdsReq, opts ...grpc.CallOption) (*GetTagsByIdsResp, error)
 	GetUserTags(ctx context.Context, in *GetUserTagsReq, opts ...grpc.CallOption) (*GetUserTagsResponse, error)
+	// 修改用户兴趣
+	UpdateUserTag(ctx context.Context, in *UpdateUserTagReq, opts ...grpc.CallOption) (*UpdateUserTagResponse, error)
 }
 
 type tagServiceClient struct {
@@ -824,14 +826,25 @@ func (c *tagServiceClient) GetUserTags(ctx context.Context, in *GetUserTagsReq, 
 	return out, nil
 }
 
+func (c *tagServiceClient) UpdateUserTag(ctx context.Context, in *UpdateUserTagReq, opts ...grpc.CallOption) (*UpdateUserTagResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateUserTagResponse)
+	err := c.cc.Invoke(ctx, TagService_UpdateUserTag_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TagServiceServer is the server API for TagService service.
 // All implementations must embed UnimplementedTagServiceServer
 // for forward compatibility.
 type TagServiceServer interface {
-	// 马肖阳的标签接口
 	GetAllTags(context.Context, *GetAllTagsReq) (*GetAllTagsResp, error)
 	GetTagsByIds(context.Context, *GetTagsByIdsReq) (*GetTagsByIdsResp, error)
 	GetUserTags(context.Context, *GetUserTagsReq) (*GetUserTagsResponse, error)
+	// 修改用户兴趣
+	UpdateUserTag(context.Context, *UpdateUserTagReq) (*UpdateUserTagResponse, error)
 	mustEmbedUnimplementedTagServiceServer()
 }
 
@@ -850,6 +863,9 @@ func (UnimplementedTagServiceServer) GetTagsByIds(context.Context, *GetTagsByIds
 }
 func (UnimplementedTagServiceServer) GetUserTags(context.Context, *GetUserTagsReq) (*GetUserTagsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetUserTags not implemented")
+}
+func (UnimplementedTagServiceServer) UpdateUserTag(context.Context, *UpdateUserTagReq) (*UpdateUserTagResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateUserTag not implemented")
 }
 func (UnimplementedTagServiceServer) mustEmbedUnimplementedTagServiceServer() {}
 func (UnimplementedTagServiceServer) testEmbeddedByValue()                    {}
@@ -926,6 +942,24 @@ func _TagService_GetUserTags_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TagService_UpdateUserTag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateUserTagReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TagServiceServer).UpdateUserTag(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TagService_UpdateUserTag_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TagServiceServer).UpdateUserTag(ctx, req.(*UpdateUserTagReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TagService_ServiceDesc is the grpc.ServiceDesc for TagService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -945,18 +979,24 @@ var TagService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "GetUserTags",
 			Handler:    _TagService_GetUserTags_Handler,
 		},
+		{
+			MethodName: "UpdateUserTag",
+			Handler:    _TagService_UpdateUserTag_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "user.proto",
 }
 
 const (
-	UserBasicService_GetGroupUser_FullMethodName = "/user.UserBasicService/GetGroupUser"
-	UserBasicService_Login_FullMethodName        = "/user.UserBasicService/Login"
-	UserBasicService_Logout_FullMethodName       = "/user.UserBasicService/Logout"
-	UserBasicService_Register_FullMethodName     = "/user.UserBasicService/Register"
-	UserBasicService_RefreshToken_FullMethodName = "/user.UserBasicService/RefreshToken"
-	UserBasicService_GetUserInfo_FullMethodName  = "/user.UserBasicService/GetUserInfo"
+	UserBasicService_GetGroupUser_FullMethodName   = "/user.UserBasicService/GetGroupUser"
+	UserBasicService_Login_FullMethodName          = "/user.UserBasicService/Login"
+	UserBasicService_Logout_FullMethodName         = "/user.UserBasicService/Logout"
+	UserBasicService_Register_FullMethodName       = "/user.UserBasicService/Register"
+	UserBasicService_RefreshToken_FullMethodName   = "/user.UserBasicService/RefreshToken"
+	UserBasicService_GetUserInfo_FullMethodName    = "/user.UserBasicService/GetUserInfo"
+	UserBasicService_UpdatePassword_FullMethodName = "/user.UserBasicService/UpdatePassword"
+	UserBasicService_UpdateUserInfo_FullMethodName = "/user.UserBasicService/UpdateUserInfo"
 )
 
 // UserBasicServiceClient is the client API for UserBasicService service.
@@ -975,6 +1015,10 @@ type UserBasicServiceClient interface {
 	RefreshToken(ctx context.Context, in *RefreshReq, opts ...grpc.CallOption) (*RefreshResponse, error)
 	// 获取用户的信息
 	GetUserInfo(ctx context.Context, in *GetUserInfoReq, opts ...grpc.CallOption) (*GetUserInfoResponse, error)
+	// 修改用户密码
+	UpdatePassword(ctx context.Context, in *UpdatePasswordReq, opts ...grpc.CallOption) (*UpdatePasswordResponse, error)
+	// 修改用户信息
+	UpdateUserInfo(ctx context.Context, in *UpdateUserInfoReq, opts ...grpc.CallOption) (*UpdateUserInfoResponse, error)
 }
 
 type userBasicServiceClient struct {
@@ -1045,6 +1089,26 @@ func (c *userBasicServiceClient) GetUserInfo(ctx context.Context, in *GetUserInf
 	return out, nil
 }
 
+func (c *userBasicServiceClient) UpdatePassword(ctx context.Context, in *UpdatePasswordReq, opts ...grpc.CallOption) (*UpdatePasswordResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdatePasswordResponse)
+	err := c.cc.Invoke(ctx, UserBasicService_UpdatePassword_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userBasicServiceClient) UpdateUserInfo(ctx context.Context, in *UpdateUserInfoReq, opts ...grpc.CallOption) (*UpdateUserInfoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateUserInfoResponse)
+	err := c.cc.Invoke(ctx, UserBasicService_UpdateUserInfo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserBasicServiceServer is the server API for UserBasicService service.
 // All implementations must embed UnimplementedUserBasicServiceServer
 // for forward compatibility.
@@ -1061,6 +1125,10 @@ type UserBasicServiceServer interface {
 	RefreshToken(context.Context, *RefreshReq) (*RefreshResponse, error)
 	// 获取用户的信息
 	GetUserInfo(context.Context, *GetUserInfoReq) (*GetUserInfoResponse, error)
+	// 修改用户密码
+	UpdatePassword(context.Context, *UpdatePasswordReq) (*UpdatePasswordResponse, error)
+	// 修改用户信息
+	UpdateUserInfo(context.Context, *UpdateUserInfoReq) (*UpdateUserInfoResponse, error)
 	mustEmbedUnimplementedUserBasicServiceServer()
 }
 
@@ -1088,6 +1156,12 @@ func (UnimplementedUserBasicServiceServer) RefreshToken(context.Context, *Refres
 }
 func (UnimplementedUserBasicServiceServer) GetUserInfo(context.Context, *GetUserInfoReq) (*GetUserInfoResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetUserInfo not implemented")
+}
+func (UnimplementedUserBasicServiceServer) UpdatePassword(context.Context, *UpdatePasswordReq) (*UpdatePasswordResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdatePassword not implemented")
+}
+func (UnimplementedUserBasicServiceServer) UpdateUserInfo(context.Context, *UpdateUserInfoReq) (*UpdateUserInfoResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateUserInfo not implemented")
 }
 func (UnimplementedUserBasicServiceServer) mustEmbedUnimplementedUserBasicServiceServer() {}
 func (UnimplementedUserBasicServiceServer) testEmbeddedByValue()                          {}
@@ -1218,6 +1292,42 @@ func _UserBasicService_GetUserInfo_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserBasicService_UpdatePassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePasswordReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserBasicServiceServer).UpdatePassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserBasicService_UpdatePassword_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserBasicServiceServer).UpdatePassword(ctx, req.(*UpdatePasswordReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserBasicService_UpdateUserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateUserInfoReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserBasicServiceServer).UpdateUserInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserBasicService_UpdateUserInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserBasicServiceServer).UpdateUserInfo(ctx, req.(*UpdateUserInfoReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserBasicService_ServiceDesc is the grpc.ServiceDesc for UserBasicService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1248,6 +1358,14 @@ var UserBasicService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserInfo",
 			Handler:    _UserBasicService_GetUserInfo_Handler,
+		},
+		{
+			MethodName: "UpdatePassword",
+			Handler:    _UserBasicService_UpdatePassword_Handler,
+		},
+		{
+			MethodName: "UpdateUserInfo",
+			Handler:    _UserBasicService_UpdateUserInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -1532,6 +1650,146 @@ var QQEmail_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckQQEmail",
 			Handler:    _QQEmail_CheckQQEmail_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "user.proto",
+}
+
+const (
+	UploadToQiNiu_UploadFile_FullMethodName = "/user.UploadToQiNiu/UploadFile"
+	UploadToQiNiu_DeleteFile_FullMethodName = "/user.UploadToQiNiu/DeleteFile"
+)
+
+// UploadToQiNiuClient is the client API for UploadToQiNiu service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type UploadToQiNiuClient interface {
+	UploadFile(ctx context.Context, in *UploadFileReq, opts ...grpc.CallOption) (*UploadFileResponse, error)
+	DeleteFile(ctx context.Context, in *DeleteFileReq, opts ...grpc.CallOption) (*DeleteFileResponse, error)
+}
+
+type uploadToQiNiuClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewUploadToQiNiuClient(cc grpc.ClientConnInterface) UploadToQiNiuClient {
+	return &uploadToQiNiuClient{cc}
+}
+
+func (c *uploadToQiNiuClient) UploadFile(ctx context.Context, in *UploadFileReq, opts ...grpc.CallOption) (*UploadFileResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UploadFileResponse)
+	err := c.cc.Invoke(ctx, UploadToQiNiu_UploadFile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *uploadToQiNiuClient) DeleteFile(ctx context.Context, in *DeleteFileReq, opts ...grpc.CallOption) (*DeleteFileResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteFileResponse)
+	err := c.cc.Invoke(ctx, UploadToQiNiu_DeleteFile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// UploadToQiNiuServer is the server API for UploadToQiNiu service.
+// All implementations must embed UnimplementedUploadToQiNiuServer
+// for forward compatibility.
+type UploadToQiNiuServer interface {
+	UploadFile(context.Context, *UploadFileReq) (*UploadFileResponse, error)
+	DeleteFile(context.Context, *DeleteFileReq) (*DeleteFileResponse, error)
+	mustEmbedUnimplementedUploadToQiNiuServer()
+}
+
+// UnimplementedUploadToQiNiuServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedUploadToQiNiuServer struct{}
+
+func (UnimplementedUploadToQiNiuServer) UploadFile(context.Context, *UploadFileReq) (*UploadFileResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UploadFile not implemented")
+}
+func (UnimplementedUploadToQiNiuServer) DeleteFile(context.Context, *DeleteFileReq) (*DeleteFileResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteFile not implemented")
+}
+func (UnimplementedUploadToQiNiuServer) mustEmbedUnimplementedUploadToQiNiuServer() {}
+func (UnimplementedUploadToQiNiuServer) testEmbeddedByValue()                       {}
+
+// UnsafeUploadToQiNiuServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to UploadToQiNiuServer will
+// result in compilation errors.
+type UnsafeUploadToQiNiuServer interface {
+	mustEmbedUnimplementedUploadToQiNiuServer()
+}
+
+func RegisterUploadToQiNiuServer(s grpc.ServiceRegistrar, srv UploadToQiNiuServer) {
+	// If the following call panics, it indicates UnimplementedUploadToQiNiuServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&UploadToQiNiu_ServiceDesc, srv)
+}
+
+func _UploadToQiNiu_UploadFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadFileReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UploadToQiNiuServer).UploadFile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UploadToQiNiu_UploadFile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UploadToQiNiuServer).UploadFile(ctx, req.(*UploadFileReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UploadToQiNiu_DeleteFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteFileReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UploadToQiNiuServer).DeleteFile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UploadToQiNiu_DeleteFile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UploadToQiNiuServer).DeleteFile(ctx, req.(*DeleteFileReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// UploadToQiNiu_ServiceDesc is the grpc.ServiceDesc for UploadToQiNiu service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var UploadToQiNiu_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "user.UploadToQiNiu",
+	HandlerType: (*UploadToQiNiuServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "UploadFile",
+			Handler:    _UploadToQiNiu_UploadFile_Handler,
+		},
+		{
+			MethodName: "DeleteFile",
+			Handler:    _UploadToQiNiu_DeleteFile_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
