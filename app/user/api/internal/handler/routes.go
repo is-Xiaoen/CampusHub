@@ -6,7 +6,9 @@ package handler
 import (
 	"net/http"
 
+	base "activity-platform/app/user/api/internal/handler/base"
 	credit "activity-platform/app/user/api/internal/handler/credit"
+	user "activity-platform/app/user/api/internal/handler/user"
 	verify "activity-platform/app/user/api/internal/handler/verify"
 	"activity-platform/app/user/api/internal/svc"
 
@@ -17,10 +19,113 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	server.AddRoutes(
 		[]rest.Route{
 			{
+				// 获取验证码配置
+				Method:  http.MethodGet,
+				Path:    "/captcha",
+				Handler: base.GetCaptchaHandler(serverCtx),
+			},
+			{
+				// 校验验证码
+				Method:  http.MethodPost,
+				Path:    "/captcha",
+				Handler: base.VerifyCaptchaHandler(serverCtx),
+			},
+			{
+				// 登录
+				Method:  http.MethodPost,
+				Path:    "/login",
+				Handler: base.LoginHandler(serverCtx),
+			},
+			{
+				// 获取忘记密码QQ验证码
+				Method:  http.MethodGet,
+				Path:    "/qq_code/forgot_password",
+				Handler: base.GetForgetPasswordCodeHandler(serverCtx),
+			},
+			{
+				// 获取注册QQ验证码
+				Method:  http.MethodGet,
+				Path:    "/qq_code/register",
+				Handler: base.GetRegisterCodeHandler(serverCtx),
+			},
+			{
+				// 刷新Token
+				Method:  http.MethodPost,
+				Path:    "/refresh_token",
+				Handler: base.RefreshTokenHandler(serverCtx),
+			},
+			{
+				// 注册
+				Method:  http.MethodPost,
+				Path:    "/register",
+				Handler: base.RegisterHandler(serverCtx),
+			},
+			{
+				// 忘记密码
+				Method:  http.MethodPost,
+				Path:    "/users/info/password/qq_email",
+				Handler: base.ForgetPasswordHandler(serverCtx),
+			},
+		},
+		rest.WithPrefix("/api/v1"),
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
 				// 查询信用变更记录
 				Method:  http.MethodGet,
 				Path:    "/credit/logs",
 				Handler: credit.GetCreditLogsHandler(serverCtx),
+			},
+		},
+		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
+		rest.WithPrefix("/api/v1"),
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				// 修改兴趣
+				Method:  http.MethodPost,
+				Path:    "/interests",
+				Handler: user.UpdateInterestHandler(serverCtx),
+			},
+			{
+				// 注销用户
+				Method:  http.MethodPost,
+				Path:    "/logoff",
+				Handler: user.LogoffHandler(serverCtx),
+			},
+			{
+				// 退出登录
+				Method:  http.MethodPost,
+				Path:    "/logout",
+				Handler: user.LogoutHandler(serverCtx),
+			},
+			{
+				// 获取注销用户QQ验证码
+				Method:  http.MethodGet,
+				Path:    "/qq_code/delete_user",
+				Handler: user.GetDeleteUserCodeHandler(serverCtx),
+			},
+			{
+				// 获取用户信息
+				Method:  http.MethodGet,
+				Path:    "/users/details",
+				Handler: user.GetUserInfoHandler(serverCtx),
+			},
+			{
+				// 修改用户信息
+				Method:  http.MethodPost,
+				Path:    "/users/details",
+				Handler: user.UpdateUserInfoHandler(serverCtx),
+			},
+			{
+				// 修改密码
+				Method:  http.MethodPost,
+				Path:    "/users/info/password",
+				Handler: user.ChangePasswordHandler(serverCtx),
 			},
 		},
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),

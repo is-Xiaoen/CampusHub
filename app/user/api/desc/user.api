@@ -2,7 +2,7 @@
 // 用户服务 API 定义
 // ============================================================================
 //
-// 负责人：杨春路（B同学）
+// 负责人：杨春露（B同学）
 //
 // 说明：
 //   本文件定义用户服务的所有 HTTP 接口，使用 goctl 生成代码：
@@ -11,6 +11,8 @@
 // 模块划分：
 //   1. 信用分模块（credit）- 信用分查询、变更记录
 //   2. 学生认证模块（verify）- 学生身份认证流程
+//   3. 基础服务模块（base）- 登录、注册、验证码
+//   4. 用户信息模块（user）- 个人信息管理
 //
 // JSON 命名规范：统一使用 snake_case（下划线命名）
 //
@@ -19,7 +21,7 @@ syntax = "v1"
 
 info (
 	title:   "用户服务 API"
-	desc:    "信用分、学生认证"
+	desc:    "信用分、学生认证、用户基础服务"
 	author:  "杨春路"
 	version: "v1"
 )
@@ -203,6 +205,129 @@ type CancelVerifyResp {
 }
 
 // ============================================================================
+// 三、用户基础模块 - 类型定义
+// ============================================================================
+type InterestTag {
+	Id       int64  `json:"id"`
+	TagName  string `json:"tagName"`
+	TagColor string `json:"tagColor"`
+	TagIcon  string `json:"tagIcon"`
+	TagDesc  string `json:"tagDesc"`
+}
+
+type UserInfo {
+	UserId            int64         `json:"userId"`
+	Nickname          string        `json:"nickname"`
+	AvatarUrl         string        `json:"avatarUrl"`
+	Introduction      string        `json:"introduction"`
+	Gender            string        `json:"gender"`
+	Age               string        `json:"age"`
+	ActivitiesNum     int64         `json:"activitiesNum"`
+	InitiateNum       int64         `json:"initiateNum"`
+	Credit            int64         `json:"credit"`
+	IsStudentVerified bool          `json:"isStudentVerified"`
+	InterestTags      []InterestTag `json:"interestTags"`
+}
+
+type LoginReq {
+	QqEmail       string `json:"qqEmail"`
+	Password      string `json:"password"`
+	LotNumber     string `json:"lotNumber"`
+	CaptchaOutput string `json:"captchaOutput"`
+	PassToken     string `json:"passToken"`
+	GenTime       string `json:"genTime"`
+}
+
+type LoginResp {
+	AccessToken  string   `json:"accessToken"`
+	RefreshToken string   `json:"refreshToken"`
+	UserInfo     UserInfo `json:"userInfo"`
+}
+
+type RegisterReq {
+	QqEmail  string `json:"qqEmail"`
+	QqCode   string `json:"qqCode"`
+	Password string `json:"password"`
+	Nickname string `json:"nickname"`
+}
+
+type RegisterResp {
+	AccessToken  string   `json:"accessToken"`
+	RefreshToken string   `json:"refreshToken"`
+	UserInfo     UserInfo `json:"userInfo"`
+}
+
+type ForgetPasswordReq {
+	QqCode      string `json:"qq_code"`
+	NewPassword string `json:"new_password"`
+}
+
+type ForgetPasswordResp {
+	Success bool `json:"success"`
+}
+
+type RefreshTokenReq {
+	RefreshToken string `json:"refreshToken"`
+}
+
+type RefreshTokenResp {
+	AccessToken string `json:"accessToken"`
+}
+
+type LogoffReq {
+	QqCode string `json:"qq_code"`
+}
+
+type LogoffResp {
+	Success bool `json:"success"`
+}
+
+type ChangePasswordReq {
+	OriginPassword string `json:"originPassword"`
+	NewPassword    string `json:"newPassword"`
+}
+
+type ChangePasswordResp {
+	Success bool `json:"success"`
+}
+
+type UpdateInterestReq {
+	InterestTagIds []int64 `json:"interestTagIds"`
+}
+
+type UpdateInterestResp {
+	UserId       int64         `json:"userId"`
+	InterestTags []InterestTag `json:"interestTags"`
+}
+
+type UpdateUserInfoReq {
+	Age            int64   `json:"age,optional"`
+	Nickname       string  `json:"nickname,optional"`
+	Introduction   string  `json:"introduction,optional"`
+	Gender         string  `json:"gender,optional"`
+	InterestTagIds []int64 `json:"interestTagIds,optional"`
+}
+
+type UpdateUserInfoResp {
+	UserInfo
+}
+
+type GetCaptchaResp {
+	CaptchaId string `json:"captchaId"`
+}
+
+type VerifyCaptchaReq {
+	LotNumber     string `json:"lotNumber"`
+	CaptchaOutput string `json:"captchaOutput"`
+	PassToken     string `json:"passToken"`
+	GenTime       string `json:"genTime"`
+}
+
+type VerifyCaptchaResp {
+	IsValid bool `json:"isValid"`
+}
+
+// ============================================================================
 // 服务定义
 // ============================================================================
 // ==================== 1. 信用分接口（需要登录）====================
@@ -240,3 +365,79 @@ service user-api {
 	@handler CancelVerify
 	post /verify/student/cancel (CancelVerifyReq) returns (CancelVerifyResp)
 }
+
+// ==================== 3. 基础服务接口（无须登录）====================
+@server (
+	prefix: /api/v1
+	group:  base
+)
+service user-api {
+	@doc "登录"
+	@handler Login
+	post /login (LoginReq) returns (LoginResp)
+
+	@doc "注册"
+	@handler Register
+	post /register (RegisterReq) returns (RegisterResp)
+
+	@doc "忘记密码"
+	@handler ForgetPassword
+	post /users/info/password/qq_email (ForgetPasswordReq) returns (ForgetPasswordResp)
+
+	@doc "刷新Token"
+	@handler RefreshToken
+	post /refresh_token (RefreshTokenReq) returns (RefreshTokenResp)
+
+	@doc "获取验证码配置"
+	@handler GetCaptcha
+	get /captcha returns (GetCaptchaResp)
+
+	@doc "校验验证码"
+	@handler VerifyCaptcha
+	post /captcha (VerifyCaptchaReq) returns (VerifyCaptchaResp)
+
+	@doc "获取注册QQ验证码"
+	@handler GetRegisterCode
+	get /qq_code/register
+
+	@doc "获取忘记密码QQ验证码"
+	@handler GetForgetPasswordCode
+	get /qq_code/forgot_password
+}
+
+// ==================== 4. 用户信息接口（需要登录）====================
+@server (
+	prefix: /api/v1
+	group:  user
+	jwt:    Auth
+)
+service user-api {
+	@doc "退出登录"
+	@handler Logout
+	post /logout
+
+	@doc "修改密码"
+	@handler ChangePassword
+	post /users/info/password (ChangePasswordReq) returns (ChangePasswordResp)
+
+	@doc "修改兴趣"
+	@handler UpdateInterest
+	post /interests (UpdateInterestReq) returns (UpdateInterestResp)
+
+	@doc "获取用户信息"
+	@handler GetUserInfo
+	get /users/details returns (UserInfo)
+
+	@doc "修改用户信息"
+	@handler UpdateUserInfo
+	post /users/details (UpdateUserInfoReq) returns (UpdateUserInfoResp)
+
+	@doc "获取注销用户QQ验证码"
+	@handler GetDeleteUserCode
+	get /qq_code/delete_user
+
+	@doc "注销用户"
+	@handler Logoff
+	post /logoff (LogoffReq) returns (LogoffResp)
+}
+
