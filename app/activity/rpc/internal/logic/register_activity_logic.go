@@ -177,7 +177,10 @@ func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRe
 			return breaker.ErrServiceUnavailable
 		},
 		func(err error) bool {
-			return err == nil
+			if err == nil {
+				return true
+			}
+			return errors.Is(err, model.ErrActivityQuotaFull)
 		},
 	)
 	if err != nil {

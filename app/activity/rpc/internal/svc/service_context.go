@@ -9,6 +9,7 @@ import (
 	"activity-platform/app/user/rpc/client/creditservice"
 	"activity-platform/app/user/rpc/client/tagservice"
 	"activity-platform/app/user/rpc/client/verifyservice"
+	"activity-platform/common/breakerx"
 
 	"github.com/zeromicro/go-zero/core/breaker"
 	"github.com/zeromicro/go-zero/core/limit"
@@ -64,9 +65,12 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		rds,
 		"activity:registration:limiter",
 	)
-	registrationBreaker := breaker.NewBreaker(
-		breaker.WithName(c.RegistrationBreaker.Name),
-	)
+	registrationBreaker := breakerx.NewSREBreaker(breakerx.SREConfig{
+		Name:      c.RegistrationBreaker.Name,
+		Requests:  c.RegistrationBreaker.Requests,
+		ErrorRate: c.RegistrationBreaker.ErrorRate,
+		Timeout:   time.Duration(c.RegistrationBreaker.Timeout) * time.Second,
+	})
 
 	// 3. 初始化 User RPC 客户端（所有 User 服务共用同一个连接）
 	userRpcClient := zrpc.MustNewClient(c.UserRpc)

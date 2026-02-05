@@ -24,7 +24,10 @@ type Config struct {
 	}
 
 	RegistrationBreaker struct {
-		Name string `json:",default=activity-registration"` // 熔断器名称
+		Name      string  `json:",default=activity-registration"` // 熔断器名称
+		Requests  int     `json:",default=100"`                   // 统计窗口最小请求数
+		ErrorRate float64 `json:",default=0.5"`                   // 错误率阈值
+		Timeout   int     `json:",default=60"`                    // 熔断持续时间（秒）
 	}
 }
 
