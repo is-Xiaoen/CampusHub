@@ -60,6 +60,7 @@ temp/
 # Build output
 /dist/
 /build/
+deploy/bin/
 
 # Docker
 docker-compose.override.yml
@@ -87,3 +88,4 @@ context.md
 
 # 部署配置（包含敏感信息）
 deploy/docker/config/*.yaml
+deploy/docker/config/
