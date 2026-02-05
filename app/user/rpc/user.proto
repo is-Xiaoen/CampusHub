@@ -777,3 +777,29 @@ message RefreshReq {
 message RefreshResponse {
     string access_token = 1;
 }
+
+// ============================================================================
+// TagBranchService DTM 分支服务（供 DTM Server 调用）
+// ============================================================================
+// 用于分布式事务的标签计数操作
+// 调用方: DTM Server（创建/删除活动时更新标签使用计数）
+// 注意: 此服务仅供 DTM Server 调用，不对外暴露
+// ============================================================================
+
+service TagBranchService {
+    // IncrTagUsageCount 增加标签使用计数（正向操作）
+    rpc IncrTagUsageCount(TagUsageCountReq) returns (TagUsageCountResp);
+    // DecrTagUsageCount 减少标签使用计数（补偿操作）
+    rpc DecrTagUsageCount(TagUsageCountReq) returns (TagUsageCountResp);
+}
+
+// TagUsageCountReq 标签计数请求
+message TagUsageCountReq {
+    repeated int64 tag_ids = 1;  // 标签ID列表
+    int32 delta = 2;             // 变化量（正数增加，负数减少）
+}
+
+// TagUsageCountResp 标签计数响应
+message TagUsageCountResp {
+    bool success = 1;            // 是否成功
+}

@@ -7,6 +7,7 @@ import (
 	"activity-platform/app/activity/model"
 	"activity-platform/app/activity/rpc/internal/cache"
 	"activity-platform/app/activity/rpc/internal/config"
+	"activity-platform/app/activity/rpc/internal/dtm"
 	"activity-platform/app/activity/rpc/internal/search"
 	"activity-platform/app/user/rpc/client/creditservice"
 	"activity-platform/app/user/rpc/client/tagservice"
@@ -52,6 +53,9 @@ type ServiceContext struct {
 	// ==================== ES 搜索服务 ====================
 	ESClient    *search.ESClientWithBreaker // ES 客户端（带熔断器）
 	SyncService *search.SyncService         // ES 数据同步服务
+
+	// ==================== DTM 分布式事务 ====================
+	DTMClient *dtm.Client // DTM 客户端（可为 nil，表示未启用）
 
 	// RPC 客户端（调用其他微服务）
 	CreditRpc     creditservice.CreditService // 信用分服务
@@ -120,7 +124,23 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		logx.Info("[ServiceContext] ES 未启用，搜索将使用 MySQL LIKE")
 	}
 
-	// 8. 返回 ServiceContext
+	// 8. 初始化 DTM 客户端（可选）
+	var dtmClient *dtm.Client
+	if c.DTM.Enabled {
+		dtmClient = dtm.NewClient(dtm.Config{
+			Enabled:        c.DTM.Enabled,
+			Server:         c.DTM.Server,
+			HTTPServer:     c.DTM.HTTPServer,
+			Timeout:        time.Duration(c.DTM.Timeout) * time.Second,
+			ActivityRpcURL: c.DTM.ActivityRpcURL,
+			UserRpcURL:     c.DTM.UserRpcURL,
+		})
+		logx.Info("[ServiceContext] DTM 客户端初始化成功")
+	} else {
+		logx.Info("[ServiceContext] DTM 未启用，创建活动将返回服务不可用错误")
+	}
+
+	// 9. 返回 ServiceContext
 	return &ServiceContext{
 		Config: c,
 
@@ -135,8 +155,8 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		// Model 层
 		ActivityModel:             model.NewActivityModel(db),
 		CategoryModel:             categoryModel,
-		ActivityTagModel:          model.NewActivityTagModel(db), // 活动-标签关联
-		TagCacheModel:             tagCacheModel,                 // 标签缓存
+		ActivityTagModel:          model.NewActivityTagModel(db),      // 活动-标签关联
+		TagCacheModel:             tagCacheModel,                      // 标签缓存
 		TagStatsModel:             model.NewActivityTagStatsModel(db), // 标签统计
 		StatusLogModel:            model.NewActivityStatusLogModel(db),
 		TagModel:                  model.NewTagModel(db),
@@ -151,6 +171,9 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		// ES 搜索服务
 		ESClient:    esClient,
 		SyncService: syncService,
+
+		// DTM 分布式事务
+		DTMClient: dtmClient,
 
 		// RPC 客户端
 		CreditRpc:     creditRpc,
