@@ -19,6 +19,7 @@ CLAUDE.md
 common/messaging/tests
 .specify
 specs
+tools
 
 # Test binary
 *.test
