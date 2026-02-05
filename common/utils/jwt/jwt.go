@@ -28,8 +28,8 @@ var (
 )
 
 type AuthConfig struct {
-	AccessSecret string
-	AccessExpire int64
+	Secret string
+	Expire int64
 }
 
 type Claims struct {
@@ -99,11 +99,11 @@ func generateToken(userId int64, role Role, cfg AuthConfig, now time.Time, acces
 	if err := ValidateRole(role); err != nil {
 		return TokenResult{}, err
 	}
-	if cfg.AccessSecret == "" || cfg.AccessExpire <= 0 {
+	if cfg.Secret == "" || cfg.Expire <= 0 {
 		return TokenResult{}, errors.New("invalid auth config")
 	}
 
-	expireAt := now.Add(time.Duration(cfg.AccessExpire) * time.Second)
+	expireAt := now.Add(time.Duration(cfg.Expire) * time.Second)
 	claims := Claims{
 		UserId:       userId,
 		Role:         role,
@@ -116,7 +116,7 @@ func generateToken(userId int64, role Role, cfg AuthConfig, now time.Time, acces
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signed, err := token.SignedString([]byte(cfg.AccessSecret))
+	signed, err := token.SignedString([]byte(cfg.Secret))
 	if err != nil {
 		return TokenResult{}, err
 	}

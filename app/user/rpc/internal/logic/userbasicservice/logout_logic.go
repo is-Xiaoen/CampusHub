@@ -29,7 +29,7 @@ func NewLogoutLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LogoutLogi
 // 用户登出
 func (l *LogoutLogic) Logout(in *pb.LogoutReq) (*pb.LogoutResponse, error) {
 	// 1. 解析 Access Token
-	claims, err := jwt.ParseToken(in.AccessToken, l.svcCtx.Config.Auth.AccessSecret)
+	claims, err := jwt.ParseToken(in.AccessToken, l.svcCtx.Config.JWT.AccessSecret)
 	if err != nil {
 		l.Logger.Errorf("Parse token failed: %v", err)
 		// 即使解析失败，也尝试继续处理（可能只是为了登出），或者直接返回成功
