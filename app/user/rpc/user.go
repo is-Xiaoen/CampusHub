@@ -16,6 +16,7 @@ import (
 
 	"activity-platform/app/user/rpc/internal/config"
 	creditserviceserver "activity-platform/app/user/rpc/internal/server/creditservice"
+	tagbranchserviceserver "activity-platform/app/user/rpc/internal/server/tagbranchservice"
 	verifyserviceserver "activity-platform/app/user/rpc/internal/server/verifyservice"
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
@@ -48,6 +49,9 @@ func main() {
 
 		// 注册 VerifyService（学生认证服务）
 		pb.RegisterVerifyServiceServer(grpcServer, verifyserviceserver.NewVerifyServiceServer(ctx))
+
+		// 注册 TagBranchService（DTM 分支操作 - 标签计数）
+		pb.RegisterTagBranchServiceServer(grpcServer, tagbranchserviceserver.NewTagBranchServiceServer(ctx))
 
 		// 开发环境开启 gRPC Reflection（便于 grpcurl 调试）
 		if c.Mode == service.DevMode || c.Mode == service.TestMode {
