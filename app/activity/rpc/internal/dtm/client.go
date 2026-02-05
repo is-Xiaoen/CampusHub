@@ -161,11 +161,11 @@ func (c *Client) checkHealth() bool {
 // CreateActivitySagaReq 创建活动 SAGA 请求参数
 type CreateActivitySagaReq struct {
 	// Activity 服务参数
-	ActivityRpcURL string      // Activity RPC 地址（如 localhost:9002）
+	ActivityRpcURL string        // Activity RPC 地址（如 localhost:9002）
 	ActivityReq    proto.Message // CreateActivityActionReq
 
 	// User 服务参数（可选，无标签时为空）
-	UserRpcURL string      // User RPC 地址（如 localhost:9001）
+	UserRpcURL string        // User RPC 地址（如 localhost:9001）
 	TagReq     proto.Message // TagUsageCountReq（可为 nil）
 	HasTags    bool          // 是否有标签
 }
@@ -173,8 +173,9 @@ type CreateActivitySagaReq struct {
 // CreateActivitySaga 创建活动 SAGA 事务
 //
 // SAGA 流程：
-//   Branch 1: CreateActivityAction -> CreateActivityCompensate
-//   Branch 2: IncrTagUsageCount -> DecrTagUsageCount (仅当有标签时)
+//
+//	Branch 1: CreateActivityAction -> CreateActivityCompensate
+//	Branch 2: IncrTagUsageCount -> DecrTagUsageCount (仅当有标签时)
 //
 // 返回值：
 //   - gid: 全局事务 ID（用于追踪）
@@ -199,10 +200,10 @@ func (c *Client) CreateActivitySaga(ctx context.Context, req CreateActivitySagaR
 	}
 
 	// 设置事务选项
-	saga.WaitResult = true                            // 等待事务完成
-	saga.TimeoutToFail = int64(c.timeout.Seconds())   // 超时后失败
-	saga.RetryInterval = 10                           // 重试间隔 10 秒
-	saga.BranchHeaders = map[string]string{           // 传递追踪信息
+	saga.WaitResult = true                          // 等待事务完成
+	saga.TimeoutToFail = int64(c.timeout.Seconds()) // 超时后失败
+	saga.RetryInterval = 10                         // 重试间隔 10 秒
+	saga.BranchHeaders = map[string]string{         // 传递追踪信息
 		"x-trace-id": getTraceID(ctx),
 	}
 
@@ -229,8 +230,9 @@ type DeleteActivitySagaReq struct {
 // DeleteActivitySaga 删除活动 SAGA 事务
 //
 // SAGA 流程：
-//   Branch 1: DeleteActivityAction -> DeleteActivityCompensate
-//   Branch 2: DecrTagUsageCount -> IncrTagUsageCount (仅当有标签时)
+//
+//	Branch 1: DeleteActivityAction -> DeleteActivityCompensate
+//	Branch 2: DecrTagUsageCount -> IncrTagUsageCount (仅当有标签时)
 func (c *Client) DeleteActivitySaga(ctx context.Context, req DeleteActivitySagaReq) (string, error) {
 	gid := dtmcli.MustGenGid(c.server)
 

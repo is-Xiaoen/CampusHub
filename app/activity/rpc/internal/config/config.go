@@ -94,10 +94,10 @@ type MySQLConfig struct {
 //	  ActivityRpcURL: "localhost:9002"
 //	  UserRpcURL: "localhost:9001"
 type DTMConfig struct {
-	Enabled        bool   `json:",default=false"`             // 是否启用 DTM
-	Server         string `json:",default=localhost:36790"`   // DTM gRPC 地址
-	HTTPServer     string `json:",default=localhost:36789"`   // DTM HTTP 地址（健康检查）
-	Timeout        int    `json:",default=120"`               // 事务超时（秒）
-	ActivityRpcURL string `json:",default=localhost:9002"`    // Activity RPC 地址
-	UserRpcURL     string `json:",default=localhost:9001"`    // User RPC 地址
+	Enabled        bool   `json:",default=false"`           // 是否启用 DTM
+	Server         string `json:",default=localhost:36790"` // DTM gRPC 地址
+	HTTPServer     string `json:",default=localhost:36789"` // DTM HTTP 地址（健康检查）
+	Timeout        int    `json:",default=120"`             // 事务超时（秒）
+	ActivityRpcURL string `json:",default=localhost:9002"`  // Activity RPC 地址
+	UserRpcURL     string `json:",default=localhost:9001"`  // User RPC 地址
 }
