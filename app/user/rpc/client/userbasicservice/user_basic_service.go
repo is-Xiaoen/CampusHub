@@ -30,6 +30,8 @@ type (
 	ConfirmStudentVerifyReq  = pb.ConfirmStudentVerifyReq
 	ConfirmStudentVerifyResp = pb.ConfirmStudentVerifyResp
 	CreditLogItem            = pb.CreditLogItem
+	DeleteFileReq            = pb.DeleteFileReq
+	DeleteFileResponse       = pb.DeleteFileResponse
 	GetAllTagsReq            = pb.GetAllTagsReq
 	GetAllTagsResp           = pb.GetAllTagsResp
 	GetCaptchaConfigReq      = pb.GetCaptchaConfigReq
@@ -67,11 +69,20 @@ type (
 	RegisterResponse         = pb.RegisterResponse
 	SendQQEmailReq           = pb.SendQQEmailReq
 	SendQQEmailResponse      = pb.SendQQEmailResponse
+	TagBasicInfo             = pb.TagBasicInfo
 	TagInfo                  = pb.TagInfo
+	UpdatePasswordReq        = pb.UpdatePasswordReq
+	UpdatePasswordResponse   = pb.UpdatePasswordResponse
 	UpdateScoreReq           = pb.UpdateScoreReq
 	UpdateScoreResp          = pb.UpdateScoreResp
+	UpdateUserInfoReq        = pb.UpdateUserInfoReq
+	UpdateUserInfoResponse   = pb.UpdateUserInfoResponse
+	UpdateUserTagReq         = pb.UpdateUserTagReq
+	UpdateUserTagResponse    = pb.UpdateUserTagResponse
 	UpdateVerifyStatusReq    = pb.UpdateVerifyStatusReq
 	UpdateVerifyStatusResp   = pb.UpdateVerifyStatusResp
+	UploadFileReq            = pb.UploadFileReq
+	UploadFileResponse       = pb.UploadFileResponse
 	UserInfo                 = pb.UserInfo
 	UserTag                  = pb.UserTag
 	VerifyModifiedData       = pb.VerifyModifiedData
@@ -90,6 +101,10 @@ type (
 		RefreshToken(ctx context.Context, in *RefreshReq, opts ...grpc.CallOption) (*RefreshResponse, error)
 		// 获取用户的信息
 		GetUserInfo(ctx context.Context, in *GetUserInfoReq, opts ...grpc.CallOption) (*GetUserInfoResponse, error)
+		// 修改用户密码
+		UpdatePassword(ctx context.Context, in *UpdatePasswordReq, opts ...grpc.CallOption) (*UpdatePasswordResponse, error)
+		// 修改用户信息
+		UpdateUserInfo(ctx context.Context, in *UpdateUserInfoReq, opts ...grpc.CallOption) (*UpdateUserInfoResponse, error)
 	}
 
 	defaultUserBasicService struct {
@@ -137,4 +152,16 @@ func (m *defaultUserBasicService) RefreshToken(ctx context.Context, in *RefreshR
 func (m *defaultUserBasicService) GetUserInfo(ctx context.Context, in *GetUserInfoReq, opts ...grpc.CallOption) (*GetUserInfoResponse, error) {
 	client := pb.NewUserBasicServiceClient(m.cli.Conn())
 	return client.GetUserInfo(ctx, in, opts...)
+}
+
+// 修改用户密码
+func (m *defaultUserBasicService) UpdatePassword(ctx context.Context, in *UpdatePasswordReq, opts ...grpc.CallOption) (*UpdatePasswordResponse, error) {
+	client := pb.NewUserBasicServiceClient(m.cli.Conn())
+	return client.UpdatePassword(ctx, in, opts...)
+}
+
+// 修改用户信息
+func (m *defaultUserBasicService) UpdateUserInfo(ctx context.Context, in *UpdateUserInfoReq, opts ...grpc.CallOption) (*UpdateUserInfoResponse, error) {
+	client := pb.NewUserBasicServiceClient(m.cli.Conn())
+	return client.UpdateUserInfo(ctx, in, opts...)
 }
