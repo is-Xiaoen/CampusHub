@@ -7,7 +7,6 @@ import (
 	"context"
 	"io"
 	"net/http"
-	"strconv"
 
 	"activity-platform/app/user/api/internal/svc"
 	"activity-platform/app/user/api/internal/types"
@@ -74,7 +73,7 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(req *types.UpdateUserInfoReq) (resp
 	}
 
 	// 调用 RPC
-	rpcResp, err := l.svcCtx.UserBasicServiceRpc.UpdateUserInfo(l.ctx, &userbasicservice.UpdateUserInfoReq{
+	_, err = l.svcCtx.UserBasicServiceRpc.UpdateUserInfo(l.ctx, &userbasicservice.UpdateUserInfoReq{
 		UserId:        userId,
 		Nickname:      req.Nickname,
 		Introduce:     req.Introduction,
@@ -88,19 +87,42 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(req *types.UpdateUserInfoReq) (resp
 		return nil, err
 	}
 
+	// 获取最新用户信息
+	userInfoResp, err := l.svcCtx.UserBasicServiceRpc.GetUserInfo(l.ctx, &userbasicservice.GetUserInfoReq{
+		UserId: userId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	userInfo := userInfoResp.UserInfo
+
+	var interestTags []types.InterestTag
+	if userInfo.InterestTags != nil {
+		for _, tag := range userInfo.InterestTags {
+			interestTags = append(interestTags, types.InterestTag{
+				Id:       int64(tag.Id),
+				TagName:  tag.TagName,
+				TagColor: tag.TagColor,
+				TagIcon:  tag.TagIcon,
+				TagDesc:  tag.TagDesc,
+			})
+		}
+	}
+
 	return &types.UpdateUserInfoResp{
 		UserInfo: types.UserInfo{
-			UserId:            int64(rpcResp.UserId),
-			Nickname:          rpcResp.Nickname,
-			AvatarUrl:         rpcResp.AvatarUrl,
-			Introduction:      rpcResp.Introduce,
-			Gender:            strconv.FormatInt(rpcResp.Gender, 10),
-			Age:               strconv.FormatInt(rpcResp.Age, 10),
-			ActivitiesNum:     resp.ActivitiesNum,
-			InitiateNum:       resp.InitiateNum,
-			Credit:            resp.Credit,
-			IsStudentVerified: resp.IsStudentVerified,
-			InterestTags:     resp.InterestTags, // RPC response only returns TagIds, not full tag info
+			UserId:            int64(userInfo.UserId),
+			Nickname:          userInfo.Nickname,
+			AvatarUrl:         userInfo.AvatarUrl,
+			Introduction:      userInfo.Introduction,
+			Gender:            userInfo.Gender,
+			Age:               userInfo.Age,
+			ActivitiesNum:     int64(userInfo.ActivitiesNum),
+			InitiateNum:       int64(userInfo.InitiateNum),
+			Credit:            userInfo.Credit,
+			IsStudentVerified: userInfo.IsStudentVerified,
+			InterestTags:      interestTags,
 		},
 	}, nil
 }
