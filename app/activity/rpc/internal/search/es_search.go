@@ -266,7 +266,7 @@ func (c *ESClient) CountByCategory(ctx context.Context) (map[uint64]int64, error
 	result, err := c.client.Search().
 		Index(c.indexName).
 		Query(elastic.NewTermsQuery("status",
-			int(StatusPublished), int(StatusOngoing))).
+				int(StatusPublished), int(StatusOngoing))).
 		Size(0). // 只要聚合结果
 		Aggregation("category_count",
 			elastic.NewTermsAggregation().Field("category_id").Size(100)).

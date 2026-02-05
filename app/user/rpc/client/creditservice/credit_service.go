@@ -57,6 +57,8 @@ type (
 	RegisterReq              = pb.RegisterReq
 	RegisterResponse         = pb.RegisterResponse
 	TagInfo                  = pb.TagInfo
+	TagUsageCountReq         = pb.TagUsageCountReq
+	TagUsageCountResp        = pb.TagUsageCountResp
 	UpdateScoreReq           = pb.UpdateScoreReq
 	UpdateScoreResp          = pb.UpdateScoreResp
 	UpdateVerifyStatusReq    = pb.UpdateVerifyStatusReq
