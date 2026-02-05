@@ -726,6 +726,7 @@ message UpdatePasswordReq{
 }
 
 message UpdatePasswordResponse{
+    bool success =1;
 }
 
 // 修改用户信息
