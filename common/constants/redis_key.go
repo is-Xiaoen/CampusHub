@@ -36,6 +36,22 @@ const (
 
 	// CacheUnreadPrefix 未读消息数前缀
 	CacheUnreadPrefix = "chat:unread:"
+
+	// ============ 学生认证服务 Redis Key ============
+
+	// VerifyRateLimitPrefix 认证申请限流Key前缀
+	// 格式: verify:rate_limit:{userId}
+	VerifyRateLimitPrefix = "verify:rate_limit:"
+
+	// ============ OCR服务 Redis Key ============
+
+	// OcrCircuitBreakerPrefix OCR熔断器Key前缀
+	// 格式: ocr:circuit:{provider}
+	OcrCircuitBreakerPrefix = "ocr:circuit:"
+
+	// OcrCircuitFailuresPrefix OCR失败计数Key前缀
+	// 格式: ocr:circuit:{provider}:failures
+	OcrCircuitFailuresPrefix = "ocr:circuit:failures:"
 )
 
 // ============ 缓存过期时间 ============

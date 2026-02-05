@@ -23,7 +23,8 @@ func NewGetGroupUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetG
 	}
 }
 
-func (l *GetGroupUserLogic) GetGroupUser(in *pb.GetGroupUserRep) (*pb.GetGroupUserResponse, error) {
+// 批量获取群聊用户的信息
+func (l *GetGroupUserLogic) GetGroupUser(in *pb.GetGroupUserReq) (*pb.GetGroupUserResponse, error) {
 	// todo: add your logic here and delete this line
 
 	return &pb.GetGroupUserResponse{}, nil

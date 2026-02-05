@@ -60,17 +60,28 @@ CREATE TABLE `credit_logs` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 COMMENT='信用变更记录表';
 
 -- 3. student_verifications 学生认证表（VerifyService依赖）
+-- 状态机：0初始 1OCR中 2待确认 3人工审核 4通过 5拒绝 6超时 7取消 8OCR失败
 CREATE TABLE `student_verifications` (
-    `id` bigint NOT NULL COMMENT '主键ID',
+    `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `user_id` bigint NOT NULL COMMENT '用户ID',
-    `status` tinyint NOT NULL DEFAULT 0 COMMENT '认证状态：0未认证 1待审核 2已认证 3已拒绝',
-    `real_name` varchar(50) COMMENT '真实姓名',
+    `status` tinyint NOT NULL DEFAULT 0 COMMENT '认证状态：0初始 1OCR中 2待确认 3人工审核 4通过 5拒绝 6超时 7取消 8OCR失败',
+    `real_name` varchar(100) COMMENT '真实姓名（AES加密）',
     `school_name` varchar(100) COMMENT '学校名称',
-    `student_id` varchar(50) COMMENT '学号',
+    `student_id` varchar(100) COMMENT '学号（AES加密）',
     `department` varchar(100) COMMENT '院系',
     `admission_year` varchar(10) COMMENT '入学年份',
+    `front_image_url` varchar(500) DEFAULT '' COMMENT '学生证正面图片URL',
+    `back_image_url` varchar(500) DEFAULT '' COMMENT '学生证详情面图片URL',
+    `ocr_platform` varchar(20) NOT NULL DEFAULT '' COMMENT 'OCR平台：tencent/aliyun',
+    `ocr_raw_json` text COMMENT 'OCR原始响应JSON（用于审计追溯）',
+    `ocr_confidence` decimal(5,2) COMMENT 'OCR识别置信度（0-100）',
     `reject_reason` varchar(255) COMMENT '拒绝原因',
+    `cancel_reason` varchar(255) COMMENT '取消原因',
+    `reviewer_id` bigint COMMENT '审核人ID（人工审核时）',
+    `operator` varchar(50) COMMENT '操作来源：user_apply/ocr_callback/manual_review/timeout_job',
     `verified_at` datetime COMMENT '认证通过时间',
+    `ocr_completed_at` datetime COMMENT 'OCR完成时间',
+    `reviewed_at` datetime COMMENT '人工审核时间',
     `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
@@ -101,3 +112,25 @@ CREATE TABLE `user_interest_relations` (
     create_time datetime DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ============================================
+-- DTM 分布式事务支持表
+-- ============================================
+
+-- dtm_barrier DTM 子事务屏障表
+-- 用于解决分布式事务的三大问题：幂等、空补偿、悬挂
+-- 参考：https://en.dtm.pub/practice/barrier.html
+CREATE TABLE IF NOT EXISTS `dtm_barrier` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `trans_type` VARCHAR(45) NOT NULL DEFAULT '' COMMENT '事务类型（saga/tcc/xa）',
+    `gid` VARCHAR(128) NOT NULL DEFAULT '' COMMENT '全局事务ID',
+    `branch_id` VARCHAR(128) NOT NULL DEFAULT '' COMMENT '分支事务ID',
+    `op` VARCHAR(45) NOT NULL DEFAULT '' COMMENT '操作类型（action/compensate/try/confirm/cancel）',
+    `barrier_id` VARCHAR(45) NOT NULL DEFAULT '' COMMENT '屏障ID',
+    `reason` VARCHAR(45) NOT NULL DEFAULT '' COMMENT '插入原因（committed/rollbacked）',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_gid_branchid_op_barrierid` (`gid`, `branch_id`, `op`, `barrier_id`),
+    KEY `idx_create_time` (`create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC COMMENT='DTM子事务屏障表';

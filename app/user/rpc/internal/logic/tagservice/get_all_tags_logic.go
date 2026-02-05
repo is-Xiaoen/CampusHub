@@ -23,6 +23,7 @@ func NewGetAllTagsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetAll
 	}
 }
 
+// 马肖阳的标签接口
 func (l *GetAllTagsLogic) GetAllTags(in *pb.GetAllTagsReq) (*pb.GetAllTagsResp, error) {
 	// todo: add your logic here and delete this line
 

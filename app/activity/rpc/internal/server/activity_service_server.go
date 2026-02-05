@@ -59,6 +59,12 @@ func (s *ActivityServiceServer) GetTicketDetail(ctx context.Context, in *activit
 	return l.GetTicketDetail(in)
 }
 
+// GetRegisteredCount 获取报名数量
+func (s *ActivityServiceServer) GetRegisteredCount(ctx context.Context, in *activity.GetRegisteredCountRequest) (*activity.GetRegisteredCountResponse, error) {
+	l := logic.NewGetRegisteredCountLogic(ctx, s.svcCtx)
+	return l.GetRegisteredCount(in)
+}
+
 // ==================== CRUD 接口 ====================
 func (s *ActivityServiceServer) CreateActivity(ctx context.Context, in *activity.CreateActivityReq) (*activity.CreateActivityResp, error) {
 	l := logic.NewCreateActivityLogic(ctx, s.svcCtx)

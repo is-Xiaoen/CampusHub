@@ -20,7 +20,6 @@ func ConfirmVerifyHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 			httpx.ErrorCtx(r.Context(), w, err)
 			return
 		}
-
 		l := verify.NewConfirmVerifyLogic(r.Context(), svcCtx)
 		resp, err := l.ConfirmVerify(&req)
 		if err != nil {

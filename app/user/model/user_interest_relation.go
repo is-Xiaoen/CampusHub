@@ -20,11 +20,11 @@ import (
 // UserInterestRelation 用户兴趣标签关联实体
 type UserInterestRelation struct {
 	// 主键ID
-	ID uint64 `gorm:"primaryKey;autoIncrement;column:id" json:"id"`
+	ID int64 `gorm:"primaryKey;autoIncrement;column:id" json:"id"`
 	// 用户ID
-	UserID uint64 `gorm:"column:user_id;not null;default:0" json:"user_id"`
+	UserID int64 `gorm:"column:user_id;not null;default:0" json:"user_id"`
 	// 标签ID
-	TagID uint64 `gorm:"column:tag_id;not null;default:0" json:"tag_id"`
+	TagID int64 `gorm:"column:tag_id;not null;default:0" json:"tag_id"`
 	// 创建时间
 	CreateTime time.Time `gorm:"column:create_time;autoCreateTime" json:"create_time"`
 }

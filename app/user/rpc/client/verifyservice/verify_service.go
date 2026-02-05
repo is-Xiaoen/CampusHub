@@ -14,38 +14,72 @@ import (
 )
 
 type (
-	CanParticipateReq      = pb.CanParticipateReq
-	CanParticipateResp     = pb.CanParticipateResp
-	CanPublishReq          = pb.CanPublishReq
-	CanPublishResp         = pb.CanPublishResp
-	CreditLogItem          = pb.CreditLogItem
-	GetAllTagsReq          = pb.GetAllTagsReq
-	GetAllTagsResp         = pb.GetAllTagsResp
-	GetCreditInfoReq       = pb.GetCreditInfoReq
-	GetCreditInfoResp      = pb.GetCreditInfoResp
-	GetCreditLogsReq       = pb.GetCreditLogsReq
-	GetCreditLogsResp      = pb.GetCreditLogsResp
-	GetGroupUserRep        = pb.GetGroupUserRep
-	GetGroupUserResponse   = pb.GetGroupUserResponse
-	GetTagsByIdsReq        = pb.GetTagsByIdsReq
-	GetTagsByIdsResp       = pb.GetTagsByIdsResp
-	GetUserTagsRep         = pb.GetUserTagsRep
-	GetUserTagsResponse    = pb.GetUserTagsResponse
-	InitCreditReq          = pb.InitCreditReq
-	InitCreditResp         = pb.InitCreditResp
-	IsVerifiedReq          = pb.IsVerifiedReq
-	IsVerifiedResp         = pb.IsVerifiedResp
-	TagInfo                = pb.TagInfo
-	UpdateScoreReq         = pb.UpdateScoreReq
-	UpdateScoreResp        = pb.UpdateScoreResp
-	UpdateVerifyStatusReq  = pb.UpdateVerifyStatusReq
-	UpdateVerifyStatusResp = pb.UpdateVerifyStatusResp
-	UserInfo               = pb.UserInfo
-	VerifyOcrData          = pb.VerifyOcrData
+	ApplyStudentVerifyReq    = pb.ApplyStudentVerifyReq
+	ApplyStudentVerifyResp   = pb.ApplyStudentVerifyResp
+	CanParticipateReq        = pb.CanParticipateReq
+	CanParticipateResp       = pb.CanParticipateResp
+	CanPublishReq            = pb.CanPublishReq
+	CanPublishResp           = pb.CanPublishResp
+	CancelStudentVerifyReq   = pb.CancelStudentVerifyReq
+	CancelStudentVerifyResp  = pb.CancelStudentVerifyResp
+	ConfirmStudentVerifyReq  = pb.ConfirmStudentVerifyReq
+	ConfirmStudentVerifyResp = pb.ConfirmStudentVerifyResp
+	CreditLogItem            = pb.CreditLogItem
+	GetAllTagsReq            = pb.GetAllTagsReq
+	GetAllTagsResp           = pb.GetAllTagsResp
+	GetCreditInfoReq         = pb.GetCreditInfoReq
+	GetCreditInfoResp        = pb.GetCreditInfoResp
+	GetCreditLogsReq         = pb.GetCreditLogsReq
+	GetCreditLogsResp        = pb.GetCreditLogsResp
+	GetGroupUserReq          = pb.GetGroupUserReq
+	GetGroupUserResponse     = pb.GetGroupUserResponse
+	GetTagsByIdsReq          = pb.GetTagsByIdsReq
+	GetTagsByIdsResp         = pb.GetTagsByIdsResp
+	GetUserTagsRep           = pb.GetUserTagsRep
+	GetUserTagsResponse      = pb.GetUserTagsResponse
+	GetVerifyCurrentReq      = pb.GetVerifyCurrentReq
+	GetVerifyCurrentResp     = pb.GetVerifyCurrentResp
+	GetVerifyInfoReq         = pb.GetVerifyInfoReq
+	GetVerifyInfoResp        = pb.GetVerifyInfoResp
+	GroupUserInfo            = pb.GroupUserInfo
+	InitCreditReq            = pb.InitCreditReq
+	InitCreditResp           = pb.InitCreditResp
+	InterestTag              = pb.InterestTag
+	IsVerifiedReq            = pb.IsVerifiedReq
+	IsVerifiedResp           = pb.IsVerifiedResp
+	LoginReq                 = pb.LoginReq
+	LoginResponse            = pb.LoginResponse
+	LoginUserInfo            = pb.LoginUserInfo
+	LogoutReq                = pb.LogoutReq
+	LogoutResponse           = pb.LogoutResponse
+	RefreshReq               = pb.RefreshReq
+	RefreshResponse          = pb.RefreshResponse
+	RegisterReq              = pb.RegisterReq
+	RegisterResponse         = pb.RegisterResponse
+	TagInfo                  = pb.TagInfo
+	TagUsageCountReq         = pb.TagUsageCountReq
+	TagUsageCountResp        = pb.TagUsageCountResp
+	UpdateScoreReq           = pb.UpdateScoreReq
+	UpdateScoreResp          = pb.UpdateScoreResp
+	UpdateVerifyStatusReq    = pb.UpdateVerifyStatusReq
+	UpdateVerifyStatusResp   = pb.UpdateVerifyStatusResp
+	UserInfo                 = pb.UserInfo
+	VerifyModifiedData       = pb.VerifyModifiedData
+	VerifyOcrData            = pb.VerifyOcrData
 
 	VerifyService interface {
+		// GetVerifyCurrent 获取当前认证进度
+		GetVerifyCurrent(ctx context.Context, in *GetVerifyCurrentReq, opts ...grpc.CallOption) (*GetVerifyCurrentResp, error)
+		// GetVerifyInfo 获取已通过的认证信息
+		GetVerifyInfo(ctx context.Context, in *GetVerifyInfoReq, opts ...grpc.CallOption) (*GetVerifyInfoResp, error)
 		// IsVerified 查询用户是否已完成学生认证
 		IsVerified(ctx context.Context, in *IsVerifiedReq, opts ...grpc.CallOption) (*IsVerifiedResp, error)
+		// ApplyStudentVerify 提交学生认证申请
+		ApplyStudentVerify(ctx context.Context, in *ApplyStudentVerifyReq, opts ...grpc.CallOption) (*ApplyStudentVerifyResp, error)
+		// ConfirmStudentVerify 用户确认/修改认证信息
+		ConfirmStudentVerify(ctx context.Context, in *ConfirmStudentVerifyReq, opts ...grpc.CallOption) (*ConfirmStudentVerifyResp, error)
+		// CancelStudentVerify 取消认证申请
+		CancelStudentVerify(ctx context.Context, in *CancelStudentVerifyReq, opts ...grpc.CallOption) (*CancelStudentVerifyResp, error)
 		// UpdateVerifyStatus 更新认证状态
 		UpdateVerifyStatus(ctx context.Context, in *UpdateVerifyStatusReq, opts ...grpc.CallOption) (*UpdateVerifyStatusResp, error)
 	}
@@ -61,10 +95,40 @@ func NewVerifyService(cli zrpc.Client) VerifyService {
 	}
 }
 
+// GetVerifyCurrent 获取当前认证进度
+func (m *defaultVerifyService) GetVerifyCurrent(ctx context.Context, in *GetVerifyCurrentReq, opts ...grpc.CallOption) (*GetVerifyCurrentResp, error) {
+	client := pb.NewVerifyServiceClient(m.cli.Conn())
+	return client.GetVerifyCurrent(ctx, in, opts...)
+}
+
+// GetVerifyInfo 获取已通过的认证信息
+func (m *defaultVerifyService) GetVerifyInfo(ctx context.Context, in *GetVerifyInfoReq, opts ...grpc.CallOption) (*GetVerifyInfoResp, error) {
+	client := pb.NewVerifyServiceClient(m.cli.Conn())
+	return client.GetVerifyInfo(ctx, in, opts...)
+}
+
 // IsVerified 查询用户是否已完成学生认证
 func (m *defaultVerifyService) IsVerified(ctx context.Context, in *IsVerifiedReq, opts ...grpc.CallOption) (*IsVerifiedResp, error) {
 	client := pb.NewVerifyServiceClient(m.cli.Conn())
 	return client.IsVerified(ctx, in, opts...)
+}
+
+// ApplyStudentVerify 提交学生认证申请
+func (m *defaultVerifyService) ApplyStudentVerify(ctx context.Context, in *ApplyStudentVerifyReq, opts ...grpc.CallOption) (*ApplyStudentVerifyResp, error) {
+	client := pb.NewVerifyServiceClient(m.cli.Conn())
+	return client.ApplyStudentVerify(ctx, in, opts...)
+}
+
+// ConfirmStudentVerify 用户确认/修改认证信息
+func (m *defaultVerifyService) ConfirmStudentVerify(ctx context.Context, in *ConfirmStudentVerifyReq, opts ...grpc.CallOption) (*ConfirmStudentVerifyResp, error) {
+	client := pb.NewVerifyServiceClient(m.cli.Conn())
+	return client.ConfirmStudentVerify(ctx, in, opts...)
+}
+
+// CancelStudentVerify 取消认证申请
+func (m *defaultVerifyService) CancelStudentVerify(ctx context.Context, in *CancelStudentVerifyReq, opts ...grpc.CallOption) (*CancelStudentVerifyResp, error) {
+	client := pb.NewVerifyServiceClient(m.cli.Conn())
+	return client.CancelStudentVerify(ctx, in, opts...)
 }
 
 // UpdateVerifyStatus 更新认证状态
