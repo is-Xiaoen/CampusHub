@@ -135,8 +135,8 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		// Model 层
 		ActivityModel:             model.NewActivityModel(db),
 		CategoryModel:             categoryModel,
-		ActivityTagModel:          model.NewActivityTagModel(db), // 活动-标签关联
-		TagCacheModel:             tagCacheModel,                 // 标签缓存
+		ActivityTagModel:          model.NewActivityTagModel(db),      // 活动-标签关联
+		TagCacheModel:             tagCacheModel,                      // 标签缓存
 		TagStatsModel:             model.NewActivityTagStatsModel(db), // 标签统计
 		StatusLogModel:            model.NewActivityStatusLogModel(db),
 		TagModel:                  model.NewTagModel(db),

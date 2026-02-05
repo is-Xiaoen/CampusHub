@@ -80,14 +80,14 @@ type Suggest struct {
 
 // SearchRequest 搜索请求
 type SearchRequest struct {
-	Query      string  // 搜索关键词
-	CategoryID uint64  // 分类筛选（对应 Activity.CategoryID）
-	Status     []int8  // 状态筛选（对应 Activity.Status）
-	StartTime  *int64  // 开始时间筛选（Unix 时间戳）
-	EndTime    *int64  // 结束时间筛选（Unix 时间戳）
-	SortBy     string  // 排序：relevance, time, hot, newest
-	Page       int     // 页码
-	PageSize   int     // 每页数量
+	Query      string // 搜索关键词
+	CategoryID uint64 // 分类筛选（对应 Activity.CategoryID）
+	Status     []int8 // 状态筛选（对应 Activity.Status）
+	StartTime  *int64 // 开始时间筛选（Unix 时间戳）
+	EndTime    *int64 // 结束时间筛选（Unix 时间戳）
+	SortBy     string // 排序：relevance, time, hot, newest
+	Page       int    // 页码
+	PageSize   int    // 每页数量
 }
 
 // SearchResponse 搜索响应

@@ -26,10 +26,10 @@ import (
 // - 异步同步 + 重试机制
 // - 失败记录（后续可扩展失败队列）
 type SyncService struct {
-	es         *ESClient
-	db         *gorm.DB
-	tagModel   *model.TagCacheModel
-	catModel   *model.CategoryModel
+	es       *ESClient
+	db       *gorm.DB
+	tagModel *model.TagCacheModel
+	catModel *model.CategoryModel
 }
 
 // NewSyncService 创建同步服务
@@ -70,9 +70,9 @@ func (s *SyncService) IndexActivity(ctx context.Context, activity *model.Activit
 		Index(s.es.indexName).
 		Id(DocID(activity.ID)).
 		BodyJson(doc).
-		VersionType("external").  // 使用外部版本控制
-		Version(version).         // 版本号 = 更新时间戳
-		Refresh("false").         // 不立即刷新，提高写入性能
+		VersionType("external"). // 使用外部版本控制
+		Version(version).        // 版本号 = 更新时间戳
+		Refresh("false").        // 不立即刷新，提高写入性能
 		Do(ctx)
 
 	if err != nil {
