@@ -10,6 +10,7 @@ import (
 	"activity-platform/app/user/rpc/pb/pb"
 	"activity-platform/common/errorx"
 	"activity-platform/common/utils/email"
+	"activity-platform/common/utils/encrypt"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -49,7 +50,8 @@ func (l *SendQQEmailLogic) SendQQEmail(in *pb.SendQQEmailReq) (*pb.SendQQEmailRe
 
 	// 3. 存储验证码到Redis (有效期3分钟)
 	key := fmt.Sprintf("captcha:email:%s:%s", in.Scene, in.QqEmail)
-	err = l.svcCtx.Redis.Set(l.ctx, key, code, 3*time.Minute).Err()
+	encrypted := encrypt.EncryptPassword(code)
+	err = l.svcCtx.Redis.Set(l.ctx, key, encrypted, 3*time.Minute).Err()
 	if err != nil {
 		l.Logger.Errorf("Redis Set failed: %v", err)
 		return nil, errorx.NewSystemError("系统繁忙，请稍后再试")
