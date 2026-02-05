@@ -76,6 +76,37 @@ services:
     networks:
       - activity-network
 
+  # ==================== DTM 分布式事务管理器 ====================
+  # 面试亮点：SAGA 模式、子事务屏障、跨服务数据一致性
+  # 文档：https://en.dtm.pub/
+  dtm:
+    image: yedf/dtm:latest
+    container_name: activity-dtm
+    restart: unless-stopped
+    environment:
+      # 存储配置（使用 MySQL 持久化事务状态）
+      STORE_DRIVER: mysql
+      STORE_HOST: mysql
+      STORE_PORT: 3306
+      STORE_USER: root
+      STORE_PASSWORD: root123456
+      STORE_DB: dtm
+      # 时区
+      TZ: Asia/Shanghai
+    ports:
+      - "36789:36789"  # HTTP 接口（管理界面、健康检查）
+      - "36790:36790"  # gRPC 接口（业务服务调用）
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:36789/api/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - activity-network
+
   # ==================== Jaeger 链路追踪（微服务核心） ====================
   # 面试亮点：分布式追踪、性能分析、调用链可视化
   jaeger:
