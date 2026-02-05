@@ -21,7 +21,7 @@ type GetUnreadCountLogic struct {
 	svcCtx *svc.ServiceContext
 }
 
-// 获取未读数量
+// NewGetUnreadCountLogic 获取未读数量
 func NewGetUnreadCountLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetUnreadCountLogic {
 	return &GetUnreadCountLogic{
 		Logger: logx.WithContext(ctx),
