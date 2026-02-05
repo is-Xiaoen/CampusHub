@@ -7,7 +7,9 @@ import (
 
 	"activity-platform/app/activity/model"
 	"activity-platform/app/activity/rpc/activity"
+	"activity-platform/app/activity/rpc/internal/dtm"
 	"activity-platform/app/activity/rpc/internal/svc"
+	userpb "activity-platform/app/user/rpc/pb/pb"
 	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -29,6 +31,11 @@ func NewCreateActivityLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Cr
 }
 
 // CreateActivity 创建活动
+//
+// 使用 DTM SAGA 保证跨服务数据一致性：
+// - 分支1：创建活动（Activity 服务）
+// - 分支2：增加标签使用计数（User 服务）
+// 任一步骤失败，自动执行补偿操作回滚
 func (l *CreateActivityLogic) CreateActivity(in *activity.CreateActivityReq) (*activity.CreateActivityResp, error) {
 	// 1. 参数校验
 	if err := l.validateParams(in); err != nil {
@@ -46,13 +53,108 @@ func (l *CreateActivityLogic) CreateActivity(in *activity.CreateActivityReq) (*a
 	}
 
 	// 3. 确定初始状态：草稿 or 已发布
-	// MVP 版本：没有后台管理，审批自动通过，直接发布
 	status := model.StatusDraft
 	if !in.IsDraft {
 		status = model.StatusPublished // MVP: 跳过待审核，直接发布
 	}
 
-	// 4. 构建活动对象
+	// 4. 检查 DTM 是否可用
+	if l.svcCtx.DTMClient != nil && l.svcCtx.DTMClient.IsHealthy() {
+		// 使用 DTM SAGA 创建活动
+		return l.createActivityWithDTM(in, int32(status))
+	}
+
+	// DTM 不可用，使用本地事务（降级模式）
+	l.Infof("[CreateActivity] DTM 不可用，使用本地事务")
+	return l.createActivityLocal(in, int8(status))
+}
+
+// createActivityWithDTM 使用 DTM SAGA 创建活动
+func (l *CreateActivityLogic) createActivityWithDTM(in *activity.CreateActivityReq, status int32) (*activity.CreateActivityResp, error) {
+	// 1. 去重并过滤无效标签 ID
+	validTagIDs := l.filterValidTagIDs(in.TagIds)
+
+	// 2. 构建 Activity 分支请求
+	activityReq := &activity.CreateActivityActionReq{
+		Title:               in.Title,
+		CoverUrl:            in.CoverUrl,
+		CoverType:           in.CoverType,
+		Content:             in.Content,
+		CategoryId:          in.CategoryId,
+		ContactPhone:        in.ContactPhone,
+		RegisterStartTime:   in.RegisterStartTime,
+		RegisterEndTime:     in.RegisterEndTime,
+		ActivityStartTime:   in.ActivityStartTime,
+		ActivityEndTime:     in.ActivityEndTime,
+		Location:            in.Location,
+		AddressDetail:       in.AddressDetail,
+		Longitude:           in.Longitude,
+		Latitude:            in.Latitude,
+		MaxParticipants:     in.MaxParticipants,
+		RequireApproval:     in.RequireApproval,
+		RequireStudentVerify: in.RequireStudentVerify,
+		MinCreditScore:      in.MinCreditScore,
+		TagIds:              validTagIDs,
+		IsDraft:             in.IsDraft,
+		Status:              status,
+		OrganizerId:         in.OrganizerId,
+		OrganizerName:       in.OrganizerName,
+		OrganizerAvatar:     in.OrganizerAvatar,
+	}
+
+	// 3. 构建 User 标签计数请求（如果有标签）
+	var tagReq *userpb.TagUsageCountReq
+	hasTags := len(validTagIDs) > 0
+	if hasTags {
+		tagReq = &userpb.TagUsageCountReq{
+			TagIds: validTagIDs,
+			Delta:  1, // 增加 1
+		}
+	}
+
+	// 4. 发起 SAGA 事务
+	cfg := l.svcCtx.Config.DTM
+	gid, err := l.svcCtx.DTMClient.CreateActivitySaga(l.ctx, dtm.CreateActivitySagaReq{
+		ActivityRpcURL: cfg.ActivityRpcURL,
+		ActivityReq:    activityReq,
+		UserRpcURL:     cfg.UserRpcURL,
+		TagReq:         tagReq,
+		HasTags:        hasTags,
+	})
+	if err != nil {
+		l.Errorf("[CreateActivity] DTM SAGA 事务失败: gid=%s, err=%v", gid, err)
+		return nil, errorx.NewWithMessage(errorx.CodeInternalError, "创建活动失败，请稍后重试")
+	}
+
+	l.Infof("[CreateActivity] DTM SAGA 事务成功: gid=%s", gid)
+
+	// 5. 查询创建的活动 ID（从数据库获取最新数据）
+	// 注意：SAGA 是异步的，这里需要等待事务完成后查询
+	// DTMClient.CreateActivitySaga 设置了 WaitResult=true，所以事务已完成
+	var createdActivity model.Activity
+	err = l.svcCtx.DB.WithContext(l.ctx).
+		Where("organizer_id = ? AND title = ?", in.OrganizerId, in.Title).
+		Order("id DESC").
+		First(&createdActivity).Error
+	if err != nil {
+		l.Errorf("[CreateActivity] 查询创建的活动失败: %v", err)
+		return nil, errorx.ErrDBError(err)
+	}
+
+	// 6. 异步同步到 ES（仅发布状态需要同步）
+	if createdActivity.Status == model.StatusPublished && l.svcCtx.SyncService != nil {
+		l.svcCtx.SyncService.IndexActivityAsync(&createdActivity)
+	}
+
+	return &activity.CreateActivityResp{
+		Id:     int64(createdActivity.ID),
+		Status: int32(createdActivity.Status),
+	}, nil
+}
+
+// createActivityLocal 使用本地事务创建活动（DTM 不可用时的降级方案）
+func (l *CreateActivityLogic) createActivityLocal(in *activity.CreateActivityReq, status int8) (*activity.CreateActivityResp, error) {
+	// 构建活动对象
 	activityData := &model.Activity{
 		Title:                in.Title,
 		CoverURL:             in.CoverUrl,
@@ -78,14 +180,14 @@ func (l *CreateActivityLogic) CreateActivity(in *activity.CreateActivityReq) (*a
 		Status:               status,
 	}
 
-	// 5. 事务：创建活动 + 绑定标签
-	err = l.svcCtx.DB.WithContext(l.ctx).Transaction(func(tx *gorm.DB) error {
-		// 5.1 创建活动
+	// 事务：创建活动 + 绑定标签
+	err := l.svcCtx.DB.WithContext(l.ctx).Transaction(func(tx *gorm.DB) error {
+		// 创建活动
 		if err := tx.Create(activityData).Error; err != nil {
 			return err
 		}
 
-		// 5.2 绑定标签（如果有）
+		// 绑定标签（如果有）
 		if len(in.TagIds) > 0 {
 			if err := l.bindTags(tx, activityData.ID, in.TagIds); err != nil {
 				return err
@@ -100,18 +202,34 @@ func (l *CreateActivityLogic) CreateActivity(in *activity.CreateActivityReq) (*a
 		return nil, errorx.ErrDBError(err)
 	}
 
-	l.Infof("活动创建成功: id=%d, title=%s, status=%d", activityData.ID, activityData.Title, activityData.Status)
+	l.Infof("活动创建成功（本地事务）: id=%d, title=%s, status=%d", activityData.ID, activityData.Title, activityData.Status)
 
-	// 6. 异步同步到 ES（仅发布状态需要同步）
+	// 异步同步到 ES（仅发布状态需要同步）
 	if activityData.Status == model.StatusPublished && l.svcCtx.SyncService != nil {
 		l.svcCtx.SyncService.IndexActivityAsync(activityData)
 	}
 
-	// 7. 返回结果
 	return &activity.CreateActivityResp{
 		Id:     int64(activityData.ID),
 		Status: int32(activityData.Status),
 	}, nil
+}
+
+// filterValidTagIDs 去重并过滤无效的标签 ID
+func (l *CreateActivityLogic) filterValidTagIDs(tagIds []int64) []int64 {
+	seen := make(map[int64]bool)
+	result := make([]int64, 0, len(tagIds))
+	for _, id := range tagIds {
+		if id > 0 && !seen[id] {
+			seen[id] = true
+			result = append(result, id)
+		}
+	}
+	// 限制最多 5 个
+	if len(result) > 5 {
+		result = result[:5]
+	}
+	return result
 }
 
 // validateParams 参数校验

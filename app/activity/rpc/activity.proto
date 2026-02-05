@@ -539,11 +539,109 @@ message GetUserPublishedActivitiesResp {
   Pagination pagination = 2;
 }
 
+// ============================================================================
+// DTM 分支操作服务（供 DTM Server 调用）
+// ============================================================================
+
+// ActivityBranchService DTM 分支操作服务
+// 用于分布式事务的正向操作和补偿操作
+// 注意：此服务仅供 DTM Server 调用，不对外暴露
+service ActivityBranchService {
+  // 创建活动 - 正向操作
+  rpc CreateActivityAction(CreateActivityActionReq) returns (CreateActivityActionResp);
+  // 创建活动 - 补偿操作（回滚）
+  rpc CreateActivityCompensate(CreateActivityCompensateReq) returns (CreateActivityCompensateResp);
+  // 删除活动 - 正向操作
+  rpc DeleteActivityAction(DeleteActivityActionReq) returns (DeleteActivityActionResp);
+  // 删除活动 - 补偿操作（回滚）
+  rpc DeleteActivityCompensate(DeleteActivityCompensateReq) returns (DeleteActivityCompensateResp);
+}
+
+// ============================================================================
+// DTM 分支操作消息定义
+// ============================================================================
+
+// CreateActivityActionReq 创建活动正向操作请求
+message CreateActivityActionReq {
+  // 活动基本信息
+  string title = 1;
+  string cover_url = 2;
+  int32 cover_type = 3;
+  string content = 4;
+  int64 category_id = 5;
+  string contact_phone = 6;
+  // 时间信息
+  int64 register_start_time = 7;
+  int64 register_end_time = 8;
+  int64 activity_start_time = 9;
+  int64 activity_end_time = 10;
+  // 地点信息
+  string location = 11;
+  string address_detail = 12;
+  double longitude = 13;
+  double latitude = 14;
+  // 规则信息
+  int32 max_participants = 15;
+  bool require_approval = 16;
+  bool require_student_verify = 17;
+  int32 min_credit_score = 18;
+  // 标签
+  repeated int64 tag_ids = 19;
+  // 状态
+  bool is_draft = 20;
+  int32 status = 21;
+  // 组织者信息
+  int64 organizer_id = 22;
+  string organizer_name = 23;
+  string organizer_avatar = 24;
+}
+
+// CreateActivityActionResp 创建活动正向操作响应
+message CreateActivityActionResp {
+  int64 activity_id = 1;  // 创建的活动ID
+  int32 status = 2;       // 活动状态
+}
+
+// CreateActivityCompensateReq 创建活动补偿操作请求
+message CreateActivityCompensateReq {
+  int64 activity_id = 1;        // 要回滚的活动ID
+  repeated int64 tag_ids = 2;   // 关联的标签ID（用于清理）
+}
+
+// CreateActivityCompensateResp 创建活动补偿操作响应
+message CreateActivityCompensateResp {
+  bool success = 1;
+}
+
+// DeleteActivityActionReq 删除活动正向操作请求
+message DeleteActivityActionReq {
+  int64 activity_id = 1;       // 要删除的活动ID
+  int64 operator_id = 2;       // 操作人ID
+  bool is_admin = 3;           // 是否管理员
+  repeated int64 tag_ids = 4;  // 关联的标签ID（预先查询传入）
+}
+
+// DeleteActivityActionResp 删除活动正向操作响应
+message DeleteActivityActionResp {
+  bool success = 1;
+}
+
+// DeleteActivityCompensateReq 删除活动补偿操作请求
+message DeleteActivityCompensateReq {
+  int64 activity_id = 1;       // 要恢复的活动ID
+  repeated int64 tag_ids = 2;  // 关联的标签ID
+}
+
+// DeleteActivityCompensateResp 删除活动补偿操作响应
+message DeleteActivityCompensateResp {
+  bool success = 1;
+}
+
 //
 // 文件说明：
 //   定义活动模块的所有 gRPC 服务接口。
 //   - ActivityService: 外部服务，供 Gateway API 调用
-//   - ActivityInternalService: 内部服务，供其他微服务调用
+//   - ActivityBranchService: DTM 分支服务，供 DTM Server 调用
 //
 // 字段编号规划：
 //   - 1-50：基础字段
