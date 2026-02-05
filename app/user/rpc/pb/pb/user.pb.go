@@ -2898,6 +2898,7 @@ type UpdatePasswordReq struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	OriginPassword string                 `protobuf:"bytes,1,opt,name=origin_password,json=originPassword,proto3" json:"origin_password,omitempty"`
 	NewPassword    string                 `protobuf:"bytes,2,opt,name=new_password,json=newPassword,proto3" json:"new_password,omitempty"`
+	UserId         int64                  `protobuf:"varint,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -2944,6 +2945,13 @@ func (x *UpdatePasswordReq) GetNewPassword() string {
 		return x.NewPassword
 	}
 	return ""
+}
+
+func (x *UpdatePasswordReq) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
 }
 
 type UpdatePasswordResponse struct {
@@ -5023,10 +5031,11 @@ const file_user_proto_rawDesc = "" +
 	"\x04tags\x18\x01 \x03(\v2\r.user.UserTagR\x04tags\"-\n" +
 	"\aUserTag\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\"_\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"x\n" +
 	"\x11UpdatePasswordReq\x12'\n" +
 	"\x0forigin_password\x18\x01 \x01(\tR\x0eoriginPassword\x12!\n" +
-	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\"\x18\n" +
+	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\x12\x17\n" +
+	"\auser_id\x18\x03 \x01(\x03R\x06userId\"\x18\n" +
 	"\x16UpdatePasswordResponse\"\xc8\x01\n" +
 	"\x11UpdateUserInfoReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1a\n" +
