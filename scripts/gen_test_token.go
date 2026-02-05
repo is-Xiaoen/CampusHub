@@ -17,18 +17,19 @@ import (
 )
 
 func main() {
-	// user-api.yaml 中的 AccessSecret
-	accessSecret := "k9#8G7&6F5%4D3$2S1@0P9*8O7!6N5^4M3+2L1=0"
+	// 与 deploy/docker/config/*.yaml 中的 AccessSecret 保持一致
+	accessSecret := "your-access-secret-key-change-in-production-32chars"
 
 	// 测试用户ID（需要与数据库中的用户ID一致）
 	testUserID := int64(10001)
 
-	// Token 有效期：7天（方便测试）
-	expireAt := time.Now().Add(7 * 24 * time.Hour).Unix()
+	// Token 有效期：2年（长期测试使用）
+	expireAt := time.Now().Add(2 * 365 * 24 * time.Hour).Unix()
 
-	// 创建 Token
+	// 创建 Token（包含 role 字段，与 common/utils/jwt/jwt.go 结构一致）
 	claims := jwt.MapClaims{
 		"userId": testUserID,
+		"role":   "user", // 普通用户角色
 		"exp":    expireAt,
 		"iat":    time.Now().Unix(),
 	}
@@ -44,6 +45,7 @@ func main() {
 	fmt.Println("测试 JWT Token 生成成功！")
 	fmt.Println("============================================")
 	fmt.Printf("用户ID: %d\n", testUserID)
+	fmt.Printf("角色: user\n")
 	fmt.Printf("过期时间: %s\n", time.Unix(expireAt, 0).Format("2006-01-02 15:04:05"))
 	fmt.Println("--------------------------------------------")
 	fmt.Println("Token:")

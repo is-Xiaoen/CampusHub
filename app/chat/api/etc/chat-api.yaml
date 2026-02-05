@@ -16,7 +16,7 @@ Log:
 
 # ==================== JWT 配置（必须与 user-api 一致）====================
 Auth:
-  AccessSecret: "k9#8G7&6F5%4D3$2S1@0P9*8O7!6N5^4M3+2L1=0"
+  AccessSecret: "your-access-secret-key-change-in-production-32chars"
   AccessExpire: 7200
 
 # ==================== RPC 服务配置 ====================
