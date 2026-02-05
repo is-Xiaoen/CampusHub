@@ -8,6 +8,7 @@ import (
 
 	"activity-platform/app/user/api/internal/svc"
 	"activity-platform/app/user/api/internal/types"
+	"activity-platform/app/user/rpc/client/captchaservice"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -28,7 +29,17 @@ func NewVerifyCaptchaLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Ver
 }
 
 func (l *VerifyCaptchaLogic) VerifyCaptcha(req *types.VerifyCaptchaReq) (resp *types.VerifyCaptchaResp, err error) {
-	// todo: add your logic here and delete this line
+	rpcResp, err := l.svcCtx.CaptchaServiceRpc.CheckCaptcha(l.ctx, &captchaservice.CheckCaptchaReq{
+		LotNumber:     req.LotNumber,
+		CaptchaOutput: req.CaptchaOutput,
+		PassToken:     req.PassToken,
+		GenTime:       req.GenTime,
+	})
+	if err != nil {
+		return nil, err
+	}
 
-	return
+	return &types.VerifyCaptchaResp{
+		IsValid: rpcResp.Result == "success",
+	}, nil
 }

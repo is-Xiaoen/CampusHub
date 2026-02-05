@@ -8,6 +8,8 @@ import (
 
 	"activity-platform/app/user/api/internal/svc"
 	"activity-platform/app/user/api/internal/types"
+	"activity-platform/app/user/rpc/client/userbasicservice"
+	ctxUtils "activity-platform/common/utils/context"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -28,7 +30,20 @@ func NewLogoffLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LogoffLogi
 }
 
 func (l *LogoffLogic) Logoff(req *types.LogoffReq) (resp *types.LogoffResp, err error) {
-	// todo: add your logic here and delete this line
+	userId, err := ctxUtils.GetUserIdFromCtx(l.ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	return
+	rpcResp, err := l.svcCtx.UserBasicServiceRpc.DeleteUser(l.ctx, &userbasicservice.DeleteUserReq{
+		UserId: userId,
+		QqCode: req.QqCode,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.LogoffResp{
+		Success: rpcResp.Success,
+	}, nil
 }

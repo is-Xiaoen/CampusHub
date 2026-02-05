@@ -923,7 +923,7 @@ service QQEmail{
 
 // 发送QQ邮箱
 message SendQQEmailReq{
-    string qq_email =1;
+    int64 user_id =1;
     string scene =2;
 }
 

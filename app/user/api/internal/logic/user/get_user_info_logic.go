@@ -8,6 +8,8 @@ import (
 
 	"activity-platform/app/user/api/internal/svc"
 	"activity-platform/app/user/api/internal/types"
+	"activity-platform/app/user/rpc/client/userbasicservice"
+	ctxUtils "activity-platform/common/utils/context"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -28,7 +30,44 @@ func NewGetUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetUs
 }
 
 func (l *GetUserInfoLogic) GetUserInfo() (resp *types.UserInfo, err error) {
-	// todo: add your logic here and delete this line
+	userId, err := ctxUtils.GetUserIdFromCtx(l.ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	return
+	rpcResp, err := l.svcCtx.UserBasicServiceRpc.GetUserInfo(l.ctx, &userbasicservice.GetUserInfoReq{
+		UserId: userId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	userInfo := rpcResp.UserInfo
+
+	var interestTags []types.InterestTag
+	if userInfo.InterestTags != nil {
+		for _, tag := range userInfo.InterestTags {
+			interestTags = append(interestTags, types.InterestTag{
+				Id:       int64(tag.Id),
+				TagName:  tag.TagName,
+				TagColor: tag.TagColor,
+				TagIcon:  tag.TagIcon,
+				TagDesc:  tag.TagDesc,
+			})
+		}
+	}
+
+	return &types.UserInfo{
+		UserId:            int64(userInfo.UserId),
+		Nickname:          userInfo.Nickname,
+		AvatarUrl:         userInfo.AvatarUrl,
+		Introduction:      userInfo.Introduction,
+		Gender:            userInfo.Gender,
+		Age:               userInfo.Age,
+		ActivitiesNum:     int64(userInfo.ActivitiesNum),
+		InitiateNum:       int64(userInfo.InitiateNum),
+		Credit:            userInfo.Credit,
+		IsStudentVerified: userInfo.IsStudentVerified,
+		InterestTags:      interestTags,
+	}, nil
 }

@@ -21,7 +21,7 @@ func UpdateUserInfoHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 			return
 		}
 
-		l := user.NewUpdateUserInfoLogic(r.Context(), svcCtx)
+		l := user.NewUpdateUserInfoLogic(r.Context(), svcCtx, r)
 		resp, err := l.UpdateUserInfo(&req)
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
