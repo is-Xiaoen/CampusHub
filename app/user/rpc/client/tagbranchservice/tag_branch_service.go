@@ -2,7 +2,7 @@
 // goctl 1.9.2
 // Source: user.proto
 
-package userbasicservice
+package tagbranchservice
 
 import (
 	"context"
@@ -67,56 +67,32 @@ type (
 	VerifyModifiedData       = pb.VerifyModifiedData
 	VerifyOcrData            = pb.VerifyOcrData
 
-	UserBasicService interface {
-		// 批量获取群聊用户的信息
-		GetGroupUser(ctx context.Context, in *GetGroupUserReq, opts ...grpc.CallOption) (*GetGroupUserResponse, error)
-		// 用户登录
-		Login(ctx context.Context, in *LoginReq, opts ...grpc.CallOption) (*LoginResponse, error)
-		// 用户登出
-		Logout(ctx context.Context, in *LogoutReq, opts ...grpc.CallOption) (*LogoutResponse, error)
-		// 用户注册
-		Register(ctx context.Context, in *RegisterReq, opts ...grpc.CallOption) (*RegisterResponse, error)
-		// 刷新短token
-		RefreshToken(ctx context.Context, in *RefreshReq, opts ...grpc.CallOption) (*RefreshResponse, error)
+	TagBranchService interface {
+		// IncrTagUsageCount 增加标签使用计数（正向操作）
+		IncrTagUsageCount(ctx context.Context, in *TagUsageCountReq, opts ...grpc.CallOption) (*TagUsageCountResp, error)
+		// DecrTagUsageCount 减少标签使用计数（补偿操作）
+		DecrTagUsageCount(ctx context.Context, in *TagUsageCountReq, opts ...grpc.CallOption) (*TagUsageCountResp, error)
 	}
 
-	defaultUserBasicService struct {
+	defaultTagBranchService struct {
 		cli zrpc.Client
 	}
 )
 
-func NewUserBasicService(cli zrpc.Client) UserBasicService {
-	return &defaultUserBasicService{
+func NewTagBranchService(cli zrpc.Client) TagBranchService {
+	return &defaultTagBranchService{
 		cli: cli,
 	}
 }
 
-// 批量获取群聊用户的信息
-func (m *defaultUserBasicService) GetGroupUser(ctx context.Context, in *GetGroupUserReq, opts ...grpc.CallOption) (*GetGroupUserResponse, error) {
-	client := pb.NewUserBasicServiceClient(m.cli.Conn())
-	return client.GetGroupUser(ctx, in, opts...)
+// IncrTagUsageCount 增加标签使用计数（正向操作）
+func (m *defaultTagBranchService) IncrTagUsageCount(ctx context.Context, in *TagUsageCountReq, opts ...grpc.CallOption) (*TagUsageCountResp, error) {
+	client := pb.NewTagBranchServiceClient(m.cli.Conn())
+	return client.IncrTagUsageCount(ctx, in, opts...)
 }
 
-// 用户登录
-func (m *defaultUserBasicService) Login(ctx context.Context, in *LoginReq, opts ...grpc.CallOption) (*LoginResponse, error) {
-	client := pb.NewUserBasicServiceClient(m.cli.Conn())
-	return client.Login(ctx, in, opts...)
-}
-
-// 用户登出
-func (m *defaultUserBasicService) Logout(ctx context.Context, in *LogoutReq, opts ...grpc.CallOption) (*LogoutResponse, error) {
-	client := pb.NewUserBasicServiceClient(m.cli.Conn())
-	return client.Logout(ctx, in, opts...)
-}
-
-// 用户注册
-func (m *defaultUserBasicService) Register(ctx context.Context, in *RegisterReq, opts ...grpc.CallOption) (*RegisterResponse, error) {
-	client := pb.NewUserBasicServiceClient(m.cli.Conn())
-	return client.Register(ctx, in, opts...)
-}
-
-// 刷新短token
-func (m *defaultUserBasicService) RefreshToken(ctx context.Context, in *RefreshReq, opts ...grpc.CallOption) (*RefreshResponse, error) {
-	client := pb.NewUserBasicServiceClient(m.cli.Conn())
-	return client.RefreshToken(ctx, in, opts...)
+// DecrTagUsageCount 减少标签使用计数（补偿操作）
+func (m *defaultTagBranchService) DecrTagUsageCount(ctx context.Context, in *TagUsageCountReq, opts ...grpc.CallOption) (*TagUsageCountResp, error) {
+	client := pb.NewTagBranchServiceClient(m.cli.Conn())
+	return client.DecrTagUsageCount(ctx, in, opts...)
 }
