@@ -96,10 +96,17 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(req *types.UpdateUserInfoReq) (resp
 	}
 
 	userInfo := userInfoResp.UserInfo
+	if userInfo == nil {
+		l.Logger.Error("GetUserInfo returned nil userInfo")
+		return nil, errorx.NewWithMessage(errorx.CodeInternalError, "获取用户信息失败")
+	}
 
 	var interestTags []types.InterestTag
 	if userInfo.InterestTags != nil {
 		for _, tag := range userInfo.InterestTags {
+			if tag == nil {
+				continue
+			}
 			interestTags = append(interestTags, types.InterestTag{
 				Id:       int64(tag.Id),
 				TagName:  tag.TagName,
