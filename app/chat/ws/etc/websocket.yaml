@@ -1,0 +1,28 @@
+Name: websocket-service
+Host: 0.0.0.0
+Port: 8889
+
+# Chat RPC 配置
+ChatRpc:
+  Etcd:
+    Hosts:
+      - 192.168.10.4:2379
+    Key: chat.rpc
+
+# Redis 配置
+Redis:
+  Host: 192.168.10.4:6379
+  Pass: ""
+  DB: 0
+
+# JWT 认证配置（必须与其他 API 服务一致）
+Auth:
+  AccessSecret: "k9#8G7&6F5%4D3$2S1@0P9*8O7!6N5^4M3+2L1=0"
+  AccessExpire: 86400
+
+# WebSocket 配置
+WebSocket:
+  MaxConnections: 10000
+  ReadTimeout: 60
+  WriteTimeout: 10
+  HeartbeatInterval: 30

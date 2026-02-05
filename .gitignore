@@ -18,6 +18,7 @@ CLAUDE.md
 .messing_docs
 common/messaging/tests
 .specify
+specs
 
 # Test binary
 *.test
