@@ -58,6 +58,14 @@ type ActivityListItem struct {
 	CreatedAt           int64  `json:"createdAt"`
 }
 
+type ActivityListItems struct {
+	Id       int64  `json:"id"`
+	Name     string `json:"name"`
+	Time     string `json:"time"`
+	Status   string `json:"status"`
+	ImageUrl string `json:"imageUrl"`
+}
+
 type ApproveActivityReq struct {
 	Id int64 `path:"id"`
 }
@@ -71,8 +79,16 @@ type CancelActivityReq struct {
 	Reason string `json:"reason,optional"`
 }
 
+type CancelActivityRequest struct {
+	ActivityId int64 `json:"activityId"`
+}
+
 type CancelActivityResp struct {
 	Status int32 `json:"status"` // 6=已取消
+}
+
+type CancelActivityResponse struct {
+	Result string `json:"result"`
 }
 
 type Category struct {
@@ -118,6 +134,19 @@ type DeleteActivityResp struct {
 	Success bool `json:"success"`
 }
 
+type GetActivityListRequest struct {
+	Page     int32  `form:"page"`
+	PageSize int32  `form:"pageSize"`
+	Type     string `form:"type"`
+}
+
+type GetActivityListResponse struct {
+	Total    int32               `json:"total"`
+	Items    []ActivityListItems `json:"items"`
+	Page     int32               `json:"page"`
+	PageSize int32               `json:"pageSize"`
+}
+
 type GetActivityReq struct {
 	Id int64 `path:"id"`
 }
@@ -132,6 +161,31 @@ type GetHotActivityReq struct {
 
 type GetHotActivityResp struct {
 	List []ActivityListItem `json:"list"`
+}
+
+type GetTicketDetailRequest struct {
+	TicketId int64 `form:"ticketId"`
+}
+
+type GetTicketDetailResponse struct {
+	TicketId     int64  `json:"ticketId"`
+	TicketCode   string `json:"ticketCode"`
+	ActivityId   int64  `json:"activityId"`
+	ActivityName string `json:"activityName"`
+	ActivityTime string `json:"activityTime"`
+	QrCodeUrl    string `json:"qrCodeUrl"`
+}
+
+type GetTicketListRequest struct {
+	Page     int32 `form:"page"`
+	PageSize int32 `form:"pageSize"`
+}
+
+type GetTicketListResponse struct {
+	Total    int32            `json:"total"`
+	Items    []TicketListItem `json:"items"`
+	Page     int32            `json:"page"`
+	PageSize int32            `json:"pageSize"`
 }
 
 type IncrViewCountReq struct {
@@ -187,6 +241,15 @@ type Pagination struct {
 	TotalPages int32 `json:"totalPages"`
 }
 
+type RegisterActivityRequest struct {
+	ActivityId int64 `json:"activityId"`
+}
+
+type RegisterActivityResponse struct {
+	Result string `json:"result"`
+	Reason string `json:"reason"`
+}
+
 type RejectActivityReq struct {
 	Id     int64  `path:"id"`
 	Reason string `json:"reason"` // 必填，1-500字
@@ -225,6 +288,15 @@ type Tag struct {
 	Icon  string `json:"icon,omitempty"`
 }
 
+type TicketListItem struct {
+	TicketId         int64  `json:"ticketId"`
+	ActivityId       int64  `json:"activityId"`
+	ActivityName     string `json:"activityName"`
+	ActivityTime     string `json:"activityTime"`
+	ActivityImageUrl string `json:"activityImageUrl"`
+	Status           int32  `json:"status"`
+}
+
 type UpdateActivityReq struct {
 	Id                   int64    `path:"id"`      // 路径参数
 	Version              int32    `json:"version"` // 乐观锁版本号（必填）
@@ -253,4 +325,14 @@ type UpdateActivityReq struct {
 type UpdateActivityResp struct {
 	Status     int32 `json:"status"`
 	NewVersion int32 `json:"newVersion"`
+}
+
+type VerifyTicketRequest struct {
+	ActivityId int64  `json:"activityId"`
+	TicketCode string `json:"ticketCode"`
+	TotpCode   string `json:"totpCode"`
+}
+
+type VerifyTicketResponse struct {
+	Result string `json:"result"`
 }

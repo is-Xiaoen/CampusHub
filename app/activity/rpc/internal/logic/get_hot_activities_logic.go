@@ -29,7 +29,7 @@ func NewGetHotActivitiesLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 //
 // 业务逻辑：
 //  1. 参数校验和规范化（limit 范围 1-20，默认 10）
-//  2. 调用 Model 层查询热门活动（按报名人数降序）
+//  2. 查询热门活动（优先从缓存获取）
 //  3. 批量查询关联数据（分类名称、标签列表）
 //  4. 构建响应
 //
@@ -37,6 +37,10 @@ func NewGetHotActivitiesLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 //   - 热门活动定义：已发布或进行中，且活动未结束
 //   - 排序规则：current_participants DESC, created_at DESC
 //   - 最大返回 20 条，防止数据量过大
+//
+// 缓存策略：
+//   - 使用 HotCache（TTL 5min）
+//   - 缓存 Top20，请求时裁剪到指定数量
 func (l *GetHotActivitiesLogic) GetHotActivities(in *activity.GetHotActivitiesReq) (*activity.GetHotActivitiesResp, error) {
 	// 1. 参数规范化
 	limit := int(in.GetLimit())
@@ -47,8 +51,17 @@ func (l *GetHotActivitiesLogic) GetHotActivities(in *activity.GetHotActivitiesRe
 		limit = 20 // 上限
 	}
 
-	// 2. 查询热门活动
-	activities, err := l.svcCtx.ActivityModel.FindHot(l.ctx, limit)
+	// 2. 查询热门活动（优先从缓存获取）
+	var activities []model.Activity
+	var err error
+
+	if l.svcCtx.HotCache != nil {
+		activities, err = l.svcCtx.HotCache.GetTopN(l.ctx, limit)
+	} else {
+		// 缓存服务未初始化，降级查 DB
+		activities, err = l.svcCtx.ActivityModel.FindHot(l.ctx, limit)
+	}
+
 	if err != nil {
 		l.Errorf("查询热门活动失败: err=%v", err)
 		return nil, errorx.ErrDBError(err)
@@ -91,10 +104,19 @@ func (l *GetHotActivitiesLogic) GetHotActivities(in *activity.GetHotActivitiesRe
 	}, nil
 }
 
-// loadCategoryMap 加载分类映射表
+// loadCategoryMap 加载分类映射表（优先从缓存获取）
 func (l *GetHotActivitiesLogic) loadCategoryMap() map[uint64]string {
-	categoryMap := make(map[uint64]string)
+	// 优先使用缓存
+	if l.svcCtx.CategoryCache != nil {
+		categoryMap, err := l.svcCtx.CategoryCache.GetNameMap(l.ctx)
+		if err == nil {
+			return categoryMap
+		}
+		l.Infof("[WARNING] 从缓存加载分类失败，降级查 DB: %v", err)
+	}
 
+	// 降级查 DB
+	categoryMap := make(map[uint64]string)
 	categories, err := l.svcCtx.CategoryModel.FindAll(l.ctx)
 	if err != nil {
 		l.Infof("[WARNING] 加载分类列表失败: %v", err)

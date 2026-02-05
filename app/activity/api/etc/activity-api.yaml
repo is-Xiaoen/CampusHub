@@ -22,7 +22,8 @@ Log:
   Encoding: plain
   Level: info
 
-# ==================== JWT 配置（必须与 user-api 一致）====================
+# ==================== JWT 配置（必须与 user-api 一致！）====================
+# 重要：此 Secret 必须与 user-api.yaml 中的完全一致，否则 Token 验证会失败
 Auth:
   AccessSecret: "your-access-secret-key-change-in-production-32chars"
   AccessExpire: 7200

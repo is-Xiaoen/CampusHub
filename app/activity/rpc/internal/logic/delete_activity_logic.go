@@ -102,6 +102,19 @@ func (l *DeleteActivityLogic) DeleteActivity(in *activity.DeleteActivityReq) (*a
 		return nil, errorx.ErrDBError(err)
 	}
 
+	// 删除缓存（删除成功后）
+	if l.svcCtx.ActivityCache != nil {
+		if err := l.svcCtx.ActivityCache.Invalidate(l.ctx, uint64(in.Id)); err != nil {
+			// 缓存删除失败不影响主流程，记录日志即可
+			l.Infof("[WARNING] 删除活动缓存失败: id=%d, err=%v", in.Id, err)
+		}
+	}
+
+	// 异步从 ES 删除文档
+	if l.svcCtx.SyncService != nil {
+		l.svcCtx.SyncService.DeleteActivityAsync(uint64(in.Id))
+	}
+
 	l.Infof("活动删除成功: id=%d, operatorId=%d, isAdmin=%v",
 		in.Id, in.OperatorId, in.IsAdmin)
 

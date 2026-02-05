@@ -36,9 +36,149 @@ func NewVerifyTicketLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Veri
 
 // VerifyTicket 核销票券
 func (l *VerifyTicketLogic) VerifyTicket(in *activity.VerifyTicketRequest) (*activity.VerifyTicketResponse, error) {
-	// todo: add your logic here and delete this line
+	activityID := in.GetActivityId()
+	ticketCode := strings.TrimSpace(in.GetTicketCode())
+	if activityID <= 0 || ticketCode == "" {
+		return &activity.VerifyTicketResponse{Result: "fail"}, nil
+	}
 
-	return &activity.VerifyTicketResponse{}, nil
+	// 1) 查询票据
+	ticket, err := l.svcCtx.ActivityTicketModel.FindByCode(l.ctx, ticketCode)
+	if err != nil {
+		if errors.Is(err, model.ErrTicketNotFound) {
+			return &activity.VerifyTicketResponse{Result: "fail"}, nil
+		}
+		l.Errorf("核销查询票据失败: activityId=%d, ticketCode=%s, err=%v", activityID, ticketCode, err)
+		return &activity.VerifyTicketResponse{Result: "fail"}, nil
+	}
+	if ticket.ActivityID != uint64(activityID) {
+		return &activity.VerifyTicketResponse{Result: "fail"}, nil
+	}
+	if ticket.Status != model.TicketStatusUnused {
+		return &activity.VerifyTicketResponse{Result: "fail"}, nil
+	}
+
+	// 2) 查询活动并校验时间窗口
+	activityInfo, err := l.svcCtx.ActivityModel.FindByID(l.ctx, ticket.ActivityID)
+	if err != nil {
+		if errors.Is(err, model.ErrActivityNotFound) {
+			return &activity.VerifyTicketResponse{Result: "fail"}, nil
+		}
+		l.Errorf("核销查询活动失败: activityId=%d, ticketCode=%s, err=%v", activityID, ticketCode, err)
+		return &activity.VerifyTicketResponse{Result: "fail"}, nil
+	}
+	windowStart, windowEnd, ok := resolveVerifyWindow(ticket, activityInfo)
+	if !ok {
+		return &activity.VerifyTicketResponse{Result: "fail"}, nil
+	}
+	now := time.Now()
+	nowUnix := now.Unix()
+	if nowUnix < windowStart || nowUnix > windowEnd {
+		return &activity.VerifyTicketResponse{Result: "fail"}, nil
+	}
+
+	// 3) TOTP 校验（如启用）
+	if ticket.TotpEnabled {
+		if !verifyTicketTotp(ticket, in.GetTotpCode(), now) {
+			return &activity.VerifyTicketResponse{Result: "fail"}, nil
+		}
+	}
+
+	// 4) 标记核销（幂等防重）
+	snapshot := buildVerifySnapshot(activityInfo, ticket, nowUnix)
+	result := l.svcCtx.DB.WithContext(l.ctx).
+		Model(&model.ActivityTicket{}).
+		Where("id = ? AND status = ?", ticket.ID, model.TicketStatusUnused).
+		Updates(map[string]interface{}{
+			"status":            model.TicketStatusUsed,
+			"used_time":         nowUnix,
+			"used_location":     activityInfo.Location,
+			"check_in_snapshot": snapshot,
+		})
+	if result.Error != nil {
+		l.Errorf("核销更新票据失败: activityId=%d, ticketCode=%s, err=%v", activityID, ticketCode, result.Error)
+		return &activity.VerifyTicketResponse{Result: "fail"}, nil
+	}
+	if result.RowsAffected == 0 {
+		return &activity.VerifyTicketResponse{Result: "fail"}, nil
+	}
+
+	return &activity.VerifyTicketResponse{Result: "success"}, nil
+}
+
+const (
+	verifyWindowBefore = 24 * time.Hour
+	verifyWindowAfter  = 30 * time.Minute
+	verifyTotpSkewStep = 1
+)
+
+func resolveVerifyWindow(ticket *model.ActivityTicket, activityInfo *model.Activity) (int64, int64, bool) {
+	if ticket == nil || activityInfo == nil {
+		return 0, 0, false
+	}
+	if ticket.ValidStartTime > 0 && ticket.ValidEndTime > 0 {
+		if ticket.ValidEndTime < ticket.ValidStartTime {
+			return 0, 0, false
+		}
+		return ticket.ValidStartTime, ticket.ValidEndTime, true
+	}
+	if activityInfo.ActivityStartTime <= 0 || activityInfo.ActivityEndTime <= 0 {
+		return 0, 0, false
+	}
+	if activityInfo.ActivityEndTime < activityInfo.ActivityStartTime {
+		return 0, 0, false
+	}
+
+	windowStart := activityInfo.ActivityStartTime - int64(verifyWindowBefore/time.Second)
+	windowEnd := activityInfo.ActivityEndTime + int64(verifyWindowAfter/time.Second)
+	if windowStart <= 0 || windowEnd <= 0 || windowEnd < windowStart {
+		return 0, 0, false
+	}
+	return windowStart, windowEnd, true
+}
+
+func verifyTicketTotp(ticket *model.ActivityTicket, input string, now time.Time) bool {
+	if ticket == nil {
+		return false
+	}
+	code := strings.TrimSpace(input)
+	if code == "" {
+		return false
+	}
+	secret := ticket.TotpSecret
+	if secret == "" {
+		secret = deriveTotpSecret(int64(ticket.ActivityID), int64(ticket.UserID), ticket.TicketCode)
+	}
+	if secret == "" {
+		return false
+	}
+
+	for offset := -verifyTotpSkewStep; offset <= verifyTotpSkewStep; offset++ {
+		t := now.Add(time.Duration(offset*totpStepSeconds) * time.Second)
+		expected, err := generateTotpCode(secret, t)
+		if err == nil && expected == code {
+			return true
+		}
+	}
+	return false
+}
+
+func buildVerifySnapshot(activityInfo *model.Activity, ticket *model.ActivityTicket, verifyTime int64) string {
+	if activityInfo == nil || ticket == nil {
+		return ""
+	}
+	payload := map[string]interface{}{
+		"activity_id":   ticket.ActivityID,
+		"activity_name": activityInfo.Title,
+		"activity_time": activityInfo.ActivityStartTime,
+		"ticket_code":   ticket.TicketCode,
+		"verify_time":   verifyTime,
+	}
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return ""
+	}
+	return string(data)
 }
 
 const (

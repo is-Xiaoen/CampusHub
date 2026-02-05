@@ -75,6 +75,8 @@ type (
 	SendQQEmailResponse      = pb.SendQQEmailResponse
 	TagBasicInfo             = pb.TagBasicInfo
 	TagInfo                  = pb.TagInfo
+	TagUsageCountReq         = pb.TagUsageCountReq
+	TagUsageCountResp        = pb.TagUsageCountResp
 	UpdatePasswordReq        = pb.UpdatePasswordReq
 	UpdatePasswordResponse   = pb.UpdatePasswordResponse
 	UpdateScoreReq           = pb.UpdateScoreReq
