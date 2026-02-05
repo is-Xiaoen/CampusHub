@@ -3,4 +3,328 @@
 // ============================================================================
 //
 // 负责人：马华恩（E同学）
+//
+// 说明：
+//   根据 api汇总.md 规范定义的接口
+//   统一响应格式：{code, message, data}
+//
+syntax = "v1"
+
+info (
+	title:   "聊天服务 API"
+	desc:    "提供群聊、消息、通知的 HTTP 接口"
+	author:  "马华恩"
+	version: "v1.0"
+)
+
+// ============================================================================
+// 群组管理类型定义
+// ============================================================================
+type (
+	// 群聊信息
+	GroupInfo {
+		GroupId     string `json:"group_id"`
+		ActivityId  int64  `json:"activity_id"`
+		Name        string `json:"name"`
+		OwnerId     int64  `json:"owner_id"`
+		MemberCount int32  `json:"member_count"`
+		Status      int32  `json:"status"`
+		CreatedAt   string `json:"created_at"`
+	}
+	// 群成员信息
+	GroupMemberInfo {
+		UserId   int64  `json:"user_id"`
+		Username string `json:"username"`
+		Avatar   string `json:"avatar"`
+		Role     string `json:"role"` // owner, member
+		JoinedAt string `json:"joined_at"`
+	}
+	// 用户群聊信息（带最后消息）
+	UserGroupInfo {
+		GroupId       string `json:"group_id"`
+		ActivityId    int64  `json:"activity_id"`
+		Name          string `json:"name"`
+		OwnerId       int64  `json:"owner_id"`
+		MemberCount   int32  `json:"member_count"`
+		Status        int32  `json:"status"`
+		Role          string `json:"role"`
+		JoinedAt      string `json:"joined_at"`
+		LastMessage   string `json:"last_message,optional"`
+		LastMessageAt string `json:"last_message_at,optional"`
+	}
+	// 查询群信息请求
+	GetGroupInfoReq {
+		GroupId string `path:"group_id"`
+	}
+	// 查询群信息响应
+	GetGroupInfoResp {
+		Code    int32     `json:"code"`
+		Message string    `json:"message"`
+		Data    GroupInfo `json:"data"`
+	}
+	// 查询群成员列表请求
+	GetGroupMembersReq {
+		GroupId  string `path:"group_id"`
+		Page     int32  `form:"page,default=1"`
+		PageSize int32  `form:"page_size,default=20"`
+	}
+	// 查询群成员列表响应数据
+	GetGroupMembersData {
+		Members  []GroupMemberInfo `json:"members"`
+		Total    int32             `json:"total"`
+		Page     int32             `json:"page"`
+		PageSize int32             `json:"page_size"`
+	}
+	// 查询群成员列表响应
+	GetGroupMembersResp {
+		Code    int32               `json:"code"`
+		Message string              `json:"message"`
+		Data    GetGroupMembersData `json:"data"`
+	}
+	// 获取用户群列表请求
+	GetUserGroupsReq {
+		UserId   int64 `path:"user_id"`
+		Page     int32 `form:"page,default=1"`
+		PageSize int32 `form:"page_size,default=20"`
+	}
+	// 获取用户群列表响应数据
+	GetUserGroupsData {
+		Groups   []UserGroupInfo `json:"groups"`
+		Total    int32           `json:"total"`
+		Page     int32           `json:"page"`
+		PageSize int32           `json:"page_size"`
+	}
+	// 获取用户群列表响应
+	GetUserGroupsResp {
+		Code    int32             `json:"code"`
+		Message string            `json:"message"`
+		Data    GetUserGroupsData `json:"data"`
+	}
+)
+
+// ============================================================================
+// 消息管理类型定义
+// ============================================================================
+type (
+	// 消息信息
+	MessageInfo {
+		MessageId  string `json:"message_id"`
+		GroupId    string `json:"group_id"`
+		SenderId   int64  `json:"sender_id"`
+		SenderName string `json:"sender_name"`
+		MsgType    int32  `json:"msg_type"` // 1-文本 2-图片
+		Content    string `json:"content"`
+		CreatedAt  string `json:"created_at"`
+	}
+	// 查询消息历史请求
+	GetMessageHistoryReq {
+		GroupId  string `form:"group_id"`
+		BeforeId string `form:"before_id,optional"`
+		Limit    int32  `form:"limit,default=20"`
+	}
+	// 查询消息历史响应数据
+	GetMessageHistoryData {
+		Messages []MessageInfo `json:"messages"`
+		HasMore  bool          `json:"has_more"`
+	}
+	// 查询消息历史响应
+	GetMessageHistoryResp {
+		Code    int32                 `json:"code"`
+		Message string                `json:"message"`
+		Data    GetMessageHistoryData `json:"data"`
+	}
+	// 获取离线消息请求
+	GetOfflineMessagesReq {
+		AfterTime int64 `form:"after_time"`
+	}
+	// 获取离线消息响应数据
+	GetOfflineMessagesData {
+		Messages []MessageInfo `json:"messages"`
+	}
+	// 获取离线消息响应
+	GetOfflineMessagesResp {
+		Code    int32                  `json:"code"`
+		Message string                 `json:"message"`
+		Data    GetOfflineMessagesData `json:"data"`
+	}
+)
+
+// ============================================================================
+// 通知管理类型定义
+// ============================================================================
+type (
+	// 通知信息
+	NotificationInfo {
+		NotificationId string `json:"notification_id"`
+		Type           string `json:"type"`
+		Title          string `json:"title"`
+		Content        string `json:"content"`
+		IsRead         bool   `json:"is_read"`
+		CreatedAt      string `json:"created_at"`
+	}
+	// 查询通知列表请求
+	GetNotificationsReq {
+		UserId   int64 `form:"user_id"`
+		Page     int32 `form:"page,default=1"`
+		PageSize int32 `form:"page_size,default=20"`
+	}
+	// 查询通知列表响应数据
+	GetNotificationsData {
+		Total         int32              `json:"total"`
+		UnreadCount   int32              `json:"unread_count"`
+		Notifications []NotificationInfo `json:"notifications"`
+		Page          int32              `json:"page"`
+		PageSize      int32              `json:"page_size"`
+	}
+	// 查询通知列表响应
+	GetNotificationsResp {
+		Code    int32                `json:"code"`
+		Message string               `json:"message"`
+		Data    GetNotificationsData `json:"data"`
+	}
+	// 获取未读数量请求
+	GetUnreadCountReq {
+		UserId int64 `form:"user_id"`
+	}
+	// 获取未读数量响应数据
+	GetUnreadCountData {
+		Count int32 `json:"count"`
+	}
+	// 获取未读数量响应
+	GetUnreadCountResp {
+		Code    int32              `json:"code"`
+		Message string             `json:"message"`
+		Data    GetUnreadCountData `json:"data"`
+	}
+	// 标记已读请求
+	MarkNotificationReadReq {
+		UserId          int64    `json:"user_id"`
+		NotificationIds []string `json:"notification_ids"`
+	}
+	// 标记已读响应数据
+	MarkNotificationReadData {
+		UpdatedCount int32 `json:"updated_count"`
+	}
+	// 标记已读响应
+	MarkNotificationReadResp {
+		Code    int32                    `json:"code"`
+		Message string                   `json:"message"`
+		Data    MarkNotificationReadData `json:"data"`
+	}
+	// 标记全部已读请求
+	MarkAllReadReq {
+		UserId int64 `json:"user_id"`
+	}
+	// 标记全部已读响应数据
+	MarkAllReadData {
+		UpdatedCount int32 `json:"updated_count"`
+	}
+	// 标记全部已读响应
+	MarkAllReadResp {
+		Code    int32           `json:"code"`
+		Message string          `json:"message"`
+		Data    MarkAllReadData `json:"data"`
+	}
+)
+
+// ============================================================================
+// 用户状态管理类型定义
+// ============================================================================
+type (
+	// 用户状态信息
+	UserStatusInfo {
+		IsOnline      bool  `json:"is_online"`
+		LastSeen      int64 `json:"last_seen"`
+		LastOnlineAt  int64 `json:"last_online_at"`
+		LastOfflineAt int64 `json:"last_offline_at"`
+	}
+	// 获取用户状态请求
+	GetUserStatusReq {
+		UserId int64 `form:"user_id"`
+	}
+	// 获取用户状态响应数据
+	GetUserStatusData {
+		IsOnline      bool  `json:"is_online"`
+		LastSeen      int64 `json:"last_seen"`
+		LastOnlineAt  int64 `json:"last_online_at"`
+		LastOfflineAt int64 `json:"last_offline_at"`
+	}
+	// 获取用户状态响应
+	GetUserStatusResp {
+		Code    int32             `json:"code"`
+		Message string            `json:"message"`
+		Data    GetUserStatusData `json:"data"`
+	}
+)
+
+// ============================================================================
+// 路由定义
+// ============================================================================
+@server (
+	prefix: /api
+	group:  group
+	jwt:    Auth
+)
+service chat-api {
+	@doc "查询群组信息"
+	@handler getGroupInfo
+	get /groups/:group_id (GetGroupInfoReq) returns (GetGroupInfoResp)
+
+	@doc "查询群成员列表"
+	@handler getGroupMembers
+	get /groups/:group_id/members (GetGroupMembersReq) returns (GetGroupMembersResp)
+
+	@doc "获取用户的群聊列表"
+	@handler getUserGroups
+	get /users/:user_id/groups (GetUserGroupsReq) returns (GetUserGroupsResp)
+}
+
+@server (
+	prefix: /api
+	group:  message
+	jwt:    Auth
+)
+service chat-api {
+	@doc "查询消息历史"
+	@handler getMessageHistory
+	get /messages (GetMessageHistoryReq) returns (GetMessageHistoryResp)
+
+	@doc "获取离线消息"
+	@handler getOfflineMessages
+	get /messages/offline (GetOfflineMessagesReq) returns (GetOfflineMessagesResp)
+}
+
+@server (
+	prefix: /api
+	group:  notification
+	jwt:    Auth
+)
+service chat-api {
+	@doc "查询通知列表"
+	@handler getNotifications
+	get /notifications (GetNotificationsReq) returns (GetNotificationsResp)
+
+	@doc "获取未读数量"
+	@handler getUnreadCount
+	get /notifications/unread-count (GetUnreadCountReq) returns (GetUnreadCountResp)
+
+	@doc "标记已读"
+	@handler markNotificationRead
+	post /notifications/read (MarkNotificationReadReq) returns (MarkNotificationReadResp)
+
+	@doc "标记全部已读"
+	@handler markAllRead
+	post /notifications/read-all (MarkAllReadReq) returns (MarkAllReadResp)
+}
+
+@server (
+	prefix: /api
+	group:  user
+	jwt:    Auth
+)
+service chat-api {
+	@doc "获取用户在线状态"
+	@handler getUserStatus
+	get /users/status (GetUserStatusReq) returns (GetUserStatusResp)
+}
 
