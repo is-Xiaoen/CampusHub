@@ -13,6 +13,7 @@ package svc
 import (
 	"activity-platform/app/user/api/internal/config"
 	"activity-platform/app/user/rpc/client/creditservice"
+	"activity-platform/app/user/rpc/client/userbasicservice"
 	"activity-platform/app/user/rpc/client/verifyservice"
 
 	"github.com/go-redis/redis/v8"
@@ -39,6 +40,9 @@ type ServiceContext struct {
 
 	// VerifyServiceRpc 认证服务 RPC 客户端
 	VerifyServiceRpc verifyservice.VerifyService
+
+	// UserBasicServiceRpc 用户基础服务 RPC 客户端（登录、注册、忘记密码等）
+	UserBasicServiceRpc userbasicservice.UserBasicService
 }
 
 // NewServiceContext 创建服务上下文
@@ -54,8 +58,9 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		Redis:  rdb,
 
 		// 初始化 RPC 客户端
-		CreditServiceRpc: creditservice.NewCreditService(userRpcClient),
-		VerifyServiceRpc: verifyservice.NewVerifyService(userRpcClient),
+		CreditServiceRpc:    creditservice.NewCreditService(userRpcClient),
+		VerifyServiceRpc:    verifyservice.NewVerifyService(userRpcClient),
+		UserBasicServiceRpc: userbasicservice.NewUserBasicService(userRpcClient),
 	}
 }
 
