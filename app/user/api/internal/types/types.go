@@ -76,6 +76,9 @@ type GetCaptchaResp struct {
 	CaptchaId string `json:"captchaId"`
 }
 
+type GetCodeResp struct {
+}
+
 type GetCreditLogsReq struct {
 	ChangeType int32 `form:"change_type,optional"`
 	StartTime  int64 `form:"start_time,optional"`
@@ -89,6 +92,14 @@ type GetCreditLogsResp struct {
 	Total    int64           `json:"total"`
 	Page     int32           `json:"page"`
 	PageSize int32           `json:"page_size"`
+}
+
+type GetForgetPasswordCodeReq struct {
+	QqEmail string `form:"qq_email"`
+}
+
+type GetRegisterCodeReq struct {
+	QqEmail string `form:"qq_email"`
 }
 
 type GetVerifyCurrentResp struct {

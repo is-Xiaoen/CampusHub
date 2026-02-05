@@ -949,7 +949,7 @@ service QQEmail{
 
 // 发送QQ邮箱
 message SendQQEmailReq{
-    int64 user_id =1;
+    string qq_email =1;
     string scene =2;
 }
 

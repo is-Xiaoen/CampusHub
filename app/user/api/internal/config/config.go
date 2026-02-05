@@ -32,4 +32,9 @@ type Config struct {
 
 	// BizRedis 业务Redis配置（避免与go-zero内置Redis冲突）
 	BizRedis redis.RedisConf
+
+	// MySQL 配置
+	MySQL struct {
+		DataSource string
+	}
 }

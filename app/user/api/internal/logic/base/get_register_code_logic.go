@@ -7,8 +7,8 @@ import (
 	"context"
 
 	"activity-platform/app/user/api/internal/svc"
+	"activity-platform/app/user/api/internal/types"
 	"activity-platform/app/user/rpc/client/qqemail"
-	ctxUtils "activity-platform/common/utils/context"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -28,19 +28,14 @@ func NewGetRegisterCodeLogic(ctx context.Context, svcCtx *svc.ServiceContext) *G
 	}
 }
 
-func (l *GetRegisterCodeLogic) GetRegisterCode() error {
-	userId, err := ctxUtils.GetUserIdFromCtx(l.ctx)
-	if err != nil {
-		return err
-	}
-
+func (l *GetRegisterCodeLogic) GetRegisterCode(req *types.GetRegisterCodeReq) (resp *types.GetCodeResp, err error) {
 	_, err = l.svcCtx.QQEmailRpc.SendQQEmail(l.ctx, &qqemail.SendQQEmailReq{
-		UserId: userId,
-		Scene:  "register",
+		QqEmail: req.QqEmail,
+		Scene:   "register",
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &types.GetCodeResp{}, nil
 }
