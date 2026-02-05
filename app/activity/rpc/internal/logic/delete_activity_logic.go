@@ -66,8 +66,8 @@ func (l *DeleteActivityLogic) DeleteActivity(in *activity.DeleteActivityReq) (*a
 
 	// 5. 事务：删除活动 + 清理关联数据
 	err = l.svcCtx.DB.WithContext(l.ctx).Transaction(func(tx *gorm.DB) error {
-		// 5.1 获取关联的标签ID（用于后续更新使用计数）
-		tagIDs, err := l.svcCtx.TagModel.FindIDsByActivityID(l.ctx, uint64(in.Id))
+		// 5.1 获取关联的标签ID（用于后续更新统计）
+		tagIDs, err := l.svcCtx.ActivityTagModel.FindIDsByActivityID(l.ctx, uint64(in.Id))
 		if err != nil {
 			l.Errorf("查询活动标签失败: activityId=%d, err=%v", in.Id, err)
 			// 标签查询失败不阻塞删除流程
@@ -75,7 +75,7 @@ func (l *DeleteActivityLogic) DeleteActivity(in *activity.DeleteActivityReq) (*a
 		}
 
 		// 5.2 删除标签关联
-		if err := l.svcCtx.TagModel.UnbindFromActivity(l.ctx, tx, uint64(in.Id)); err != nil {
+		if err := l.svcCtx.ActivityTagModel.UnbindFromActivity(l.ctx, tx, uint64(in.Id)); err != nil {
 			l.Errorf("删除标签关联失败: activityId=%d, err=%v", in.Id, err)
 			return err
 		}
@@ -86,11 +86,11 @@ func (l *DeleteActivityLogic) DeleteActivity(in *activity.DeleteActivityReq) (*a
 			return err
 		}
 
-		// 5.4 更新标签使用计数（减少）
+		// 5.4 更新活动标签统计（减少 activity_count）
 		if len(tagIDs) > 0 {
-			if err := l.svcCtx.TagModel.IncrUsageCount(l.ctx, tagIDs, -1); err != nil {
-				l.Errorf("更新标签使用计数失败: tagIDs=%v, err=%v", tagIDs, err)
-				// 使用计数更新失败不影响主流程
+			if err := l.svcCtx.TagStatsModel.BatchDecrActivityCount(l.ctx, tx, tagIDs); err != nil {
+				l.Errorf("更新标签统计失败: tagIDs=%v, err=%v", tagIDs, err)
+				// 统计更新失败不影响主流程
 			}
 		}
 
@@ -100,6 +100,19 @@ func (l *DeleteActivityLogic) DeleteActivity(in *activity.DeleteActivityReq) (*a
 	if err != nil {
 		l.Errorf("删除活动事务失败: id=%d, err=%v", in.Id, err)
 		return nil, errorx.ErrDBError(err)
+	}
+
+	// 删除缓存（删除成功后）
+	if l.svcCtx.ActivityCache != nil {
+		if err := l.svcCtx.ActivityCache.Invalidate(l.ctx, uint64(in.Id)); err != nil {
+			// 缓存删除失败不影响主流程，记录日志即可
+			l.Infof("[WARNING] 删除活动缓存失败: id=%d, err=%v", in.Id, err)
+		}
+	}
+
+	// 异步从 ES 删除文档
+	if l.svcCtx.SyncService != nil {
+		l.svcCtx.SyncService.DeleteActivityAsync(uint64(in.Id))
 	}
 
 	l.Infof("活动删除成功: id=%d, operatorId=%d, isAdmin=%v",

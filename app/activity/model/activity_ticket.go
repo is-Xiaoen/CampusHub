@@ -136,6 +136,24 @@ func (m *ActivityTicketModel) FindByRegistrationID(ctx context.Context, registra
 	return &ticket, nil
 }
 
+// FindByRegistrationIDTx 根据报名记录ID查询（事务内）
+func (m *ActivityTicketModel) FindByRegistrationIDTx(ctx context.Context, tx *gorm.DB, registrationID uint64) (*ActivityTicket, error) {
+	if tx == nil {
+		return nil, errors.New("tx is nil")
+	}
+	var ticket ActivityTicket
+	err := tx.WithContext(ctx).
+		Where("registration_id = ?", registrationID).
+		First(&ticket).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrTicketNotFound
+		}
+		return nil, err
+	}
+	return &ticket, nil
+}
+
 // FindDetailByTicketID 根据票据ID获取票据与活动详情
 func (m *ActivityTicketModel) FindDetailByTicketID(ctx context.Context, ticketID uint64) (*TicketDetail, error) {
 	var detail TicketDetail
@@ -205,6 +223,29 @@ func (m *ActivityTicketModel) UpdateStatus(ctx context.Context, id uint64, statu
 		Model(&ActivityTicket{}).
 		Where("id = ?", id).
 		Update("status", status)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return ErrTicketNotFound
+	}
+	return nil
+}
+
+// ResetForReuse 重置票据为可用状态（事务内）
+func (m *ActivityTicketModel) ResetForReuse(ctx context.Context, tx *gorm.DB, id uint64) error {
+	if tx == nil {
+		return errors.New("tx is nil")
+	}
+	result := tx.WithContext(ctx).
+		Model(&ActivityTicket{}).
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"status":            TicketStatusUnused,
+			"used_time":         int64(0),
+			"used_location":     "",
+			"check_in_snapshot": "",
+		})
 	if result.Error != nil {
 		return result.Error
 	}

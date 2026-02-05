@@ -12,6 +12,8 @@
 //   1. 信用分模块（credit）- 信用分查询、变更记录
 //   2. 学生认证模块（verify）- 学生身份认证流程
 //
+// JSON 命名规范：统一使用 snake_case（下划线命名）
+//
 // ============================================================================
 syntax = "v1"
 
@@ -28,15 +30,15 @@ info (
 // 查询信用变更记录请求
 type GetCreditLogsReq {
 	// 变动类型筛选（1-注册初始化,2-正常履约,3-提前取消,4-临期取消,5-爽约,6-圆满举办,7-删除活动,99-管理员调整）
-	ChangeType int32 `form:"changeType,optional"`
+	ChangeType int32 `form:"change_type,optional"`
 	// 开始时间戳（秒）
-	StartTime int64 `form:"startTime,optional"`
+	StartTime int64 `form:"start_time,optional"`
 	// 结束时间戳（秒）
-	EndTime int64 `form:"endTime,optional"`
+	EndTime int64 `form:"end_time,optional"`
 	// 页码，默认1
 	Page int32 `form:"page,optional,default=1"`
 	// 每页条数，默认20，最大50
-	PageSize int32 `form:"pageSize,optional,default=20"`
+	PageSize int32 `form:"page_size,optional,default=20"`
 }
 
 // 信用变更记录项
@@ -44,19 +46,19 @@ type CreditLogItem {
 	// 记录ID
 	Id int64 `json:"id"`
 	// 用户ID
-	UserId int64 `json:"userId"`
+	UserId int64 `json:"user_id"`
 	// 变动类型
-	ChangeType int32 `json:"changeType"`
+	ChangeType int32 `json:"change_type"`
 	// 变动类型名称
-	ChangeTypeName string `json:"changeTypeName"`
+	ChangeTypeName string `json:"change_type_name"`
 	// 变动分值（正数加分，负数扣分）
 	Delta int32 `json:"delta"`
 	// 业务来源ID
-	SourceId string `json:"sourceId"`
+	SourceId string `json:"source_id"`
 	// 变动原因
 	Reason string `json:"reason"`
 	// 变动时间戳（秒）
-	CreatedAt int64 `json:"createdAt"`
+	CreatedAt int64 `json:"created_at"`
 }
 
 // 查询信用变更记录响应
@@ -68,7 +70,7 @@ type GetCreditLogsResp {
 	// 当前页码
 	Page int32 `json:"page"`
 	// 每页条数
-	PageSize int32 `json:"pageSize"`
+	PageSize int32 `json:"page_size"`
 }
 
 // ============================================================================
@@ -77,127 +79,127 @@ type GetCreditLogsResp {
 // OCR识别/认证数据
 type VerifyData {
 	// 姓名（脱敏显示）
-	RealName string `json:"realName"`
+	RealName string `json:"real_name"`
 	// 学校名称
-	SchoolName string `json:"schoolName"`
+	SchoolName string `json:"school_name"`
 	// 学号（脱敏显示）
-	StudentId string `json:"studentId"`
+	StudentId string `json:"student_id"`
 	// 院系
 	Department string `json:"department"`
 	// 入学年份
-	AdmissionYear string `json:"admissionYear"`
+	AdmissionYear string `json:"admission_year"`
 	// 认证通过时间（已通过时返回）
-	VerifiedAt string `json:"verifiedAt,optional"`
+	VerifiedAt string `json:"verified_at,optional"`
 }
 
 // 获取当前认证进度响应
 type GetVerifyCurrentResp {
 	// 是否有认证记录
-	HasRecord bool `json:"hasRecord"`
+	HasRecord bool `json:"has_record"`
 	// 当前认证ID（无记录时为0）
-	VerifyId int64 `json:"verifyId"`
+	VerifyId int64 `json:"verify_id"`
 	// 当前状态码（-1=未申请,0=初始,1=OCR审核中,2=待确认,3=人工审核,4=通过,5=拒绝,6=超时,7=取消）
 	Status int32 `json:"status"`
 	// 状态描述
-	StatusDesc string `json:"statusDesc"`
+	StatusDesc string `json:"status_desc"`
 	// 是否可以提交新申请
-	CanApply bool `json:"canApply"`
+	CanApply bool `json:"can_apply"`
 	// 是否可以确认/修改
-	CanConfirm bool `json:"canConfirm"`
+	CanConfirm bool `json:"can_confirm"`
 	// 是否可以取消
-	CanCancel bool `json:"canCancel"`
+	CanCancel bool `json:"can_cancel"`
 	// 前端应执行的动作（apply/wait_ocr/confirm/wait_manual/done/rejected）
-	NeedAction string `json:"needAction"`
+	NeedAction string `json:"need_action"`
 	// OCR识别数据（待确认/已通过时返回）
-	VerifyData *VerifyData `json:"verifyData,optional"`
+	VerifyData *VerifyData `json:"verify_data,optional"`
 	// 拒绝原因（被拒绝时返回）
-	RejectReason string `json:"rejectReason,optional"`
+	RejectReason string `json:"reject_reason,optional"`
 	// 申请时间
-	CreatedAt string `json:"createdAt,optional"`
+	CreatedAt string `json:"created_at,optional"`
 	// 最后更新时间
-	UpdatedAt string `json:"updatedAt,optional"`
+	UpdatedAt string `json:"updated_at,optional"`
 }
 
 // 提交学生认证申请请求
 type ApplyVerifyReq {
 	// 姓名
-	RealName string `json:"realName"`
+	RealName string `json:"real_name"`
 	// 学校名称
-	SchoolName string `json:"schoolName"`
+	SchoolName string `json:"school_name"`
 	// 学号
-	StudentId string `json:"studentId"`
+	StudentId string `json:"student_id"`
 	// 院系
 	Department string `json:"department,optional"`
 	// 入学年份
-	AdmissionYear string `json:"admissionYear"`
+	AdmissionYear string `json:"admission_year"`
 	// 学生证正面照片URL
-	FrontImageUrl string `json:"frontImageUrl"`
+	FrontImageUrl string `json:"front_image_url"`
 	// 学生证详情面照片URL
-	BackImageUrl string `json:"backImageUrl"`
+	BackImageUrl string `json:"back_image_url"`
 }
 
 // 提交学生认证申请响应
 type ApplyVerifyResp {
 	// 认证申请ID
-	VerifyId int64 `json:"verifyId"`
+	VerifyId int64 `json:"verify_id"`
 	// 当前状态码（1=OCR审核中）
 	Status int32 `json:"status"`
 	// 状态描述
-	StatusDesc string `json:"statusDesc"`
+	StatusDesc string `json:"status_desc"`
 	// 申请时间
-	CreatedAt string `json:"createdAt"`
+	CreatedAt string `json:"created_at"`
 }
 
 // 用户修改后的数据
 type ModifiedData {
 	// 姓名
-	RealName string `json:"realName,optional"`
+	RealName string `json:"real_name,optional"`
 	// 学校名称
-	SchoolName string `json:"schoolName,optional"`
+	SchoolName string `json:"school_name,optional"`
 	// 学号
-	StudentId string `json:"studentId,optional"`
+	StudentId string `json:"student_id,optional"`
 	// 院系
 	Department string `json:"department,optional"`
 	// 入学年份
-	AdmissionYear string `json:"admissionYear,optional"`
+	AdmissionYear string `json:"admission_year,optional"`
 }
 
 // 用户确认/修改认证信息请求
 type ConfirmVerifyReq {
 	// 认证申请ID
-	VerifyId int64 `json:"verifyId"`
+	VerifyId int64 `json:"verify_id"`
 	// true=确认无误，false=需要修改
-	IsConfirmed bool `json:"isConfirmed"`
-	// 用户修改后的数据（isConfirmed=false时必填）
-	ModifiedData *ModifiedData `json:"modifiedData,optional"`
+	IsConfirmed bool `json:"is_confirmed"`
+	// 用户修改后的数据（is_confirmed=false时必填）
+	ModifiedData *ModifiedData `json:"modified_data,optional"`
 }
 
 // 用户确认/修改认证信息响应
 type ConfirmVerifyResp {
 	// 认证申请ID
-	VerifyId int64 `json:"verifyId"`
+	VerifyId int64 `json:"verify_id"`
 	// 更新后的状态码（4=通过，3=人工审核）
-	NewStatus int32 `json:"newStatus"`
+	NewStatus int32 `json:"new_status"`
 	// 状态描述
-	NewStatusDesc string `json:"newStatusDesc"`
+	NewStatusDesc string `json:"new_status_desc"`
 }
 
 // 取消认证申请请求
 type CancelVerifyReq {
 	// 认证申请ID
-	VerifyId int64 `json:"verifyId"`
+	VerifyId int64 `json:"verify_id"`
 	// 取消原因（可选）
-	CancelReason string `json:"cancelReason,optional"`
+	CancelReason string `json:"cancel_reason,optional"`
 }
 
 // 取消认证申请响应
 type CancelVerifyResp {
 	// 认证申请ID
-	VerifyId int64 `json:"verifyId"`
+	VerifyId int64 `json:"verify_id"`
 	// 更新后的状态码（7=已取消）
-	NewStatus int32 `json:"newStatus"`
+	NewStatus int32 `json:"new_status"`
 	// 状态描述
-	NewStatusDesc string `json:"newStatusDesc"`
+	NewStatusDesc string `json:"new_status_desc"`
 }
 
 // ============================================================================
@@ -238,4 +240,3 @@ service user-api {
 	@handler CancelVerify
 	post /verify/student/cancel (CancelVerifyReq) returns (CancelVerifyResp)
 }
-

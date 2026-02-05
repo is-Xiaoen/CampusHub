@@ -23,10 +23,10 @@ Log:
 
 # ==================== JWT 配置（重要：所有 API 服务必须一致）====================
 Auth:
-  AccessSecret: "k9#8G7&6F5%4D3$2S1@0P9*8O7!6N5^4M3+2L1=0"
+  AccessSecret: "your-access-secret-key-change-in-production-32chars"
   AccessExpire: 7200  # 2小时
 
-# ==================== RPC 服务配置 ====================
+# ==================== RPC 服务配置（通过 Etcd 发现）====================
 UserRpc:
   Etcd:
     Hosts:
@@ -34,6 +34,12 @@ UserRpc:
     Key: user.rpc
   NonBlock: true
   Timeout: 3000
+
+# ==================== Redis 配置 ====================
+BizRedis:
+  Host: 192.168.10.4:6379
+  Type: node
+  Pass: "123456"
 
 # ==================== 链路追踪（可选）====================
 # Telemetry:

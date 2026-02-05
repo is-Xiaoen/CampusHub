@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -68,8 +69,8 @@ type Activity struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// 关联数据（非数据库字段）
-	Tags         []Tag  `gorm:"-" json:"tags,omitempty"`
-	CategoryName string `gorm:"-" json:"category_name,omitempty"`
+	Tags         []TagCache `gorm:"-" json:"tags,omitempty"`
+	CategoryName string     `gorm:"-" json:"category_name,omitempty"`
 }
 
 func (Activity) TableName() string {
@@ -123,6 +124,18 @@ func (m *ActivityModel) FindByID(ctx context.Context, id uint64) (*Activity, err
 		return nil, err
 	}
 	return &activity, nil
+}
+
+// FindByIDs 批量查询活动
+func (m *ActivityModel) FindByIDs(ctx context.Context, ids []uint64) ([]Activity, error) {
+	if len(ids) == 0 {
+		return []Activity{}, nil
+	}
+	var activities []Activity
+	err := m.db.WithContext(ctx).
+		Where("id IN ?", ids).
+		Find(&activities).Error
+	return activities, err
 }
 
 // FindByIDForUpdate 查询并加行锁（用于状态机）
@@ -410,6 +423,168 @@ func (m *ActivityModel) IncrViewCount(ctx context.Context, id uint64, delta int)
 		Where("id = ?", id).
 		Update("view_count", gorm.Expr("view_count + ?",
 			delta)).Error
+}
+
+// ==================== 搜索查询 ====================
+
+// SearchQuery 搜索查询条件
+type SearchQuery struct {
+	Keyword    string // 搜索关键词（搜索标题、描述、地点）
+	CategoryID uint64 // 分类筛选（0=全部）
+	Page       int    // 页码
+	PageSize   int    // 每页数量
+	Sort       string // 排序方式：relevance（相关性）/ time（时间）/ hot（热度）
+}
+
+// SearchResult 搜索结果
+type SearchResult struct {
+	List       []Activity
+	Total      int64
+	Page       int
+	PageSize   int
+	TotalPages int
+}
+
+// Search 搜索活动（MySQL LIKE 版本）
+//
+// 搜索规则：
+//  1. 关键词同时匹配标题、描述、地点（OR 关系）
+//  2. 只搜索公开状态的活动（已发布/进行中/已结束）
+//  3. 支持分类筛选
+//  4. 支持多种排序方式
+//
+// 性能说明：
+//   - LIKE '%keyword%' 无法使用索引，适用于数据量较小的场景（< 5万条）
+//   - 后续可替换为 Elasticsearch 实现
+func (m *ActivityModel) Search(ctx context.Context, query *SearchQuery) (*SearchResult, error) {
+	// 1. 参数规范化
+	if query.Page <= 0 {
+		query.Page = DefaultPage
+	}
+	if query.PageSize <= 0 {
+		query.PageSize = DefaultPageSize
+	}
+	if query.PageSize > MaxPageSize {
+		query.PageSize = MaxPageSize
+	}
+
+	// 2. 禁止超深分页（搜索场景下也限制）
+	if query.Page > MaxPage {
+		return nil, ErrPageTooDeep
+	}
+
+	db := m.db.WithContext(ctx).Model(&Activity{})
+
+	// 3. 构建搜索条件
+	db = m.buildSearchConditions(db, query)
+
+	// 4. 统计总数
+	var total int64
+	if err := db.Count(&total).Error; err != nil {
+		return nil, err
+	}
+
+	// 5. 构建排序
+	db = m.buildSearchOrder(db, query)
+
+	// 6. 执行分页查询
+	var activities []Activity
+	offset := (query.Page - 1) * query.PageSize
+	if err := db.Offset(offset).Limit(query.PageSize).Find(&activities).Error; err != nil {
+		return nil, err
+	}
+
+	// 7. 计算总页数
+	totalPages := int(total) / query.PageSize
+	if int(total)%query.PageSize > 0 {
+		totalPages++
+	}
+
+	return &SearchResult{
+		List:       activities,
+		Total:      total,
+		Page:       query.Page,
+		PageSize:   query.PageSize,
+		TotalPages: totalPages,
+	}, nil
+}
+
+// buildSearchConditions 构建搜索查询条件
+func (m *ActivityModel) buildSearchConditions(db *gorm.DB, query *SearchQuery) *gorm.DB {
+	// 1. 只搜索公开状态的活动
+	db = db.Where("status IN ?", []int8{StatusPublished, StatusOngoing, StatusFinished})
+
+	// 2. 关键词搜索（标题、描述、地点）
+	if query.Keyword != "" {
+		// 转义特殊字符，防止 SQL 通配符注入
+		escapedKeyword := escapeKeyword(query.Keyword)
+		likePattern := "%" + escapedKeyword + "%"
+
+		// OR 关系：任一字段匹配即可
+		db = db.Where(
+			"title LIKE ? OR description LIKE ? OR location LIKE ?",
+			likePattern, likePattern, likePattern,
+		)
+	}
+
+	// 3. 分类筛选
+	if query.CategoryID > 0 {
+		db = db.Where("category_id = ?", query.CategoryID)
+	}
+
+	return db
+}
+
+// buildSearchOrder 构建搜索排序
+//
+// 排序规则：
+//   - relevance：相关性排序（标题匹配优先，然后按热度）
+//   - time：按活动开始时间升序（即将开始的优先）
+//   - hot：按报名人数降序
+//   - 默认：按创建时间降序
+func (m *ActivityModel) buildSearchOrder(db *gorm.DB, query *SearchQuery) *gorm.DB {
+	switch query.Sort {
+	case "relevance":
+		if query.Keyword != "" {
+			escapedKeyword := escapeKeyword(query.Keyword)
+			likePattern := "%" + escapedKeyword + "%"
+			// 相关性排序：标题匹配 > 地点匹配 > 描述匹配 > 热度
+			return db.Order(gorm.Expr(
+				"CASE WHEN title LIKE ? THEN 3 WHEN location LIKE ? THEN 2 WHEN description LIKE ? THEN 1 ELSE 0 END DESC, current_participants DESC, created_at DESC",
+				likePattern, likePattern, likePattern,
+			))
+		}
+		// 无关键词时，按热度排序
+		return db.Order("current_participants DESC, created_at DESC")
+
+	case "time":
+		// 按活动开始时间升序（即将开始的优先）
+		return db.Order("activity_start_time ASC, created_at DESC")
+
+	case "hot":
+		// 按报名人数降序
+		return db.Order("current_participants DESC, created_at DESC")
+
+	default:
+		// 默认按创建时间降序
+		return db.Order("created_at DESC")
+	}
+}
+
+// escapeKeyword 转义 SQL LIKE 特殊字符
+//
+// MySQL LIKE 语句中，% 和 _ 是通配符：
+//   - % 匹配任意多个字符
+//   - _ 匹配单个字符
+//
+// 如果用户输入了这些字符，需要转义以进行字面匹配
+func escapeKeyword(keyword string) string {
+	// 转义反斜杠（必须先转义，否则会影响后续转义）
+	keyword = strings.ReplaceAll(keyword, "\\", "\\\\")
+	// 转义 % 和 _
+	keyword = strings.ReplaceAll(keyword, "%", "\\%")
+	keyword = strings.ReplaceAll(keyword, "_", "\\_")
+	return keyword
 }
 
 // ==================== 定时任务方法 ====================

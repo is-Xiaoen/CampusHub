@@ -23,6 +23,7 @@ func NewTagServiceServer(svcCtx *svc.ServiceContext) *TagServiceServer {
 	}
 }
 
+// 马肖阳的标签接口
 func (s *TagServiceServer) GetAllTags(ctx context.Context, in *pb.GetAllTagsReq) (*pb.GetAllTagsResp, error) {
 	l := tagservicelogic.NewGetAllTagsLogic(ctx, s.svcCtx)
 	return l.GetAllTags(in)
