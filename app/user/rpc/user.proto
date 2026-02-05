@@ -638,6 +638,7 @@ service TagService {
 // 修改用户兴趣
 message UpdateUserTagReq{
     repeated int64 ids =1;
+    int64 user_id =2;
 }
 
 message UpdateUserTagResponse{
@@ -735,9 +736,10 @@ message UpdateUserInfoReq{
     int64 nickname =2;
     string introduce =3;
     int64 gender =4;
-    string avatar_url =5;
-    int64 age= 6;
-    repeated int64 tag_ids =7;
+    string avatar_img_name =5;
+    bytes avatar_img_data =6;
+    int64 age= 7;
+    repeated int64 tag_ids =8;
 }
 
 message UpdateUserInfoResponse{

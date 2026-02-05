@@ -2299,6 +2299,7 @@ func (x *UpdateVerifyStatusResp) GetAfterStatus() int32 {
 type UpdateUserTagReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Ids           []int64                `protobuf:"varint,1,rep,packed,name=ids,proto3" json:"ids,omitempty"`
+	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2338,6 +2339,13 @@ func (x *UpdateUserTagReq) GetIds() []int64 {
 		return x.Ids
 	}
 	return nil
+}
+
+func (x *UpdateUserTagReq) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
 }
 
 type UpdateUserTagResponse struct {
@@ -3005,9 +3013,10 @@ type UpdateUserInfoReq struct {
 	Nickname      int64                  `protobuf:"varint,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
 	Introduce     string                 `protobuf:"bytes,3,opt,name=introduce,proto3" json:"introduce,omitempty"`
 	Gender        int64                  `protobuf:"varint,4,opt,name=gender,proto3" json:"gender,omitempty"`
-	AvatarUrl     string                 `protobuf:"bytes,5,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
-	Age           int64                  `protobuf:"varint,6,opt,name=age,proto3" json:"age,omitempty"`
-	TagIds        []int64                `protobuf:"varint,7,rep,packed,name=tag_ids,json=tagIds,proto3" json:"tag_ids,omitempty"`
+	AvatarImgName string                 `protobuf:"bytes,5,opt,name=avatar_img_name,json=avatarImgName,proto3" json:"avatar_img_name,omitempty"`
+	AvatarImgData []byte                 `protobuf:"bytes,6,opt,name=avatar_img_data,json=avatarImgData,proto3" json:"avatar_img_data,omitempty"`
+	Age           int64                  `protobuf:"varint,7,opt,name=age,proto3" json:"age,omitempty"`
+	TagIds        []int64                `protobuf:"varint,8,rep,packed,name=tag_ids,json=tagIds,proto3" json:"tag_ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3070,11 +3079,18 @@ func (x *UpdateUserInfoReq) GetGender() int64 {
 	return 0
 }
 
-func (x *UpdateUserInfoReq) GetAvatarUrl() string {
+func (x *UpdateUserInfoReq) GetAvatarImgName() string {
 	if x != nil {
-		return x.AvatarUrl
+		return x.AvatarImgName
 	}
 	return ""
+}
+
+func (x *UpdateUserInfoReq) GetAvatarImgData() []byte {
+	if x != nil {
+		return x.AvatarImgData
+	}
+	return nil
 }
 
 func (x *UpdateUserInfoReq) GetAge() int64 {
@@ -5000,9 +5016,10 @@ const file_user_proto_rawDesc = "" +
 	"\x16UpdateVerifyStatusResp\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12#\n" +
 	"\rbefore_status\x18\x02 \x01(\x05R\fbeforeStatus\x12!\n" +
-	"\fafter_status\x18\x03 \x01(\x05R\vafterStatus\"$\n" +
+	"\fafter_status\x18\x03 \x01(\x05R\vafterStatus\"=\n" +
 	"\x10UpdateUserTagReq\x12\x10\n" +
-	"\x03ids\x18\x01 \x03(\x03R\x03ids\"?\n" +
+	"\x03ids\x18\x01 \x03(\x03R\x03ids\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\x03R\x06userId\"?\n" +
 	"\x15UpdateUserTagResponse\x12&\n" +
 	"\x04tags\x18\x01 \x03(\v2\x12.user.TagBasicInfoR\x04tags\"~\n" +
 	"\fTagBasicInfo\x12\x0e\n" +
@@ -5045,16 +5062,16 @@ const file_user_proto_rawDesc = "" +
 	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\x12\x17\n" +
 	"\auser_id\x18\x03 \x01(\x03R\x06userId\"2\n" +
 	"\x16UpdatePasswordResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xc8\x01\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xf9\x01\n" +
 	"\x11UpdateUserInfoReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1a\n" +
 	"\bnickname\x18\x02 \x01(\x03R\bnickname\x12\x1c\n" +
 	"\tintroduce\x18\x03 \x01(\tR\tintroduce\x12\x16\n" +
-	"\x06gender\x18\x04 \x01(\x03R\x06gender\x12\x1d\n" +
-	"\n" +
-	"avatar_url\x18\x05 \x01(\tR\tavatarUrl\x12\x10\n" +
-	"\x03age\x18\x06 \x01(\x03R\x03age\x12\x17\n" +
-	"\atag_ids\x18\a \x03(\x03R\x06tagIds\"\xcd\x01\n" +
+	"\x06gender\x18\x04 \x01(\x03R\x06gender\x12&\n" +
+	"\x0favatar_img_name\x18\x05 \x01(\tR\ravatarImgName\x12&\n" +
+	"\x0favatar_img_data\x18\x06 \x01(\fR\ravatarImgData\x12\x10\n" +
+	"\x03age\x18\a \x01(\x03R\x03age\x12\x17\n" +
+	"\atag_ids\x18\b \x03(\x03R\x06tagIds\"\xcd\x01\n" +
 	"\x16UpdateUserInfoResponse\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1a\n" +
 	"\bnickname\x18\x02 \x01(\x03R\bnickname\x12\x1c\n" +
