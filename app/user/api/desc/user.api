@@ -407,9 +407,10 @@ service user-api {
 
 // ==================== 4. 用户信息接口（需要登录）====================
 @server (
-	prefix: /api/v1
-	group:  user
-	jwt:    Auth
+	prefix:     /api/v1
+	group:      user
+	jwt:        Auth
+	middleware: UserRoleMiddleware
 )
 service user-api {
 	@doc "退出登录"
