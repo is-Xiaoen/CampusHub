@@ -22,7 +22,8 @@ Log:
   Encoding: plain
   Level: info
 
-# ==================== JWT 配置（必须与 user-api 一致）====================
+# ==================== JWT 配置（必须与 user-api 一致！）====================
+# 重要：此 Secret 必须与 user-api.yaml 中的完全一致，否则 Token 验证会失败
 Auth:
   AccessSecret: "k9#8G7&6F5%4D3$2S1@0P9*8O7!6N5^4M3+2L1=0"
   AccessExpire: 7200
