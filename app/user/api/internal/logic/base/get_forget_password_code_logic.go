@@ -7,8 +7,8 @@ import (
 	"context"
 
 	"activity-platform/app/user/api/internal/svc"
+	"activity-platform/app/user/api/internal/types"
 	"activity-platform/app/user/rpc/client/qqemail"
-	ctxUtils "activity-platform/common/utils/context"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -28,19 +28,14 @@ func NewGetForgetPasswordCodeLogic(ctx context.Context, svcCtx *svc.ServiceConte
 	}
 }
 
-func (l *GetForgetPasswordCodeLogic) GetForgetPasswordCode() error {
-	userId, err := ctxUtils.GetUserIdFromCtx(l.ctx)
-	if err != nil {
-		return err
-	}
-
+func (l *GetForgetPasswordCodeLogic) GetForgetPasswordCode(req *types.GetForgetPasswordCodeReq) (resp *types.GetCodeResp, err error) {
 	_, err = l.svcCtx.QQEmailRpc.SendQQEmail(l.ctx, &qqemail.SendQQEmailReq{
-		UserId: userId,
-		Scene:  "forget_password",
+		QqEmail: req.QqEmail,
+		Scene:   "forget_password",
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &types.GetCodeResp{}, nil
 }

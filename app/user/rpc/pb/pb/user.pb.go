@@ -4724,7 +4724,7 @@ func (x *CaptchaArgs) GetGenTime() string {
 // 发送QQ邮箱
 type SendQQEmailReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	QqEmail       string                 `protobuf:"bytes,1,opt,name=qq_email,json=qqEmail,proto3" json:"qq_email,omitempty"`
 	Scene         string                 `protobuf:"bytes,2,opt,name=scene,proto3" json:"scene,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -4760,11 +4760,11 @@ func (*SendQQEmailReq) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{71}
 }
 
-func (x *SendQQEmailReq) GetUserId() int64 {
+func (x *SendQQEmailReq) GetQqEmail() string {
 	if x != nil {
-		return x.UserId
+		return x.QqEmail
 	}
-	return 0
+	return ""
 }
 
 func (x *SendQQEmailReq) GetScene() string {
@@ -5484,9 +5484,9 @@ const file_user_proto_rawDesc = "" +
 	"\x0ecaptcha_output\x18\x03 \x01(\tR\rcaptchaOutput\x12\x1d\n" +
 	"\n" +
 	"pass_token\x18\x04 \x01(\tR\tpassToken\x12\x19\n" +
-	"\bgen_time\x18\x05 \x01(\tR\agenTime\"?\n" +
-	"\x0eSendQQEmailReq\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x14\n" +
+	"\bgen_time\x18\x05 \x01(\tR\agenTime\"A\n" +
+	"\x0eSendQQEmailReq\x12\x19\n" +
+	"\bqq_email\x18\x01 \x01(\tR\aqqEmail\x12\x14\n" +
 	"\x05scene\x18\x02 \x01(\tR\x05scene\"\x15\n" +
 	"\x13SendQQEmailResponse\"[\n" +
 	"\x0fCheckQQEmailReq\x12\x19\n" +

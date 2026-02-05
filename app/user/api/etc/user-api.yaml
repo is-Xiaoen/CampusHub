@@ -41,6 +41,11 @@ BizRedis:
   Type: node
   Pass: "123456"
 
+# ==================== MySQL 配置 ====================
+MySQL:
+  DataSource: root:123456@tcp(192.168.10.4:3308)/campushub_user?charset=utf8mb4&parseTime=true&loc=Local
+
+
 # ==================== 链路追踪（可选）====================
 # Telemetry:
 #   Name: user-api

@@ -34,9 +34,18 @@ func (l *GetDeleteUserCodeLogic) GetDeleteUserCode() error {
 		return err
 	}
 
+	user, err := l.svcCtx.UserModel.FindByUserID(l.ctx, userId)
+	if err != nil {
+		l.Logger.Errorf("FindByUserID error: %v, userId: %d", err, userId)
+		return err
+	}
+	if user == nil {
+		return nil // User not found, but we shouldn't reveal this info or maybe return error? User exists in token context though.
+	}
+
 	_, err = l.svcCtx.QQEmailRpc.SendQQEmail(l.ctx, &qqemail.SendQQEmailReq{
-		UserId: userId,
-		Scene:  "delete_user",
+		QqEmail: user.QQEmail,
+		Scene:   "delete_user",
 	})
 	if err != nil {
 		return err

@@ -327,6 +327,16 @@ type VerifyCaptchaResp {
 	IsValid bool `json:"isValid"`
 }
 
+type GetRegisterCodeReq {
+	QqEmail string `form:"qq_email"`
+}
+
+type GetForgetPasswordCodeReq {
+	QqEmail string `form:"qq_email"`
+}
+
+type GetCodeResp {}
+
 // ============================================================================
 // 服务定义
 // ============================================================================
@@ -398,11 +408,11 @@ service user-api {
 
 	@doc "获取注册QQ验证码"
 	@handler GetRegisterCode
-	get /qq_code/register
+	get /qq_code/register (GetRegisterCodeReq) returns (GetCodeResp)
 
 	@doc "获取忘记密码QQ验证码"
 	@handler GetForgetPasswordCode
-	get /qq_code/forgot_password
+	get /qq_code/forgot_password (GetForgetPasswordCodeReq) returns (GetCodeResp)
 }
 
 // ==================== 4. 用户信息接口（需要登录）====================

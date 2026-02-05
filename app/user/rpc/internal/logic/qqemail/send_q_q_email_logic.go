@@ -30,16 +30,7 @@ func NewSendQQEmailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *SendQ
 }
 
 func (l *SendQQEmailLogic) SendQQEmail(in *pb.SendQQEmailReq) (*pb.SendQQEmailResponse, error) {
-	// 0. 根据UserId查询用户
-	user, err := l.svcCtx.UserModel.FindByUserID(l.ctx, in.UserId)
-	if err != nil {
-		l.Logger.Errorf("FindByUserID error: %v, userId: %d", err, in.UserId)
-		return nil, errorx.NewSystemError("系统繁忙，请稍后再试")
-	}
-	if user == nil {
-		return nil, errorx.NewDefaultError("用户不存在")
-	}
-	qqEmail := user.QQEmail
+	qqEmail := in.QqEmail
 
 	// 1. 生成6位验证码
 	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))

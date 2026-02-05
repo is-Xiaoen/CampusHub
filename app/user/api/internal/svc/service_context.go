@@ -6,17 +6,22 @@ package svc
 import (
 	"activity-platform/app/user/api/internal/config"
 	"activity-platform/app/user/api/internal/middleware"
+	"activity-platform/app/user/model"
 	"activity-platform/app/user/rpc/client/captchaservice"
 	"activity-platform/app/user/rpc/client/creditservice"
 	"activity-platform/app/user/rpc/client/qqemail"
 	"activity-platform/app/user/rpc/client/tagservice"
 	"activity-platform/app/user/rpc/client/userbasicservice"
 	"activity-platform/app/user/rpc/client/verifyservice"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest"
 	"github.com/zeromicro/go-zero/zrpc"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type ServiceContext struct {
@@ -24,6 +29,12 @@ type ServiceContext struct {
 	UserRoleMiddleware rest.Middleware
 
 	Redis *redis.Client
+	// DB GORM数据库连接
+	DB *gorm.DB
+
+	// UserModel 用户基础信息数据访问层
+	UserModel model.IUserModel
+
 	// CaptchaServiceRpc 验证码服务 RPC 客户端
 	CaptchaServiceRpc captchaservice.CaptchaService
 	// CreditServiceRpc 信用分服务 RPC 客户端
@@ -50,10 +61,16 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	// 初始化 Redis 客户端
 	rdb := initRedis(c)
 
+	// 初始化数据库连接
+	db := initDB(c)
+
 	return &ServiceContext{
 		Config:             c,
 		UserRoleMiddleware: middleware.NewUserRoleMiddleware().Handle,
 		Redis:              rdb,
+		DB:                 db,
+		UserModel:          model.NewUserModel(db),
+
 		// 初始化 RPC 客户端
 		CaptchaServiceRpc:   captchaservice.NewCaptchaService(userRpcClient),
 		CreditServiceRpc:    creditservice.NewCreditService(userRpcClient),
@@ -73,4 +90,38 @@ func initRedis(c config.Config) *redis.Client {
 	})
 	logx.Info("Redis连接初始化成功")
 	return rdb
+}
+
+// initDB 初始化GORM数据库连接
+// 配置连接池、日志等
+func initDB(c config.Config) *gorm.DB {
+	// GORM 日志配置
+	// 使用默认的 logger，设置为 Warn 级别（只记录慢查询和错误）
+	gormLogger := logger.Default.LogMode(logger.Warn)
+
+	// 连接数据库
+	db, err := gorm.Open(mysql.Open(c.MySQL.DataSource), &gorm.Config{
+		Logger:                 gormLogger,
+		SkipDefaultTransaction: true,
+		PrepareStmt:            true,
+	})
+	if err != nil {
+		logx.Errorf("连接数据库失败: %v", err)
+		panic(err)
+	}
+
+	// 获取底层 sql.DB 以配置连接池
+	sqlDB, err := db.DB()
+	if err != nil {
+		logx.Errorf("获取数据库实例失败: %v", err)
+		panic(err)
+	}
+
+	// 连接池配置
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetConnMaxLifetime(time.Hour)
+
+	logx.Info("数据库连接初始化成功")
+	return db
 }
