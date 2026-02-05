@@ -16,6 +16,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.23.2
+	github.com/qiniu/go-sdk/v7 v7.25.6
 	github.com/redis/go-redis/v9 v9.17.3
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.42
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/ocr v1.3.37
@@ -28,7 +29,9 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/Rican7/retry v0.3.1 // indirect
+	github.com/alex-ant/gomath v0.0.0-20160516115720-89013a210a82 // indirect
 	github.com/alibabacloud-go/alibabacloud-gateway-spi v0.0.5 // indirect
 	github.com/alibabacloud-go/debug v1.0.1 // indirect
 	github.com/alibabacloud-go/endpoint-util v1.1.0 // indirect
@@ -46,11 +49,13 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/fatih/color v1.18.0 // indirect
+	github.com/gammazero/toposort v0.1.1 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/go-openapi/swag v0.22.4 // indirect
+	github.com/gofrs/flock v0.8.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
@@ -79,7 +84,6 @@ require (
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.66.1 // indirect
 	github.com/prometheus/procfs v0.17.0 // indirect
-	github.com/qiniu/go-sdk/v7 v7.25.6 // indirect
 	github.com/sony/gobreaker v0.5.0 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/tjfoc/gmsm v1.4.1 // indirect
@@ -107,6 +111,7 @@ require (
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/oauth2 v0.32.0 // indirect
+	golang.org/x/sync v0.18.0 // indirect
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/term v0.37.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
@@ -124,6 +129,7 @@ require (
 	k8s.io/klog/v2 v2.110.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
 	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8 // indirect
+	modernc.org/fileutil v1.0.0 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
