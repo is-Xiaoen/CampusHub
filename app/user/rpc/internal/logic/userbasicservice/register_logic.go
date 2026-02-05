@@ -77,12 +77,18 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 	accessJwtId := uuid.New().String()
 	refreshJwtId := uuid.New().String()
 
-	shortToken, err := jwt.GenerateShortToken(newUser.UserID, jwt.RoleUser, jwt.AuthConfig(l.svcCtx.Config.Auth), accessJwtId, refreshJwtId)
+	shortToken, err := jwt.GenerateShortToken(newUser.UserID, jwt.RoleUser, jwt.AuthConfig{
+		Secret: l.svcCtx.Config.JWT.AccessSecret,
+		Expire: l.svcCtx.Config.JWT.AccessExpire,
+	}, accessJwtId, refreshJwtId)
 	if err != nil {
 		l.Logger.Errorf("Generate short token failed: %v", err)
 		return nil, errorx.NewSystemError("注册成功但登录失败，请尝试重新登录")
 	}
-	longToken, err := jwt.GenerateLongToken(newUser.UserID, jwt.RoleUser, jwt.AuthConfig(l.svcCtx.Config.RefreshAuth), accessJwtId, refreshJwtId)
+	longToken, err := jwt.GenerateLongToken(newUser.UserID, jwt.RoleUser, jwt.AuthConfig{
+		Secret: l.svcCtx.Config.JWT.RefreshSecret,
+		Expire: l.svcCtx.Config.JWT.RefreshExpire,
+	}, accessJwtId, refreshJwtId)
 	if err != nil {
 		l.Logger.Errorf("Generate long token failed: %v", err)
 		return nil, errorx.NewSystemError("注册成功但登录失败，请尝试重新登录")
@@ -91,7 +97,7 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 	// 记录长token到redis
 	// key: token:refresh:{refreshJwtId}  value: userId
 	refreshTokenKey := fmt.Sprintf("token:refresh:%s", refreshJwtId)
-	if err := l.svcCtx.Redis.Set(l.ctx, refreshTokenKey, newUser.UserID, time.Duration(l.svcCtx.Config.RefreshAuth.AccessExpire)*time.Second).Err(); err != nil {
+	if err := l.svcCtx.Redis.Set(l.ctx, refreshTokenKey, newUser.UserID, time.Duration(l.svcCtx.Config.JWT.RefreshExpire)*time.Second).Err(); err != nil {
 		l.Logger.Errorf("Set refresh token to redis failed: %v", err)
 		// 不影响主流程，因为已经注册成功且返回了token
 	}

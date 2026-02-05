@@ -30,7 +30,7 @@ func NewRefreshTokenLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Refr
 // 刷新短token
 func (l *RefreshTokenLogic) RefreshToken(in *pb.RefreshReq) (*pb.RefreshResponse, error) {
 	// 1. 解析长token
-	claims, err := jwt.ParseToken(in.RefreshToken, l.svcCtx.Config.RefreshAuth.AccessSecret)
+	claims, err := jwt.ParseToken(in.RefreshToken, l.svcCtx.Config.JWT.RefreshSecret)
 	if err != nil {
 		return nil, errorx.NewDefaultError("无效的刷新令牌")
 	}
@@ -45,7 +45,10 @@ func (l *RefreshTokenLogic) RefreshToken(in *pb.RefreshReq) (*pb.RefreshResponse
 
 	// 3. 生成新的短token (AccessJwtId使用新UUID，RefreshJwtId沿用旧的)
 	newAccessId := uuid.New().String()
-	shortToken, err := jwt.GenerateShortToken(claims.UserId, claims.Role, jwt.AuthConfig(l.svcCtx.Config.Auth), newAccessId, claims.RefreshJwtId)
+	shortToken, err := jwt.GenerateShortToken(claims.UserId, claims.Role, jwt.AuthConfig{
+		Secret: l.svcCtx.Config.JWT.AccessSecret,
+		Expire: l.svcCtx.Config.JWT.AccessExpire,
+	}, newAccessId, claims.RefreshJwtId)
 	if err != nil {
 		return nil, errorx.NewSystemError("Token生成失败")
 	}
