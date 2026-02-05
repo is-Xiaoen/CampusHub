@@ -733,7 +733,7 @@ message UpdatePasswordResponse{
 // 修改用户信息
 message UpdateUserInfoReq{
     int64 user_id =1;
-    int64 nickname =2;
+    string nickname =2;
     string introduce =3;
     int64 gender =4;
     string avatar_img_name =5;
@@ -744,7 +744,7 @@ message UpdateUserInfoReq{
 
 message UpdateUserInfoResponse{
     int64 user_id =1;
-    int64 nickname =2;
+    string nickname =2;
     string introduce =3;
     int64 gender =4;
     string avatar_url =5;
