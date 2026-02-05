@@ -106,23 +106,33 @@ get_services() {
 copy_configs() {
     log_info "复制配置文件..."
 
-    # User 服务
-    cp "$PROJECT_ROOT/app/user/rpc/etc/user.yaml" "$CONFIG_DIR/user-rpc.yaml"
-    cp "$PROJECT_ROOT/app/user/api/etc/user-api.yaml" "$CONFIG_DIR/user-api.yaml"
+    # 优先使用生产配置模板
+    if [[ -d "$PROJECT_ROOT/deploy/server/config" ]]; then
+        log_info "使用生产配置模板..."
+        cp "$PROJECT_ROOT/deploy/server/config"/*.yaml "$CONFIG_DIR/" 2>/dev/null || true
+    else
+        # 回退到开发配置
+        log_warn "生产配置不存在，使用开发配置..."
 
-    # Activity 服务
-    cp "$PROJECT_ROOT/app/activity/rpc/etc/activity.yaml" "$CONFIG_DIR/activity-rpc.yaml"
-    cp "$PROJECT_ROOT/app/activity/api/etc/activity-api.yaml" "$CONFIG_DIR/activity-api.yaml"
+        # User 服务
+        cp "$PROJECT_ROOT/app/user/rpc/etc/user.yaml" "$CONFIG_DIR/user-rpc.yaml"
+        cp "$PROJECT_ROOT/app/user/api/etc/user-api.yaml" "$CONFIG_DIR/user-api.yaml"
 
-    # Chat 服务
-    if [[ -f "$PROJECT_ROOT/app/chat/rpc/etc/chat.yaml" ]]; then
-        cp "$PROJECT_ROOT/app/chat/rpc/etc/chat.yaml" "$CONFIG_DIR/chat-rpc.yaml"
+        # Activity 服务
+        cp "$PROJECT_ROOT/app/activity/rpc/etc/activity.yaml" "$CONFIG_DIR/activity-rpc.yaml"
+        cp "$PROJECT_ROOT/app/activity/api/etc/activity-api.yaml" "$CONFIG_DIR/activity-api.yaml"
+
+        # Chat 服务
+        if [[ -f "$PROJECT_ROOT/app/chat/rpc/etc/chat.yaml" ]]; then
+            cp "$PROJECT_ROOT/app/chat/rpc/etc/chat.yaml" "$CONFIG_DIR/chat-rpc.yaml"
+        fi
+        if [[ -f "$PROJECT_ROOT/app/chat/api/etc/chat-api.yaml" ]]; then
+            cp "$PROJECT_ROOT/app/chat/api/etc/chat-api.yaml" "$CONFIG_DIR/chat-api.yaml"
+        fi
     fi
-    if [[ -f "$PROJECT_ROOT/app/chat/api/etc/chat-api.yaml" ]]; then
-        cp "$PROJECT_ROOT/app/chat/api/etc/chat-api.yaml" "$CONFIG_DIR/chat-api.yaml"
-    fi
 
-    log_info "配置文件复制完成"
+    log_info "配置文件复制完成: $CONFIG_DIR/"
+    ls -la "$CONFIG_DIR/"
 }
 
 # ==================== 更新代码 ====================
