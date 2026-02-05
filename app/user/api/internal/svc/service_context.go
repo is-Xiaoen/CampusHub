@@ -6,7 +6,10 @@ package svc
 import (
 	"activity-platform/app/user/api/internal/config"
 	"activity-platform/app/user/api/internal/middleware"
+	"activity-platform/app/user/rpc/client/captchaservice"
 	"activity-platform/app/user/rpc/client/creditservice"
+	"activity-platform/app/user/rpc/client/qqemail"
+	"activity-platform/app/user/rpc/client/tagservice"
 	"activity-platform/app/user/rpc/client/userbasicservice"
 	"activity-platform/app/user/rpc/client/verifyservice"
 
@@ -21,14 +24,22 @@ type ServiceContext struct {
 	UserRoleMiddleware rest.Middleware
 
 	Redis *redis.Client
+	// CaptchaServiceRpc 验证码服务 RPC 客户端
+	CaptchaServiceRpc captchaservice.CaptchaService
 	// CreditServiceRpc 信用分服务 RPC 客户端
 	CreditServiceRpc creditservice.CreditService
 
 	// VerifyServiceRpc 认证服务 RPC 客户端
 	VerifyServiceRpc verifyservice.VerifyService
 
+	// TagServiceRpc 标签服务 RPC 客户端
+	TagServiceRpc tagservice.TagService
+
 	// UserBasicServiceRpc 用户基础服务 RPC 客户端（登录、注册、忘记密码等）
 	UserBasicServiceRpc userbasicservice.UserBasicService
+
+	// QQEmailRpc QQ邮箱服务 RPC 客户端
+	QQEmailRpc qqemail.QQEmail
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -44,9 +55,12 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		UserRoleMiddleware: middleware.NewUserRoleMiddleware().Handle,
 		Redis:              rdb,
 		// 初始化 RPC 客户端
+		CaptchaServiceRpc:   captchaservice.NewCaptchaService(userRpcClient),
 		CreditServiceRpc:    creditservice.NewCreditService(userRpcClient),
 		VerifyServiceRpc:    verifyservice.NewVerifyService(userRpcClient),
+		TagServiceRpc:       tagservice.NewTagService(userRpcClient),
 		UserBasicServiceRpc: userbasicservice.NewUserBasicService(userRpcClient),
+		QQEmailRpc:          qqemail.NewQQEmail(userRpcClient),
 	}
 }
 

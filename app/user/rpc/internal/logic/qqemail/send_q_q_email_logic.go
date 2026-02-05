@@ -30,12 +30,23 @@ func NewSendQQEmailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *SendQ
 }
 
 func (l *SendQQEmailLogic) SendQQEmail(in *pb.SendQQEmailReq) (*pb.SendQQEmailResponse, error) {
+	// 0. 根据UserId查询用户
+	user, err := l.svcCtx.UserModel.FindByUserID(l.ctx, in.UserId)
+	if err != nil {
+		l.Logger.Errorf("FindByUserID error: %v, userId: %d", err, in.UserId)
+		return nil, errorx.NewSystemError("系统繁忙，请稍后再试")
+	}
+	if user == nil {
+		return nil, errorx.NewDefaultError("用户不存在")
+	}
+	qqEmail := user.QQEmail
+
 	// 1. 生成6位验证码
 	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 	code := fmt.Sprintf("%06d", rnd.Intn(1000000))
 
 	// 2. 频率限制：1小时内最多发送10次
-	limitKey := fmt.Sprintf("captcha:email:limit:%s", in.QqEmail)
+	limitKey := fmt.Sprintf("captcha:email:limit:%s", qqEmail)
 	count, err := l.svcCtx.Redis.Incr(l.ctx, limitKey).Result()
 	if err != nil {
 		l.Logger.Errorf("Redis Incr failed: %v", err)
@@ -49,7 +60,7 @@ func (l *SendQQEmailLogic) SendQQEmail(in *pb.SendQQEmailReq) (*pb.SendQQEmailRe
 	}
 
 	// 3. 存储验证码到Redis (有效期3分钟)
-	key := fmt.Sprintf("captcha:email:%s:%s", in.Scene, in.QqEmail)
+	key := fmt.Sprintf("captcha:email:%s:%s", in.Scene, qqEmail)
 	encrypted := encrypt.EncryptPassword(code)
 	err = l.svcCtx.Redis.Set(l.ctx, key, encrypted, 3*time.Minute).Err()
 	if err != nil {
@@ -68,7 +79,7 @@ func (l *SendQQEmailLogic) SendQQEmail(in *pb.SendQQEmailReq) (*pb.SendQQEmailRe
 	}
 
 	// 这里选择同步发送以确保发送成功，如果失败则通知前端
-	err = email.SendQQEmail(emailCfg, in.QqEmail, code)
+	err = email.SendQQEmail(emailCfg, qqEmail, code)
 	if err != nil {
 		l.Logger.Errorf("Send email failed: %v", err)
 		return nil, errorx.NewDefaultError("邮件发送失败，请检查邮箱是否正确")

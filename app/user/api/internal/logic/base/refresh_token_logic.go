@@ -1,6 +1,3 @@
-// Code scaffolded by goctl. Safe to edit.
-// goctl 1.9.2
-
 package base
 
 import (
@@ -8,6 +5,7 @@ import (
 
 	"activity-platform/app/user/api/internal/svc"
 	"activity-platform/app/user/api/internal/types"
+	"activity-platform/app/user/rpc/client/userbasicservice"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -28,7 +26,15 @@ func NewRefreshTokenLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Refr
 }
 
 func (l *RefreshTokenLogic) RefreshToken(req *types.RefreshTokenReq) (resp *types.RefreshTokenResp, err error) {
-	// todo: add your logic here and delete this line
+	// 调用 RPC 层刷新 Token
+	rpcResp, err := l.svcCtx.UserBasicServiceRpc.RefreshToken(l.ctx, &userbasicservice.RefreshReq{
+		RefreshToken: req.RefreshToken,
+	})
+	if err != nil {
+		return nil, err
+	}
 
-	return
+	return &types.RefreshTokenResp{
+		AccessToken: rpcResp.AccessToken,
+	}, nil
 }

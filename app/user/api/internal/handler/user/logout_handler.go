@@ -14,7 +14,7 @@ import (
 // 退出登录
 func LogoutHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		l := user.NewLogoutLogic(r.Context(), svcCtx)
+		l := user.NewLogoutLogic(r.Context(), svcCtx, r)
 		err := l.Logout()
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)

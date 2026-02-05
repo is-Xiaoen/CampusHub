@@ -8,6 +8,7 @@ import (
 
 	"activity-platform/app/user/api/internal/svc"
 	"activity-platform/app/user/api/internal/types"
+	"activity-platform/app/user/rpc/client/captchaservice"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -28,7 +29,12 @@ func NewGetCaptchaLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetCap
 }
 
 func (l *GetCaptchaLogic) GetCaptcha() (resp *types.GetCaptchaResp, err error) {
-	// todo: add your logic here and delete this line
+	rpcResp, err := l.svcCtx.CaptchaServiceRpc.GetCaptchaConfig(l.ctx, &captchaservice.GetCaptchaConfigReq{})
+	if err != nil {
+		return nil, err
+	}
 
-	return
+	return &types.GetCaptchaResp{
+		CaptchaId: rpcResp.CaptchaId,
+	}, nil
 }
