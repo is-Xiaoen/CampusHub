@@ -997,6 +997,8 @@ const (
 	UserBasicService_GetUserInfo_FullMethodName    = "/user.UserBasicService/GetUserInfo"
 	UserBasicService_UpdatePassword_FullMethodName = "/user.UserBasicService/UpdatePassword"
 	UserBasicService_UpdateUserInfo_FullMethodName = "/user.UserBasicService/UpdateUserInfo"
+	UserBasicService_DeleteUser_FullMethodName     = "/user.UserBasicService/DeleteUser"
+	UserBasicService_ForgetPassword_FullMethodName = "/user.UserBasicService/ForgetPassword"
 )
 
 // UserBasicServiceClient is the client API for UserBasicService service.
@@ -1019,6 +1021,10 @@ type UserBasicServiceClient interface {
 	UpdatePassword(ctx context.Context, in *UpdatePasswordReq, opts ...grpc.CallOption) (*UpdatePasswordResponse, error)
 	// 修改用户信息
 	UpdateUserInfo(ctx context.Context, in *UpdateUserInfoReq, opts ...grpc.CallOption) (*UpdateUserInfoResponse, error)
+	// 用户注销自己
+	DeleteUser(ctx context.Context, in *DeleteUserReq, opts ...grpc.CallOption) (*DeleteUserResponse, error)
+	// 用户忘记密码
+	ForgetPassword(ctx context.Context, in *ForgetPasswordReq, opts ...grpc.CallOption) (*ForgetPasswordResponse, error)
 }
 
 type userBasicServiceClient struct {
@@ -1109,6 +1115,26 @@ func (c *userBasicServiceClient) UpdateUserInfo(ctx context.Context, in *UpdateU
 	return out, nil
 }
 
+func (c *userBasicServiceClient) DeleteUser(ctx context.Context, in *DeleteUserReq, opts ...grpc.CallOption) (*DeleteUserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteUserResponse)
+	err := c.cc.Invoke(ctx, UserBasicService_DeleteUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userBasicServiceClient) ForgetPassword(ctx context.Context, in *ForgetPasswordReq, opts ...grpc.CallOption) (*ForgetPasswordResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ForgetPasswordResponse)
+	err := c.cc.Invoke(ctx, UserBasicService_ForgetPassword_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserBasicServiceServer is the server API for UserBasicService service.
 // All implementations must embed UnimplementedUserBasicServiceServer
 // for forward compatibility.
@@ -1129,6 +1155,10 @@ type UserBasicServiceServer interface {
 	UpdatePassword(context.Context, *UpdatePasswordReq) (*UpdatePasswordResponse, error)
 	// 修改用户信息
 	UpdateUserInfo(context.Context, *UpdateUserInfoReq) (*UpdateUserInfoResponse, error)
+	// 用户注销自己
+	DeleteUser(context.Context, *DeleteUserReq) (*DeleteUserResponse, error)
+	// 用户忘记密码
+	ForgetPassword(context.Context, *ForgetPasswordReq) (*ForgetPasswordResponse, error)
 	mustEmbedUnimplementedUserBasicServiceServer()
 }
 
@@ -1162,6 +1192,12 @@ func (UnimplementedUserBasicServiceServer) UpdatePassword(context.Context, *Upda
 }
 func (UnimplementedUserBasicServiceServer) UpdateUserInfo(context.Context, *UpdateUserInfoReq) (*UpdateUserInfoResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateUserInfo not implemented")
+}
+func (UnimplementedUserBasicServiceServer) DeleteUser(context.Context, *DeleteUserReq) (*DeleteUserResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteUser not implemented")
+}
+func (UnimplementedUserBasicServiceServer) ForgetPassword(context.Context, *ForgetPasswordReq) (*ForgetPasswordResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ForgetPassword not implemented")
 }
 func (UnimplementedUserBasicServiceServer) mustEmbedUnimplementedUserBasicServiceServer() {}
 func (UnimplementedUserBasicServiceServer) testEmbeddedByValue()                          {}
@@ -1328,6 +1364,42 @@ func _UserBasicService_UpdateUserInfo_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserBasicService_DeleteUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteUserReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserBasicServiceServer).DeleteUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserBasicService_DeleteUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserBasicServiceServer).DeleteUser(ctx, req.(*DeleteUserReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserBasicService_ForgetPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ForgetPasswordReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserBasicServiceServer).ForgetPassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserBasicService_ForgetPassword_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserBasicServiceServer).ForgetPassword(ctx, req.(*ForgetPasswordReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserBasicService_ServiceDesc is the grpc.ServiceDesc for UserBasicService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1366,6 +1438,14 @@ var UserBasicService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateUserInfo",
 			Handler:    _UserBasicService_UpdateUserInfo_Handler,
+		},
+		{
+			MethodName: "DeleteUser",
+			Handler:    _UserBasicService_DeleteUser_Handler,
+		},
+		{
+			MethodName: "ForgetPassword",
+			Handler:    _UserBasicService_ForgetPassword_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
