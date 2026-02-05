@@ -1,0 +1,52 @@
+# ============================================================================
+# 用户服务 RPC 配置 - 生产环境
+# ============================================================================
+#
+# 部署位置: /opt/campushub/config/user-rpc.yaml
+#
+# ============================================================================
+
+Name: user.rpc
+ListenOn: 0.0.0.0:9001
+
+# ==================== 服务注册 ====================
+Etcd:
+  Hosts:
+    - 192.168.10.4:2379
+  Key: user.rpc
+
+# 日志配置
+Log:
+  ServiceName: user-rpc
+  Mode: file
+  Encoding: json
+  Level: info
+  Path: /opt/campushub/logs
+
+# 数据库配置
+MySQL:
+  DataSource: root:123456@tcp(192.168.10.4:3308)/campushub_user?charset=utf8mb4&parseTime=true&loc=Local
+
+# Redis 配置
+Redis:
+  Host: 192.168.10.4:6379
+  Type: node
+  Pass: "123456"
+
+# JWT 配置
+JWT:
+  AccessSecret: your-access-secret-key-change-in-production-32chars
+  RefreshSecret: your-refresh-secret-key-change-in-production-32char
+  AccessExpire: 7200
+  RefreshExpire: 604800
+
+# 短信服务配置
+SMS:
+  Provider: mock
+
+# ==================== 链路追踪 ====================
+Telemetry:
+  Name: user-rpc
+  Endpoint: http://192.168.10.4:14268/api/traces
+  Sampler: 1.0
+  Batcher: jaeger
