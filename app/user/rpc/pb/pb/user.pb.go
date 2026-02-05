@@ -3010,7 +3010,7 @@ func (x *UpdatePasswordResponse) GetSuccess() bool {
 type UpdateUserInfoReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Nickname      int64                  `protobuf:"varint,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	Nickname      string                 `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
 	Introduce     string                 `protobuf:"bytes,3,opt,name=introduce,proto3" json:"introduce,omitempty"`
 	Gender        int64                  `protobuf:"varint,4,opt,name=gender,proto3" json:"gender,omitempty"`
 	AvatarImgName string                 `protobuf:"bytes,5,opt,name=avatar_img_name,json=avatarImgName,proto3" json:"avatar_img_name,omitempty"`
@@ -3058,11 +3058,11 @@ func (x *UpdateUserInfoReq) GetUserId() int64 {
 	return 0
 }
 
-func (x *UpdateUserInfoReq) GetNickname() int64 {
+func (x *UpdateUserInfoReq) GetNickname() string {
 	if x != nil {
 		return x.Nickname
 	}
-	return 0
+	return ""
 }
 
 func (x *UpdateUserInfoReq) GetIntroduce() string {
@@ -3110,7 +3110,7 @@ func (x *UpdateUserInfoReq) GetTagIds() []int64 {
 type UpdateUserInfoResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Nickname      int64                  `protobuf:"varint,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	Nickname      string                 `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
 	Introduce     string                 `protobuf:"bytes,3,opt,name=introduce,proto3" json:"introduce,omitempty"`
 	Gender        int64                  `protobuf:"varint,4,opt,name=gender,proto3" json:"gender,omitempty"`
 	AvatarUrl     string                 `protobuf:"bytes,5,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
@@ -3157,11 +3157,11 @@ func (x *UpdateUserInfoResponse) GetUserId() int64 {
 	return 0
 }
 
-func (x *UpdateUserInfoResponse) GetNickname() int64 {
+func (x *UpdateUserInfoResponse) GetNickname() string {
 	if x != nil {
 		return x.Nickname
 	}
-	return 0
+	return ""
 }
 
 func (x *UpdateUserInfoResponse) GetIntroduce() string {
@@ -5065,7 +5065,7 @@ const file_user_proto_rawDesc = "" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xf9\x01\n" +
 	"\x11UpdateUserInfoReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1a\n" +
-	"\bnickname\x18\x02 \x01(\x03R\bnickname\x12\x1c\n" +
+	"\bnickname\x18\x02 \x01(\tR\bnickname\x12\x1c\n" +
 	"\tintroduce\x18\x03 \x01(\tR\tintroduce\x12\x16\n" +
 	"\x06gender\x18\x04 \x01(\x03R\x06gender\x12&\n" +
 	"\x0favatar_img_name\x18\x05 \x01(\tR\ravatarImgName\x12&\n" +
@@ -5074,7 +5074,7 @@ const file_user_proto_rawDesc = "" +
 	"\atag_ids\x18\b \x03(\x03R\x06tagIds\"\xcd\x01\n" +
 	"\x16UpdateUserInfoResponse\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1a\n" +
-	"\bnickname\x18\x02 \x01(\x03R\bnickname\x12\x1c\n" +
+	"\bnickname\x18\x02 \x01(\tR\bnickname\x12\x1c\n" +
 	"\tintroduce\x18\x03 \x01(\tR\tintroduce\x12\x16\n" +
 	"\x06gender\x18\x04 \x01(\x03R\x06gender\x12\x1d\n" +
 	"\n" +
