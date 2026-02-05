@@ -112,3 +112,25 @@ CREATE TABLE `user_interest_relations` (
     create_time datetime DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ============================================
+-- DTM 分布式事务支持表
+-- ============================================
+
+-- dtm_barrier DTM 子事务屏障表
+-- 用于解决分布式事务的三大问题：幂等、空补偿、悬挂
+-- 参考：https://en.dtm.pub/practice/barrier.html
+CREATE TABLE IF NOT EXISTS `dtm_barrier` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `trans_type` VARCHAR(45) NOT NULL DEFAULT '' COMMENT '事务类型（saga/tcc/xa）',
+    `gid` VARCHAR(128) NOT NULL DEFAULT '' COMMENT '全局事务ID',
+    `branch_id` VARCHAR(128) NOT NULL DEFAULT '' COMMENT '分支事务ID',
+    `op` VARCHAR(45) NOT NULL DEFAULT '' COMMENT '操作类型（action/compensate/try/confirm/cancel）',
+    `barrier_id` VARCHAR(45) NOT NULL DEFAULT '' COMMENT '屏障ID',
+    `reason` VARCHAR(45) NOT NULL DEFAULT '' COMMENT '插入原因（committed/rollbacked）',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_gid_branchid_op_barrierid` (`gid`, `branch_id`, `op`, `barrier_id`),
+    KEY `idx_create_time` (`create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC COMMENT='DTM子事务屏障表';
