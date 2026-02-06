@@ -514,7 +514,7 @@ func (l *VerifyTicketLogic) getUserTagsFromRPC(userID int64) []string {
 	return normalizeTags(names)
 }
 
-// getUserTagsFromRegistrations 从报名历史推断用户标签
+// getUserTagsFromRegistrations  从报名历史推断用户标签
 func (l *VerifyTicketLogic) getUserTagsFromRegistrations(userID int64) []string {
 	regs, err := l.svcCtx.ActivityRegistrationModel.ListByUserID(l.ctx, uint64(userID), 0, recommendUserTagSample)
 	if err != nil {
