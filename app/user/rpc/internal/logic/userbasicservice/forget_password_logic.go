@@ -8,8 +8,8 @@ import (
 	"activity-platform/app/user/rpc/pb/pb"
 	"activity-platform/common/utils/encrypt"
 
-	"github.com/zeromicro/go-zero/core/logx"
 	"activity-platform/common/errorx"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type ForgetPasswordLogic struct {
