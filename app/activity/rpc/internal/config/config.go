@@ -23,6 +23,9 @@ type Config struct {
 	// ==================== DTM 分布式事务配置 ====================
 	DTM DTMConfig `json:",optional"` // DTM 配置（可选，不配置则禁用分布式事务）
 
+	// ==================== 消息队列配置 ====================
+	Messaging MessagingConfig `json:",optional"` // 消息队列配置（可选，不配置则不发布事件）
+
 	// ==================== 高并发、熔断限流配置 ====================
 	RegistrationLimit struct {
 		Rate  int `json:",default=100"` // 每秒允许的请求数
@@ -71,6 +74,22 @@ type MySQLConfig struct {
 	MaxOpenConns    int `json:",default=100"`  // 最大打开连接数
 	MaxIdleConns    int `json:",default=10"`   // 最大空闲连接数
 	ConnMaxLifetime int `json:",default=3600"` // 连接生命周期（秒）
+}
+
+// MessagingConfig 消息队列配置
+// Activity 服务作为纯事件发布者，向 Redis Stream 发布活动和信用事件
+type MessagingConfig struct {
+	Enabled       bool          `json:",default=false"`          // 是否启用消息发布
+	Redis         MQRedisConfig                                  // MQ 专用 Redis 配置
+	EnableMetrics bool          `json:",default=true"`           // Prometheus 指标
+	EnableGoZero  bool          `json:",default=true"`           // trace_id 传播
+}
+
+// MQRedisConfig 消息队列 Redis 配置
+type MQRedisConfig struct {
+	Addr     string `json:",default=localhost:6379"`
+	Password string `json:",optional"`
+	DB       int    `json:",default=0"`
 }
 
 // DTMConfig DTM 分布式事务配置

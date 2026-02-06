@@ -8,7 +8,9 @@ import (
 	"activity-platform/app/activity/rpc/internal/cache"
 	"activity-platform/app/activity/rpc/internal/config"
 	"activity-platform/app/activity/rpc/internal/dtm"
+	"activity-platform/app/activity/rpc/internal/mq"
 	"activity-platform/app/activity/rpc/internal/search"
+	"activity-platform/common/messaging"
 	"activity-platform/app/user/rpc/client/creditservice"
 	"activity-platform/app/user/rpc/client/tagservice"
 	"activity-platform/app/user/rpc/client/verifyservice"
@@ -58,16 +60,18 @@ type ServiceContext struct {
 	// ==================== DTM 分布式事务 ====================
 	DTMClient *dtm.Client // DTM 客户端（可为 nil，表示未启用）
 
+	// ==================== 消息发布器 ====================
+	MsgProducer *mq.Producer // 消息发布器（可为 nil，表示未启用）
+
 	// RPC 客户端（调用其他微服务）
 	CreditRpc     creditservice.CreditService // 信用分服务
 	VerifyService verifyservice.VerifyService // 学生认证服务
-	VerifyRpc     verifyservice.VerifyService // 学生认证服务
 	TagRpc        tagservice.TagService       // 标签服务（用于同步标签数据）
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
 	// 1. 初始化数据库连接
-	db := initDB(c.MySQL)
+	db := initDB(c.MySQL, c.Mode)
 
 	// 2. 初始化业务 Redis（缓存、分布式锁等）
 	rds := initRedis(c.BizRedis)
@@ -144,7 +148,21 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		logx.Info("[ServiceContext] DTM 未启用，创建活动将返回服务不可用错误")
 	}
 
-	// 9. 返回 ServiceContext
+	// 9. 初始化消息发布器（可选）
+	var msgProducer *mq.Producer
+	if c.Messaging.Enabled {
+		msgClient, err := initMessaging(c)
+		if err != nil {
+			logx.Errorf("[ServiceContext] 消息客户端初始化失败: %v，事件将不会发布", err)
+		} else {
+			msgProducer = mq.NewProducer(msgClient)
+			logx.Info("[ServiceContext] 消息发布器初始化成功")
+		}
+	} else {
+		logx.Info("[ServiceContext] 消息队列未启用，事件将不会发布")
+	}
+
+	// 10. 返回 ServiceContext
 	return &ServiceContext{
 		Config: c,
 
@@ -179,6 +197,9 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		// DTM 分布式事务
 		DTMClient: dtmClient,
 
+		// 消息发布器
+		MsgProducer: msgProducer,
+
 		// RPC 客户端
 		CreditRpc:     creditRpc,
 		VerifyService: verifyRpc,
@@ -189,10 +210,23 @@ func NewServiceContext(c config.Config) *ServiceContext {
 // 初始化函数
 
 // initDB 初始化数据库连接
-func initDB(mysqlConf config.MySQLConfig) *gorm.DB {
+// mode 参数决定 GORM 日志级别：dev=Info, test=Warn, pro=Error
+func initDB(mysqlConf config.MySQLConfig, mode string) *gorm.DB {
 	dsn := buildMySQLDSN(mysqlConf)
+
+	// 根据运行环境配置 GORM 日志级别
+	var logLevel logger.LogLevel
+	switch mode {
+	case "dev":
+		logLevel = logger.Info // 打印所有 SQL
+	case "test":
+		logLevel = logger.Warn // 只打印慢查询和警告
+	default: // pro
+		logLevel = logger.Error // 只打印错误
+	}
+
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info), // 开发环境打印 SQL
+		Logger: logger.Default.LogMode(logLevel),
 	})
 	if err != nil {
 		logx.Errorf("连接数据库失败: %v", err)
@@ -229,6 +263,27 @@ func initRedis(c redis.RedisConf) *redis.Redis {
 	rds := redis.MustNewRedis(c)
 	logx.Info("Redis 连接成功")
 	return rds
+}
+
+// initMessaging 初始化消息客户端（仅用于发布，不启动 Router）
+func initMessaging(c config.Config) (*messaging.Client, error) {
+	msgConfig := messaging.Config{
+		Redis: messaging.RedisConfig{
+			Addr:     c.Messaging.Redis.Addr,
+			Password: c.Messaging.Redis.Password,
+			DB:       c.Messaging.Redis.DB,
+		},
+		ServiceName:   "activity-rpc",
+		EnableMetrics: c.Messaging.EnableMetrics,
+		EnableGoZero:  c.Messaging.EnableGoZero,
+		RetryConfig: messaging.RetryConfig{
+			MaxRetries:      3,
+			InitialInterval: 100 * time.Millisecond,
+			MaxInterval:     10 * time.Second,
+			Multiplier:      2.0,
+		},
+	}
+	return messaging.NewClient(msgConfig)
 }
 
 func buildMySQLDSN(c config.MySQLConfig) string {

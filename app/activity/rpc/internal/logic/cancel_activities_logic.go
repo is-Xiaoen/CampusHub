@@ -8,6 +8,7 @@ import (
 	"activity-platform/app/activity/model"
 	"activity-platform/app/activity/rpc/activity"
 	"activity-platform/app/activity/rpc/internal/svc"
+	"activity-platform/common/messaging"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"gorm.io/gorm"
@@ -131,6 +132,19 @@ func (l *CancelActivitiesLogic) CancelActivities(in *activity.CancelActivityRequ
 		return &activity.CancelActivityResponse{Result: "fail"}, nil
 	}
 
-	// 5) 成功返回
+	// 5) 异步发布取消报名事件
+	l.svcCtx.MsgProducer.PublishMemberLeft(l.ctx, uint64(activityID), uint64(userID))
+
+	// 6) 发布信用事件：根据距活动开始时间判断 cancel_early 或 cancel_late
+	if activityData.ActivityStartTime > 0 {
+		hoursBeforeStart := (activityData.ActivityStartTime - now) / 3600
+		if hoursBeforeStart >= 24 {
+			l.svcCtx.MsgProducer.PublishCreditEvent(l.ctx, messaging.CreditEventCancelEarly, activityID, userID)
+		} else {
+			l.svcCtx.MsgProducer.PublishCreditEvent(l.ctx, messaging.CreditEventCancelLate, activityID, userID)
+		}
+	}
+
+	// 7) 成功返回
 	return &activity.CancelActivityResponse{Result: "success"}, nil
 }

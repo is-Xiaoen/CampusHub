@@ -10,6 +10,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/redis"
+	"golang.org/x/sync/singleflight"
 	"gorm.io/gorm"
 )
 
@@ -26,8 +27,9 @@ import (
 
 // CategoryCache 分类缓存服务
 type CategoryCache struct {
-	rds *redis.Redis
-	db  *gorm.DB
+	rds     *redis.Redis
+	db      *gorm.DB
+	sfGroup singleflight.Group // singleflight 防止缓存击穿
 }
 
 // NewCategoryCache 创建分类缓存服务
@@ -79,8 +81,17 @@ func (c *CategoryCache) GetList(ctx context.Context) ([]model.Category, error) {
 		return c.toCategories(cacheList), nil
 	}
 
-	// 3. 缓存未命中，查询 DB
-	return c.getFromDBAndCache(ctx, key)
+	// 3. 缓存未命中，使用 singleflight 保护
+	result, err, _ := c.sfGroup.Do(key, func() (interface{}, error) {
+		return c.getFromDBAndCache(ctx, key)
+	})
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return []model.Category{}, nil
+	}
+	return result.([]model.Category), nil
 }
 
 // getFromDB 直接从数据库查询

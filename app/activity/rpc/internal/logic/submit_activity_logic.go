@@ -125,6 +125,11 @@ func (l *SubmitActivityLogic) SubmitActivity(in *activity.SubmitActivityReq) (*a
 		}
 	}
 
+	// 异步发布活动创建事件（草稿提交发布后通知 Chat 创建群聊）
+	l.svcCtx.MsgProducer.PublishActivityCreated(
+		l.ctx, uint64(in.Id), activityData.OrganizerID, activityData.Title,
+	)
+
 	l.Infof("活动提交成功（MVP自动发布）: id=%d, status=%d->%d",
 		in.Id, activityData.Status, model.StatusPublished)
 

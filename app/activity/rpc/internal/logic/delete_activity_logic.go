@@ -8,6 +8,7 @@ import (
 	"activity-platform/app/activity/rpc/activity"
 	"activity-platform/app/activity/rpc/internal/svc"
 	"activity-platform/common/errorx"
+	"activity-platform/common/messaging"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"gorm.io/gorm"
@@ -113,6 +114,13 @@ func (l *DeleteActivityLogic) DeleteActivity(in *activity.DeleteActivityReq) (*a
 	// 异步从 ES 删除文档
 	if l.svcCtx.SyncService != nil {
 		l.svcCtx.SyncService.DeleteActivityAsync(uint64(in.Id))
+	}
+
+	// 有报名记录时，发布删除活动信用事件（扣组织者信用分）
+	if activityData.CurrentParticipants > 0 {
+		l.svcCtx.MsgProducer.PublishCreditEvent(
+			l.ctx, messaging.CreditEventHostDelete, int64(in.Id), int64(activityData.OrganizerID),
+		)
 	}
 
 	l.Infof("活动删除成功: id=%d, operatorId=%d, isAdmin=%v",

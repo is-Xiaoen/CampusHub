@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"activity-platform/app/activity/model"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/redis"
+	"golang.org/x/sync/singleflight"
 	"gorm.io/gorm"
 )
 
@@ -27,8 +29,9 @@ import (
 
 // HotCache 热门活动缓存服务
 type HotCache struct {
-	rds *redis.Redis
-	db  *gorm.DB
+	rds     *redis.Redis
+	db      *gorm.DB
+	sfGroup singleflight.Group // singleflight 防止缓存击穿
 }
 
 // NewHotCache 创建热门活动缓存服务
@@ -104,8 +107,18 @@ func (c *HotCache) GetTopN(ctx context.Context, limit int) ([]model.Activity, er
 		return activities, nil
 	}
 
-	// 3. 缓存未命中，查询 DB
-	return c.getFromDBAndCache(ctx, limit, key)
+	// 3. 缓存未命中，使用 singleflight 保护
+	sfKey := fmt.Sprintf("%s:%d", key, limit)
+	result, err, _ := c.sfGroup.Do(sfKey, func() (interface{}, error) {
+		return c.getFromDBAndCache(ctx, limit, key)
+	})
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return []model.Activity{}, nil
+	}
+	return result.([]model.Activity), nil
 }
 
 // getFromDB 直接从数据库查询热门活动
