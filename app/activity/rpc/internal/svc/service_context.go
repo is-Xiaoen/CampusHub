@@ -10,11 +10,11 @@ import (
 	"activity-platform/app/activity/rpc/internal/dtm"
 	"activity-platform/app/activity/rpc/internal/mq"
 	"activity-platform/app/activity/rpc/internal/search"
-	"activity-platform/common/messaging"
 	"activity-platform/app/user/rpc/client/creditservice"
 	"activity-platform/app/user/rpc/client/tagservice"
 	"activity-platform/app/user/rpc/client/verifyservice"
 	"activity-platform/common/breakerx"
+	"activity-platform/common/messaging"
 
 	"github.com/zeromicro/go-zero/core/breaker"
 	"github.com/zeromicro/go-zero/core/limit"

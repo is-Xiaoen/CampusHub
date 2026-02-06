@@ -79,10 +79,10 @@ type MySQLConfig struct {
 // MessagingConfig 消息队列配置
 // Activity 服务作为纯事件发布者，向 Redis Stream 发布活动和信用事件
 type MessagingConfig struct {
-	Enabled       bool          `json:",default=false"`          // 是否启用消息发布
-	Redis         MQRedisConfig                                  // MQ 专用 Redis 配置
-	EnableMetrics bool          `json:",default=true"`           // Prometheus 指标
-	EnableGoZero  bool          `json:",default=true"`           // trace_id 传播
+	Enabled       bool          `json:",default=false"` // 是否启用消息发布
+	Redis         MQRedisConfig // MQ 专用 Redis 配置
+	EnableMetrics bool          `json:",default=true"` // Prometheus 指标
+	EnableGoZero  bool          `json:",default=true"` // trace_id 传播
 }
 
 // MQRedisConfig 消息队列 Redis 配置

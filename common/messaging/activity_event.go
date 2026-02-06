@@ -43,7 +43,7 @@ type ActivityMemberLeftEvent struct {
 // 消费者：Chat MQ（通知所有已报名参与者）
 type ActivityCancelledEvent struct {
 	ActivityID  string    `json:"activity_id"`
-	CancelledBy string   `json:"cancelled_by"`
+	CancelledBy string    `json:"cancelled_by"`
 	Reason      string    `json:"reason"`
 	CancelledAt time.Time `json:"cancelled_at"`
 }
