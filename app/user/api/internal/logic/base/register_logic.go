@@ -63,7 +63,7 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 			Gender:            rpcResp.UserInfo.Gender,
 			Age:               rpcResp.UserInfo.Age,
 			ActivitiesNum:     int64(rpcResp.UserInfo.ActivitiesNum),
-			InitiateNum:       int64(rpcResp.UserInfo.InitiateNum),	
+			InitiateNum:       int64(rpcResp.UserInfo.InitiateNum),
 			Credit:            rpcResp.UserInfo.Credit,
 			IsStudentVerified: rpcResp.UserInfo.IsStudentVerified,
 			InterestTags:      interestTags,
