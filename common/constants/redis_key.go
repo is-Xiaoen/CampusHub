@@ -21,6 +21,25 @@ const (
 	// CacheSmsCodePrefix 短信验证码前缀
 	CacheSmsCodePrefix = "user:sms:"
 
+	// ============ 信用分服务 Redis Key ============
+
+	// CacheUserCreditPrefix 用户信用分缓存前缀
+	// 格式: user:credit:{userId}
+	// Value: JSON {"score":85,"level":2,"updated_at":1706...}
+	CacheUserCreditPrefix = "user:credit:"
+
+	// CacheUserVerifiedPrefix 用户认证状态缓存前缀
+	// 格式: user:verified:{userId}
+	// Value: "1" (已认证) / "0" (未认证)
+	CacheUserVerifiedPrefix = "user:verified:"
+
+	// CacheRiskDailyCountPrefix 风险用户每日报名计数前缀
+	// 格式: risk:participate:daily:{userId}:{date}
+	CacheRiskDailyCountPrefix = "risk:participate:daily:"
+
+	// StreamCreditEvents 信用事件消息 Stream Key
+	StreamCreditEvents = "credit:events"
+
 	// ============ 活动服务 Redis Key ============
 
 	// CacheActivityPrefix 活动详情缓存前缀
@@ -65,6 +84,14 @@ const (
 	CacheExpireLong = 24 * time.Hour
 	// LockExpireDefault 分布式锁默认过期时间
 	LockExpireDefault = 10 * time.Second
+
+	// CacheUserCreditTTL 用户信用分缓存基础TTL (24小时)
+	CacheUserCreditTTL = 24 * time.Hour
+	// CacheUserCreditRandomMax 用户信用分缓存随机偏移最大值 (1小时，防雪崩)
+	CacheUserCreditRandomMax = 3600
+
+	// CacheUserVerifiedTTL 用户认证状态缓存TTL (7天)
+	CacheUserVerifiedTTL = 7 * 24 * time.Hour
 )
 
 // ============ Key 生成辅助函数 ============
