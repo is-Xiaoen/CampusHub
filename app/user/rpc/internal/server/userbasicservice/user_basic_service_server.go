@@ -52,3 +52,33 @@ func (s *UserBasicServiceServer) RefreshToken(ctx context.Context, in *pb.Refres
 	l := userbasicservicelogic.NewRefreshTokenLogic(ctx, s.svcCtx)
 	return l.RefreshToken(in)
 }
+
+// 获取用户的信息
+func (s *UserBasicServiceServer) GetUserInfo(ctx context.Context, in *pb.GetUserInfoReq) (*pb.GetUserInfoResponse, error) {
+	l := userbasicservicelogic.NewGetUserInfoLogic(ctx, s.svcCtx)
+	return l.GetUserInfo(in)
+}
+
+// 修改用户密码
+func (s *UserBasicServiceServer) UpdatePassword(ctx context.Context, in *pb.UpdatePasswordReq) (*pb.UpdatePasswordResponse, error) {
+	l := userbasicservicelogic.NewUpdatePasswordLogic(ctx, s.svcCtx)
+	return l.UpdatePassword(in)
+}
+
+// 修改用户信息
+func (s *UserBasicServiceServer) UpdateUserInfo(ctx context.Context, in *pb.UpdateUserInfoReq) (*pb.UpdateUserInfoResponse, error) {
+	l := userbasicservicelogic.NewUpdateUserInfoLogic(ctx, s.svcCtx)
+	return l.UpdateUserInfo(in)
+}
+
+// 用户注销自己
+func (s *UserBasicServiceServer) DeleteUser(ctx context.Context, in *pb.DeleteUserReq) (*pb.DeleteUserResponse, error) {
+	l := userbasicservicelogic.NewDeleteUserLogic(ctx, s.svcCtx)
+	return l.DeleteUser(in)
+}
+
+// 用户忘记密码
+func (s *UserBasicServiceServer) ForgetPassword(ctx context.Context, in *pb.ForgetPasswordReq) (*pb.ForgetPasswordResponse, error) {
+	l := userbasicservicelogic.NewForgetPasswordLogic(ctx, s.svcCtx)
+	return l.ForgetPassword(in)
+}
