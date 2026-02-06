@@ -174,6 +174,7 @@ func (l *UpdateScoreLogic) determineChangeType(delta int) int8 {
 
 // executeUpdate 执行事务更新
 // 幂等保证：先插入日志（利用唯一索引），成功后再更新分数
+// Cache-Aside 写：更新成功后删除缓存
 func (l *UpdateScoreLogic) executeUpdate(in *pb.UpdateScoreReq, result *scoreChangeResult) error {
 	err := l.svcCtx.DB.WithContext(l.ctx).Transaction(func(tx *gorm.DB) error {
 		// 1. 先插入日志（利用唯一索引 uk_source_id 保证幂等）
@@ -198,6 +199,17 @@ func (l *UpdateScoreLogic) executeUpdate(in *pb.UpdateScoreReq, result *scoreCha
 		l.Errorf("UpdateScore 更新信用分失败: userId=%d, err=%v", in.UserId, err)
 		return errorx.ErrDBError(err)
 	}
+
+	// 3. DB更新成功后，删除 Redis 缓存（Cache-Aside 写策略）
+	// 为什么删除而非更新：
+	//   - 避免并发写覆盖
+	//   - 简化逻辑，下次读取自动回填最新数据
+	if err := l.svcCtx.CreditCache.Delete(l.ctx, in.UserId); err != nil {
+		// 删除失败只记录日志，不影响主流程
+		// 缓存有TTL，最终会过期，保证最终一致性
+		l.Errorf("UpdateScore 删除缓存失败: userId=%d, err=%v", in.UserId, err)
+	}
+
 	return nil
 }
 

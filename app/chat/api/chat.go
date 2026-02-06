@@ -27,12 +27,10 @@ import (
 	"flag"
 	"fmt"
 
+	"activity-platform/app/chat/api/internal/config"
+	"activity-platform/app/chat/api/internal/handler"
+	"activity-platform/app/chat/api/internal/svc"
 	"activity-platform/common/response"
-
-	// TODO(马华恩): goctl 生成代码后取消注释
-	// "activity-platform/app/chat/api/internal/config"
-	// "activity-platform/app/chat/api/internal/handler"
-	// "activity-platform/app/chat/api/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/rest"
@@ -41,6 +39,7 @@ import (
 var configFile = flag.String("f", "etc/chat-api.yaml", "配置文件路径")
 
 func main() {
+	// 解析命令行参数
 	flag.Parse()
 
 	// ============================================================================
@@ -50,26 +49,21 @@ func main() {
 	// response.SetupGlobalOkHandler() // 可选：统一成功响应格式
 	// ============================================================================
 
-	// TODO(马华恩): goctl 生成代码后，取消下方注释，删除临时代码
-	//
-	// var c config.Config
-	// conf.MustLoad(*configFile, &c)
-	//
-	// server := rest.MustNewServer(c.RestConf)
-	// defer server.Stop()
-	//
-	// ctx := svc.NewServiceContext(c)
-	// handler.RegisterHandlers(server, ctx)
-	//
-	// fmt.Printf("Starting chat-api server at %s:%d...\n", c.Host, c.Port)
-	// server.Start()
-
-	// ============ 临时代码（goctl 生成后删除）============
-	var c struct {
-		rest.RestConf
-	}
+	// 加载配置文件
+	var c config.Config
 	conf.MustLoad(*configFile, &c)
-	fmt.Printf("chat-api 骨架已就绪，等待 goctl 生成代码...\n")
-	fmt.Printf("请执行: cd app/chat/api && goctl api go -api desc/chat.api -dir . -style go_zero\n")
-	// ============ 临时代码结束 ============
+
+	// 创建 REST 服务器
+	server := rest.MustNewServer(c.RestConf)
+	defer server.Stop()
+
+	// 初始化服务上下文（包含 RPC 客户端、数据库连接等依赖）
+	ctx := svc.NewServiceContext(c)
+
+	// 注册所有 HTTP 路由处理器
+	handler.RegisterHandlers(server, ctx)
+
+	// 启动服务器
+	fmt.Printf("正在启动 chat-api 服务，监听地址：%s:%d...\n", c.Host, c.Port)
+	server.Start()
 }

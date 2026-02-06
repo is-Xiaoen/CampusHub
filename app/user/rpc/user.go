@@ -13,6 +13,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 
 	"activity-platform/app/user/rpc/internal/config"
 	captchaserviceserver "activity-platform/app/user/rpc/internal/server/captchaservice"
@@ -28,6 +29,7 @@ import (
 	"activity-platform/common/interceptor/rpcserver"
 
 	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/service"
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"
@@ -45,7 +47,11 @@ func main() {
 	conf.MustLoad(*configFile, &c)
 
 	// 创建服务上下文（依赖注入）
-	ctx := svc.NewServiceContext(c)
+	ctx, err := svc.NewServiceContext(c)
+	if err != nil {
+		logx.Errorf("创建服务上下文失败: %v", err)
+		os.Exit(1)
+	}
 
 	// 创建 gRPC Server
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
