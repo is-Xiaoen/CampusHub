@@ -17,6 +17,9 @@ type Config struct {
 	// 注意：zrpc.RpcServerConf 中也有 Redis 字段（用于服务注册），所以这里重命名为 CacheRedis
 	CacheRedis RedisConf
 
+	// User RPC 客户端配置（MQ 消费者调用 User 服务处理信用分和 OCR）
+	UserRpc zrpc.RpcClientConf
+
 	// 消息中间件配置
 	Messaging MessageConf
 }

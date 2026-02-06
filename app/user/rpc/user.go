@@ -14,8 +14,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
 	"activity-platform/app/user/rpc/internal/config"
+	"activity-platform/app/user/rpc/internal/cron"
 	captchaserviceserver "activity-platform/app/user/rpc/internal/server/captchaservice"
 	creditserviceserver "activity-platform/app/user/rpc/internal/server/creditservice"
 	qqemailserver "activity-platform/app/user/rpc/internal/server/qqemail"
@@ -88,6 +90,11 @@ func main() {
 
 	// 注册错误拦截器：将 BizError 转换为 gRPC Status
 	s.AddUnaryInterceptors(rpcserver.ErrorInterceptor)
+
+	// 启动 OCR 超时扫描器（后台协程，每分钟扫描一次）
+	scanner := cron.NewTimeoutScanner(ctx, 1*time.Minute)
+	scanner.Start()
+	defer scanner.Stop()
 
 	fmt.Printf("Starting user rpc server at %s...\n", c.ListenOn)
 	s.Start()

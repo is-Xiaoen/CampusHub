@@ -67,6 +67,8 @@ type (
 	LoginUserInfo            = pb.LoginUserInfo
 	LogoutReq                = pb.LogoutReq
 	LogoutResponse           = pb.LogoutResponse
+	ProcessOcrVerifyReq      = pb.ProcessOcrVerifyReq
+	ProcessOcrVerifyResp     = pb.ProcessOcrVerifyResp
 	RefreshReq               = pb.RefreshReq
 	RefreshResponse          = pb.RefreshResponse
 	RegisterReq              = pb.RegisterReq
@@ -109,6 +111,8 @@ type (
 		CancelStudentVerify(ctx context.Context, in *CancelStudentVerifyReq, opts ...grpc.CallOption) (*CancelStudentVerifyResp, error)
 		// UpdateVerifyStatus 更新认证状态
 		UpdateVerifyStatus(ctx context.Context, in *UpdateVerifyStatusReq, opts ...grpc.CallOption) (*UpdateVerifyStatusResp, error)
+		// ProcessOcrVerify 处理 OCR 识别（供统一 MQ Consumer 调用）
+		ProcessOcrVerify(ctx context.Context, in *ProcessOcrVerifyReq, opts ...grpc.CallOption) (*ProcessOcrVerifyResp, error)
 	}
 
 	defaultVerifyService struct {
@@ -162,4 +166,10 @@ func (m *defaultVerifyService) CancelStudentVerify(ctx context.Context, in *Canc
 func (m *defaultVerifyService) UpdateVerifyStatus(ctx context.Context, in *UpdateVerifyStatusReq, opts ...grpc.CallOption) (*UpdateVerifyStatusResp, error) {
 	client := pb.NewVerifyServiceClient(m.cli.Conn())
 	return client.UpdateVerifyStatus(ctx, in, opts...)
+}
+
+// ProcessOcrVerify 处理 OCR 识别（供统一 MQ Consumer 调用）
+func (m *defaultVerifyService) ProcessOcrVerify(ctx context.Context, in *ProcessOcrVerifyReq, opts ...grpc.CallOption) (*ProcessOcrVerifyResp, error) {
+	client := pb.NewVerifyServiceClient(m.cli.Conn())
+	return client.ProcessOcrVerify(ctx, in, opts...)
 }

@@ -64,3 +64,9 @@ func (s *VerifyServiceServer) UpdateVerifyStatus(ctx context.Context, in *pb.Upd
 	l := verifyservicelogic.NewUpdateVerifyStatusLogic(ctx, s.svcCtx)
 	return l.UpdateVerifyStatus(in)
 }
+
+// ProcessOcrVerify 处理 OCR 识别（供统一 MQ Consumer 调用）
+func (s *VerifyServiceServer) ProcessOcrVerify(ctx context.Context, in *pb.ProcessOcrVerifyReq) (*pb.ProcessOcrVerifyResp, error) {
+	l := verifyservicelogic.NewProcessOcrVerifyLogic(ctx, s.svcCtx)
+	return l.ProcessOcrVerify(in)
+}

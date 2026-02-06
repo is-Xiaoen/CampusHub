@@ -67,6 +67,8 @@ type (
 	LoginUserInfo            = pb.LoginUserInfo
 	LogoutReq                = pb.LogoutReq
 	LogoutResponse           = pb.LogoutResponse
+	ProcessOcrVerifyReq      = pb.ProcessOcrVerifyReq
+	ProcessOcrVerifyResp     = pb.ProcessOcrVerifyResp
 	RefreshReq               = pb.RefreshReq
 	RefreshResponse          = pb.RefreshResponse
 	RegisterReq              = pb.RegisterReq
