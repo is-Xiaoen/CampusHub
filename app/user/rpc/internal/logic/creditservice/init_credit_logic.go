@@ -3,7 +3,7 @@
  * @package: creditservicelogic
  * @className: InitCreditLogic
  * @author: lijunqi
- * @description: 初始化信用分逻辑层
+ * @description: 初始化信用分逻辑层（含缓存写入）
  * @date: 2026-01-30
  * @version: 1.0
  */
@@ -44,6 +44,7 @@ func NewInitCreditLogic(ctx context.Context, svcCtx *svc.ServiceContext) *InitCr
 // 业务逻辑:
 //   - 用户注册成功后调用，初始化信用分为100分（Lv4社区之星）
 //   - 幂等处理：如果已存在信用记录，返回已初始化错误
+//   - 写入 MySQL 后同步写入 Redis 缓存
 func (l *InitCreditLogic) InitCredit(in *pb.InitCreditReq) (*pb.InitCreditResp, error) {
 	// 1. 参数校验
 	if in.UserId <= 0 {
@@ -97,6 +98,12 @@ func (l *InitCreditLogic) InitCredit(in *pb.InitCreditReq) (*pb.InitCreditResp, 
 	if err != nil {
 		l.Errorf("InitCredit 初始化信用分失败: userId=%d, err=%v", in.UserId, err)
 		return nil, errorx.ErrDBError(err)
+	}
+
+	// 5. 写入 Redis 缓存（DB成功后同步写入，确保新用户首次查询命中缓存）
+	if err := l.svcCtx.CreditCache.Set(l.ctx, in.UserId, initScore, initLevel); err != nil {
+		l.Errorf("InitCredit 写入缓存失败: userId=%d, err=%v", in.UserId, err)
+		// 缓存写入失败不影响主流程，下次读取会回填
 	}
 
 	l.Infof("InitCredit 初始化成功: userId=%d, score=%d, level=%d", in.UserId, initScore, initLevel)
