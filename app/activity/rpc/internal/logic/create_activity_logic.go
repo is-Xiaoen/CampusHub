@@ -112,7 +112,11 @@ func (l *CreateActivityLogic) createActivityWithDTM(in *activity.CreateActivityR
 		}
 	}
 
-	// 4. 发起 SAGA 事务
+	// 4. 记录 SAGA 发起前的时间戳，用于后续精准查询创建的活动
+	// 原理：activity.created_at >= beforeCreate，缩小查询范围避免同名活动误匹配
+	beforeCreate := time.Now().Unix()
+
+	// 5. 发起 SAGA 事务
 	cfg := l.svcCtx.Config.DTM
 	gid, err := l.svcCtx.DTMClient.CreateActivitySaga(l.ctx, dtm.CreateActivitySagaReq{
 		ActivityRpcURL: cfg.ActivityRpcURL,
@@ -128,22 +132,30 @@ func (l *CreateActivityLogic) createActivityWithDTM(in *activity.CreateActivityR
 
 	l.Infof("[CreateActivity] DTM SAGA 事务成功: gid=%s", gid)
 
-	// 5. 查询创建的活动 ID（从数据库获取最新数据）
-	// 注意：SAGA 是异步的，这里需要等待事务完成后查询
-	// DTMClient.CreateActivitySaga 设置了 WaitResult=true，所以事务已完成
+	// 6. 查询创建的活动 ID（从数据库获取最新数据）
+	// WaitResult=true 保证事务已完成，活动已写入 DB
+	// 使用 organizer_id + title + created_at 时间窗口精准定位，防止同名活动误匹配
 	var createdActivity model.Activity
 	err = l.svcCtx.DB.WithContext(l.ctx).
-		Where("organizer_id = ? AND title = ?", in.OrganizerId, in.Title).
+		Where("organizer_id = ? AND title = ? AND created_at >= ?",
+			in.OrganizerId, in.Title, beforeCreate).
 		Order("id DESC").
 		First(&createdActivity).Error
 	if err != nil {
-		l.Errorf("[CreateActivity] 查询创建的活动失败: %v", err)
+		l.Errorf("[CreateActivity] 查询创建的活动失败: gid=%s, err=%v", gid, err)
 		return nil, errorx.ErrDBError(err)
 	}
 
 	// 6. 异步同步到 ES（仅发布状态需要同步）
 	if createdActivity.Status == model.StatusPublished && l.svcCtx.SyncService != nil {
 		l.svcCtx.SyncService.IndexActivityAsync(&createdActivity)
+	}
+
+	// 7. 异步发布活动创建事件（仅已发布状态，草稿不需要通知）
+	if createdActivity.Status == model.StatusPublished {
+		l.svcCtx.MsgProducer.PublishActivityCreated(
+			l.ctx, createdActivity.ID, uint64(in.OrganizerId), in.Title,
+		)
 	}
 
 	return &activity.CreateActivityResp{
@@ -207,6 +219,13 @@ func (l *CreateActivityLogic) createActivityLocal(in *activity.CreateActivityReq
 	// 异步同步到 ES（仅发布状态需要同步）
 	if activityData.Status == model.StatusPublished && l.svcCtx.SyncService != nil {
 		l.svcCtx.SyncService.IndexActivityAsync(activityData)
+	}
+
+	// 异步发布活动创建事件（仅已发布状态，草稿不需要通知）
+	if activityData.Status == model.StatusPublished {
+		l.svcCtx.MsgProducer.PublishActivityCreated(
+			l.ctx, activityData.ID, uint64(in.OrganizerId), in.Title,
+		)
 	}
 
 	return &activity.CreateActivityResp{

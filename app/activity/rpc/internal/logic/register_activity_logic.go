@@ -203,6 +203,11 @@ func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRe
 		}, nil
 	}
 
+	// 异步发布用户报名事件（非重复报名才发布）
+	l.svcCtx.MsgProducer.PublishMemberJoined(
+		l.ctx, uint64(activityID), uint64(userID),
+	)
+
 	return &activity.RegisterActivityResponse{
 		Result: "success",
 		Reason: "",

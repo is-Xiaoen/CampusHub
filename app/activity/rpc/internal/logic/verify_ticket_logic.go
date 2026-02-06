@@ -15,6 +15,7 @@ import (
 	"activity-platform/app/activity/rpc/activity"
 	"activity-platform/app/activity/rpc/internal/svc"
 	"activity-platform/app/user/rpc/client/tagservice"
+	"activity-platform/common/messaging"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"google.golang.org/grpc/metadata"
@@ -103,6 +104,11 @@ func (l *VerifyTicketLogic) VerifyTicket(in *activity.VerifyTicketRequest) (*act
 	if result.RowsAffected == 0 {
 		return &activity.VerifyTicketResponse{Result: "fail"}, nil
 	}
+
+	// 异步发布签到信用事件
+	l.svcCtx.MsgProducer.PublishCreditEvent(
+		l.ctx, messaging.CreditEventCheckin, int64(ticket.ActivityID), int64(ticket.UserID),
+	)
 
 	return &activity.VerifyTicketResponse{Result: "success"}, nil
 }
