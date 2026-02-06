@@ -45,6 +45,7 @@ func (l *CancelActivitiesLogic) CancelActivities(req *types.CancelActivityReques
 	// 3. 调用 RPC 服务
 	rpcResp, err := l.svcCtx.ActivityRpc.CancelActivities(l.ctx, &activityservice.CancelActivityRequest{
 		ActivityId: req.ActivityId,
+		UserId:     userID,
 	})
 	if err != nil {
 		l.Errorf("RPC CancelActivities failed: activityId=%d, userID=%d, err=%v", req.ActivityId, userID, err)

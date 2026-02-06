@@ -9,6 +9,7 @@ import (
 	"activity-platform/app/user/api/internal/logic/credit"
 	"activity-platform/app/user/api/internal/svc"
 	"activity-platform/app/user/api/internal/types"
+
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 

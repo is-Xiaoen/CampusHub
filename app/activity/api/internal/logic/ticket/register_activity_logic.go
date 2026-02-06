@@ -45,6 +45,7 @@ func (l *RegisterActivityLogic) RegisterActivity(req *types.RegisterActivityRequ
 	// 3. 调用 RPC 服务
 	rpcResp, err := l.svcCtx.ActivityRpc.RegisterActivity(l.ctx, &activityservice.RegisterActivityRequest{
 		ActivityId: req.ActivityId,
+		UserId:     userID,
 	})
 	if err != nil {
 		l.Errorf("RPC RegisterActivity failed: activityId=%d, userID=%d, err=%v", req.ActivityId, userID, err)

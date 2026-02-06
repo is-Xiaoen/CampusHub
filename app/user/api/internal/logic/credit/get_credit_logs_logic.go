@@ -17,6 +17,7 @@ import (
 	"activity-platform/app/user/api/internal/types"
 	"activity-platform/app/user/rpc/client/creditservice"
 	"activity-platform/common/ctxdata"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -42,6 +43,12 @@ func (l *GetCreditLogsLogic) GetCreditLogs(req *types.GetCreditLogsReq) (resp *t
 	// 1. 从 JWT 中获取当前用户ID
 	userId := ctxdata.GetUserIDFromCtx(l.ctx)
 
+	// 1.1 参数校验
+	if userId <= 0 {
+		l.Errorf("GetCreditLogs 参数错误: userId=%d", userId)
+		return nil, errorx.ErrUnauthorized()
+	}
+
 	// 2. 调用 RPC 查询信用变更记录
 	rpcResp, err := l.svcCtx.CreditServiceRpc.GetCreditLogs(l.ctx, &creditservice.GetCreditLogsReq{
 		UserId:     userId,
@@ -53,7 +60,7 @@ func (l *GetCreditLogsLogic) GetCreditLogs(req *types.GetCreditLogsReq) (resp *t
 	})
 	if err != nil {
 		l.Errorf("调用 CreditServiceRpc.GetCreditLogs 失败: userId=%d, err=%v", userId, err)
-		return nil, err
+		return nil, errorx.FromError(err)
 	}
 
 	// 3. 转换 RPC 响应为 API 响应

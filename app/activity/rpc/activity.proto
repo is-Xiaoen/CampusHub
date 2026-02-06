@@ -161,6 +161,7 @@ service ActivityService {
 // 报名活动请求
 message RegisterActivityRequest {
   int64 activity_id = 1;  // 活动ID
+  int64 user_id = 2;      // 用户ID
 }
 
 // 报名活动响应
@@ -176,6 +177,7 @@ message RegisterActivityResponse {
 // 取消报名活动请求
 message CancelActivityRequest {
   int64 activity_id = 1;  // 活动ID
+  int64 user_id = 2;      // 用户ID
 }
 
 // 取消报名活动响应
@@ -192,6 +194,7 @@ message GetActivityListRequest {
   int32 page = 1;      // 页码
   int32 page_size = 2; // 每页数量
   string type = 3; // 类型：待参加/已参加
+  int64 user_id = 4; // 用户ID
 }
 
 // 获取活动列表响应
@@ -220,6 +223,7 @@ message VerifyTicketRequest {
   int64 activity_id = 1;   // 活动ID
   string ticket_code = 2;  // 票券码
   string totp_code = 3;    // TOTP动态码（6位数字）
+  int64 user_id = 4;       // 用户ID
 }
 
 // 核销票券响应
@@ -235,6 +239,7 @@ message VerifyTicketResponse {
 message GetTicketListRequest {
   int32 page = 1;      // 页码
   int32 page_size = 2; // 每页数量
+  int64 user_id = 3;   // 用户ID
 }
 
 // 获取个人票券列表响应
@@ -262,6 +267,7 @@ message TicketListItem {
 // 获取票券详情请求
 message GetTicketDetailRequest {
   int64 ticket_id = 1;  // 票券ID
+  int64 user_id = 2;    // 用户ID
 }
 
 // 获取票券详情响应

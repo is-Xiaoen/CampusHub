@@ -57,8 +57,8 @@ func (l *UpdateVerifyStatusLogic) UpdateVerifyStatus(in *pb.UpdateVerifyStatusRe
 
 	// 3. 用户ID校验（如果提供了）
 	if in.UserId > 0 && verification.UserID != in.UserId {
-		l.Infof("[WARN] UpdateVerifyStatus 用户ID不匹配: expected=%d, got=%d",
-			verification.UserID, in.UserId)
+		l.Infof("[WARN] UpdateVerifyStatus 用户ID不匹配: expected=%d, got=%d, verifyId=%d",
+			verification.UserID, in.UserId, in.VerifyId)
 		return nil, errorx.ErrVerifyPermissionDeny()
 	}
 
@@ -67,8 +67,8 @@ func (l *UpdateVerifyStatusLogic) UpdateVerifyStatus(in *pb.UpdateVerifyStatusRe
 
 	// 4. 状态转换校验
 	if !constants.CanVerifyTransition(beforeStatus, newStatus) {
-		l.Infof("[WARN] UpdateVerifyStatus 无效的状态转换: from=%d, to=%d",
-			beforeStatus, newStatus)
+		l.Infof("[WARN] UpdateVerifyStatus 无效的状态转换: from=%d, to=%d, verifyId=%d",
+			beforeStatus, newStatus, in.VerifyId)
 		return nil, errorx.ErrVerifyInvalidTransit()
 	}
 
@@ -173,6 +173,16 @@ func (l *UpdateVerifyStatusLogic) handlePassed(in *pb.UpdateVerifyStatusReq, new
 		l.Errorf("UpdateVerifyStatus 更新状态失败: verifyId=%d, err=%v", in.VerifyId, err)
 		return errorx.ErrDBError(err)
 	}
+
+	// 认证通过后，删除认证状态缓存，确保下次查询获取最新状态
+	if in.UserId > 0 {
+		if err := l.svcCtx.VerifyCache.Delete(l.ctx, in.UserId); err != nil {
+			l.Errorf("UpdateVerifyStatus 删除认证缓存失败: userId=%d, err=%v", in.UserId, err)
+		} else {
+			l.Infof("UpdateVerifyStatus 已删除认证缓存: userId=%d", in.UserId)
+		}
+	}
+
 	l.Infof("UpdateVerifyStatus 认证通过: verifyId=%d, operator=%s", in.VerifyId, in.Operator)
 	return nil
 }

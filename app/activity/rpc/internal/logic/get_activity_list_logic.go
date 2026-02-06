@@ -9,7 +9,7 @@ import (
 	"activity-platform/app/activity/model"
 	"activity-platform/app/activity/rpc/activity"
 	"activity-platform/app/activity/rpc/internal/svc"
-	"activity-platform/common/ctxdata"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -30,9 +30,9 @@ func NewGetActivityListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *G
 
 // GetActivityList 获取待参加/已参加活动信息列表
 func (l *GetActivityListLogic) GetActivityList(in *activity.GetActivityListRequest) (*activity.GetActivityListResponse, error) {
-	userID := ctxdata.GetUserIDFromCtx(l.ctx)
+	userID := in.GetUserId()
 	if userID <= 0 {
-		return nil, errors.New("用户未登录")
+		return nil, errorx.ErrUnauthorized()
 	}
 
 	attendStatus, err := parseAttendStatus(in.GetType())
