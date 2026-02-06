@@ -30,15 +30,15 @@ Auth:
 
 # ==================== RPC 服务配置 ====================
 ActivityRpc:
-  #  Etcd:
-  #    Hosts:
-  #      - 192.168.10.4:2379
-  #    Key: activity.rpc
-  #  NonBlock: true
-  #  Timeout: 3000
-  Target: 127.0.0.1:9002    # 直接连本地 RPC
-  NonBlock: true
-  Timeout: 3000
+    Etcd:
+      Hosts:
+        - 192.168.10.4:2379
+      Key: activity.rpc
+    NonBlock: true
+    Timeout: 3000
+#  Target: 127.0.0.1:9002    # 直接连本地 RPC
+#  NonBlock: true
+#  Timeout: 3000
 
 # 可选：如果需要调用 user-rpc 获取用户信息
 UserRpc:
