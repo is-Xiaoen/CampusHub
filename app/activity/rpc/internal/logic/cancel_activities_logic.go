@@ -8,7 +8,6 @@ import (
 	"activity-platform/app/activity/model"
 	"activity-platform/app/activity/rpc/activity"
 	"activity-platform/app/activity/rpc/internal/svc"
-	"activity-platform/common/ctxdata"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"gorm.io/gorm"
@@ -32,7 +31,7 @@ func NewCancelActivitiesLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 func (l *CancelActivitiesLogic) CancelActivities(in *activity.CancelActivityRequest) (*activity.CancelActivityResponse, error) {
 	// 1) 参数与登录校验
 	activityID := in.GetActivityId()
-	userID := ctxdata.GetUserIDFromCtx(l.ctx)
+	userID := in.GetUserId()
 	if activityID <= 0 || userID <= 0 {
 		return &activity.CancelActivityResponse{Result: "fail"}, nil
 	}

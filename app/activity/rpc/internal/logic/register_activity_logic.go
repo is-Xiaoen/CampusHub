@@ -18,7 +18,6 @@ import (
 	"activity-platform/app/activity/rpc/internal/svc"
 	"activity-platform/app/user/rpc/client/creditservice"
 	"activity-platform/app/user/rpc/client/verifyservice"
-	"activity-platform/common/ctxdata"
 
 	"github.com/zeromicro/go-zero/core/breaker"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -41,7 +40,7 @@ func NewRegisterActivityLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 
 // RegisterActivity 报名活动
 func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRequest) (*activity.RegisterActivityResponse, error) {
-	userID := ctxdata.GetUserIDFromCtx(l.ctx)
+	userID := in.GetUserId()
 	activityID := in.GetActivityId()
 	if userID <= 0 || activityID <= 0 {
 		return &activity.RegisterActivityResponse{

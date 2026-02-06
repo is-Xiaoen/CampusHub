@@ -8,7 +8,7 @@ import (
 	"activity-platform/app/activity/model"
 	"activity-platform/app/activity/rpc/activity"
 	"activity-platform/app/activity/rpc/internal/svc"
-	"activity-platform/common/ctxdata"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -29,9 +29,9 @@ func NewGetTicketListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Get
 
 // GetTicketList 获取个人票券列表
 func (l *GetTicketListLogic) GetTicketList(in *activity.GetTicketListRequest) (*activity.GetTicketListResponse, error) {
-	userID := ctxdata.GetUserIDFromCtx(l.ctx)
+	userID := in.GetUserId()
 	if userID <= 0 {
-		return nil, errors.New("用户未登录")
+		return nil, errorx.ErrUnauthorized()
 	}
 
 	pagination := model.Pagination{
