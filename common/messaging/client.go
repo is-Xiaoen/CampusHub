@@ -136,6 +136,29 @@ func (c *Client) Publish(ctx context.Context, topic string, payload []byte) erro
 	return c.Publisher.Publish(topic, msg)
 }
 
+// createDLQMiddleware 为指定 topic 创建 DLQ 中间件
+func (c *Client) createDLQMiddleware(topic string, handlerName string) (message.HandlerMiddleware, error) {
+	if !c.config.DLQConfig.Enabled {
+		return nil, nil
+	}
+
+	// 构造 DLQ topic 名称
+	dlqTopic := topic + c.config.DLQConfig.TopicSuffix
+
+	// 创建 DLQ 中间件配置
+	dlqConfig := middleware.DLQMiddlewareConfig{
+		Publisher:        c.Publisher,
+		ServiceName:      c.config.ServiceName,
+		OriginalTopic:    topic,
+		HandlerName:      handlerName,
+		DLQTopic:         dlqTopic,
+		OnlyNonRetryable: c.config.DLQConfig.OnlyNonRetryable,
+		IsRetryableFunc:  IsRetryable, // 传递 IsRetryable 函数
+	}
+
+	return middleware.NewDLQMiddleware(dlqConfig)
+}
+
 // Subscribe 订阅消息
 // 注意：这个方法会直接添加 handler 到 Router，需要调用 Router.Run() 来启动
 func (c *Client) Subscribe(
@@ -143,12 +166,26 @@ func (c *Client) Subscribe(
 	handlerName string,
 	handler message.NoPublishHandlerFunc,
 ) {
-	c.Router.AddNoPublisherHandler(
+	h := c.Router.AddNoPublisherHandler(
 		handlerName,
 		topic,
 		c.Subscriber,
 		handler,
 	)
+
+	// 如果启用 DLQ，添加中间件
+	if c.config.DLQConfig.Enabled {
+		dlqMiddleware, err := c.createDLQMiddleware(topic, handlerName)
+		if err != nil {
+			// 记录错误但不影响订阅
+			c.Router.Logger().Error("Failed to create DLQ middleware", err, watermill.LogFields{
+				"topic":       topic,
+				"handlerName": handlerName,
+			})
+		} else if dlqMiddleware != nil {
+			h.AddMiddleware(dlqMiddleware)
+		}
+	}
 }
 
 // Run 启动 Router（阻塞）

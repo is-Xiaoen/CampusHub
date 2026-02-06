@@ -10,6 +10,7 @@ import (
 	"activity-platform/app/chat/api/internal/svc"
 	"activity-platform/app/chat/api/internal/types"
 	"activity-platform/app/chat/rpc/chat"
+	"activity-platform/app/user/rpc/pb/pb"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -50,13 +51,47 @@ func (l *GetGroupMembersLogic) GetGroupMembers(req *types.GetGroupMembersReq) (r
 		}, nil
 	}
 
+	// 收集所有用户ID
+	userIds := make([]int64, 0, len(rpcResp.Members))
+	for _, member := range rpcResp.Members {
+		userIds = append(userIds, mustParseInt64(member.UserId))
+	}
+
+	// 批量调用 UserRpc 获取用户信息
+	var userInfoMap map[int64]*pb.GroupUserInfo
+	if len(userIds) > 0 {
+		userResp, err := l.svcCtx.UserRpc.GetGroupUser(l.ctx, &pb.GetGroupUserReq{
+			Ids: userIds,
+		})
+		if err != nil {
+			l.Errorf("调用 UserRpc 获取用户信息失败: %v", err)
+			// 不中断流程，继续返回成员列表，只是用户名和头像为空
+		} else {
+			// 构建用户信息映射表，方便后续查找
+			userInfoMap = make(map[int64]*pb.GroupUserInfo, len(userResp.Users))
+			for _, user := range userResp.Users {
+				userInfoMap[int64(user.Id)] = user
+			}
+		}
+	}
+
 	// 转换成员列表
 	members := make([]types.GroupMemberInfo, 0, len(rpcResp.Members))
 	for _, member := range rpcResp.Members {
+		userId := mustParseInt64(member.UserId)
+		username := ""
+		avatar := ""
+
+		// 从映射表中获取用户信息
+		if userInfo, ok := userInfoMap[userId]; ok {
+			username = userInfo.Nickname
+			avatar = userInfo.AvatarUrl
+		}
+
 		members = append(members, types.GroupMemberInfo{
-			UserId:   mustParseInt64(member.UserId),
-			Username: "", // TODO: 需要调用 UserRpc 获取用户信息
-			Avatar:   "", // TODO: 需要调用 UserRpc 获取用户信息
+			UserId:   userId,
+			Username: username,
+			Avatar:   avatar,
 			Role:     getRoleString(member.Role),
 			JoinedAt: formatTimestamp(member.JoinedAt),
 		})
