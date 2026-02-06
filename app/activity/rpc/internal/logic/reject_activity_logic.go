@@ -5,6 +5,7 @@ import (
 
 	"activity-platform/app/activity/rpc/activity"
 	"activity-platform/app/activity/rpc/internal/svc"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -24,7 +25,6 @@ func NewRejectActivityLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Re
 }
 
 func (l *RejectActivityLogic) RejectActivity(in *activity.RejectActivityReq) (*activity.RejectActivityResp, error) {
-	// todo: add your logic here and delete this line
-
-	return &activity.RejectActivityResp{}, nil
+	// MVP 版本无后台管理系统，拒绝功能暂不支持
+	return nil, errorx.NewWithMessage(errorx.CodeServiceUnavailable, "拒绝功能暂未开放")
 }
