@@ -36,9 +36,10 @@ func NewVerifyTicketLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Veri
 
 // VerifyTicket 核销票券
 func (l *VerifyTicketLogic) VerifyTicket(in *activity.VerifyTicketRequest) (*activity.VerifyTicketResponse, error) {
+	userID := in.GetUserId()
 	activityID := in.GetActivityId()
 	ticketCode := strings.TrimSpace(in.GetTicketCode())
-	if activityID <= 0 || ticketCode == "" {
+	if userID <= 0 || activityID <= 0 || ticketCode == "" {
 		return &activity.VerifyTicketResponse{Result: "fail"}, nil
 	}
 

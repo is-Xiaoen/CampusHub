@@ -51,6 +51,7 @@ func (l *VerifyTicketLogic) VerifyTicket(req *types.VerifyTicketRequest) (resp *
 		ActivityId: req.ActivityId,
 		TicketCode: req.TicketCode,
 		TotpCode:   req.TotpCode,
+		UserId:     userID,
 	})
 	if err != nil {
 		l.Errorf("RPC VerifyTicket failed: activityId=%d, userID=%d, err=%v", req.ActivityId, userID, err)
