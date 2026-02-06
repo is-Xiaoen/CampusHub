@@ -160,12 +160,7 @@ const (
 	RiskUserDailyParticipateLimit = 1
 )
 
-// ==================== Redis Key 相关 ====================
-
-const (
-	// CacheUserCreditPrefix 用户信用信息缓存前缀
-	CacheUserCreditPrefix = "user:credit:"
-	// CacheRiskUserDailyCountPrefix 风险用户每日报名计数前缀
-	// 格式: risk:participate:daily:{userId}:{date}
-	CacheRiskUserDailyCountPrefix = "risk:participate:daily:"
-)
+// 注意: Redis Key 常量统一定义在 common/constants/redis_key.go 中
+// - CacheUserCreditPrefix: 用户信用分缓存
+// - CacheRiskDailyCountPrefix: 风险用户每日报名计数
+// - CacheUserVerifiedPrefix: 用户认证状态缓存

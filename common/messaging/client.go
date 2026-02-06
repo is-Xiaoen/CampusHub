@@ -138,7 +138,11 @@ func (c *Client) Publish(ctx context.Context, topic string, payload []byte) erro
 
 // Subscribe 订阅消息
 // 注意：这个方法会直接添加 handler 到 Router，需要调用 Router.Run() 来启动
-func (c *Client) Subscribe(topic string, handlerName string, handler message.NoPublishHandlerFunc) {
+func (c *Client) Subscribe(
+	topic string,
+	handlerName string,
+	handler message.NoPublishHandlerFunc,
+) {
 	c.Router.AddNoPublisherHandler(
 		handlerName,
 		topic,

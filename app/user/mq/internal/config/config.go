@@ -3,7 +3,7 @@
  * @package: config
  * @className: Config
  * @author: lijunqi
- * @description: 用户MQ服务配置定义（基于Redis Stream）
+ * @description: 用户MQ服务配置定义（基于 Watermill Redis Stream）
  * @date: 2026-01-30
  * @version: 1.0
  */
@@ -11,6 +11,8 @@
 package config
 
 import (
+	"time"
+
 	"github.com/zeromicro/go-zero/core/service"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 )
@@ -23,12 +25,11 @@ type Config struct {
 	// MySQL 数据库配置
 	MySQL MySQLConf
 
-	// BizRedis 业务Redis配置（同时用于缓存和 Stream，避免与go-zero内置冲突）
+	// BizRedis 业务Redis配置（用于缓存操作）
 	BizRedis redis.RedisConf
 
-	// Redis Stream 消费者配置
-	// [待确认] 需要队友确定具体字段
-	Stream StreamConf
+	// Messaging 消息中间件配置（复用 common/messaging）
+	Messaging MessagingConf
 }
 
 // MySQLConf MySQL数据库配置
@@ -37,36 +38,38 @@ type MySQLConf struct {
 	DataSource string
 }
 
-// StreamConf Redis Stream 配置
-// [待确认] 以下字段需要和队友确认
-type StreamConf struct {
-	// ==================== 基础配置 ====================
+// MessagingConf 消息中间件配置（对应 common/messaging.Config）
+type MessagingConf struct {
+	// Redis 配置
+	Redis RedisConf
 
-	// Key Stream 的 Key 名称
-	// 例如: "user:mq:stream" 或按主题分: "user:credit:stream"
-	// [待确认] 是单个 Stream 还是多个 Stream？
-	Key string
+	// Topic 订阅的主题（Stream Key）
+	Topic string `json:",default=credit:events"`
 
-	// Group 消费者组名称
-	// 同一个 Group 内的消费者会分摊消息（负载均衡）
-	Group string
+	// ConsumerGroup 消费者组名称
+	ConsumerGroup string `json:",default=user-mq-group"`
 
-	// Consumer 当前消费者名称（集群部署时每个实例不同）
-	// 例如: "consumer-1", "consumer-2"
-	Consumer string
+	// EnableMetrics 是否启用 Prometheus 指标
+	EnableMetrics bool `json:",default=true"`
 
-	// ==================== 可选配置 ====================
+	// EnableGoZero 是否启用 Go-Zero trace_id 传播
+	EnableGoZero bool `json:",default=true"`
 
-	// BatchSize 每次拉取的消息数量
-	// [待确认] 队友的实现是否支持批量拉取？
-	BatchSize int `json:",optional,default=10"`
+	// Retry 重试配置
+	Retry RetryConf
+}
 
-	// BlockTimeout 阻塞等待超时时间（毫秒）
-	// 0 表示一直阻塞直到有新消息
-	// [待确认] 队友的实现使用什么阻塞策略？
-	BlockTimeout int `json:",optional,default=5000"`
+// RedisConf Redis 连接配置
+type RedisConf struct {
+	Addr     string `json:",default=localhost:6379"`
+	Password string `json:",optional"`
+	DB       int    `json:",default=0"`
+}
 
-	// Workers 并发处理协程数
-	// [待确认] 队友的实现是否支持并发消费？
-	Workers int `json:",optional,default=1"`
+// RetryConf 重试配置
+type RetryConf struct {
+	MaxRetries      int           `json:",default=3"`
+	InitialInterval time.Duration `json:",default=100ms"`
+	MaxInterval     time.Duration `json:",default=10s"`
+	Multiplier      float64       `json:",default=2.0"`
 }
