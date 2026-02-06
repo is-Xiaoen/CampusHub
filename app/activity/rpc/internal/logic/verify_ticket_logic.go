@@ -496,7 +496,9 @@ func (l *VerifyTicketLogic) getUserTagsFromRPC(userID int64) []string {
 	defer cancel()
 	ctx = metadata.AppendToOutgoingContext(ctx, "user_id", fmt.Sprintf("%d", userID))
 
-	resp, err := l.svcCtx.TagRpc.GetUserTags(ctx, &tagservice.GetUserTagsRep{})
+	resp, err := l.svcCtx.TagRpc.GetUserTags(ctx, &tagservice.GetUserTagsReq{
+		UserId: userID,
+	})
 	if err != nil {
 		l.Infof("[WARNING] 获取用户标签失败: userId=%d, err=%v", userID, err)
 		return []string{}
@@ -505,10 +507,10 @@ func (l *VerifyTicketLogic) getUserTagsFromRPC(userID int64) []string {
 		return []string{}
 	}
 
-	names := splitTagNames(resp.GetName())
-	if len(names) == 0 && resp.GetId() > 0 {
-		if tag, err := l.svcCtx.TagCacheModel.FindByID(l.ctx, resp.GetId()); err == nil && tag != nil {
-			names = []string{tag.Name}
+	var names []string
+	for _, tag := range resp.GetTags() {
+		if tag.GetName() != "" {
+			names = append(names, tag.GetName())
 		}
 	}
 	return normalizeTags(names)
