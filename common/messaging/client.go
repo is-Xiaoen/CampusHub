@@ -166,7 +166,7 @@ func (c *Client) Subscribe(
 	handlerName string,
 	handler message.NoPublishHandlerFunc,
 ) {
-	c.Router.AddNoPublisherHandler(
+	h := c.Router.AddNoPublisherHandler(
 		handlerName,
 		topic,
 		c.Subscriber,
@@ -186,8 +186,6 @@ func (c *Client) Subscribe(
 			h.AddMiddleware(dlqMiddleware)
 		}
 	}
-
-	return h
 }
 
 // Run 启动 Router（阻塞）

@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"errors"
 
 	"activity-platform/app/chat/rpc/chat"
 	"activity-platform/app/chat/rpc/internal/svc"
@@ -36,7 +37,7 @@ func (l *GetGroupByActivityIdLogic) GetGroupByActivityId(in *chat.GetGroupByActi
 	// 2. 查询群聊
 	group, err := l.svcCtx.GroupModel.FindByActivityID(l.ctx, in.ActivityId)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, status.Error(codes.NotFound, "群聊不存在")
 		}
 		l.Errorf("查询群聊失败: %v", err)
