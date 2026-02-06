@@ -1,0 +1,63 @@
+# 活动服务 API 配置
+#
+#
+# 重要：Auth.AccessSecret 必须与 user-api 一致！
+Name: activity-api
+Host: 0.0.0.0
+Port: 8002
+MaxConns: 10000
+CpuThreshold: 900
+Timeout: 3000
+
+# ==================== 内置中间件开关 ====================
+Middlewares:
+  Breaker: true
+  Shedding: true
+  MaxConns: true
+
+# 日志配置
+Log:
+  ServiceName: activity-api
+  Mode: console
+  Encoding: plain
+  Level: info
+
+# ==================== JWT 配置（必须与 user-api 一致！）====================
+# 重要：此 Secret 必须与 user-api.yaml 中的完全一致，否则 Token 验证会失败
+Auth:
+  AccessSecret: "your-access-secret-key-change-in-production-32chars"
+  AccessExpire: 7200
+
+# ==================== RPC 服务配置 ====================
+ActivityRpc:
+    Etcd:
+      Hosts:
+        - 192.168.10.4:2379
+      Key: activity.rpc
+    NonBlock: true
+    Timeout: 3000
+#  Target: 127.0.0.1:9002    # 直接连本地 RPC
+#  NonBlock: true
+#  Timeout: 3000
+
+# 可选：如果需要调用 user-rpc 获取用户信息
+UserRpc:
+  Etcd:
+    Hosts:
+      - 192.168.10.4:2379
+    Key: user.rpc
+  NonBlock: true
+  Timeout: 3000
+
+# ==================== 高并发、熔断限流配置 ====================
+# 报名活动限流配置（令牌桶算法）
+RegistrationLimit:
+  Rate: 100   # 每秒允许100个请求
+  Burst: 200  # 突发容量200个请求
+
+# 报名活动熔断配置（Google SRE算法）
+RegistrationBreaker:
+  Name: activity-registration  # 熔断器名称
+  Requests: 100                # 请求总数阈值
+  ErrorRate: 0.5               # 错误率阈值（50%）
+  Timeout: 60                  # 熔断持续时间（秒）
