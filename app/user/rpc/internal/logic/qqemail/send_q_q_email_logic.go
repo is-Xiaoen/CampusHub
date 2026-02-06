@@ -69,8 +69,25 @@ func (l *SendQQEmailLogic) SendQQEmail(in *pb.SendQQEmailReq) (*pb.SendQQEmailRe
 		Subject:  l.svcCtx.Config.Email.Subject,
 	}
 
+	// 映射场景为中文
+	var sceneStr string
+	switch in.Scene {
+	case "register":
+		sceneStr = "注册账号"
+	case "login":
+		sceneStr = "登录账号"
+	case "forget_password":
+		sceneStr = "找回密码"
+	case "delete_user":
+		sceneStr = "注销账号"
+	case "change_email":
+		sceneStr = "更换邮箱"
+	default:
+		sceneStr = "身份验证"
+	}
+
 	// 这里选择同步发送以确保发送成功，如果失败则通知前端
-	err = email.SendQQEmail(emailCfg, qqEmail, code)
+	err = email.SendQQEmail(emailCfg, qqEmail, code, sceneStr)
 	if err != nil {
 		l.Logger.Errorf("Send email failed: %v", err)
 		return nil, errorx.NewDefaultError("邮件发送失败，请检查邮箱是否正确")
