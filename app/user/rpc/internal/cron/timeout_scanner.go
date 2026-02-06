@@ -1,6 +1,6 @@
 /**
  * @projectName: CampusHub
- * @package: handler
+ * @package: cron
  * @className: TimeoutScanner
  * @author: lijunqi
  * @description: OCR 超时扫描器，定期检测并标记超时的认证记录
@@ -17,20 +17,19 @@
  *   - 查询 status=OcrPending 且 updated_at < (now - 10分钟) 的记录
  *   - 逐条更新为 Timeout 状态
  *
- * 为什么需要扫描器（不只依赖 MQ Handler 的超时检测）:
- *   1. MQ 消息可能丢失或延迟
- *   2. MQ Consumer 可能在处理过程中崩溃
- *   3. Redis Stream 可能出现异常
- *   4. 作为双重保险，确保不会有记录永远卡在 OcrPending 状态
+ * 为什么在 User RPC 而非 MQ 中:
+ *   - 统一 MQ 服务不持有 DB 连接（薄层设计）
+ *   - User RPC 本身已持有 StudentVerificationModel 等所有依赖
+ *   - 超时扫描是 User 域的内部关注点，放在 User RPC 更合理
  */
 
-package handler
+package cron
 
 import (
 	"context"
 	"time"
 
-	"activity-platform/app/user/mq/internal/svc"
+	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/common/constants"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -46,7 +45,7 @@ type TimeoutScanner struct {
 // NewTimeoutScanner 创建超时扫描器
 //
 // 参数:
-//   - svcCtx: 服务上下文
+//   - svcCtx: User RPC 服务上下文
 //   - interval: 扫描间隔时间（建议 1 分钟）
 func NewTimeoutScanner(svcCtx *svc.ServiceContext, interval time.Duration) *TimeoutScanner {
 	return &TimeoutScanner{
