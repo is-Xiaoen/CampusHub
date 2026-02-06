@@ -11,6 +11,7 @@ import (
 	"activity-platform/app/user/rpc/client/creditservice"
 	"activity-platform/app/user/rpc/client/qqemail"
 	"activity-platform/app/user/rpc/client/tagservice"
+	"activity-platform/app/user/rpc/client/uploadtoqiniu"
 	"activity-platform/app/user/rpc/client/userbasicservice"
 	"activity-platform/app/user/rpc/client/verifyservice"
 	"time"
@@ -51,6 +52,9 @@ type ServiceContext struct {
 
 	// QQEmailRpc QQ邮箱服务 RPC 客户端
 	QQEmailRpc qqemail.QQEmail
+
+	// UploadToQiNiuRpc 七牛云上传服务 RPC 客户端
+	UploadToQiNiuRpc uploadtoqiniu.UploadToQiNiu
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -78,6 +82,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		TagServiceRpc:       tagservice.NewTagService(userRpcClient),
 		UserBasicServiceRpc: userbasicservice.NewUserBasicService(userRpcClient),
 		QQEmailRpc:          qqemail.NewQQEmail(userRpcClient),
+		UploadToQiNiuRpc:    uploadtoqiniu.NewUploadToQiNiu(userRpcClient),
 	}
 }
 
