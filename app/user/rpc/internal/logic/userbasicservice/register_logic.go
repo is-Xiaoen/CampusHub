@@ -49,10 +49,10 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 	exists, err := l.svcCtx.UserModel.ExistsByQQEmail(l.ctx, in.QqEmail)
 	if err != nil {
 		l.Logger.Errorf("Check email existence failed: %v", err)
-		return nil, errorx.NewSystemError("系统繁忙，请稍后再试")
+		return nil, errorx.ErrDBError(err)
 	}
 	if exists {
-		return nil, errorx.NewDefaultError("该邮箱已注册")
+		return nil, errorx.New(errorx.CodeUserEmailAlreadyExists)
 	}
 
 	// 3. 创建用户
@@ -70,7 +70,7 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 
 	if err := l.svcCtx.UserModel.Create(l.ctx, newUser); err != nil {
 		l.Logger.Errorf("Create user failed: %v", err)
-		return nil, errorx.NewSystemError("注册失败，请稍后再试")
+		return nil, errorx.New(errorx.CodeUserRegisterFailed)
 	}
 
 	// 4. 生成Token (自动登录)
@@ -83,7 +83,7 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 	}, accessJwtId, refreshJwtId)
 	if err != nil {
 		l.Logger.Errorf("Generate short token failed: %v", err)
-		return nil, errorx.NewSystemError("注册成功但登录失败，请尝试重新登录")
+		return nil, errorx.New(errorx.CodeTokenGenerateFailed)
 	}
 	longToken, err := jwt.GenerateLongToken(newUser.UserID, jwt.RoleUser, jwt.AuthConfig{
 		Secret: l.svcCtx.Config.JWT.RefreshSecret,
@@ -91,7 +91,7 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 	}, accessJwtId, refreshJwtId)
 	if err != nil {
 		l.Logger.Errorf("Generate long token failed: %v", err)
-		return nil, errorx.NewSystemError("注册成功但登录失败，请尝试重新登录")
+		return nil, errorx.New(errorx.CodeTokenGenerateFailed)
 	}
 
 	// 记录长token到redis

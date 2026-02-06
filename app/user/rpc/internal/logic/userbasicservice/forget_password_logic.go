@@ -9,8 +9,7 @@ import (
 	"activity-platform/common/utils/encrypt"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"activity-platform/common/errorx"
 )
 
 type ForgetPasswordLogic struct {
@@ -31,17 +30,17 @@ func NewForgetPasswordLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Fo
 func (l *ForgetPasswordLogic) ForgetPassword(in *pb.ForgetPasswordReq) (*pb.ForgetPasswordResponse, error) {
 	// 1. 校验新密码格式
 	if !encrypt.ValidatePassword(in.NewPassword) {
-		return nil, status.Error(codes.InvalidArgument, "password must be 8-20 characters and include at least 3 types (uppercase, lowercase, number, special)")
+		return nil, errorx.NewWithMessage(errorx.CodePasswordInvalid, "密码必须包含大小写字母、数字和特殊字符，长度8-20位")
 	}
 
 	// 2. 查询用户
 	user, err := l.svcCtx.UserModel.FindByUserID(l.ctx, in.UserId)
 	if err != nil {
 		l.Logger.Errorf("FindByUserID error: %v, userId: %d", err, in.UserId)
-		return nil, status.Error(codes.Internal, "internal error")
+		return nil, errorx.ErrDBError(err)
 	}
 	if user == nil {
-		return nil, status.Error(codes.NotFound, "user not found")
+		return nil, errorx.New(errorx.CodeUserNotFound)
 	}
 
 	// 3. 调用 CheckQQEmailLogic 校验验证码
@@ -60,7 +59,7 @@ func (l *ForgetPasswordLogic) ForgetPassword(in *pb.ForgetPasswordReq) (*pb.Forg
 	err = l.svcCtx.UserModel.UpdatePassword(l.ctx, user.UserID, newHash)
 	if err != nil {
 		l.Logger.Errorf("UpdatePassword error: %v, userId: %d", err, user.UserID)
-		return nil, status.Error(codes.Internal, "failed to update password")
+		return nil, errorx.New(errorx.CodePasswordUpdateFailed)
 	}
 
 	return &pb.ForgetPasswordResponse{

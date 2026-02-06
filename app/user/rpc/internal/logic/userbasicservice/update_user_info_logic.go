@@ -7,10 +7,9 @@ import (
 	"activity-platform/app/user/rpc/internal/logic/uploadtoqiniu"
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type UpdateUserInfoLogic struct {
@@ -33,10 +32,10 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(in *pb.UpdateUserInfoReq) (*pb.Upda
 	user, err := l.svcCtx.UserModel.FindByUserID(l.ctx, in.UserId)
 	if err != nil {
 		l.Logger.Errorf("FindByUserID error: %v, userId: %d", err, in.UserId)
-		return nil, status.Error(codes.Internal, "internal error")
+		return nil, errorx.ErrDBError(err)
 	}
 	if user == nil {
-		return nil, status.Error(codes.NotFound, "user not found")
+		return nil, errorx.New(errorx.CodeUserNotFound)
 	}
 
 	// 2. 处理头像上传与更新
@@ -78,7 +77,7 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(in *pb.UpdateUserInfoReq) (*pb.Upda
 	err = l.svcCtx.UserModel.Update(l.ctx, user)
 	if err != nil {
 		l.Logger.Errorf("Update user error: %v, userId: %d", err, in.UserId)
-		return nil, status.Error(codes.Internal, "failed to update user info")
+		return nil, errorx.New(errorx.CodeUserUpdateFailed)
 	}
 
 	// 4. 更新标签

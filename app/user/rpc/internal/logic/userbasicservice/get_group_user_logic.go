@@ -5,6 +5,7 @@ import (
 
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -32,7 +33,7 @@ func (l *GetGroupUserLogic) GetGroupUser(in *pb.GetGroupUserReq) (*pb.GetGroupUs
 	users, err := l.svcCtx.UserModel.FindByIDs(l.ctx, in.Ids)
 	if err != nil {
 		l.Logger.Errorf("FindByIDs failed: %v", err)
-		return nil, err
+		return nil, errorx.ErrDBError(err)
 	}
 
 	var respUsers []*pb.GroupUserInfo

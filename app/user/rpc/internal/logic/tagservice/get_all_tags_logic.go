@@ -6,6 +6,7 @@ import (
 
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -34,7 +35,7 @@ func (l *GetAllTagsLogic) GetAllTags(in *pb.GetAllTagsReq) (*pb.GetAllTagsResp, 
 	tags, err := l.svcCtx.InterestTagModel.ListSince(l.ctx, sinceTime)
 	if err != nil {
 		l.Logger.Errorf("ListSince tags failed: %v", err)
-		return nil, err
+		return nil, errorx.ErrDBError(err)
 	}
 
 	var respTags []*pb.TagInfo

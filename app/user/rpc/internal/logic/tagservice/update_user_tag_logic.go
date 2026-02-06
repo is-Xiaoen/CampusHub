@@ -6,10 +6,9 @@ import (
 	"activity-platform/app/user/model"
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type UpdateUserTagLogic struct {
@@ -32,7 +31,7 @@ func (l *UpdateUserTagLogic) UpdateUserTag(in *pb.UpdateUserTagReq) (*pb.UpdateU
 	err := l.svcCtx.UserInterestRelationModel.DeleteByUserID(l.ctx, in.UserId)
 	if err != nil {
 		l.Logger.Errorf("DeleteByUserID error: %v, userId: %d", err, in.UserId)
-		return nil, status.Error(codes.Internal, "failed to delete old tags")
+		return nil, errorx.ErrDBError(err)
 	}
 
 	// 2. 如果没有新标签，直接返回空
@@ -55,14 +54,14 @@ func (l *UpdateUserTagLogic) UpdateUserTag(in *pb.UpdateUserTagReq) (*pb.UpdateU
 	err = l.svcCtx.UserInterestRelationModel.BatchCreate(l.ctx, relations)
 	if err != nil {
 		l.Logger.Errorf("BatchCreate relations error: %v, userId: %d", err, in.UserId)
-		return nil, status.Error(codes.Internal, "failed to add new tags")
+		return nil, errorx.New(errorx.CodeUserTagUpdateFailed)
 	}
 
 	// 5. 查询新标签详情以返回
 	tags, err := l.svcCtx.InterestTagModel.FindByIDs(l.ctx, in.Ids)
 	if err != nil {
 		l.Logger.Errorf("FindByIDs error: %v, tagIds: %v", err, in.Ids)
-		return nil, status.Error(codes.Internal, "failed to retrieve tag info")
+		return nil, errorx.ErrDBError(err)
 	}
 
 	// 6. 转换为 Proto 响应格式

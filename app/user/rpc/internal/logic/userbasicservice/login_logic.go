@@ -50,17 +50,17 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 	user, err := l.svcCtx.UserModel.FindByQQEmail(l.ctx, in.QqEmail)
 	if err != nil {
 		if strings.Contains(err.Error(), "record not found") {
-			return nil, errorx.NewDefaultError("账号或密码错误")
+			return nil, errorx.New(errorx.CodeLoginFailed)
 		}
-		return nil, errorx.NewSystemError("系统繁忙，请稍后再试")
+		return nil, errorx.ErrDBError(err)
 	}
 
 	if !encrypt.ComparePassword(in.Password, user.Password) {
-		return nil, errorx.NewDefaultError("账号或密码错误")
+		return nil, errorx.New(errorx.CodeLoginFailed)
 	}
 
 	if user.Status == 0 { // 0是禁用
-		return nil, errorx.NewDefaultError("账号已被禁用")
+		return nil, errorx.New(errorx.CodeUserDisabled)
 	}
 
 	// 3. 生成Token
@@ -72,14 +72,14 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 		Expire: l.svcCtx.Config.JWT.AccessExpire,
 	}, accessJwtId, refreshJwtId)
 	if err != nil {
-		return nil, errorx.NewSystemError("Token生成失败")
+		return nil, errorx.New(errorx.CodeTokenGenerateFailed)
 	}
 	longToken, err := jwt.GenerateLongToken(user.UserID, jwt.RoleUser, jwt.AuthConfig{
 		Secret: l.svcCtx.Config.JWT.RefreshSecret,
 		Expire: l.svcCtx.Config.JWT.RefreshExpire,
 	}, accessJwtId, refreshJwtId)
 	if err != nil {
-		return nil, errorx.NewSystemError("Token生成失败")
+		return nil, errorx.New(errorx.CodeTokenGenerateFailed)
 	}
 
 	// 记录长token到redis
@@ -87,7 +87,7 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 	refreshTokenKey := fmt.Sprintf("token:refresh:%s", refreshJwtId)
 	if err := l.svcCtx.Redis.Set(l.ctx, refreshTokenKey, user.UserID, time.Duration(l.svcCtx.Config.JWT.RefreshExpire)*time.Second).Err(); err != nil {
 		l.Logger.Errorf("Set refresh token to redis failed: %v", err)
-		return nil, errorx.NewSystemError("系统繁忙，请稍后再试")
+		return nil, errorx.ErrCacheError(err)
 	}
 
 	// 4. 获取用户详细信息 (调用 GetUserInfoLogic 复用逻辑)
