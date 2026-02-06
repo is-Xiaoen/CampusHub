@@ -1,5 +1,5 @@
 # ============================================================================
-# User MQ 消费者服务配置（基于 Redis Stream）
+# User MQ 消费者服务配置（基于 Watermill Redis Stream）
 # ============================================================================
 #
 # 启动命令: go run user_mq.go -f etc/user-mq.yaml
@@ -21,33 +21,36 @@ Log:
 MySQL:
   DataSource: root:123456@tcp(192.168.10.4:3308)/campushub_user?charset=utf8mb4&parseTime=true&loc=Local
 
-# Redis 配置（同时用于缓存和 Stream）
+# Redis 配置（用于缓存操作）
 BizRedis:
   Host: 192.168.10.4:6379
   Type: node
   Pass: "123456"
 
-# ==================== Redis Stream 配置 ====================
-# [待确认] 以下配置需要和队友确认
-Stream:
-  # Stream 的 Key 名称
-  # [待确认] 是单个 Stream 还是按主题分多个？
-  Key: "user:mq:stream"
+# ==================== 消息中间件配置（Watermill）====================
+# 复用 common/messaging 库
+Messaging:
+  # Redis 连接配置（用于 Stream）
+  Redis:
+    Addr: "192.168.10.4:6379"
+    Password: "123456"
+    DB: 0
+
+  # 订阅的主题（Stream Key）
+  Topic: "credit:events"
 
   # 消费者组名称
-  Group: "user-mq-group"
+  ConsumerGroup: "user-mq-group"
 
-  # 当前消费者名称（集群部署时每个实例用不同名称）
-  Consumer: "consumer-1"
+  # 是否启用 Prometheus 指标
+  EnableMetrics: true
 
-  # 每次拉取的消息数量
-  # [待确认] 队友的实现是否支持？
-  BatchSize: 10
+  # 是否启用 Go-Zero trace_id 传播
+  EnableGoZero: true
 
-  # 阻塞等待超时时间（毫秒），0表示一直阻塞
-  # [待确认] 队友的实现使用什么策略？
-  BlockTimeout: 5000
-
-  # 并发处理协程数
-  # [待确认] 队友的实现是否支持？
-  Workers: 1
+  # 重试配置
+  Retry:
+    MaxRetries: 3
+    InitialInterval: 100ms
+    MaxInterval: 10s
+    Multiplier: 2.0

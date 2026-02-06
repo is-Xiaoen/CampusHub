@@ -13,12 +13,16 @@ package svc
 import (
 	"time"
 
+	"activity-platform/app/activity/rpc/activityservice"
+	"activity-platform/app/user/cache"
 	"activity-platform/app/user/model"
+	"activity-platform/app/user/ocr"
 	"activity-platform/app/user/rpc/internal/config"
-	"activity-platform/app/user/rpc/internal/ocr"
+	"activity-platform/common/messaging"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/zrpc"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -36,7 +40,24 @@ type ServiceContext struct {
 	// Redis Redis客户端
 	Redis *redis.Client
 
+	// ==================== Cache 层 ====================
+
+	// CreditCache 信用分缓存服务
+	CreditCache cache.ICreditCache
+
+	// VerifyCache 认证状态缓存服务
+	VerifyCache cache.IVerifyCache
+
 	// ==================== Model 层 ====================
+
+	// UserModel 用户基础信息数据访问层
+	UserModel model.IUserModel
+
+	// UserInterestRelationModel 用户兴趣标签关联数据访问层
+	UserInterestRelationModel model.IUserInterestRelationModel
+
+	// InterestTagModel 兴趣标签数据访问层
+	InterestTagModel model.IInterestTagModel
 
 	// UserCreditModel 用户信用分数据访问层
 	UserCreditModel model.IUserCreditModel
@@ -47,42 +68,79 @@ type ServiceContext struct {
 	// StudentVerificationModel 学生认证数据访问层
 	StudentVerificationModel model.IStudentVerificationModel
 
+	// ==================== RPC 服务 ====================
+
+	// ActivityRpc 活动服务 RPC 客户端
+	ActivityRpc activityservice.ActivityService
+
 	// ==================== OCR 服务 ====================
 
 	// OcrFactory OCR提供商工厂
 	OcrFactory *ocr.ProviderFactory
+
+	// ==================== 消息客户端 ====================
+
+	// MsgClient Watermill 消息客户端（用于发布认证事件到 MQ）
+	MsgClient *messaging.Client
+
 }
 
 // NewServiceContext 创建服务上下文
 // 初始化所有依赖并注入
-func NewServiceContext(c config.Config) *ServiceContext {
+// 返回 ServiceContext 和 error，由调用方决定如何处理错误
+func NewServiceContext(c config.Config) (*ServiceContext, error) {
 	// 初始化数据库连接
-	db := initDB(c)
+	db, err := initDB(c)
+	if err != nil {
+		return nil, err
+	}
 
 	// 初始化Redis连接
-	rdb := initRedis(c)
+	rdb, err := initRedis(c)
+	if err != nil {
+		return nil, err
+	}
 
-	// 初始化OCR工厂
+	// 初始化OCR工厂（可选，失败不影响服务启动）
 	ocrFactory := initOcrFactory(c, rdb)
+
+	// 初始化消息客户端（可选，失败不影响服务启动）
+	msgClient := initMsgPublisher(c)
+
+	// 初始化 Activity RPC 客户端
+	activityRpcClient := zrpc.MustNewClient(c.ActivityRpc)
 
 	return &ServiceContext{
 		Config: c,
 		DB:     db,
 		Redis:  rdb,
 
+		// 注入 Cache
+		CreditCache: cache.NewCreditCache(rdb),
+		VerifyCache: cache.NewVerifyCache(rdb),
+
 		// 注入 Model
-		UserCreditModel:          model.NewUserCreditModel(db),
-		CreditLogModel:           model.NewCreditLogModel(db),
-		StudentVerificationModel: model.NewStudentVerificationModel(db),
+		UserModel:                 model.NewUserModel(db),
+		UserInterestRelationModel: model.NewUserInterestRelationModel(db),
+		InterestTagModel:          model.NewInterestTagModel(db),
+		UserCreditModel:           model.NewUserCreditModel(db),
+		CreditLogModel:            model.NewCreditLogModel(db),
+		StudentVerificationModel:  model.NewStudentVerificationModel(db),
+
+		// 注入 RPC 客户端
+		ActivityRpc: activityservice.NewActivityService(activityRpcClient),
 
 		// 注入 OCR 工厂
 		OcrFactory: ocrFactory,
-	}
+
+		// 注入消息客户端
+		MsgClient: msgClient,
+	}, nil
 }
 
 // initDB 初始化GORM数据库连接
 // 配置连接池、日志等
-func initDB(c config.Config) *gorm.DB {
+func initDB(c config.Config) (*gorm.DB, error) {
 	// GORM 日志配置
 	// 使用默认的 logger，设置为 Warn 级别（只记录慢查询和错误）
 	gormLogger := logger.Default.LogMode(logger.Warn)
@@ -95,14 +153,14 @@ func initDB(c config.Config) *gorm.DB {
 	})
 	if err != nil {
 		logx.Errorf("连接数据库失败: %v", err)
-		panic(err)
+		return nil, err
 	}
 
 	// 获取底层 sql.DB 以配置连接池
 	sqlDB, err := db.DB()
 	if err != nil {
 		logx.Errorf("获取数据库实例失败: %v", err)
-		panic(err)
+		return nil, err
 	}
 
 	// 连接池配置
@@ -111,12 +169,12 @@ func initDB(c config.Config) *gorm.DB {
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	logx.Info("数据库连接初始化成功")
-	return db
+	return db, nil
 }
 
 // initRedis 初始化Redis连接
 // 使用 go-zero 的 RedisConf 配置
-func initRedis(c config.Config) *redis.Client {
+func initRedis(c config.Config) (*redis.Client, error) {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:         c.BizRedis.Host,
 		Password:     c.BizRedis.Pass,
@@ -130,11 +188,38 @@ func initRedis(c config.Config) *redis.Client {
 	// defer cancel()
 	// if err := rdb.Ping(ctx).Err(); err != nil {
 	//     logx.Errorf("Redis连接失败: %v", err)
-	//     panic(err)
+	//     return nil, err
 	// }
 
 	logx.Info("Redis连接初始化成功")
-	return rdb
+	return rdb, nil
+}
+
+// initMsgPublisher 初始化消息客户端（可选，失败不阻塞服务启动）
+// RPC 服务仅使用其 Publish 能力，不需要 Subscribe/Run
+func initMsgPublisher(c config.Config) *messaging.Client {
+	// 如果未配置 Redis 地址，跳过初始化
+	if c.Messaging.Redis.Addr == "" {
+		logx.Infof("[WARN] 消息客户端未配置，跳过初始化")
+		return nil
+	}
+
+	client, err := messaging.NewClient(messaging.Config{
+		Redis: messaging.RedisConfig{
+			Addr:     c.Messaging.Redis.Addr,
+			Password: c.Messaging.Redis.Password,
+			DB:       c.Messaging.Redis.DB,
+		},
+		ServiceName:  "user-rpc",
+		EnableGoZero: true,
+	})
+	if err != nil {
+		logx.Errorf("消息客户端初始化失败: %v", err)
+		return nil
+	}
+
+	logx.Info("消息客户端初始化成功")
+	return client
 }
 
 // initOcrFactory 初始化OCR工厂

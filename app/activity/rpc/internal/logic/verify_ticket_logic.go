@@ -15,6 +15,7 @@ import (
 	"activity-platform/app/activity/rpc/activity"
 	"activity-platform/app/activity/rpc/internal/svc"
 	"activity-platform/app/user/rpc/client/tagservice"
+	"activity-platform/common/messaging"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"google.golang.org/grpc/metadata"
@@ -36,9 +37,10 @@ func NewVerifyTicketLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Veri
 
 // VerifyTicket 核销票券
 func (l *VerifyTicketLogic) VerifyTicket(in *activity.VerifyTicketRequest) (*activity.VerifyTicketResponse, error) {
+	userID := in.GetUserId()
 	activityID := in.GetActivityId()
 	ticketCode := strings.TrimSpace(in.GetTicketCode())
-	if activityID <= 0 || ticketCode == "" {
+	if userID <= 0 || activityID <= 0 || ticketCode == "" {
 		return &activity.VerifyTicketResponse{Result: "fail"}, nil
 	}
 
@@ -102,6 +104,11 @@ func (l *VerifyTicketLogic) VerifyTicket(in *activity.VerifyTicketRequest) (*act
 	if result.RowsAffected == 0 {
 		return &activity.VerifyTicketResponse{Result: "fail"}, nil
 	}
+
+	// 异步发布签到信用事件
+	l.svcCtx.MsgProducer.PublishCreditEvent(
+		l.ctx, messaging.CreditEventCheckin, int64(ticket.ActivityID), int64(ticket.UserID),
+	)
 
 	return &activity.VerifyTicketResponse{Result: "success"}, nil
 }
@@ -495,7 +502,9 @@ func (l *VerifyTicketLogic) getUserTagsFromRPC(userID int64) []string {
 	defer cancel()
 	ctx = metadata.AppendToOutgoingContext(ctx, "user_id", fmt.Sprintf("%d", userID))
 
-	resp, err := l.svcCtx.TagRpc.GetUserTags(ctx, &tagservice.GetUserTagsRep{})
+	resp, err := l.svcCtx.TagRpc.GetUserTags(ctx, &tagservice.GetUserTagsReq{
+		UserId: userID,
+	})
 	if err != nil {
 		l.Infof("[WARNING] 获取用户标签失败: userId=%d, err=%v", userID, err)
 		return []string{}
@@ -504,16 +513,16 @@ func (l *VerifyTicketLogic) getUserTagsFromRPC(userID int64) []string {
 		return []string{}
 	}
 
-	names := splitTagNames(resp.GetName())
-	if len(names) == 0 && resp.GetId() > 0 {
-		if tag, err := l.svcCtx.TagCacheModel.FindByID(l.ctx, resp.GetId()); err == nil && tag != nil {
-			names = []string{tag.Name}
+	var names []string
+	for _, tag := range resp.GetTags() {
+		if tag.GetName() != "" {
+			names = append(names, tag.GetName())
 		}
 	}
 	return normalizeTags(names)
 }
 
-// getUserTagsFromRegistrations 从报名历史推断用户标签
+// getUserTagsFromRegistrations  从报名历史推断用户标签
 func (l *VerifyTicketLogic) getUserTagsFromRegistrations(userID int64) []string {
 	regs, err := l.svcCtx.ActivityRegistrationModel.ListByUserID(l.ctx, uint64(userID), 0, recommendUserTagSample)
 	if err != nil {

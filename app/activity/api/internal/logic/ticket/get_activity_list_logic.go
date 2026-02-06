@@ -67,6 +67,7 @@ func (l *GetActivityListLogic) GetActivityList(req *types.GetActivityListRequest
 		Page:     page,
 		PageSize: pageSize,
 		Type:     typeValue,
+		UserId:   userID,
 	})
 	if err != nil {
 		l.Errorf("RPC GetActivityList failed: userID=%d, err=%v", userID, err)

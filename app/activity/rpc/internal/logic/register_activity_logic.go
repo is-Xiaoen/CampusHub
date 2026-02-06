@@ -18,7 +18,6 @@ import (
 	"activity-platform/app/activity/rpc/internal/svc"
 	"activity-platform/app/user/rpc/client/creditservice"
 	"activity-platform/app/user/rpc/client/verifyservice"
-	"activity-platform/common/ctxdata"
 
 	"github.com/zeromicro/go-zero/core/breaker"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -41,7 +40,7 @@ func NewRegisterActivityLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 
 // RegisterActivity 报名活动
 func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRequest) (*activity.RegisterActivityResponse, error) {
-	userID := ctxdata.GetUserIDFromCtx(l.ctx)
+	userID := in.GetUserId()
 	activityID := in.GetActivityId()
 	if userID <= 0 || activityID <= 0 {
 		return &activity.RegisterActivityResponse{
@@ -177,7 +176,10 @@ func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRe
 			return breaker.ErrServiceUnavailable
 		},
 		func(err error) bool {
-			return err == nil
+			if err == nil {
+				return true
+			}
+			return errors.Is(err, model.ErrActivityQuotaFull)
 		},
 	)
 	if err != nil {
@@ -200,6 +202,11 @@ func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRe
 			Reason: "已报名",
 		}, nil
 	}
+
+	// 异步发布用户报名事件（非重复报名才发布）
+	l.svcCtx.MsgProducer.PublishMemberJoined(
+		l.ctx, uint64(activityID), uint64(userID),
+	)
 
 	return &activity.RegisterActivityResponse{
 		Result: "success",

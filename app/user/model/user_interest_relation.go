@@ -42,6 +42,8 @@ type IUserInterestRelationModel interface {
 	Delete(ctx context.Context, userID, tagID int64) error
 	// DeleteByUserID 删除用户所有兴趣标签
 	DeleteByUserID(ctx context.Context, userID int64) error
+	// BatchCreate 批量创建关联
+	BatchCreate(ctx context.Context, relations []*UserInterestRelation) error
 	// ListByUserID 查询用户的兴趣标签关联
 	ListByUserID(ctx context.Context, userID int64) ([]*UserInterestRelation, error)
 	// ListByTagID 查询拥有某标签的用户关联
@@ -80,6 +82,14 @@ func (m *UserInterestRelationModel) DeleteByUserID(ctx context.Context, userID i
 	return m.db.WithContext(ctx).
 		Where("user_id = ?", userID).
 		Delete(&UserInterestRelation{}).Error
+}
+
+// BatchCreate 批量创建关联
+func (m *UserInterestRelationModel) BatchCreate(ctx context.Context, relations []*UserInterestRelation) error {
+	if len(relations) == 0 {
+		return nil
+	}
+	return m.db.WithContext(ctx).Create(relations).Error
 }
 
 // ListByUserID 查询用户的兴趣标签关联

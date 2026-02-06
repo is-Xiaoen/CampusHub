@@ -9,7 +9,7 @@ import (
 	"activity-platform/app/activity/model"
 	"activity-platform/app/activity/rpc/activity"
 	"activity-platform/app/activity/rpc/internal/svc"
-	"activity-platform/common/ctxdata"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -31,12 +31,12 @@ func NewGetTicketDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *G
 // GetTicketDetail 获取票券详情
 func (l *GetTicketDetailLogic) GetTicketDetail(in *activity.GetTicketDetailRequest) (*activity.GetTicketDetailResponse, error) {
 	if in.GetTicketId() <= 0 {
-		return nil, errors.New("票券ID无效")
+		return nil, errorx.ErrInvalidParams("票券ID无效")
 	}
 
-	userID := ctxdata.GetUserIDFromCtx(l.ctx)
+	userID := in.GetUserId()
 	if userID <= 0 {
-		return nil, errors.New("用户未登录")
+		return nil, errorx.ErrUnauthorized()
 	}
 
 	ticket, err := l.svcCtx.ActivityTicketModel.FindByID(l.ctx, uint64(in.GetTicketId()))

@@ -628,10 +628,30 @@ message UpdateVerifyStatusResp {
 // ============================================================================
 
 service TagService {
-    // 马肖阳的标签接口
     rpc GetAllTags(GetAllTagsReq) returns (GetAllTagsResp);
     rpc GetTagsByIds(GetTagsByIdsReq) returns (GetTagsByIdsResp);
-    rpc GetUserTags(GetUserTagsRep) returns (GetUserTagsResponse);
+    rpc GetUserTags(GetUserTagsReq) returns (GetUserTagsResponse);
+    // 修改用户兴趣
+    rpc UpdateUserTag(UpdateUserTagReq) returns(UpdateUserTagResponse);
+}
+
+// 修改用户兴趣
+message UpdateUserTagReq{
+    repeated int64 ids =1;
+    int64 user_id =2;
+}
+
+message UpdateUserTagResponse{
+    repeated TagBasicInfo tags =1;
+}
+
+// 给前端展示的信息
+message TagBasicInfo{
+    uint64 id = 1;
+    string name = 2;
+    string color = 3;
+    string icon = 4;
+    string description = 6;
 }
 
 message GetAllTagsReq {
@@ -663,9 +683,15 @@ message TagInfo {
     int64 updated_at = 8;
 }
 
-message GetUserTagsRep {}
+message GetUserTagsReq {
+    int64 user_id =1;
+}
 
 message GetUserTagsResponse {
+    repeated UserTag tags = 1;
+}
+
+message UserTag {
     uint64 id = 1;
     string name = 2;
 }
@@ -685,7 +711,74 @@ service UserBasicService {
     rpc Register(RegisterReq) returns (RegisterResponse);
     // 刷新短token
     rpc RefreshToken(RefreshReq) returns(RefreshResponse);
+    // 获取用户的信息
+    rpc GetUserInfo(GetUserInfoReq) returns(GetUserInfoResponse);
+    // 修改用户密码
+    rpc UpdatePassword(UpdatePasswordReq) returns(UpdatePasswordResponse);
+    // 修改用户信息
+    rpc UpdateUserInfo(UpdateUserInfoReq) returns(UpdateUserInfoResponse);
+    // 用户注销自己
+    rpc DeleteUser(DeleteUserReq) returns(DeleteUserResponse);
+    // 用户忘记密码
+    rpc ForgetPassword(ForgetPasswordReq) returns(ForgetPasswordResponse);
 }
+
+// 用户忘记密码
+message ForgetPasswordReq{
+    string qq_code =1;
+    string new_password =2;
+    int64 user_id =3;
+}
+
+message ForgetPasswordResponse{
+    bool success =1;
+}
+
+// 用户注销自己
+message DeleteUserReq{
+    int64 user_id =1;
+    string qq_code =2;
+}
+
+message DeleteUserResponse{
+    bool success =1;
+}
+
+// 修改用户密码
+message UpdatePasswordReq{
+    string origin_password =1;
+    string new_password =2;
+    int64 user_id =3;
+}
+
+message UpdatePasswordResponse{
+    bool success =1;
+}
+
+// 修改用户信息
+message UpdateUserInfoReq{
+    int64 user_id =1;
+    string nickname =2;
+    string introduce =3;
+    int64 gender =4;
+    string avatar_img_name =5;
+    bytes avatar_img_data =6;
+    int64 age= 7;
+    repeated int64 tag_ids =8;
+}
+
+message UpdateUserInfoResponse{
+    int64 user_id =1;
+    string nickname =2;
+    string introduce =3;
+    int64 gender =4;
+    string avatar_url =5;
+    int64 age= 6;
+    repeated int64 tag_ids =7;
+}
+
+
+
 
 message GetGroupUserReq {
     // 使用 repeated 表示数组/列表
@@ -723,14 +816,6 @@ message LoginUserInfo {
     UserInfo user_info = 1;
 }
 
-message InterestTag {
-    uint64 id = 1;
-    string tag_name = 2;        // 对应 "tagName"
-    string tag_icon = 3;        // 对应 "tagIcon"
-    string tag_desc = 4;        // 对应 "tagDesc"
-    string tag_color = 5;       // 对应 "tagColor"
-}
-
 // 用户登出
 message LogoutReq {
     int64 user_id = 1;// 从token解析的id
@@ -738,9 +823,6 @@ message LogoutReq {
 }
 
 message LogoutResponse {
-    int64 code = 1;
-    bool success = 2;
-    string message = 3;
 }
 
 // 用户注册
@@ -752,7 +834,27 @@ message RegisterReq {
 }
 
 message RegisterResponse {
+    string access_token = 1;    // 对应 "accessToken"
+    string refresh_token = 2;   // 对应 "refreshToken"
+    UserInfo user_info = 3;
+}
+
+// 获取用户信息
+message GetUserInfoReq {
+    int64 user_id = 1;
+}
+
+message GetUserInfoResponse {
     UserInfo user_info = 1;
+}
+
+// 公用结构体
+message InterestTag {
+    uint64 id = 1;
+    string tag_name = 2;        // 对应 "tagName"
+    string tag_icon = 3;        // 对应 "tagIcon"
+    string tag_desc = 4;        // 对应 "tagDesc"
+    string tag_color = 5;       // 对应 "tagColor"
 }
 
 message UserInfo {
@@ -802,4 +904,90 @@ message TagUsageCountReq {
 // TagUsageCountResp 标签计数响应
 message TagUsageCountResp {
     bool success = 1;            // 是否成功
+}
+
+// 验证码服务
+service CaptchaService {
+    rpc GetCaptchaConfig(GetCaptchaConfigReq) returns(GetCaptchaConfigResponse);
+    rpc CheckCaptcha(CheckCaptchaReq) returns(CheckCaptchaResponse);
+}
+
+// 获取验证码配置信息
+message GetCaptchaConfigReq{
+}
+
+message GetCaptchaConfigResponse{
+    string captcha_id = 1;
+}
+
+// 校验验证码是否正确
+message CheckCaptchaReq{
+    string lotNumber = 1;
+    string captchaOutput = 2;
+    string passToken = 3;
+    string genTime = 4;
+}
+
+message CheckCaptchaResponse{
+    string result = 1;          // "result": "success" 或 "fail"
+    string reason = 2;          // "reason": 失败原因
+    CaptchaArgs captcha_args = 3; // 嵌套对象 "captcha_args"
+}
+
+message CaptchaArgs{
+    string captcha_id = 1;     // "captcha_id"
+    string lot_number = 2;     // "lot_number"
+    string captcha_output = 3; // "captcha_output"
+    string pass_token = 4;     // "pass_token"
+    string gen_time = 5;       // "gen_time"
+}
+
+service QQEmail{
+    rpc SendQQEmail(SendQQEmailReq) returns(SendQQEmailResponse);
+    rpc CheckQQEmail(CheckQQEmailReq) returns(CheckQQEmailResponse);
+}
+
+// 发送QQ邮箱
+message SendQQEmailReq{
+    string qq_email =1;
+    string scene =2;
+}
+
+message SendQQEmailResponse{
+
+}
+
+// 校验QQ邮箱
+message CheckQQEmailReq{
+    string qq_email =1;
+    string qq_code =2;
+    string scene =3;
+}
+
+message CheckQQEmailResponse{
+    bool isValid =1;
+}
+
+service UploadToQiNiu{
+    rpc UploadFile(UploadFileReq) returns(UploadFileResponse);
+    rpc DeleteFile(DeleteFileReq) returns(DeleteFileResponse);
+}
+
+// 上传文件
+message UploadFileReq{
+    string file_name =1;
+    bytes file_data =2;
+}
+
+message UploadFileResponse{
+    string file_url =1;
+}
+
+// 删除文件
+message DeleteFileReq{
+    string file_url =1;
+}
+
+message DeleteFileResponse{
+    bool success =1;
 }

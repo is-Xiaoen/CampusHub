@@ -29,11 +29,47 @@ type Config struct {
 	// JWT 认证配置（必填）
 	JWT JWTConf
 
+	Captcha CaptchaConf
+
+	// ActivityRpc 活动服务RPC客户端配置（必填）
+	ActivityRpc zrpc.RpcClientConf
+
 	// SMS 短信服务配置（可选，默认 mock 模式）
 	SMS SMSConf `json:",optional"`
 
 	// Ocr OCR 识别服务配置（可选，不配置则禁用）
 	Ocr OcrConf `json:",optional"`
+
+	// Messaging 消息发布器配置（用于发布认证事件到 MQ）
+	Messaging MessagingConf `json:",optional"`
+
+	// Email 邮件服务配置
+	Email EmailConf `json:",optional"`
+
+	// Qiniu 七牛云配置
+	Qiniu QiniuConf `json:",optional"`
+}
+
+// MessagingConf 消息发布器配置
+type MessagingConf struct {
+	// Redis 配置（用于 Watermill Redis Stream 发布）
+	Redis RedisStreamConf
+}
+
+// RedisStreamConf Redis Stream 连接配置
+type RedisStreamConf struct {
+	Addr     string `json:",default=localhost:6379"`
+	Password string `json:",optional"`
+	DB       int    `json:",default=0"`
+}
+
+// QiniuConf 七牛云配置
+type QiniuConf struct {
+	AccessKey string
+	SecretKey string
+	Bucket    string
+	Domain    string
+	Zone      string
 }
 
 // MySQLConf MySQL数据库配置
@@ -53,6 +89,11 @@ type JWTConf struct {
 	AccessExpire int64
 	// RefreshExpire RefreshToken过期时间（秒），默认604800（7天）
 	RefreshExpire int64
+}
+
+type CaptchaConf struct {
+	CaptchaId  string
+	CaptchaKey string
 }
 
 // SMSConf 短信服务配置
@@ -91,6 +132,15 @@ type TencentOcrConf struct {
 	Endpoint string `json:",optional"`
 	// Timeout 超时时间（秒）
 	Timeout int `json:",default=30"`
+}
+
+type EmailConf struct {
+	Host     string
+	Port     int
+	Username string
+	Password string
+	FromName string
+	Subject  string
 }
 
 // AliyunOcrConf 阿里云 OCR 配置

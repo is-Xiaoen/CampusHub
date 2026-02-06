@@ -13,16 +13,23 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 
 	"activity-platform/app/user/rpc/internal/config"
+	captchaserviceserver "activity-platform/app/user/rpc/internal/server/captchaservice"
 	creditserviceserver "activity-platform/app/user/rpc/internal/server/creditservice"
+	qqemailserver "activity-platform/app/user/rpc/internal/server/qqemail"
 	tagbranchserviceserver "activity-platform/app/user/rpc/internal/server/tagbranchservice"
+	tagserviceserver "activity-platform/app/user/rpc/internal/server/tagservice"
+	uploadtoqiniuserver "activity-platform/app/user/rpc/internal/server/uploadtoqiniu"
+	userbasicserviceserver "activity-platform/app/user/rpc/internal/server/userbasicservice"
 	verifyserviceserver "activity-platform/app/user/rpc/internal/server/verifyservice"
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
 	"activity-platform/common/interceptor/rpcserver"
 
 	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/service"
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"
@@ -40,7 +47,11 @@ func main() {
 	conf.MustLoad(*configFile, &c)
 
 	// 创建服务上下文（依赖注入）
-	ctx := svc.NewServiceContext(c)
+	ctx, err := svc.NewServiceContext(c)
+	if err != nil {
+		logx.Errorf("创建服务上下文失败: %v", err)
+		os.Exit(1)
+	}
 
 	// 创建 gRPC Server
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
@@ -52,6 +63,21 @@ func main() {
 
 		// 注册 TagBranchService（DTM 分支操作 - 标签计数）
 		pb.RegisterTagBranchServiceServer(grpcServer, tagbranchserviceserver.NewTagBranchServiceServer(ctx))
+
+		// 注册 QQEmailService
+		pb.RegisterQQEmailServer(grpcServer, qqemailserver.NewQQEmailServer(ctx))
+
+		// 注册 UserBasicService
+		pb.RegisterUserBasicServiceServer(grpcServer, userbasicserviceserver.NewUserBasicServiceServer(ctx))
+
+		// 注册 CaptchaService
+		pb.RegisterCaptchaServiceServer(grpcServer, captchaserviceserver.NewCaptchaServiceServer(ctx))
+
+		// 注册 TagService
+		pb.RegisterTagServiceServer(grpcServer, tagserviceserver.NewTagServiceServer(ctx))
+
+		// 注册 UploadToQiNiuService
+		pb.RegisterUploadToQiNiuServer(grpcServer, uploadtoqiniuserver.NewUploadToQiNiuServer(ctx))
 
 		// 开发环境开启 gRPC Reflection（便于 grpcurl 调试）
 		if c.Mode == service.DevMode || c.Mode == service.TestMode {

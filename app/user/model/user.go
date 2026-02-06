@@ -82,6 +82,8 @@ type IUserModel interface {
 	UpdatePassword(ctx context.Context, userID int64, password string) error
 	// ExistsByQQEmail 检查QQ邮箱是否存在
 	ExistsByQQEmail(ctx context.Context, qqEmail string) (bool, error)
+	// FindByIDs 根据ID列表查询
+	FindByIDs(ctx context.Context, ids []int64) ([]*User, error)
 }
 
 // 确保 UserModel 实现 IUserModel 接口
@@ -146,4 +148,14 @@ func (m *UserModel) ExistsByQQEmail(ctx context.Context, qqEmail string) (bool, 
 		return false, err
 	}
 	return count > 0, nil
+}
+
+// FindByIDs 根据ID列表查询
+func (m *UserModel) FindByIDs(ctx context.Context, ids []int64) ([]*User, error) {
+	var users []*User
+	err := m.db.WithContext(ctx).Where("user_id IN ?", ids).Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }

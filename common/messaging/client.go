@@ -161,9 +161,12 @@ func (c *Client) createDLQMiddleware(topic string, handlerName string) (message.
 
 // Subscribe 订阅消息
 // 注意：这个方法会直接添加 handler 到 Router，需要调用 Router.Run() 来启动
-// 返回 *message.Handler 以支持用户添加自定义中间件
-func (c *Client) Subscribe(topic string, handlerName string, handler message.NoPublishHandlerFunc) *message.Handler {
-	h := c.Router.AddNoPublisherHandler(
+func (c *Client) Subscribe(
+	topic string,
+	handlerName string,
+	handler message.NoPublishHandlerFunc,
+) {
+	c.Router.AddNoPublisherHandler(
 		handlerName,
 		topic,
 		c.Subscriber,

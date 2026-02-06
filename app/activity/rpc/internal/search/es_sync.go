@@ -98,6 +98,8 @@ func (s *SyncService) IndexActivityAsync(activity *model.Activity) {
 		return
 	}
 
+	// 值拷贝，防止调用方后续修改导致 goroutine 读到不一致数据
+	activityCopy := *activity
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -105,17 +107,17 @@ func (s *SyncService) IndexActivityAsync(activity *model.Activity) {
 		// 重试 3 次
 		var err error
 		for i := 0; i < 3; i++ {
-			err = s.IndexActivity(ctx, activity)
+			err = s.IndexActivity(ctx, &activityCopy)
 			if err == nil {
 				return
 			}
-			logx.Errorf("[ESSync] 异步索引重试 %d/3, id=%d: %v", i+1, activity.ID, err)
+			logx.Errorf("[ESSync] 异步索引重试 %d/3, id=%d: %v", i+1, activityCopy.ID, err)
 			time.Sleep(time.Duration(i+1) * time.Second) // 1s, 2s, 3s
 		}
 
 		// 3 次重试失败，记录日志
 		// TODO: 写入失败队列表，由定时任务重试
-		logx.Errorf("[ESSync] 异步索引最终失败 id=%d: %v", activity.ID, err)
+		logx.Errorf("[ESSync] 异步索引最终失败 id=%d: %v", activityCopy.ID, err)
 	}()
 }
 
@@ -207,8 +209,13 @@ func (s *SyncService) FullSync(ctx context.Context) error {
 		// 更新游标
 		lastID = activities[len(activities)-1].ID
 
-		// 2. 转换文档
-		docs := make([]ActivityDoc, 0, len(activities))
+		// 2. 转换文档（绑定 doc 和对应的 activity 元数据，防止索引对齐问题）
+		type docEntry struct {
+			doc     ActivityDoc
+			id      uint64
+			version int64
+		}
+		entries := make([]docEntry, 0, len(activities))
 		for i := range activities {
 			doc, err := s.convertToDoc(ctx, &activities[i])
 			if err != nil {
@@ -216,18 +223,21 @@ func (s *SyncService) FullSync(ctx context.Context) error {
 				failCount++
 				continue
 			}
-			docs = append(docs, doc)
+			entries = append(entries, docEntry{
+				doc:     doc,
+				id:      activities[i].ID,
+				version: activities[i].UpdatedAt,
+			})
 		}
 
 		// 3. 批量索引
 		bulkRequest := s.es.client.Bulk().Index(s.es.indexName)
-		for i, doc := range docs {
-			version := activities[i].UpdatedAt
+		for _, entry := range entries {
 			req := elastic.NewBulkIndexRequest().
-				Id(DocID(activities[i].ID)).
+				Id(DocID(entry.id)).
 				VersionType("external").
-				Version(version).
-				Doc(doc)
+				Version(entry.version).
+				Doc(entry.doc)
 			bulkRequest.Add(req)
 		}
 
@@ -235,7 +245,7 @@ func (s *SyncService) FullSync(ctx context.Context) error {
 		response, err := bulkRequest.Do(ctx)
 		if err != nil {
 			logx.Errorf("[ESSync] 批量索引失败 lastID=%d: %v", lastID, err)
-			failCount += len(docs)
+			failCount += len(entries)
 			continue
 		}
 

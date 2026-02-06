@@ -5,6 +5,7 @@ import (
 
 	"activity-platform/app/activity/rpc/activity"
 	"activity-platform/app/activity/rpc/internal/svc"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -24,7 +25,6 @@ func NewApproveActivityLogic(ctx context.Context, svcCtx *svc.ServiceContext) *A
 }
 
 func (l *ApproveActivityLogic) ApproveActivity(in *activity.ApproveActivityReq) (*activity.ApproveActivityResp, error) {
-	// todo: add your logic here and delete this line
-
-	return &activity.ApproveActivityResp{}, nil
+	// MVP 版本无后台管理系统，审批功能暂不支持
+	return nil, errorx.NewWithMessage(errorx.CodeServiceUnavailable, "审批功能暂未开放")
 }

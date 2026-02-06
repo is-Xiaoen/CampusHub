@@ -257,7 +257,11 @@ func (m *ActivityModel) List(ctx context.Context, query *ListQuery) (*ListResult
 	// 深分页优化
 	var activities []Activity
 	if query.Page > DeepPageThreshold {
-		activities, _ = m.listWithDeepPageOptimize(ctx, query, db)
+		var err error
+		activities, err = m.listWithDeepPageOptimize(ctx, query, db)
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		// 普通分页
 		db = m.buildListOrder(db, query.Sort)
@@ -402,8 +406,10 @@ func (m *ActivityModel) UpdateParticipantCount(ctx context.Context, id uint64, d
 		}
 
 		// 3. 边界检查
-		if activity.CurrentParticipants < 0 {
-			return errors.New("报名人数不能为负")
+		// 下溢防护：delta 为负且绝对值大于当前值时，uint32 会下溢为极大值
+		// 此处通过 MaxParticipants 上限间接检测（下溢后值远大于上限）
+		if delta < 0 && activity.CurrentParticipants > 1<<31 {
+			return errors.New("报名人数异常，请重试")
 		}
 		if activity.MaxParticipants > 0 &&
 			activity.CurrentParticipants > activity.MaxParticipants {

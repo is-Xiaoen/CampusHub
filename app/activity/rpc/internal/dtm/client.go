@@ -181,8 +181,12 @@ type CreateActivitySagaReq struct {
 //   - gid: 全局事务 ID（用于追踪）
 //   - error: 错误信息
 func (c *Client) CreateActivitySaga(ctx context.Context, req CreateActivitySagaReq) (string, error) {
-	// 生成全局事务 ID
-	gid := dtmcli.MustGenGid(c.server)
+	// 生成全局事务 ID（安全版本，不会 panic）
+	gid, err := safeGenGid(c.server)
+	if err != nil {
+		logx.Errorf("[DTM] 生成 GID 失败: %v", err)
+		return "", fmt.Errorf("DTM 生成事务 ID 失败: %w", err)
+	}
 
 	// 构建 Activity 服务的分支 URL
 	activityActionURL := fmt.Sprintf("%s/activity.ActivityBranchService/CreateActivityAction", req.ActivityRpcURL)
@@ -234,7 +238,11 @@ type DeleteActivitySagaReq struct {
 //	Branch 1: DeleteActivityAction -> DeleteActivityCompensate
 //	Branch 2: DecrTagUsageCount -> IncrTagUsageCount (仅当有标签时)
 func (c *Client) DeleteActivitySaga(ctx context.Context, req DeleteActivitySagaReq) (string, error) {
-	gid := dtmcli.MustGenGid(c.server)
+	gid, err := safeGenGid(c.server)
+	if err != nil {
+		logx.Errorf("[DTM] 生成 GID 失败: %v", err)
+		return "", fmt.Errorf("DTM 生成事务 ID 失败: %w", err)
+	}
 
 	activityActionURL := fmt.Sprintf("%s/activity.ActivityBranchService/DeleteActivityAction", req.ActivityRpcURL)
 	activityCompensateURL := fmt.Sprintf("%s/activity.ActivityBranchService/DeleteActivityCompensate", req.ActivityRpcURL)
@@ -263,6 +271,18 @@ func (c *Client) DeleteActivitySaga(ctx context.Context, req DeleteActivitySagaR
 	}
 
 	logx.Infof("[DTM] SAGA 事务完成: gid=%s", gid)
+	return gid, nil
+}
+
+// safeGenGid 安全地生成全局事务 ID
+// dtmcli.MustGenGid 在 DTM Server 不可达时会 panic，此处用 recover 捕获
+func safeGenGid(server string) (gid string, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("生成事务 ID 失败: %v", r)
+		}
+	}()
+	gid = dtmcli.MustGenGid(server)
 	return gid, nil
 }
 
