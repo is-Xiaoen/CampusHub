@@ -40,8 +40,9 @@ type RetryConfig struct {
 
 // DLQConfig 死信队列配置
 type DLQConfig struct {
-	Enabled     bool
-	TopicSuffix string // 默认 ".dlq"
+	Enabled          bool
+	TopicSuffix      string // 默认 ".dlq"
+	OnlyNonRetryable bool   // 如果为 true，只有不可重试错误进入 DLQ
 }
 
 // DefaultConfig 返回默认配置
@@ -61,8 +62,9 @@ func DefaultConfig() Config {
 			Multiplier:      2.0,
 		},
 		DLQConfig: DLQConfig{
-			Enabled:     true,
-			TopicSuffix: ".dlq",
+			Enabled:          true,
+			TopicSuffix:      ".dlq",
+			OnlyNonRetryable: false, // 默认：所有错误在重试后进入 DLQ
 		},
 	}
 }
