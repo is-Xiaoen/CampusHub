@@ -46,7 +46,7 @@ func main() {
 	// 重要：设置全局错误处理器（必须在 server.Start() 之前）
 	// ============================================================================
 	response.SetupGlobalErrorHandler()
-	// response.SetupGlobalOkHandler() // 可选：统一成功响应格式
+	response.SetupGlobalOkHandler()
 	// ============================================================================
 
 	// 加载配置文件
