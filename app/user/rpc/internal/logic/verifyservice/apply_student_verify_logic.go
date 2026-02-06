@@ -12,6 +12,7 @@ package verifyservicelogic
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -20,6 +21,7 @@ import (
 	"activity-platform/app/user/rpc/pb/pb"
 	"activity-platform/common/constants"
 	"activity-platform/common/errorx"
+	"activity-platform/common/messaging"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"gorm.io/gorm"
@@ -150,8 +152,8 @@ func (l *ApplyStudentVerifyLogic) ApplyStudentVerify(in *pb.ApplyStudentVerifyRe
 			in.UserId, verifyID)
 	}
 
-	// 6. TODO: 发送MQ消息触发OCR处理
-	// 这里暂时不实现MQ发送，留给后续扩展
+	// 6. 发布认证申请事件到 MQ，异步触发 OCR 处理
+	l.publishVerifyEvent(verifyID, in)
 
 	return &pb.ApplyStudentVerifyResp{
 		VerifyId:   verifyID,
@@ -182,6 +184,51 @@ func (l *ApplyStudentVerifyLogic) validateParams(in *pb.ApplyStudentVerifyReq) e
 		return errorx.ErrInvalidParams("学生证详情面图片不能为空")
 	}
 	return nil
+}
+
+// publishVerifyEvent 发布认证申请事件到 MQ
+// 异步触发 OCR 处理，不阻塞主流程（发布失败只记录日志）
+func (l *ApplyStudentVerifyLogic) publishVerifyEvent(
+	verifyID int64,
+	in *pb.ApplyStudentVerifyReq,
+) {
+	if l.svcCtx.MsgClient == nil {
+		l.Infof("[WARN] 消息客户端未初始化，跳过事件发布: verifyId=%d", verifyID)
+		return
+	}
+
+	// 构造事件数据
+	eventData := messaging.VerifyApplyEventData{
+		VerifyID:      verifyID,
+		UserID:        in.UserId,
+		FrontImageURL: in.FrontImageUrl,
+		BackImageURL:  in.BackImageUrl,
+		Timestamp:     time.Now().Unix(),
+	}
+
+	// 序列化内层数据
+	dataBytes, err := json.Marshal(eventData)
+	if err != nil {
+		l.Errorf("ApplyStudentVerify 序列化事件数据失败: verifyId=%d, err=%v", verifyID, err)
+		return
+	}
+
+	// 包装为通用消息格式（与 credit_event 保持一致）
+	rawMsg := messaging.NewRawMessage(messaging.VerifyEventApplyOcr, string(dataBytes))
+	payload, err := json.Marshal(rawMsg)
+	if err != nil {
+		l.Errorf("ApplyStudentVerify 序列化消息失败: verifyId=%d, err=%v", verifyID, err)
+		return
+	}
+
+	// 发布到 verify:events Topic
+	if err := l.svcCtx.MsgClient.Publish(l.ctx, messaging.TopicVerifyEvent, payload); err != nil {
+		l.Errorf("ApplyStudentVerify 发布事件失败: verifyId=%d, err=%v", verifyID, err)
+		return
+	}
+
+	l.Infof("ApplyStudentVerify 事件已发布: verifyId=%d, userId=%d, topic=%s",
+		verifyID, in.UserId, messaging.TopicVerifyEvent)
 }
 
 // checkRateLimit 限流检查

@@ -4,8 +4,15 @@
  * @className: UserMQ
  * @author: lijunqi
  * @description: 用户MQ消费者服务入口（基于 Watermill Redis Stream）
- * @date: 2026-01-30
- * @version: 1.0
+ * @date: 2026-02-06
+ * @version: 2.0
+ *
+ * 订阅 Topic:
+ *   - credit:events  → 信用分变更事件（来自 Activity 服务）
+ *   - verify:events  → 认证申请事件（来自 User RPC，触发 OCR 处理）
+ *
+ * 后台任务:
+ *   - TimeoutScanner → 每分钟扫描超时的 OcrPending 记录
  */
 
 package main
@@ -16,6 +23,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"activity-platform/app/user/mq/internal/config"
 	"activity-platform/app/user/mq/internal/handler"
@@ -38,7 +46,7 @@ func main() {
 	// 设置日志
 	logx.MustSetup(c.Log)
 
-	// 创建服务上下文（包含 DB、Redis、MsgClient）
+	// 创建服务上下文（包含 DB、Redis、MsgClient、OcrFactory）
 	svcCtx, err := svc.NewServiceContext(c)
 	if err != nil {
 		logx.Errorf("创建服务上下文失败: %v", err)
@@ -52,15 +60,29 @@ func main() {
 	// 注册消息订阅（使用 Watermill）
 	// ================================================================
 
-	// 订阅信用事件主题
+	// 订阅信用事件主题（来自 Activity 服务）
 	svcCtx.MsgClient.Subscribe(
-		c.Messaging.Topic,      // 订阅的主题（如 "credit:events"）
+		c.Messaging.Topic,      // 信用事件 topic（如 "credit:events"）
 		"credit-event-handler", // 处理器名称
 		handlers.WatermillHandler(),
 	)
 
+	// 订阅认证事件主题（来自 User RPC）
+	svcCtx.MsgClient.Subscribe(
+		c.Messaging.VerifyTopic, // 认证事件 topic（如 "verify:events"）
+		"verify-event-handler",  // 处理器名称
+		handlers.WatermillHandler(),
+	)
+
 	logx.Infof("User MQ 服务启动中...")
-	logx.Infof("订阅主题: %s, 消费者组: %s", c.Messaging.Topic, c.Messaging.ConsumerGroup)
+	logx.Infof("订阅主题: [%s, %s], 消费者组: %s",
+		c.Messaging.Topic, c.Messaging.VerifyTopic, c.Messaging.ConsumerGroup)
+
+	// ================================================================
+	// 启动超时扫描器（后台定时任务）
+	// ================================================================
+	scanner := handler.NewTimeoutScanner(svcCtx, 1*time.Minute)
+	scanner.Start()
 
 	// ================================================================
 	// 启动消息路由（阻塞运行）
@@ -75,6 +97,7 @@ func main() {
 		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 		<-quit
 		logx.Info("收到退出信号，正在停止 User MQ 服务...")
+		scanner.Stop()
 		cancel()
 	}()
 

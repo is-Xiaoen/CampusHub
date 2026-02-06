@@ -30,6 +30,9 @@ type Config struct {
 
 	// Messaging 消息中间件配置（复用 common/messaging）
 	Messaging MessagingConf
+
+	// Ocr OCR 识别服务配置（用于学生认证 OCR 处理）
+	Ocr OcrConf `json:",optional"`
 }
 
 // MySQLConf MySQL数据库配置
@@ -43,8 +46,11 @@ type MessagingConf struct {
 	// Redis 配置
 	Redis RedisConf
 
-	// Topic 订阅的主题（Stream Key）
+	// Topic 信用事件订阅的主题（Stream Key）
 	Topic string `json:",default=credit:events"`
+
+	// VerifyTopic 认证事件订阅的主题（Stream Key）
+	VerifyTopic string `json:",default=verify:events"`
 
 	// ConsumerGroup 消费者组名称
 	ConsumerGroup string `json:",default=user-mq-group"`
@@ -72,4 +78,31 @@ type RetryConf struct {
 	InitialInterval time.Duration `json:",default=100ms"`
 	MaxInterval     time.Duration `json:",default=10s"`
 	Multiplier      float64       `json:",default=2.0"`
+}
+
+// OcrConf OCR 识别服务配置
+type OcrConf struct {
+	// Tencent 腾讯云 OCR 配置
+	Tencent TencentOcrConf `json:",optional"`
+	// Aliyun 阿里云 OCR 配置
+	Aliyun AliyunOcrConf `json:",optional"`
+}
+
+// TencentOcrConf 腾讯云 OCR 配置
+type TencentOcrConf struct {
+	Enabled   bool   `json:",default=false"`
+	SecretId  string `json:",optional"`
+	SecretKey string `json:",optional"`
+	Region    string `json:",optional"`
+	Endpoint  string `json:",optional"`
+	Timeout   int    `json:",default=30"`
+}
+
+// AliyunOcrConf 阿里云 OCR 配置
+type AliyunOcrConf struct {
+	Enabled         bool   `json:",default=false"`
+	AccessKeyId     string `json:",optional"`
+	AccessKeySecret string `json:",optional"`
+	Endpoint        string `json:",optional"`
+	Timeout         int    `json:",default=30"`
 }

@@ -30,7 +30,10 @@ type CancelStudentVerifyLogic struct {
 }
 
 // NewCancelStudentVerifyLogic 创建取消认证申请逻辑实例
-func NewCancelStudentVerifyLogic(ctx context.Context, svcCtx *svc.ServiceContext) *CancelStudentVerifyLogic {
+func NewCancelStudentVerifyLogic(
+	ctx context.Context,
+	svcCtx *svc.ServiceContext,
+) *CancelStudentVerifyLogic {
 	return &CancelStudentVerifyLogic{
 		ctx:    ctx,
 		svcCtx: svcCtx,
@@ -42,7 +45,9 @@ func NewCancelStudentVerifyLogic(ctx context.Context, svcCtx *svc.ServiceContext
 // 业务逻辑:
 //   - 状态改为7（已取消）
 //   - 用户可重新申请
-func (l *CancelStudentVerifyLogic) CancelStudentVerify(in *pb.CancelStudentVerifyReq) (*pb.CancelStudentVerifyResp, error) {
+func (l *CancelStudentVerifyLogic) CancelStudentVerify(
+	in *pb.CancelStudentVerifyReq,
+) (*pb.CancelStudentVerifyResp, error) {
 	// 1. 参数校验
 	if in.UserId <= 0 {
 		l.Errorf("CancelStudentVerify 参数错误: userId=%d", in.UserId)

@@ -16,6 +16,7 @@ import (
 	"activity-platform/app/user/cache"
 	"activity-platform/app/user/model"
 	"activity-platform/app/user/mq/internal/config"
+	"activity-platform/app/user/ocr"
 	"activity-platform/common/messaging"
 
 	"github.com/go-redis/redis/v8"
@@ -58,6 +59,11 @@ type ServiceContext struct {
 
 	// StudentVerificationModel 学生认证数据访问层
 	StudentVerificationModel model.IStudentVerificationModel
+
+	// ==================== OCR 服务 ====================
+
+	// OcrFactory OCR提供商工厂（用于学生认证 OCR 处理）
+	OcrFactory *ocr.ProviderFactory
 }
 
 // NewServiceContext 创建服务上下文
@@ -78,6 +84,9 @@ func NewServiceContext(c config.Config) (*ServiceContext, error) {
 		return nil, err
 	}
 
+	// 初始化OCR工厂（可选，失败不影响服务启动）
+	ocrFactory := initOcrFactory(c, rdb)
+
 	return &ServiceContext{
 		Config:    c,
 		DB:        db,
@@ -92,6 +101,9 @@ func NewServiceContext(c config.Config) (*ServiceContext, error) {
 		UserCreditModel:          model.NewUserCreditModel(db),
 		CreditLogModel:           model.NewCreditLogModel(db),
 		StudentVerificationModel: model.NewStudentVerificationModel(db),
+
+		// 注入 OCR 工厂
+		OcrFactory: ocrFactory,
 	}, nil
 }
 
@@ -171,4 +183,57 @@ func initMessaging(c config.Config) (*messaging.Client, error) {
 
 	logx.Info("MQ服务消息客户端初始化成功")
 	return client, nil
+}
+
+// initOcrFactory 初始化OCR工厂（可选，失败不阻塞服务启动）
+func initOcrFactory(c config.Config, rdb *redis.Client) *ocr.ProviderFactory {
+	var primary, fallback ocr.Provider
+
+	// 初始化腾讯云OCR（主提供商）
+	if c.Ocr.Tencent.Enabled {
+		tencentProvider, err := ocr.NewTencentProvider(ocr.TencentConfig{
+			Enabled:   c.Ocr.Tencent.Enabled,
+			SecretId:  c.Ocr.Tencent.SecretId,
+			SecretKey: c.Ocr.Tencent.SecretKey,
+			Region:    c.Ocr.Tencent.Region,
+			Endpoint:  c.Ocr.Tencent.Endpoint,
+			Timeout:   c.Ocr.Tencent.Timeout,
+		})
+		if err != nil {
+			logx.Errorf("MQ服务初始化腾讯云OCR失败: %v", err)
+		} else {
+			primary = tencentProvider
+			logx.Info("MQ服务腾讯云OCR初始化成功")
+		}
+	}
+
+	// 初始化阿里云OCR（备用提供商）
+	if c.Ocr.Aliyun.Enabled {
+		aliyunProvider, err := ocr.NewAliyunProvider(ocr.AliyunConfig{
+			Enabled:         c.Ocr.Aliyun.Enabled,
+			AccessKeyId:     c.Ocr.Aliyun.AccessKeyId,
+			AccessKeySecret: c.Ocr.Aliyun.AccessKeySecret,
+			Endpoint:        c.Ocr.Aliyun.Endpoint,
+			Timeout:         c.Ocr.Aliyun.Timeout,
+		})
+		if err != nil {
+			logx.Errorf("MQ服务初始化阿里云OCR失败: %v", err)
+		} else {
+			fallback = aliyunProvider
+			logx.Info("MQ服务阿里云OCR初始化成功")
+		}
+	}
+
+	// 如果主提供商为空，使用备用作为主
+	if primary == nil && fallback != nil {
+		primary = fallback
+		fallback = nil
+	}
+
+	if primary == nil {
+		logx.Infof("[WARN] MQ服务OCR未配置任何提供商")
+		return nil
+	}
+
+	return ocr.NewProviderFactory(primary, fallback, rdb)
 }

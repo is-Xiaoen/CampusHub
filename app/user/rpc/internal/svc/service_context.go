@@ -16,8 +16,9 @@ import (
 	"activity-platform/app/activity/rpc/activityservice"
 	"activity-platform/app/user/cache"
 	"activity-platform/app/user/model"
+	"activity-platform/app/user/ocr"
 	"activity-platform/app/user/rpc/internal/config"
-	"activity-platform/app/user/rpc/internal/ocr"
+	"activity-platform/common/messaging"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -49,9 +50,6 @@ type ServiceContext struct {
 
 	// ==================== Model 层 ====================
 
-	// UserCreditModel 用户信用分数据访问层
-	UserCreditModel model.IUserCreditModel
-
 	// UserModel 用户基础信息数据访问层
 	UserModel model.IUserModel
 
@@ -60,6 +58,9 @@ type ServiceContext struct {
 
 	// InterestTagModel 兴趣标签数据访问层
 	InterestTagModel model.IInterestTagModel
+
+	// UserCreditModel 用户信用分数据访问层
+	UserCreditModel model.IUserCreditModel
 
 	// CreditLogModel 信用变更记录数据访问层
 	CreditLogModel model.ICreditLogModel
@@ -76,6 +77,12 @@ type ServiceContext struct {
 
 	// OcrFactory OCR提供商工厂
 	OcrFactory *ocr.ProviderFactory
+
+	// ==================== 消息客户端 ====================
+
+	// MsgClient Watermill 消息客户端（用于发布认证事件到 MQ）
+	MsgClient *messaging.Client
+
 }
 
 // NewServiceContext 创建服务上下文
@@ -97,6 +104,10 @@ func NewServiceContext(c config.Config) (*ServiceContext, error) {
 	// 初始化OCR工厂（可选，失败不影响服务启动）
 	ocrFactory := initOcrFactory(c, rdb)
 
+	// 初始化消息客户端（可选，失败不影响服务启动）
+	msgClient := initMsgPublisher(c)
+
+	// 初始化 Activity RPC 客户端
 	activityRpcClient := zrpc.MustNewClient(c.ActivityRpc)
 
 	return &ServiceContext{
@@ -109,17 +120,21 @@ func NewServiceContext(c config.Config) (*ServiceContext, error) {
 		VerifyCache: cache.NewVerifyCache(rdb),
 
 		// 注入 Model
-		UserCreditModel:           model.NewUserCreditModel(db),
 		UserModel:                 model.NewUserModel(db),
 		UserInterestRelationModel: model.NewUserInterestRelationModel(db),
 		InterestTagModel:          model.NewInterestTagModel(db),
+		UserCreditModel:           model.NewUserCreditModel(db),
 		CreditLogModel:            model.NewCreditLogModel(db),
 		StudentVerificationModel:  model.NewStudentVerificationModel(db),
 
+		// 注入 RPC 客户端
 		ActivityRpc: activityservice.NewActivityService(activityRpcClient),
 
 		// 注入 OCR 工厂
 		OcrFactory: ocrFactory,
+
+		// 注入消息客户端
+		MsgClient: msgClient,
 	}, nil
 }
 
@@ -178,6 +193,33 @@ func initRedis(c config.Config) (*redis.Client, error) {
 
 	logx.Info("Redis连接初始化成功")
 	return rdb, nil
+}
+
+// initMsgPublisher 初始化消息客户端（可选，失败不阻塞服务启动）
+// RPC 服务仅使用其 Publish 能力，不需要 Subscribe/Run
+func initMsgPublisher(c config.Config) *messaging.Client {
+	// 如果未配置 Redis 地址，跳过初始化
+	if c.Messaging.Redis.Addr == "" {
+		logx.Infof("[WARN] 消息客户端未配置，跳过初始化")
+		return nil
+	}
+
+	client, err := messaging.NewClient(messaging.Config{
+		Redis: messaging.RedisConfig{
+			Addr:     c.Messaging.Redis.Addr,
+			Password: c.Messaging.Redis.Password,
+			DB:       c.Messaging.Redis.DB,
+		},
+		ServiceName:  "user-rpc",
+		EnableGoZero: true,
+	})
+	if err != nil {
+		logx.Errorf("消息客户端初始化失败: %v", err)
+		return nil
+	}
+
+	logx.Info("消息客户端初始化成功")
+	return client
 }
 
 // initOcrFactory 初始化OCR工厂
