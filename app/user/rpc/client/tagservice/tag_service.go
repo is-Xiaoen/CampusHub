@@ -22,11 +22,24 @@ type (
 	CanPublishResp           = pb.CanPublishResp
 	CancelStudentVerifyReq   = pb.CancelStudentVerifyReq
 	CancelStudentVerifyResp  = pb.CancelStudentVerifyResp
+	CaptchaArgs              = pb.CaptchaArgs
+	CheckCaptchaReq          = pb.CheckCaptchaReq
+	CheckCaptchaResponse     = pb.CheckCaptchaResponse
+	CheckQQEmailReq          = pb.CheckQQEmailReq
+	CheckQQEmailResponse     = pb.CheckQQEmailResponse
 	ConfirmStudentVerifyReq  = pb.ConfirmStudentVerifyReq
 	ConfirmStudentVerifyResp = pb.ConfirmStudentVerifyResp
 	CreditLogItem            = pb.CreditLogItem
+	DeleteFileReq            = pb.DeleteFileReq
+	DeleteFileResponse       = pb.DeleteFileResponse
+	DeleteUserReq            = pb.DeleteUserReq
+	DeleteUserResponse       = pb.DeleteUserResponse
+	ForgetPasswordReq        = pb.ForgetPasswordReq
+	ForgetPasswordResponse   = pb.ForgetPasswordResponse
 	GetAllTagsReq            = pb.GetAllTagsReq
 	GetAllTagsResp           = pb.GetAllTagsResp
+	GetCaptchaConfigReq      = pb.GetCaptchaConfigReq
+	GetCaptchaConfigResponse = pb.GetCaptchaConfigResponse
 	GetCreditInfoReq         = pb.GetCreditInfoReq
 	GetCreditInfoResp        = pb.GetCreditInfoResp
 	GetCreditLogsReq         = pb.GetCreditLogsReq
@@ -35,7 +48,9 @@ type (
 	GetGroupUserResponse     = pb.GetGroupUserResponse
 	GetTagsByIdsReq          = pb.GetTagsByIdsReq
 	GetTagsByIdsResp         = pb.GetTagsByIdsResp
-	GetUserTagsRep           = pb.GetUserTagsRep
+	GetUserInfoReq           = pb.GetUserInfoReq
+	GetUserInfoResponse      = pb.GetUserInfoResponse
+	GetUserTagsReq           = pb.GetUserTagsReq
 	GetUserTagsResponse      = pb.GetUserTagsResponse
 	GetVerifyCurrentReq      = pb.GetVerifyCurrentReq
 	GetVerifyCurrentResp     = pb.GetVerifyCurrentResp
@@ -56,22 +71,35 @@ type (
 	RefreshResponse          = pb.RefreshResponse
 	RegisterReq              = pb.RegisterReq
 	RegisterResponse         = pb.RegisterResponse
+	SendQQEmailReq           = pb.SendQQEmailReq
+	SendQQEmailResponse      = pb.SendQQEmailResponse
+	TagBasicInfo             = pb.TagBasicInfo
 	TagInfo                  = pb.TagInfo
 	TagUsageCountReq         = pb.TagUsageCountReq
 	TagUsageCountResp        = pb.TagUsageCountResp
+	UpdatePasswordReq        = pb.UpdatePasswordReq
+	UpdatePasswordResponse   = pb.UpdatePasswordResponse
 	UpdateScoreReq           = pb.UpdateScoreReq
 	UpdateScoreResp          = pb.UpdateScoreResp
+	UpdateUserInfoReq        = pb.UpdateUserInfoReq
+	UpdateUserInfoResponse   = pb.UpdateUserInfoResponse
+	UpdateUserTagReq         = pb.UpdateUserTagReq
+	UpdateUserTagResponse    = pb.UpdateUserTagResponse
 	UpdateVerifyStatusReq    = pb.UpdateVerifyStatusReq
 	UpdateVerifyStatusResp   = pb.UpdateVerifyStatusResp
+	UploadFileReq            = pb.UploadFileReq
+	UploadFileResponse       = pb.UploadFileResponse
 	UserInfo                 = pb.UserInfo
+	UserTag                  = pb.UserTag
 	VerifyModifiedData       = pb.VerifyModifiedData
 	VerifyOcrData            = pb.VerifyOcrData
 
 	TagService interface {
-		// 马肖阳的标签接口
 		GetAllTags(ctx context.Context, in *GetAllTagsReq, opts ...grpc.CallOption) (*GetAllTagsResp, error)
 		GetTagsByIds(ctx context.Context, in *GetTagsByIdsReq, opts ...grpc.CallOption) (*GetTagsByIdsResp, error)
-		GetUserTags(ctx context.Context, in *GetUserTagsRep, opts ...grpc.CallOption) (*GetUserTagsResponse, error)
+		GetUserTags(ctx context.Context, in *GetUserTagsReq, opts ...grpc.CallOption) (*GetUserTagsResponse, error)
+		// 修改用户兴趣
+		UpdateUserTag(ctx context.Context, in *UpdateUserTagReq, opts ...grpc.CallOption) (*UpdateUserTagResponse, error)
 	}
 
 	defaultTagService struct {
@@ -85,7 +113,6 @@ func NewTagService(cli zrpc.Client) TagService {
 	}
 }
 
-// 马肖阳的标签接口
 func (m *defaultTagService) GetAllTags(ctx context.Context, in *GetAllTagsReq, opts ...grpc.CallOption) (*GetAllTagsResp, error) {
 	client := pb.NewTagServiceClient(m.cli.Conn())
 	return client.GetAllTags(ctx, in, opts...)
@@ -96,7 +123,13 @@ func (m *defaultTagService) GetTagsByIds(ctx context.Context, in *GetTagsByIdsRe
 	return client.GetTagsByIds(ctx, in, opts...)
 }
 
-func (m *defaultTagService) GetUserTags(ctx context.Context, in *GetUserTagsRep, opts ...grpc.CallOption) (*GetUserTagsResponse, error) {
+func (m *defaultTagService) GetUserTags(ctx context.Context, in *GetUserTagsReq, opts ...grpc.CallOption) (*GetUserTagsResponse, error) {
 	client := pb.NewTagServiceClient(m.cli.Conn())
 	return client.GetUserTags(ctx, in, opts...)
+}
+
+// 修改用户兴趣
+func (m *defaultTagService) UpdateUserTag(ctx context.Context, in *UpdateUserTagReq, opts ...grpc.CallOption) (*UpdateUserTagResponse, error) {
+	client := pb.NewTagServiceClient(m.cli.Conn())
+	return client.UpdateUserTag(ctx, in, opts...)
 }

@@ -2,6 +2,7 @@ package tagservicelogic
 
 import (
 	"context"
+	"time"
 
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
@@ -25,7 +26,33 @@ func NewGetAllTagsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetAll
 
 // 马肖阳的标签接口
 func (l *GetAllTagsLogic) GetAllTags(in *pb.GetAllTagsReq) (*pb.GetAllTagsResp, error) {
-	// todo: add your logic here and delete this line
+	sinceTime := time.Unix(0, 0)
+	if in.SinceTimestamp > 0 {
+		sinceTime = time.Unix(in.SinceTimestamp, 0)
+	}
 
-	return &pb.GetAllTagsResp{}, nil
+	tags, err := l.svcCtx.InterestTagModel.ListSince(l.ctx, sinceTime)
+	if err != nil {
+		l.Logger.Errorf("ListSince tags failed: %v", err)
+		return nil, err
+	}
+
+	var respTags []*pb.TagInfo
+	for _, tag := range tags {
+		respTags = append(respTags, &pb.TagInfo{
+			Id:          uint64(tag.TagID),
+			Name:        tag.TagName,
+			Color:       tag.Color,
+			Icon:        tag.Icon,
+			Status:      uint64(tag.Status),
+			Description: tag.TagDesc,
+			CreatedAt:   tag.CreateTime.Unix(),
+			UpdatedAt:   tag.UpdateTime.Unix(),
+		})
+	}
+
+	return &pb.GetAllTagsResp{
+		Tags:            respTags,
+		ServerTimestamp: time.Now().Unix(),
+	}, nil
 }

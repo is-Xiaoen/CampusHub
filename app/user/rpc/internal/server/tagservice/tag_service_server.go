@@ -23,7 +23,6 @@ func NewTagServiceServer(svcCtx *svc.ServiceContext) *TagServiceServer {
 	}
 }
 
-// 马肖阳的标签接口
 func (s *TagServiceServer) GetAllTags(ctx context.Context, in *pb.GetAllTagsReq) (*pb.GetAllTagsResp, error) {
 	l := tagservicelogic.NewGetAllTagsLogic(ctx, s.svcCtx)
 	return l.GetAllTags(in)
@@ -34,7 +33,13 @@ func (s *TagServiceServer) GetTagsByIds(ctx context.Context, in *pb.GetTagsByIds
 	return l.GetTagsByIds(in)
 }
 
-func (s *TagServiceServer) GetUserTags(ctx context.Context, in *pb.GetUserTagsRep) (*pb.GetUserTagsResponse, error) {
+func (s *TagServiceServer) GetUserTags(ctx context.Context, in *pb.GetUserTagsReq) (*pb.GetUserTagsResponse, error) {
 	l := tagservicelogic.NewGetUserTagsLogic(ctx, s.svcCtx)
 	return l.GetUserTags(in)
+}
+
+// 修改用户兴趣
+func (s *TagServiceServer) UpdateUserTag(ctx context.Context, in *pb.UpdateUserTagReq) (*pb.UpdateUserTagResponse, error) {
+	l := tagservicelogic.NewUpdateUserTagLogic(ctx, s.svcCtx)
+	return l.UpdateUserTag(in)
 }
