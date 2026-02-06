@@ -45,6 +45,7 @@ func (l *GetTicketDetailLogic) GetTicketDetail(req *types.GetTicketDetailRequest
 	// 3. 调用 RPC 服务
 	rpcResp, err := l.svcCtx.ActivityRpc.GetTicketDetail(l.ctx, &activityservice.GetTicketDetailRequest{
 		TicketId: req.TicketId,
+		UserId:   userID,
 	})
 	if err != nil {
 		l.Errorf("RPC GetTicketDetail failed: ticketId=%d, userID=%d, err=%v", req.TicketId, userID, err)

@@ -36,3 +36,9 @@ UserRpc:
     Key: user.rpc
   NonBlock: true
   Timeout: 3000
+
+# ==================== Redis 配置（用于获取用户状态）====================
+Redis:
+  Host: 127.0.0.1:6379
+  Pass: ""
+  DB: 0

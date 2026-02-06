@@ -54,6 +54,7 @@ func (l *GetTicketListLogic) GetTicketList(req *types.GetTicketListRequest) (res
 	rpcResp, err := l.svcCtx.ActivityRpc.GetTicketList(l.ctx, &activityservice.GetTicketListRequest{
 		Page:     page,
 		PageSize: pageSize,
+		UserId:   userID,
 	})
 	if err != nil {
 		l.Errorf("RPC GetTicketList failed: userID=%d, err=%v", userID, err)

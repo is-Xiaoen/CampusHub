@@ -1,0 +1,341 @@
+syntax = "proto3";
+
+package chat;
+
+option go_package = "./chat";
+
+// ==================== 群聊管理相关 ====================
+
+// CreateGroupReq 创建群聊请求
+message CreateGroupReq {
+  string activity_id = 1;  // 关联的活动ID
+  string name = 2;         // 群聊名称
+  string owner_id = 3;     // 群主用户ID
+  int32 max_members = 4;   // 最大成员数，默认500
+}
+
+// CreateGroupResp 创建群聊响应
+message CreateGroupResp {
+  string group_id = 1;     // 群聊ID
+}
+
+// AddGroupMemberReq 添加群成员请求
+message AddGroupMemberReq {
+  string group_id = 1;     // 群聊ID
+  string user_id = 2;      // 用户ID
+  int32 role = 3;          // 角色: 1-普通成员 2-群主
+}
+
+// AddGroupMemberResp 添加群成员响应
+message AddGroupMemberResp {
+  bool success = 1;        // 是否成功
+}
+
+// RemoveGroupMemberReq 移除群成员请求
+message RemoveGroupMemberReq {
+  string group_id = 1;     // 群聊ID
+  string user_id = 2;      // 要移除的用户ID
+  string operator_id = 3;  // 操作者ID
+}
+
+// RemoveGroupMemberResp 移除群成员响应
+message RemoveGroupMemberResp {
+  bool success = 1;        // 是否成功
+}
+
+// DisbandGroupReq 解散群聊请求
+message DisbandGroupReq {
+  string group_id = 1;     // 群聊ID
+  string operator_id = 2;  // 操作者ID（必须是群主）
+}
+
+// DisbandGroupResp 解散群聊响应
+message DisbandGroupResp {
+  bool success = 1;        // 是否成功
+}
+
+// GetGroupInfoReq 获取群聊信息请求
+message GetGroupInfoReq {
+  string group_id = 1;     // 群聊ID
+}
+
+// GroupInfo 群聊信息
+message GroupInfo {
+  string group_id = 1;     // 群聊ID
+  string activity_id = 2;  // 关联活动ID
+  string name = 3;         // 群聊名称
+  string owner_id = 4;     // 群主用户ID
+  int32 status = 5;        // 状态: 1-正常 2-已解散
+  int32 max_members = 6;   // 最大成员数
+  int32 member_count = 7;  // 当前成员数
+  int64 created_at = 8;    // 创建时间（时间戳）
+}
+
+// GetGroupInfoResp 获取群聊信息响应
+message GetGroupInfoResp {
+  GroupInfo group = 1;     // 群聊信息
+}
+
+// GetGroupMembersReq 获取群成员列表请求
+message GetGroupMembersReq {
+  string group_id = 1;     // 群聊ID
+  int32 page = 2;          // 页码，从1开始
+  int32 page_size = 3;     // 每页数量
+}
+
+// GroupMember 群成员信息
+message GroupMember {
+  string user_id = 1;      // 用户ID
+  string group_id = 2;     // 群聊ID
+  int32 role = 3;          // 角色: 1-普通成员 2-群主
+  int64 joined_at = 4;     // 加入时间（时间戳）
+}
+
+// GetGroupMembersResp 获取群成员列表响应
+message GetGroupMembersResp {
+  repeated GroupMember members = 1;  // 成员列表
+  int32 total = 2;                   // 总数
+}
+
+// GetUserGroupsReq 获取用户群列表请求
+message GetUserGroupsReq {
+  string user_id = 1;      // 用户ID
+  int32 page = 2;          // 页码，从1开始
+  int32 page_size = 3;     // 每页数量
+}
+
+// UserGroupInfo 用户群聊信息（包含用户特定信息）
+message UserGroupInfo {
+  string group_id = 1;     // 群聊ID
+  string activity_id = 2;  // 关联活动ID
+  string name = 3;         // 群聊名称
+  string owner_id = 4;     // 群主用户ID
+  int32 status = 5;        // 状态: 1-正常 2-已解散
+  int32 max_members = 6;   // 最大成员数
+  int32 member_count = 7;  // 当前成员数
+  int64 created_at = 8;    // 创建时间（时间戳）
+  int32 role = 9;          // 用户在群中的角色: 1-普通成员 2-群主
+  int64 joined_at = 10;    // 用户加入时间（时间戳）
+  string last_message = 11;   // 最后一条消息内容
+  int64 last_message_at = 12; // 最后消息时间（时间戳）
+}
+
+// GetUserGroupsResp 获取用户群列表响应
+message GetUserGroupsResp {
+  repeated UserGroupInfo groups = 1;  // 群聊列表（包含用户特定信息）
+  int32 total = 2;                    // 总数
+}
+
+// GetGroupByActivityIdReq 通过活动ID获取群聊请求
+message GetGroupByActivityIdReq {
+  string activity_id = 1;  // 活动ID
+}
+
+// GetGroupByActivityIdResp 通过活动ID获取群聊响应
+message GetGroupByActivityIdResp {
+  GroupInfo group = 1;     // 群聊信息
+}
+
+// ==================== 消息管理相关 ====================
+
+// SaveMessageReq 保存消息请求
+message SaveMessageReq {
+  string message_id = 1;   // 消息ID
+  string group_id = 2;     // 群聊ID
+  string sender_id = 3;    // 发送者ID
+  int32 msg_type = 4;      // 消息类型: 1-文字 2-图片
+  string content = 5;      // 文本内容
+  string image_url = 6;    // 图片URL
+}
+
+// SaveMessageResp 保存消息响应
+message SaveMessageResp {
+  bool success = 1;        // 是否成功
+  string message_id = 2;   // 消息ID
+}
+
+// GetMessageHistoryReq 获取历史消息请求
+message GetMessageHistoryReq {
+  string group_id = 1;     // 群聊ID
+  string before_id = 2;    // 查询此消息之前的历史消息（消息ID）
+  int32 limit = 3;         // 查询数量，默认20，最大100
+}
+
+// Message 消息信息
+message Message {
+  string message_id = 1;   // 消息ID
+  string group_id = 2;     // 群聊ID
+  string sender_id = 3;    // 发送者ID
+  string sender_name = 4;  // 发送者名称
+  int32 msg_type = 5;      // 消息类型: 1-文字 2-图片
+  string content = 6;      // 文本内容
+  string image_url = 7;    // 图片URL
+  int32 status = 8;        // 状态: 1-正常 2-已撤回
+  int64 created_at = 9;    // 创建时间（时间戳）
+}
+
+// GetMessageHistoryResp 获取历史消息响应
+message GetMessageHistoryResp {
+  repeated Message messages = 1;  // 消息列表
+  bool has_more = 2;              // 是否还有更多消息
+}
+
+// GetOfflineMessagesReq 获取离线消息请求
+message GetOfflineMessagesReq {
+  string user_id = 1;      // 用户ID
+  int64 after_time = 2;    // 查询此时间之后的消息（时间戳）
+}
+
+// GetOfflineMessagesResp 获取离线消息响应
+message GetOfflineMessagesResp {
+  repeated Message messages = 1;  // 离线消息列表
+}
+
+// ==================== 通知管理相关 ====================
+
+// CreateNotificationReq 创建系统通知请求
+message CreateNotificationReq {
+  string user_id = 1;      // 接收用户ID
+  string type = 2;         // 通知类型: activity_joined-报名成功, group_joined-加入群聊等
+  string title = 3;        // 通知标题
+  string content = 4;      // 通知内容
+}
+
+// CreateNotificationResp 创建系统通知响应
+message CreateNotificationResp {
+  string notification_id = 1;  // 通知ID
+}
+
+// GetNotificationsReq 获取通知列表请求
+message GetNotificationsReq {
+  string user_id = 1;      // 用户ID
+  int32 is_read = 2;       // 筛选条件: 0-未读 1-已读 -1-全部
+  int32 page = 3;          // 页码，从1开始
+  int32 page_size = 4;     // 每页数量
+}
+
+// Notification 通知信息
+message Notification {
+  string notification_id = 1;  // 通知ID
+  string user_id = 2;          // 接收用户ID
+  string type = 3;             // 通知类型: activity_joined-报名成功, group_joined-加入群聊等
+  string title = 4;            // 通知标题
+  string content = 5;          // 通知内容
+  int32 is_read = 6;           // 是否已读: 0-未读 1-已读
+  int64 created_at = 7;        // 创建时间（时间戳）
+}
+
+// GetNotificationsResp 获取通知列表响应
+message GetNotificationsResp {
+  repeated Notification notifications = 1;  // 通知列表
+  int32 total = 2;                          // 总数
+  int32 unread_count = 3;                   // 未读数量
+}
+
+// MarkNotificationReadReq 标记通知已读请求
+message MarkNotificationReadReq {
+  string user_id = 1;                      // 用户ID
+  repeated string notification_ids = 2;    // 通知ID列表（支持批量标记）
+}
+
+// MarkNotificationReadResp 标记通知已读响应
+message MarkNotificationReadResp {
+  bool success = 1;            // 是否成功
+  int32 updated_count = 2;     // 更新的记录数
+}
+
+// GetUnreadCountReq 获取未读通知数量请求
+message GetUnreadCountReq {
+  string user_id = 1;          // 用户ID
+}
+
+// GetUnreadCountResp 获取未读通知数量响应
+message GetUnreadCountResp {
+  int32 unread_count = 1;      // 未读数量
+}
+
+// MarkAllReadReq 全部标记已读请求
+message MarkAllReadReq {
+  string user_id = 1;          // 用户ID
+}
+
+// MarkAllReadResp 全部标记已读响应
+message MarkAllReadResp {
+  bool success = 1;            // 是否成功
+  int32 affected_count = 2;    // 影响的记录数
+}
+
+// ==================== 服务定义 ====================
+
+service ChatService {
+  // 群聊管理
+
+  // CreateGroup 创建群聊
+  // 用于活动创建时自动生成群聊
+  rpc CreateGroup(CreateGroupReq) returns (CreateGroupResp);
+
+  // AddGroupMember 添加群成员
+  // 用于用户报名活动后自动加入群聊
+  rpc AddGroupMember(AddGroupMemberReq) returns (AddGroupMemberResp);
+
+  // RemoveGroupMember 移除群成员
+  // 用于踢出群成员或用户主动退群（用户取消报名）
+  rpc RemoveGroupMember(RemoveGroupMemberReq) returns (RemoveGroupMemberResp);
+
+  // DisbandGroup 解散群聊
+  // 仅群主可操作，解散后群聊状态变为已解散
+  rpc DisbandGroup(DisbandGroupReq) returns (DisbandGroupResp);
+
+  // GetGroupInfo 获取群聊信息
+  // 返回群聊的基本信息（名称、成员数、创建时间等）
+  rpc GetGroupInfo(GetGroupInfoReq) returns (GetGroupInfoResp);
+
+  // GetGroupMembers 获取群成员列表
+  // 支持分页查询，返回群内所有成员信息
+  rpc GetGroupMembers(GetGroupMembersReq) returns (GetGroupMembersResp);
+
+  // GetUserGroups 获取用户群列表
+  // 查询用户加入的所有群聊，支持分页
+  rpc GetUserGroups(GetUserGroupsReq) returns (GetUserGroupsResp);
+
+  // GetGroupByActivityId 通过活动ID获取群聊
+  // 根据活动ID查询对应的群聊信息
+  rpc GetGroupByActivityId(GetGroupByActivityIdReq) returns (GetGroupByActivityIdResp);
+
+  // 消息管理
+
+  // SaveMessage 保存消息
+  // 用于 WebSocket 服务发送消息时持久化到数据库
+  rpc SaveMessage(SaveMessageReq) returns (SaveMessageResp);
+
+  // GetMessageHistory 获取历史消息
+  // 分页查询指定群聊的历史消息记录
+  rpc GetMessageHistory(GetMessageHistoryReq) returns (GetMessageHistoryResp);
+
+  // GetOfflineMessages 获取离线消息
+  // 用户上线后拉取离线期间错过的消息
+  rpc GetOfflineMessages(GetOfflineMessagesReq) returns (GetOfflineMessagesResp);
+
+  // 通知管理
+
+  // CreateNotification 创建系统通知
+  // 用于生成各类系统通知（注册成功、报名成功、加入群聊等）
+  rpc CreateNotification(CreateNotificationReq) returns (CreateNotificationResp);
+
+  // GetNotifications 获取通知列表
+  // 分页查询用户的系统通知，支持按已读/未读筛选
+  rpc GetNotifications(GetNotificationsReq) returns (GetNotificationsResp);
+
+  // MarkNotificationRead 标记通知已读
+  // 将指定通知标记为已读状态
+  rpc MarkNotificationRead(MarkNotificationReadReq) returns (MarkNotificationReadResp);
+
+  // GetUnreadCount 获取未读通知数量
+  // 快速查询用户的未读通知数量，用于显示小红点
+  rpc GetUnreadCount(GetUnreadCountReq) returns (GetUnreadCountResp);
+
+  // MarkAllRead 全部标记已读
+  // 一键将用户的所有未读通知标记为已读
+  rpc MarkAllRead(MarkAllReadReq) returns (MarkAllReadResp);
+}
+
