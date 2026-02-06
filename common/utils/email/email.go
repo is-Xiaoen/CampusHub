@@ -15,7 +15,7 @@ type EmailConfig struct {
 	Subject  string
 }
 
-func SendQQEmail(cfg EmailConfig, toEmail, code string) error {
+func SendQQEmail(cfg EmailConfig, toEmail, code, sceneStr string) error {
 	// 组装邮件内容
 	// header
 	header := make(map[string]string)
@@ -28,7 +28,24 @@ func SendQQEmail(cfg EmailConfig, toEmail, code string) error {
 	for k, v := range header {
 		message += fmt.Sprintf("%s: %s\r\n", k, v)
 	}
-	message += "\r\n" + fmt.Sprintf("您的验证码是：%s，请在5分钟内使用。", code)
+
+	// 邮件正文
+	body := fmt.Sprintf(`
+亲爱的用户：
+
+您正在进行【%s】操作。
+您的验证码是：%s
+请在3分钟内完成验证。
+
+温馨提示：
+1. 验证码具有时效性，请尽快使用。
+2. 为了您的账号安全，请勿将验证码告知他人，包括工作人员。
+3. 如果这不是您本人的操作，请忽略此邮件。
+
+CampusHub —— 只有想不到，没有做不到的校园生活！
+`, sceneStr, code)
+
+	message += "\r\n" + body
 
 	// 连接到SMTP服务器
 	auth := smtp.PlainAuth("", cfg.Username, cfg.Password, cfg.Host)

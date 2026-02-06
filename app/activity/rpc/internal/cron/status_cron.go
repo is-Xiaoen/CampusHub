@@ -369,10 +369,11 @@ func (c *StatusCron) findNoshowUsers(ctx context.Context, activityID uint64) ([]
 // 防止锁过期后误删其他实例持有的锁
 //
 // 原理：
-//   KEYS[1] = 锁的 key
-//   ARGV[1] = 当前实例的 ownerID
-//   如果 GET(key) == ownerID，则 DEL(key) 返回 1
-//   否则返回 0（说明锁已被其他实例持有）
+//
+//	KEYS[1] = 锁的 key
+//	ARGV[1] = 当前实例的 ownerID
+//	如果 GET(key) == ownerID，则 DEL(key) 返回 1
+//	否则返回 0（说明锁已被其他实例持有）
 const unlockScript = `
 if redis.call("get", KEYS[1]) == ARGV[1] then
     return redis.call("del", KEYS[1])

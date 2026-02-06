@@ -82,7 +82,6 @@ type ServiceContext struct {
 
 	// MsgClient Watermill 消息客户端（用于发布认证事件到 MQ）
 	MsgClient *messaging.Client
-
 }
 
 // NewServiceContext 创建服务上下文
