@@ -13,6 +13,7 @@ package svc
 import (
 	"time"
 
+	"activity-platform/app/activity/rpc/activityservice"
 	"activity-platform/app/user/cache"
 	"activity-platform/app/user/model"
 	"activity-platform/app/user/rpc/internal/config"
@@ -20,6 +21,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/zrpc"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -50,11 +52,25 @@ type ServiceContext struct {
 	// UserCreditModel 用户信用分数据访问层
 	UserCreditModel model.IUserCreditModel
 
+	// UserModel 用户基础信息数据访问层
+	UserModel model.IUserModel
+
+	// UserInterestRelationModel 用户兴趣标签关联数据访问层
+	UserInterestRelationModel model.IUserInterestRelationModel
+
+	// InterestTagModel 兴趣标签数据访问层
+	InterestTagModel model.IInterestTagModel
+
 	// CreditLogModel 信用变更记录数据访问层
 	CreditLogModel model.ICreditLogModel
 
 	// StudentVerificationModel 学生认证数据访问层
 	StudentVerificationModel model.IStudentVerificationModel
+
+	// ==================== RPC 服务 ====================
+
+	// ActivityRpc 活动服务 RPC 客户端
+	ActivityRpc activityservice.ActivityService
 
 	// ==================== OCR 服务 ====================
 
@@ -81,6 +97,8 @@ func NewServiceContext(c config.Config) (*ServiceContext, error) {
 	// 初始化OCR工厂（可选，失败不影响服务启动）
 	ocrFactory := initOcrFactory(c, rdb)
 
+	activityRpcClient := zrpc.MustNewClient(c.ActivityRpc)
+
 	return &ServiceContext{
 		Config: c,
 		DB:     db,
@@ -91,9 +109,14 @@ func NewServiceContext(c config.Config) (*ServiceContext, error) {
 		VerifyCache: cache.NewVerifyCache(rdb),
 
 		// 注入 Model
-		UserCreditModel:          model.NewUserCreditModel(db),
-		CreditLogModel:           model.NewCreditLogModel(db),
-		StudentVerificationModel: model.NewStudentVerificationModel(db),
+		UserCreditModel:           model.NewUserCreditModel(db),
+		UserModel:                 model.NewUserModel(db),
+		UserInterestRelationModel: model.NewUserInterestRelationModel(db),
+		InterestTagModel:          model.NewInterestTagModel(db),
+		CreditLogModel:            model.NewCreditLogModel(db),
+		StudentVerificationModel:  model.NewStudentVerificationModel(db),
+
+		ActivityRpc: activityservice.NewActivityService(activityRpcClient),
 
 		// 注入 OCR 工厂
 		OcrFactory: ocrFactory,

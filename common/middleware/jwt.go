@@ -2,26 +2,30 @@ package middleware
 
 import (
 	"net/http"
+	"strings"
 
 	"activity-platform/common/ctxdata"
 	"activity-platform/common/errorx"
 	"activity-platform/common/response"
 	"activity-platform/common/utils/jwt"
 
+	"github.com/go-redis/redis/v8"
 	"gorm.io/gorm"
 )
 
 type RoleAuthMiddleware struct {
-	db   *gorm.DB
-	role jwt.Role
+	db           *gorm.DB
+	redis        *redis.Client
+	accessSecret string
+	role         jwt.Role
 }
 
-func NewAdminRoleMiddleware(db *gorm.DB) *RoleAuthMiddleware {
-	return &RoleAuthMiddleware{db: db, role: jwt.RoleAdmin}
+func NewAdminRoleMiddleware(db *gorm.DB, redis *redis.Client, accessSecret string) *RoleAuthMiddleware {
+	return &RoleAuthMiddleware{db: db, redis: redis, accessSecret: accessSecret, role: jwt.RoleAdmin}
 }
 
-func NewUserRoleMiddleware(db *gorm.DB) *RoleAuthMiddleware {
-	return &RoleAuthMiddleware{db: db, role: jwt.RoleUser}
+func NewUserRoleMiddleware(db *gorm.DB, redis *redis.Client, accessSecret string) *RoleAuthMiddleware {
+	return &RoleAuthMiddleware{db: db, redis: redis, accessSecret: accessSecret, role: jwt.RoleUser}
 }
 
 func (m *RoleAuthMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
@@ -46,6 +50,20 @@ func (m *RoleAuthMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 		if m.role == jwt.RoleUser && !jwt.IsUser(ctx) {
 			response.Fail(w, errorx.ErrForbidden())
 			return
+		}
+
+		// 检查黑名单
+		token := r.Header.Get("Authorization")
+		if token != "" {
+			parts := strings.Split(token, " ")
+			if len(parts) == 2 && parts[0] == "Bearer" {
+				token = parts[1]
+				isBlacklisted, _ := jwt.CheckTokenBlacklist(r.Context(), m.redis, token, m.accessSecret)
+				if isBlacklisted {
+					response.Fail(w, errorx.ErrInvalidToken())
+					return
+				}
+			}
 		}
 
 		var status int64
