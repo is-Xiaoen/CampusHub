@@ -5,11 +5,10 @@ import (
 
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
+	"activity-platform/common/errorx"
 	"activity-platform/common/utils/encrypt"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type UpdatePasswordLogic struct {
@@ -32,20 +31,20 @@ func (l *UpdatePasswordLogic) UpdatePassword(in *pb.UpdatePasswordReq) (*pb.Upda
 	user, err := l.svcCtx.UserModel.FindByUserID(l.ctx, in.UserId)
 	if err != nil {
 		l.Logger.Errorf("FindByUserID error: %v, userId: %d", err, in.UserId)
-		return nil, status.Error(codes.Internal, "internal error")
+		return nil, errorx.ErrDBError(err)
 	}
 	if user == nil {
-		return nil, status.Error(codes.NotFound, "user not found")
+		return nil, errorx.New(errorx.CodeUserNotFound)
 	}
 
 	// 2. 校验原密码
 	if !encrypt.ComparePassword(in.OriginPassword, user.Password) {
-		return nil, status.Error(codes.InvalidArgument, "old password is incorrect")
+		return nil, errorx.New(errorx.CodePasswordIncorrect)
 	}
 
 	// 3. 校验新密码格式
 	if !encrypt.ValidatePassword(in.NewPassword) {
-		return nil, status.Error(codes.InvalidArgument, "password must be 8-20 characters long and contain at least 3 types of characters (uppercase, lowercase, number, special)")
+		return nil, errorx.NewWithMessage(errorx.CodePasswordInvalid, "密码长度必须为8-20个字符，且包含至少3种字符（大写字母、小写字母、数字、特殊字符）")
 	}
 
 	// 4. 加密新密码
@@ -55,7 +54,7 @@ func (l *UpdatePasswordLogic) UpdatePassword(in *pb.UpdatePasswordReq) (*pb.Upda
 	err = l.svcCtx.UserModel.UpdatePassword(l.ctx, user.UserID, newPasswordHash)
 	if err != nil {
 		l.Logger.Errorf("UpdatePassword error: %v, userId: %d", err, user.UserID)
-		return nil, status.Error(codes.Internal, "failed to update password")
+		return nil, errorx.New(errorx.CodePasswordUpdateFailed)
 	}
 
 	return &pb.UpdatePasswordResponse{

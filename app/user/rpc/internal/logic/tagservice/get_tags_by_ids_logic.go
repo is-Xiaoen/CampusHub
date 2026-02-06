@@ -6,6 +6,7 @@ import (
 	"activity-platform/app/user/model"
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -33,7 +34,7 @@ func (l *GetTagsByIdsLogic) GetTagsByIds(in *pb.GetTagsByIdsReq) (*pb.GetTagsByI
 	tags, err := l.svcCtx.InterestTagModel.FindByIDs(l.ctx, in.Ids)
 	if err != nil {
 		l.Logger.Errorf("FindByIDs failed: %v", err)
-		return nil, err
+		return nil, errorx.ErrDBError(err)
 	}
 
 	// 2. 构建返回结果和ID映射

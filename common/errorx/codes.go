@@ -36,6 +36,23 @@ const (
 	CodeTokenInvalid  = 2002 // Token无效
 	CodeTokenExpired  = 2003 // Token已过期
 
+	// 用户服务 - 基础业务 2011-2050
+	CodeUserNotFound           = 2011 // 用户不存在
+	CodeUserDisabled           = 2012 // 账号已被禁用
+	CodeUserDeleteFailed       = 2013 // 用户注销失败
+	CodeUserUpdateFailed       = 2014 // 用户信息更新失败
+	CodeUserRegisterFailed     = 2015 // 用户注册失败
+	CodeUserEmailAlreadyExists = 2016 // 该邮箱已注册
+	CodeLoginFailed            = 2017 // 账号或密码错误
+
+	// 用户服务 - 密码与Token 2051-2080
+	CodePasswordInvalid      = 2051 // 密码格式不正确
+	CodePasswordIncorrect    = 2052 // 原密码错误
+	CodePasswordUpdateFailed = 2053 // 密码修改失败
+	CodeTokenGenerateFailed  = 2054 // 令牌生成失败
+	CodeRefreshTokenInvalid  = 2055 // 无效的刷新令牌
+	CodeRefreshTokenExpired  = 2056 // 刷新令牌已过期或不存在
+
 	// 用户服务 - 信用分 2101-2120
 	CodeCreditNotFound      = 2101 // 信用记录不存在
 	CodeCreditAlreadyInit   = 2102 // 信用分已初始化
@@ -67,6 +84,18 @@ const (
 	CodeOcrEmptyResult         = 2236 // OCR识别结果为空
 	CodeOcrConfigInvalid       = 2237 // OCR配置无效
 
+	// 用户服务 - 标签业务 2401-2420
+	CodeUserTagUpdateFailed = 2401 // 用户标签更新失败
+
+	// 用户服务 - 验证码与消息 2501-2550
+	CodeCaptchaNotFound        = 2501 // 验证码不存在或已过期
+	CodeCaptchaError           = 2502 // 验证码错误
+	CodeCaptchaTooManyAttempts = 2503 // 验证码错误次数过多
+	CodeCaptchaRateLimit       = 2504 // 验证码发送过于频繁
+	CodeEmailSendFailed        = 2505 // 邮件发送失败
+	CodeGeetestConfigError     = 2506 // 极验配置错误
+	CodeGeetestVerifyFailed    = 2507 // 极验验证失败
+
 	// 活动服务 - 活动 3001-3050
 	CodeActivityNotFound         = 3001 // 活动不存在
 	CodeActivityStatusInvalid    = 3002 // 活动状态不允许此操作
@@ -83,26 +112,49 @@ const (
 	CodeTagNotFound      = 3201 // 标签不存在
 	CodeTagLimitExceeded = 3202 // 标签数量超过限制
 
+	// 用户服务 - 文件服务 2301-2350
+	CodeFileTooLarge     = 2301 // 文件超过大小限制
+	CodeFileTypeInvalid  = 2302 // 文件类型不支持
+	CodeFileUploadFailed = 2303 // 文件上传失败
+	CodeFileDeleteFailed = 2304 // 文件删除失败
+	CodeFileConfigError  = 2305 // 文件服务配置错误
+
 	// 聊天服务 4xxx - TODO(马华恩)
 )
 
 // codeMessages 错误码对应的默认消息
 var codeMessages = map[int]string{
-	CodeSuccess:             "success",
-	CodeInternalError:       "内部服务器错误",
-	CodeInvalidParams:       "参数校验失败",
-	CodeUnauthorized:        "未授权访问",
-	CodeForbidden:           "禁止访问",
-	CodeNotFound:            "资源不存在",
-	CodeTooManyRequests:     "请求过于频繁，请稍后再试",
-	CodeServiceUnavailable:  "服务暂不可用",
-	CodeTimeout:             "请求超时",
-	CodeDBError:             "数据库错误",
-	CodeCacheError:          "缓存错误",
-	CodeRPCError:            "服务调用失败",
-	CodeLoginRequired:       "请先登录",
-	CodeTokenInvalid:        "登录状态无效",
-	CodeTokenExpired:        "登录已过期",
+	CodeSuccess:            "success",
+	CodeInternalError:      "内部服务器错误",
+	CodeInvalidParams:      "参数校验失败",
+	CodeUnauthorized:       "未授权访问",
+	CodeForbidden:          "禁止访问",
+	CodeNotFound:           "资源不存在",
+	CodeTooManyRequests:    "请求过于频繁，请稍后再试",
+	CodeServiceUnavailable: "服务暂不可用",
+	CodeTimeout:            "请求超时",
+	CodeDBError:            "数据库错误",
+	CodeCacheError:         "缓存错误",
+	CodeRPCError:           "服务调用失败",
+	CodeLoginRequired:      "请先登录",
+	CodeTokenInvalid:       "登录状态无效",
+	CodeTokenExpired:       "登录已过期",
+	// 用户基础
+	CodeUserNotFound:           "用户不存在",
+	CodeUserDisabled:           "账号已被禁用",
+	CodeUserDeleteFailed:       "用户注销失败，请稍后重试",
+	CodeUserUpdateFailed:       "用户信息更新失败，请稍后重试",
+	CodeUserRegisterFailed:     "用户注册失败，请稍后重试",
+	CodeUserEmailAlreadyExists: "该邮箱已注册",
+	CodeLoginFailed:            "账号或密码错误",
+	// 密码与Token
+	CodePasswordInvalid:      "密码格式不正确",
+	CodePasswordIncorrect:    "原密码错误",
+	CodePasswordUpdateFailed: "密码修改失败，请稍后重试",
+	CodeTokenGenerateFailed:  "令牌生成失败，请重试",
+	CodeRefreshTokenInvalid:  "无效的刷新令牌",
+	CodeRefreshTokenExpired:  "刷新令牌已过期或不存在",
+
 	CodeCreditNotFound:      "信用记录不存在",
 	CodeCreditAlreadyInit:   "信用分已初始化",
 	CodeCreditBlacklist:     "您的账户信用分过低，已被限制操作",
@@ -114,6 +166,12 @@ var codeMessages = map[int]string{
 	CodeVerifyAlreadyExist:  "认证记录已存在",
 	CodeVerifyNotVerified:   "请先完成学生认证",
 	CodeVerifyStudentIDUsed: "该学号已被其他用户认证",
+	// 文件服务
+	CodeFileTooLarge:     "文件大小超过限制",
+	CodeFileTypeInvalid:  "不支持的文件类型",
+	CodeFileUploadFailed: "文件上传失败，请稍后重试",
+	CodeFileDeleteFailed: "文件删除失败，请稍后重试",
+	CodeFileConfigError:  "文件服务配置错误，请联系管理员",
 	// 活动服务
 	CodeActivityNotFound:         "活动不存在",
 	CodeActivityStatusInvalid:    "活动状态不允许此操作",
@@ -140,6 +198,18 @@ var codeMessages = map[int]string{
 	CodeOcrInsufficientBalance: "识别服务暂不可用，请联系管理员",
 	CodeOcrEmptyResult:         "未能识别到有效信息，请上传清晰的学生证照片",
 	CodeOcrConfigInvalid:       "识别服务配置错误，请联系管理员",
+
+	// 用户标签
+	CodeUserTagUpdateFailed: "用户标签更新失败，请稍后重试",
+
+	// 验证码与消息
+	CodeCaptchaNotFound:        "验证码不存在或已过期",
+	CodeCaptchaError:           "验证码错误",
+	CodeCaptchaTooManyAttempts: "验证码错误次数过多，请重新获取",
+	CodeCaptchaRateLimit:       "验证码发送过于频繁，请稍后再试",
+	CodeEmailSendFailed:        "邮件发送失败，请检查邮箱是否正确",
+	CodeGeetestConfigError:     "验证服务配置错误，请联系管理员",
+	CodeGeetestVerifyFailed:    "验证失败，请刷新页面重试",
 }
 
 // GetMessage 根据错误码获取默认消息
