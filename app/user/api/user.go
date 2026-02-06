@@ -48,6 +48,7 @@ func main() {
 	// 设置后的响应格式：  {"code": 2001, "message": "用户不存在"}
 	//
 	response.SetupGlobalErrorHandler()
+	response.SetupGlobalOkHandler()
 
 	// 加载配置
 	var c config.Config
