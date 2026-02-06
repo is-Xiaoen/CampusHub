@@ -40,9 +40,14 @@ type Config struct {
 	// Ocr OCR 识别服务配置（可选，不配置则禁用）
 	Ocr OcrConf `json:",optional"`
 
-<<<<<<< HEAD
 	// Messaging 消息发布器配置（用于发布认证事件到 MQ）
 	Messaging MessagingConf `json:",optional"`
+
+	// Email 邮件服务配置
+	Email EmailConf `json:",optional"`
+
+	// Qiniu 七牛云配置
+	Qiniu QiniuConf `json:",optional"`
 }
 
 // MessagingConf 消息发布器配置
@@ -56,12 +61,6 @@ type RedisStreamConf struct {
 	Addr     string `json:",default=localhost:6379"`
 	Password string `json:",optional"`
 	DB       int    `json:",default=0"`
-=======
-	// Email 邮件服务配置
-	Email EmailConf `json:",optional"`
-
-	// Qiniu 七牛云配置
-	Qiniu QiniuConf `json:",optional"`
 }
 
 // QiniuConf 七牛云配置
@@ -71,7 +70,6 @@ type QiniuConf struct {
 	Bucket    string
 	Domain    string
 	Zone      string
->>>>>>> 88856f15025ee9bb43f0942e291437f10d54aa70
 }
 
 // MySQLConf MySQL数据库配置

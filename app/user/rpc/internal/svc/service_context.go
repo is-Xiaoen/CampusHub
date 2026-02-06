@@ -103,12 +103,10 @@ func NewServiceContext(c config.Config) (*ServiceContext, error) {
 	// 初始化OCR工厂（可选，失败不影响服务启动）
 	ocrFactory := initOcrFactory(c, rdb)
 
-<<<<<<< HEAD
 	// 初始化消息客户端（可选，失败不影响服务启动）
 	msgClient := initMsgClient(c)
-=======
+
 	activityRpcClient := zrpc.MustNewClient(c.ActivityRpc)
->>>>>>> 88856f15025ee9bb43f0942e291437f10d54aa70
 
 	return &ServiceContext{
 		Config: c,
