@@ -17,6 +17,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/redis"
+	"golang.org/x/sync/singleflight"
 	"gorm.io/gorm"
 )
 
@@ -37,8 +38,9 @@ var ErrActivityNotFoundInCache = errors.New("activity not found in cache")
 
 // ActivityCache 活动详情缓存服务
 type ActivityCache struct {
-	rds *redis.Redis
-	db  *gorm.DB
+	rds     *redis.Redis
+	db      *gorm.DB
+	sfGroup singleflight.Group // singleflight 防止缓存击穿
 }
 
 // NewActivityCache 创建活动缓存服务
@@ -136,8 +138,17 @@ func (c *ActivityCache) GetByID(ctx context.Context, id uint64) (*model.Activity
 		return c.toActivity(&cacheData), nil
 	}
 
-	// 3. 缓存未命中，查询 DB
-	return c.getFromDBAndCache(ctx, id, key)
+	// 3. 缓存未命中，使用 singleflight 保护，防止并发穿透 DB
+	result, err, _ := c.sfGroup.Do(key, func() (interface{}, error) {
+		return c.getFromDBAndCache(ctx, id, key)
+	})
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, model.ErrActivityNotFound
+	}
+	return result.(*model.Activity), nil
 }
 
 // getFromDB 直接从数据库查询（无缓存操作）

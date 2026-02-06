@@ -24,6 +24,7 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.42
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/ocr v1.3.37
 	github.com/zeromicro/go-zero v1.9.4
+	golang.org/x/sync v0.18.0
 	google.golang.org/grpc v1.78.0
 	google.golang.org/protobuf v1.36.10
 	gorm.io/driver/mysql v1.5.2
@@ -126,7 +127,6 @@ require (
 	golang.org/x/crypto v0.44.0 // indirect
 	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/oauth2 v0.32.0 // indirect
-	golang.org/x/sync v0.18.0 // indirect
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/term v0.37.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
