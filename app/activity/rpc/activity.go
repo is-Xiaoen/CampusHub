@@ -40,6 +40,7 @@ func main() {
 		ctx.DB,
 		ctx.ActivityModel,
 		ctx.StatusLogModel,
+		ctx.MsgProducer,
 	)
 	statusCron.Start()
 	defer statusCron.Stop()
@@ -47,6 +48,11 @@ func main() {
 	// 5. DTM 客户端关闭（如果启用）
 	if ctx.DTMClient != nil {
 		defer ctx.DTMClient.Close()
+	}
+
+	// 5.5 消息发布器关闭（如果启用）
+	if ctx.MsgProducer != nil {
+		defer ctx.MsgProducer.Close()
 	}
 
 	// 6. 创建 RPC 服务
