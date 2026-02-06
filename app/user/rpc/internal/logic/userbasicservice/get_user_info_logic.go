@@ -33,7 +33,7 @@ func (l *GetUserInfoLogic) GetUserInfo(in *pb.GetUserInfoReq) (*pb.GetUserInfoRe
 	user, err := l.svcCtx.UserModel.FindByUserID(l.ctx, int64(in.UserId))
 	if err != nil {
 		if strings.Contains(err.Error(), "record not found") {
-			return nil, errorx.NewDefaultError("用户不存在")
+			return nil, errorx.New(errorx.CodeUserNotFound)
 		}
 		return nil, errorx.NewSystemError("系统繁忙，请稍后再试")
 	}

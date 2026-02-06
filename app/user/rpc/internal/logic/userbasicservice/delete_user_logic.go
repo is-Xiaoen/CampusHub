@@ -8,9 +8,8 @@ import (
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
 
+	"activity-platform/common/errorx"
 	"github.com/zeromicro/go-zero/core/logx"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type DeleteUserLogic struct {
@@ -33,10 +32,10 @@ func (l *DeleteUserLogic) DeleteUser(in *pb.DeleteUserReq) (*pb.DeleteUserRespon
 	user, err := l.svcCtx.UserModel.FindByUserID(l.ctx, in.UserId)
 	if err != nil {
 		l.Logger.Errorf("FindByUserID error: %v, userId: %d", err, in.UserId)
-		return nil, status.Error(codes.Internal, "internal error")
+		return nil, errorx.ErrDBError(err)
 	}
 	if user == nil {
-		return nil, status.Error(codes.NotFound, "user not found")
+		return nil, errorx.New(errorx.CodeUserNotFound)
 	}
 
 	// 2. 调用 CheckQQEmailLogic 校验验证码
@@ -55,7 +54,7 @@ func (l *DeleteUserLogic) DeleteUser(in *pb.DeleteUserReq) (*pb.DeleteUserRespon
 	err = l.svcCtx.UserModel.Update(l.ctx, user)
 	if err != nil {
 		l.Logger.Errorf("Update user status error: %v, userId: %d", err, in.UserId)
-		return nil, status.Error(codes.Internal, "failed to delete user")
+		return nil, errorx.New(errorx.CodeUserDeleteFailed)
 	}
 
 	return &pb.DeleteUserResponse{
