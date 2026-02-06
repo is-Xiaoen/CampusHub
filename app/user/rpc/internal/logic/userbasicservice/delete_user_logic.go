@@ -8,8 +8,8 @@ import (
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
 
-	"github.com/zeromicro/go-zero/core/logx"
 	"activity-platform/common/errorx"
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
 type DeleteUserLogic struct {
