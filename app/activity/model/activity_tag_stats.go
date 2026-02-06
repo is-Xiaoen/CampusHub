@@ -47,6 +47,11 @@ func (m *ActivityTagStatsModel) IncrActivityCount(ctx context.Context, tagIDs []
 		return nil
 	}
 
+	// 负数走 DecrActivityCount，防止 uint32(负数) 溢出
+	if delta < 0 {
+		return m.DecrActivityCount(ctx, tagIDs, -delta)
+	}
+
 	now := time.Now().Unix()
 
 	// 使用 UPSERT 确保记录存在
