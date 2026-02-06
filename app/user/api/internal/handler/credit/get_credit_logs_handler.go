@@ -13,7 +13,7 @@ import (
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
-// 查询信用变更记录
+// GetCreditLogsHandler 查询信用变更记录
 func GetCreditLogsHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req types.GetCreditLogsReq
