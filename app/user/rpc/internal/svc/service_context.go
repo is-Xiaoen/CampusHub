@@ -13,6 +13,7 @@ package svc
 import (
 	"time"
 
+	"activity-platform/app/user/cache"
 	"activity-platform/app/user/model"
 	"activity-platform/app/user/rpc/internal/config"
 	"activity-platform/app/user/rpc/internal/ocr"
@@ -36,6 +37,14 @@ type ServiceContext struct {
 	// Redis Redis客户端
 	Redis *redis.Client
 
+	// ==================== Cache 层 ====================
+
+	// CreditCache 信用分缓存服务
+	CreditCache cache.ICreditCache
+
+	// VerifyCache 认证状态缓存服务
+	VerifyCache cache.IVerifyCache
+
 	// ==================== Model 层 ====================
 
 	// UserCreditModel 用户信用分数据访问层
@@ -55,20 +64,31 @@ type ServiceContext struct {
 
 // NewServiceContext 创建服务上下文
 // 初始化所有依赖并注入
-func NewServiceContext(c config.Config) *ServiceContext {
+// 返回 ServiceContext 和 error，由调用方决定如何处理错误
+func NewServiceContext(c config.Config) (*ServiceContext, error) {
 	// 初始化数据库连接
-	db := initDB(c)
+	db, err := initDB(c)
+	if err != nil {
+		return nil, err
+	}
 
 	// 初始化Redis连接
-	rdb := initRedis(c)
+	rdb, err := initRedis(c)
+	if err != nil {
+		return nil, err
+	}
 
-	// 初始化OCR工厂
+	// 初始化OCR工厂（可选，失败不影响服务启动）
 	ocrFactory := initOcrFactory(c, rdb)
 
 	return &ServiceContext{
 		Config: c,
 		DB:     db,
 		Redis:  rdb,
+
+		// 注入 Cache
+		CreditCache: cache.NewCreditCache(rdb),
+		VerifyCache: cache.NewVerifyCache(rdb),
 
 		// 注入 Model
 		UserCreditModel:          model.NewUserCreditModel(db),
@@ -77,12 +97,12 @@ func NewServiceContext(c config.Config) *ServiceContext {
 
 		// 注入 OCR 工厂
 		OcrFactory: ocrFactory,
-	}
+	}, nil
 }
 
 // initDB 初始化GORM数据库连接
 // 配置连接池、日志等
-func initDB(c config.Config) *gorm.DB {
+func initDB(c config.Config) (*gorm.DB, error) {
 	// GORM 日志配置
 	// 使用默认的 logger，设置为 Warn 级别（只记录慢查询和错误）
 	gormLogger := logger.Default.LogMode(logger.Warn)
@@ -95,14 +115,14 @@ func initDB(c config.Config) *gorm.DB {
 	})
 	if err != nil {
 		logx.Errorf("连接数据库失败: %v", err)
-		panic(err)
+		return nil, err
 	}
 
 	// 获取底层 sql.DB 以配置连接池
 	sqlDB, err := db.DB()
 	if err != nil {
 		logx.Errorf("获取数据库实例失败: %v", err)
-		panic(err)
+		return nil, err
 	}
 
 	// 连接池配置
@@ -111,12 +131,12 @@ func initDB(c config.Config) *gorm.DB {
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	logx.Info("数据库连接初始化成功")
-	return db
+	return db, nil
 }
 
 // initRedis 初始化Redis连接
 // 使用 go-zero 的 RedisConf 配置
-func initRedis(c config.Config) *redis.Client {
+func initRedis(c config.Config) (*redis.Client, error) {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:         c.BizRedis.Host,
 		Password:     c.BizRedis.Pass,
@@ -130,11 +150,11 @@ func initRedis(c config.Config) *redis.Client {
 	// defer cancel()
 	// if err := rdb.Ping(ctx).Err(); err != nil {
 	//     logx.Errorf("Redis连接失败: %v", err)
-	//     panic(err)
+	//     return nil, err
 	// }
 
 	logx.Info("Redis连接初始化成功")
-	return rdb
+	return rdb, nil
 }
 
 // initOcrFactory 初始化OCR工厂
