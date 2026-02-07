@@ -668,6 +668,8 @@ service TagService {
     rpc GetUserTags(GetUserTagsReq) returns (GetUserTagsResponse);
     // 修改用户兴趣
     rpc UpdateUserTag(UpdateUserTagReq) returns(UpdateUserTagResponse);
+    // 获取所有的兴趣标签
+    rpc GetAllInterestTags(GetAllInterestTagsReq) returns(GetAllInterestTagsResp);
 }
 
 // 修改用户兴趣
@@ -729,6 +731,12 @@ message GetUserTagsResponse {
 message UserTag {
     uint64 id = 1;
     string name = 2;
+}
+
+message GetAllInterestTagsReq {}
+
+message GetAllInterestTagsResp {
+    repeated InterestTag interest_tags = 1;
 }
 
 // ============================================================================

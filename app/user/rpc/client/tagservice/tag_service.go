@@ -36,6 +36,8 @@ type (
 	DeleteUserResponse       = pb.DeleteUserResponse
 	ForgetPasswordReq        = pb.ForgetPasswordReq
 	ForgetPasswordResponse   = pb.ForgetPasswordResponse
+	GetAllInterestTagsReq    = pb.GetAllInterestTagsReq
+	GetAllInterestTagsResp   = pb.GetAllInterestTagsResp
 	GetAllTagsReq            = pb.GetAllTagsReq
 	GetAllTagsResp           = pb.GetAllTagsResp
 	GetCaptchaConfigReq      = pb.GetCaptchaConfigReq
@@ -102,6 +104,8 @@ type (
 		GetUserTags(ctx context.Context, in *GetUserTagsReq, opts ...grpc.CallOption) (*GetUserTagsResponse, error)
 		// 修改用户兴趣
 		UpdateUserTag(ctx context.Context, in *UpdateUserTagReq, opts ...grpc.CallOption) (*UpdateUserTagResponse, error)
+		// 获取所有的兴趣标签
+		GetAllInterestTags(ctx context.Context, in *GetAllInterestTagsReq, opts ...grpc.CallOption) (*GetAllInterestTagsResp, error)
 	}
 
 	defaultTagService struct {
@@ -134,4 +138,10 @@ func (m *defaultTagService) GetUserTags(ctx context.Context, in *GetUserTagsReq,
 func (m *defaultTagService) UpdateUserTag(ctx context.Context, in *UpdateUserTagReq, opts ...grpc.CallOption) (*UpdateUserTagResponse, error) {
 	client := pb.NewTagServiceClient(m.cli.Conn())
 	return client.UpdateUserTag(ctx, in, opts...)
+}
+
+// 获取所有的兴趣标签
+func (m *defaultTagService) GetAllInterestTags(ctx context.Context, in *GetAllInterestTagsReq, opts ...grpc.CallOption) (*GetAllInterestTagsResp, error) {
+	client := pb.NewTagServiceClient(m.cli.Conn())
+	return client.GetAllInterestTags(ctx, in, opts...)
 }
