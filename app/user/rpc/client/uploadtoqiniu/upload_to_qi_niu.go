@@ -89,6 +89,8 @@ type (
 	UpdateUserTagResponse       = pb.UpdateUserTagResponse
 	UpdateVerifyStatusReq       = pb.UpdateVerifyStatusReq
 	UpdateVerifyStatusResp      = pb.UpdateVerifyStatusResp
+	UploadActivityCoverReq      = pb.UploadActivityCoverReq
+	UploadActivityCoverResp     = pb.UploadActivityCoverResp
 	UploadAvatarReq             = pb.UploadAvatarReq
 	UploadAvatarResp            = pb.UploadAvatarResp
 	UploadStudentCardImagesReq  = pb.UploadStudentCardImagesReq

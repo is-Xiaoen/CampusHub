@@ -61,16 +61,27 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		log.Fatalf("消息中间件初始化失败: %v", err)
 	}
 
-	// 初始化 User RPC 客户端（信用分 + 认证 共用同一个连接）
-	userRpcConn := zrpc.MustNewClient(c.UserRpc).Conn()
+	// 初始化 User RPC 客户端（弱依赖，失败不影响服务启动）
+	var userCreditRpc pb.CreditServiceClient
+	var userVerifyRpc pb.VerifyServiceClient
+
+	userRpcClient, err := zrpc.NewClient(c.UserRpc)
+	if err != nil {
+		log.Printf("[WARN] User RPC 客户端初始化失败: %v (服务将继续启动，但 User 域消费者将不可用)", err)
+	} else {
+		userRpcConn := userRpcClient.Conn()
+		userCreditRpc = pb.NewCreditServiceClient(userRpcConn)
+		userVerifyRpc = pb.NewVerifyServiceClient(userRpcConn)
+		log.Printf("[INFO] User RPC 客户端初始化成功")
+	}
 
 	return &ServiceContext{
 		Config:            c,
 		DB:                db,
 		RedisClient:       redisClient,
 		MsgClient:         msgClient,
-		UserCreditRpc:     pb.NewCreditServiceClient(userRpcConn),
-		UserVerifyRpc:     pb.NewVerifyServiceClient(userRpcConn),
+		UserCreditRpc:     userCreditRpc,
+		UserVerifyRpc:     userVerifyRpc,
 		GroupModel:        model.NewGroupModel(db),
 		GroupMemberModel:  model.NewGroupMemberModel(db),
 		MessageModel:      model.NewMessageModel(db),
