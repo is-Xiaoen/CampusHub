@@ -2,6 +2,8 @@ package userbasicservicelogic
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"activity-platform/app/user/model"
 	qqemaillogic "activity-platform/app/user/rpc/internal/logic/qqemail"
@@ -9,6 +11,7 @@ import (
 	"activity-platform/app/user/rpc/pb/pb"
 
 	"activity-platform/common/errorx"
+
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -51,6 +54,9 @@ func (l *DeleteUserLogic) DeleteUser(in *pb.DeleteUserReq) (*pb.DeleteUserRespon
 
 	// 3. 更新用户状态为注销
 	user.Status = model.UserStatusDeleted
+	// 修改邮箱为原邮箱+注销时间戳，避免唯一索引冲突并保留记录
+	user.QQEmail = fmt.Sprintf("%s_%d", user.QQEmail, time.Now().Unix())
+
 	err = l.svcCtx.UserModel.Update(l.ctx, user)
 	if err != nil {
 		l.Logger.Errorf("Update user status error: %v, userId: %d", err, in.UserId)

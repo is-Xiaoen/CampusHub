@@ -212,6 +212,7 @@ type UserInfo struct {
 	Credit            int64         `json:"credit"`
 	IsStudentVerified bool          `json:"isStudentVerified"`
 	InterestTags      []InterestTag `json:"interestTags"`
+	QqEmail           string        `json:"qqEmail"`
 }
 
 type VerifyCaptchaReq struct {
