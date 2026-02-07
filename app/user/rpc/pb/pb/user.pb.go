@@ -5368,6 +5368,112 @@ func (x *UploadStudentCardImagesResp) GetBackImageUrl() string {
 	return ""
 }
 
+// 上传活动封面请求
+type UploadActivityCoverReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ActivityId    int64                  `protobuf:"varint,1,opt,name=activity_id,json=activityId,proto3" json:"activity_id,omitempty"`
+	FileData      []byte                 `protobuf:"bytes,2,opt,name=file_data,json=fileData,proto3" json:"file_data,omitempty"`
+	FileName      string                 `protobuf:"bytes,3,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadActivityCoverReq) Reset() {
+	*x = UploadActivityCoverReq{}
+	mi := &file_user_proto_msgTypes[83]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadActivityCoverReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadActivityCoverReq) ProtoMessage() {}
+
+func (x *UploadActivityCoverReq) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[83]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadActivityCoverReq.ProtoReflect.Descriptor instead.
+func (*UploadActivityCoverReq) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{83}
+}
+
+func (x *UploadActivityCoverReq) GetActivityId() int64 {
+	if x != nil {
+		return x.ActivityId
+	}
+	return 0
+}
+
+func (x *UploadActivityCoverReq) GetFileData() []byte {
+	if x != nil {
+		return x.FileData
+	}
+	return nil
+}
+
+func (x *UploadActivityCoverReq) GetFileName() string {
+	if x != nil {
+		return x.FileName
+	}
+	return ""
+}
+
+// 上传活动封面响应
+type UploadActivityCoverResp struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CoverUrl      string                 `protobuf:"bytes,1,opt,name=cover_url,json=coverUrl,proto3" json:"cover_url,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadActivityCoverResp) Reset() {
+	*x = UploadActivityCoverResp{}
+	mi := &file_user_proto_msgTypes[84]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadActivityCoverResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadActivityCoverResp) ProtoMessage() {}
+
+func (x *UploadActivityCoverResp) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[84]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadActivityCoverResp.ProtoReflect.Descriptor instead.
+func (*UploadActivityCoverResp) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{84}
+}
+
+func (x *UploadActivityCoverResp) GetCoverUrl() string {
+	if x != nil {
+		return x.CoverUrl
+	}
+	return ""
+}
+
 var File_user_proto protoreflect.FileDescriptor
 
 const file_user_proto_rawDesc = "" +
@@ -5789,7 +5895,14 @@ const file_user_proto_rawDesc = "" +
 	"\x0fback_image_name\x18\x05 \x01(\tR\rbackImageName\"k\n" +
 	"\x1bUploadStudentCardImagesResp\x12&\n" +
 	"\x0ffront_image_url\x18\x01 \x01(\tR\rfrontImageUrl\x12$\n" +
-	"\x0eback_image_url\x18\x02 \x01(\tR\fbackImageUrl2\x86\x03\n" +
+	"\x0eback_image_url\x18\x02 \x01(\tR\fbackImageUrl\"s\n" +
+	"\x16UploadActivityCoverReq\x12\x1f\n" +
+	"\vactivity_id\x18\x01 \x01(\x03R\n" +
+	"activityId\x12\x1b\n" +
+	"\tfile_data\x18\x02 \x01(\fR\bfileData\x12\x1b\n" +
+	"\tfile_name\x18\x03 \x01(\tR\bfileName\"6\n" +
+	"\x17UploadActivityCoverResp\x12\x1b\n" +
+	"\tcover_url\x18\x01 \x01(\tR\bcoverUrl2\x86\x03\n" +
 	"\rCreditService\x12@\n" +
 	"\rGetCreditInfo\x12\x16.user.GetCreditInfoReq\x1a\x17.user.GetCreditInfoResp\x12@\n" +
 	"\rGetCreditLogs\x12\x16.user.GetCreditLogsReq\x1a\x17.user.GetCreditLogsResp\x12C\n" +
@@ -5854,7 +5967,7 @@ func file_user_proto_rawDescGZIP() []byte {
 	return file_user_proto_rawDescData
 }
 
-var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 83)
+var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 85)
 var file_user_proto_goTypes = []any{
 	(*GetCreditInfoReq)(nil),            // 0: user.GetCreditInfoReq
 	(*GetCreditInfoResp)(nil),           // 1: user.GetCreditInfoResp
@@ -5939,6 +6052,8 @@ var file_user_proto_goTypes = []any{
 	(*UploadAvatarResp)(nil),            // 80: user.UploadAvatarResp
 	(*UploadStudentCardImagesReq)(nil),  // 81: user.UploadStudentCardImagesReq
 	(*UploadStudentCardImagesResp)(nil), // 82: user.UploadStudentCardImagesResp
+	(*UploadActivityCoverReq)(nil),      // 83: user.UploadActivityCoverReq
+	(*UploadActivityCoverResp)(nil),     // 84: user.UploadActivityCoverResp
 }
 var file_user_proto_depIdxs = []int32{
 	3,  // 0: user.GetCreditLogsResp.list:type_name -> user.CreditLogItem
@@ -6049,7 +6164,7 @@ func file_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_user_proto_rawDesc), len(file_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   83,
+			NumMessages:   85,
 			NumExtensions: 0,
 			NumServices:   8,
 		},

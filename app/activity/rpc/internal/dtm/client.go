@@ -9,7 +9,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/dtm-labs/client/dtmcli"
 	"github.com/dtm-labs/client/dtmgrpc"
 	"github.com/zeromicro/go-zero/core/logx"
 	"google.golang.org/protobuf/proto"
@@ -275,14 +274,17 @@ func (c *Client) DeleteActivitySaga(ctx context.Context, req DeleteActivitySagaR
 }
 
 // safeGenGid 安全地生成全局事务 ID
-// dtmcli.MustGenGid 在 DTM Server 不可达时会 panic，此处用 recover 捕获
+// dtmgrpc.MustGenGid 在 DTM Server 不可达时会 panic，此处用 recover 捕获
+//
+// 注意：必须使用 dtmgrpc.MustGenGid（gRPC 协议），而非 dtmcli.MustGenGid（HTTP 协议）
+// 因为 server 参数是 DTM 的 gRPC 地址（如 192.168.10.4:36790）
 func safeGenGid(server string) (gid string, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("生成事务 ID 失败: %v", r)
 		}
 	}()
-	gid = dtmcli.MustGenGid(server)
+	gid = dtmgrpc.MustGenGid(server)
 	return gid, nil
 }
 

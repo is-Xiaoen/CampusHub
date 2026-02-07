@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"activity-platform/app/user/model"
 	captchaservicelogic "activity-platform/app/user/rpc/internal/logic/captchaservice"
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
@@ -59,8 +60,11 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 		return nil, errorx.New(errorx.CodeLoginFailed)
 	}
 
-	if user.Status == 0 { // 0是禁用
+	if user.Status == model.UserStatusDisabled {
 		return nil, errorx.New(errorx.CodeUserDisabled)
+	}
+	if user.Status == model.UserStatusDeleted {
+		return nil, errorx.New(errorx.CodeUserNotFound)
 	}
 
 	// 3. 生成Token

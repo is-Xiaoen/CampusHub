@@ -8,7 +8,7 @@ import (
 
 	"activity-platform/app/user/api/internal/logic/user"
 	"activity-platform/app/user/api/internal/svc"
-	"github.com/zeromicro/go-zero/rest/httpx"
+	"activity-platform/common/response"
 )
 
 // 获取注销用户QQ验证码
@@ -17,9 +17,9 @@ func GetDeleteUserCodeHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		l := user.NewGetDeleteUserCodeLogic(r.Context(), svcCtx)
 		err := l.GetDeleteUserCode()
 		if err != nil {
-			httpx.ErrorCtx(r.Context(), w, err)
+			response.Fail(w, err)
 		} else {
-			httpx.Ok(w)
+			response.Success(w, nil)
 		}
 	}
 }
