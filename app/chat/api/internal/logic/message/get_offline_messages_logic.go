@@ -33,26 +33,8 @@ func NewGetOfflineMessagesLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 }
 
 func (l *GetOfflineMessagesLogic) GetOfflineMessages(req *types.GetOfflineMessagesReq) (resp *types.GetOfflineMessagesData, err error) {
-	// 从 context 中获取用户 ID（JWT Token 中的信息）
-	userIdValue := l.ctx.Value("userId")
-	if userIdValue == nil {
-		l.Errorf("无法从 JWT Token 中获取用户 ID")
-		return nil, errorx.New(errorx.CodeUnauthorized)
-	}
-
-	// 将 userId 转换为字符串
-	var userId string
-	switch v := userIdValue.(type) {
-	case string:
-		userId = v
-	case int64:
-		userId = strconv.FormatInt(v, 10)
-	case float64:
-		userId = strconv.FormatInt(int64(v), 10)
-	default:
-		l.Errorf("无法解析用户 ID，类型: %T", userIdValue)
-		return nil, errorx.NewWithMessage(errorx.CodeUnauthorized, "用户信息格式错误")
-	}
+	// 将请求参数中的 UserId 转换为字符串
+	userId := strconv.FormatInt(req.UserId, 10)
 
 	// 调用 RPC 服务获取离线消息
 	rpcResp, err := l.svcCtx.ChatRpc.GetOfflineMessages(l.ctx, &chat.GetOfflineMessagesReq{
@@ -90,4 +72,18 @@ func (l *GetOfflineMessagesLogic) GetOfflineMessages(req *types.GetOfflineMessag
 	return &types.GetOfflineMessagesData{
 		Messages: messages,
 	}, nil
+}
+
+// mustParseInt64 将字符串转换为 int64，失败返回 0
+func mustParseInt64(s string) int64 {
+	v, _ := strconv.ParseInt(s, 10, 64)
+	return v
+}
+
+// formatTimestamp 将时间戳转换为字符串格式
+func formatTimestamp(timestamp int64) string {
+	if timestamp == 0 {
+		return ""
+	}
+	return strconv.FormatInt(timestamp, 10)
 }

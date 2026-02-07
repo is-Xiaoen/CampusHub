@@ -74,6 +74,7 @@ type GetOfflineMessagesData struct {
 }
 
 type GetOfflineMessagesReq struct {
+	UserId    int64 `form:"user_id"`
 	AfterTime int64 `form:"after_time"`
 }
 
