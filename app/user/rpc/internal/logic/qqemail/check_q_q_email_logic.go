@@ -35,11 +35,11 @@ func (l *CheckQQEmailLogic) CheckQQEmail(in *pb.CheckQQEmailReq) (*pb.CheckQQEma
 	// 1. 获取验证码
 	val, err := l.svcCtx.Redis.Get(l.ctx, key).Result()
 	if err == redis.Nil {
-		return nil, errorx.NewDefaultError("验证码已过期或未发送")
+		return nil, errorx.New(errorx.CodeCaptchaNotFound)
 	}
 	if err != nil {
 		l.Logger.Errorf("Get email captcha failed: %v", err)
-		return nil, errorx.NewSystemError("系统繁忙，请稍后再试")
+		return nil, errorx.ErrCacheError(err)
 	}
 
 	// 2. 校验验证码
@@ -50,7 +50,7 @@ func (l *CheckQQEmailLogic) CheckQQEmail(in *pb.CheckQQEmailReq) (*pb.CheckQQEma
 		if err != nil {
 			l.Logger.Errorf("Incr email captcha error count failed: %v", err)
 			// 即使记录失败也返回验证码错误
-			return nil, errorx.NewDefaultError("验证码错误")
+			return nil, errorx.New(errorx.CodeCaptchaError)
 		}
 
 		// 第一次错误设置过期时间，跟随验证码有效期（3分钟）
@@ -61,10 +61,10 @@ func (l *CheckQQEmailLogic) CheckQQEmail(in *pb.CheckQQEmailReq) (*pb.CheckQQEma
 		// 输错3次（即第3次错误时），清除验证码
 		if count >= 3 {
 			l.svcCtx.Redis.Del(l.ctx, key, errKey)
-			return nil, errorx.NewDefaultError("验证码错误次数过多，请重新获取")
+			return nil, errorx.New(errorx.CodeCaptchaTooManyAttempts)
 		}
 
-		return nil, errorx.NewDefaultError(fmt.Sprintf("验证码错误，您还有%d次机会", 3-count))
+		return nil, errorx.NewWithMessage(errorx.CodeCaptchaError, fmt.Sprintf("验证码错误，您还有%d次机会", 3-count))
 	}
 
 	// 3. 验证成功，清除验证码和错误次数

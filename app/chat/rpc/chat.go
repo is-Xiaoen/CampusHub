@@ -97,27 +97,41 @@ func startMQConsumer(svcCtx *svc.ServiceContext) {
 	}()
 }
 
-// registerConsumers 注册所有消费者
+// registerConsumers 注册所有消费者（Chat 域 + User 域）
 func registerConsumers(svcCtx *svc.ServiceContext, chatRpcServer chat.ChatServiceServer) {
-	// 将 Server 转换为 Client 接口（通过类型适配器）
+	// 将 Server 转换为 Client 接口（通过类型适配器，避免网络回环）
 	chatRpcClient := &localChatServiceClient{server: chatRpcServer}
 
-	// 1. 活动创建事件消费者
+	// ==================== Chat/Activity 域消费者 ====================
+
+	// 1. 活动创建事件 → 自动建群
 	activityCreatedConsumer := consumer.NewActivityCreatedConsumer(chatRpcClient)
 	activityCreatedConsumer.Subscribe(svcCtx.MsgClient)
 
-	// 2. 用户报名成功事件消费者
+	// 2. 用户报名成功 → 自动入群
 	memberJoinedConsumer := consumer.NewActivityMemberJoinedConsumer(chatRpcClient)
 	memberJoinedConsumer.Subscribe(svcCtx.MsgClient)
 
-	// 3. 用户取消报名事件消费者
+	// 3. 用户取消报名 → 自动退群
 	memberLeftConsumer := consumer.NewActivityMemberLeftConsumer(chatRpcClient)
 	memberLeftConsumer.Subscribe(svcCtx.MsgClient)
 
-	logx.Info("✅ 已注册 3 个 MQ 消费者:")
-	logx.Info("  - activity.created -> chat-auto-create-group")
+	// ==================== User 域消费者（调 User RPC）====================
+
+	// 4. 信用分变更事件 → 调 UserRpc.UpdateScore
+	creditConsumer := consumer.NewCreditChangeConsumer(svcCtx.UserCreditRpc)
+	creditConsumer.Subscribe(svcCtx.MsgClient)
+
+	// 5. OCR 认证事件 → 调 UserRpc.ProcessOcrVerify
+	verifyConsumer := consumer.NewVerifyOcrConsumer(svcCtx.UserVerifyRpc)
+	verifyConsumer.Subscribe(svcCtx.MsgClient)
+
+	logx.Info("已注册 5 个 MQ 消费者:")
+	logx.Info("  - activity.created       -> chat-auto-create-group")
 	logx.Info("  - activity.member.joined -> chat-auto-add-member")
-	logx.Info("  - activity.member.left -> chat-auto-remove-member")
+	logx.Info("  - activity.member.left   -> chat-auto-remove-member")
+	logx.Info("  - credit:events          -> credit-event-handler")
+	logx.Info("  - verify:events          -> verify-event-handler")
 }
 
 // localChatServiceClient 本地 RPC 调用适配器（避免网络调用）

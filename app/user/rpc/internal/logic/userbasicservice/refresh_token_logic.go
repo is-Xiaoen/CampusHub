@@ -32,7 +32,7 @@ func (l *RefreshTokenLogic) RefreshToken(in *pb.RefreshReq) (*pb.RefreshResponse
 	// 1. 解析长token
 	claims, err := jwt.ParseToken(in.RefreshToken, l.svcCtx.Config.JWT.RefreshSecret)
 	if err != nil {
-		return nil, errorx.NewDefaultError("无效的刷新令牌")
+		return nil, errorx.New(errorx.CodeRefreshTokenInvalid)
 	}
 
 	// 2. 从redis校验refresh_jwtid是否存在
@@ -40,7 +40,7 @@ func (l *RefreshTokenLogic) RefreshToken(in *pb.RefreshReq) (*pb.RefreshResponse
 	refreshTokenKey := fmt.Sprintf("token:refresh:%s", claims.RefreshJwtId)
 	_, err = l.svcCtx.Redis.Get(l.ctx, refreshTokenKey).Result()
 	if err != nil {
-		return nil, errorx.NewDefaultError("刷新令牌已过期或不存在")
+		return nil, errorx.New(errorx.CodeRefreshTokenExpired)
 	}
 
 	// 3. 生成新的短token (AccessJwtId使用新UUID，RefreshJwtId沿用旧的)
@@ -50,7 +50,7 @@ func (l *RefreshTokenLogic) RefreshToken(in *pb.RefreshReq) (*pb.RefreshResponse
 		Expire: l.svcCtx.Config.JWT.AccessExpire,
 	}, newAccessId, claims.RefreshJwtId)
 	if err != nil {
-		return nil, errorx.NewSystemError("Token生成失败")
+		return nil, errorx.New(errorx.CodeTokenGenerateFailed)
 	}
 
 	return &pb.RefreshResponse{

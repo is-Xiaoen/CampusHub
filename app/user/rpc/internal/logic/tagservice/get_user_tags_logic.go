@@ -5,6 +5,7 @@ import (
 
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -28,7 +29,7 @@ func (l *GetUserTagsLogic) GetUserTags(in *pb.GetUserTagsReq) (*pb.GetUserTagsRe
 	relations, err := l.svcCtx.UserInterestRelationModel.ListByUserID(l.ctx, in.UserId)
 	if err != nil {
 		l.Logger.Errorf("Failed to list user interest relations: %v", err)
-		return nil, err
+		return nil, errorx.ErrDBError(err)
 	}
 
 	if len(relations) == 0 {
@@ -45,7 +46,7 @@ func (l *GetUserTagsLogic) GetUserTags(in *pb.GetUserTagsReq) (*pb.GetUserTagsRe
 	tags, err := l.svcCtx.InterestTagModel.FindBasicInfoByIDs(l.ctx, tagIDs)
 	if err != nil {
 		l.Logger.Errorf("Failed to find tags by IDs: %v", err)
-		return nil, err
+		return nil, errorx.ErrDBError(err)
 	}
 
 	// 4. 构建响应

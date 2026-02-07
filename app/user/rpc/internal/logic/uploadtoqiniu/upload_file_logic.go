@@ -10,13 +10,12 @@ import (
 
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
+	"activity-platform/common/errorx"
 
 	"github.com/google/uuid"
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/storage"
 	"github.com/zeromicro/go-zero/core/logx"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type UploadFileLogic struct {
@@ -37,19 +36,19 @@ func (l *UploadFileLogic) UploadFile(in *pb.UploadFileReq) (*pb.UploadFileRespon
 	// 1. 大小限制 (5MB)
 	const MaxFileSize = 5 * 1024 * 1024
 	if len(in.FileData) > MaxFileSize {
-		return nil, status.Error(codes.InvalidArgument, "file size exceeds 5MB limit")
+		return nil, errorx.New(errorx.CodeFileTooLarge)
 	}
 
 	// 2. 格式检查 (仅允许图片)
 	contentType := http.DetectContentType(in.FileData)
 	if !strings.HasPrefix(contentType, "image/") {
-		return nil, status.Error(codes.InvalidArgument, "only image files are allowed")
+		return nil, errorx.New(errorx.CodeFileTypeInvalid)
 	}
 
 	// 3. 准备七牛云配置
 	qConfig := l.svcCtx.Config.Qiniu
 	if qConfig.AccessKey == "" || qConfig.SecretKey == "" {
-		return nil, status.Error(codes.Internal, "qiniu config is missing")
+		return nil, errorx.New(errorx.CodeFileConfigError)
 	}
 
 	// 4. 生成上传凭证
@@ -108,7 +107,7 @@ func (l *UploadFileLogic) UploadFile(in *pb.UploadFileReq) (*pb.UploadFileRespon
 	err := formUploader.Put(l.ctx, &ret, upToken, key, dataReader, dataLen, nil)
 	if err != nil {
 		l.Logger.Errorf("Failed to upload to qiniu: %v", err)
-		return nil, status.Error(codes.Internal, "upload failed")
+		return nil, errorx.New(errorx.CodeFileUploadFailed)
 	}
 
 	// 8. 拼接返回 URL
