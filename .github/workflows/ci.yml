@@ -2,7 +2,7 @@
 # CampusHub CI 流水线
 # ============================================================================
 # 功能：代码检查、编译验证
-# 触发：push 到 main/develop，或提交 PR
+# 触发：push 到 main/feature/*，或提交 PR 到 main
 #
 # 注意：CI 只做检查，不会自动部署到服务器
 # ============================================================================
@@ -11,9 +11,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, feature/* ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
 
 jobs:
   check:
@@ -27,7 +27,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: '1.24.5'
           cache: true
 
       - name: Download dependencies
@@ -35,17 +35,23 @@ jobs:
 
       - name: Run go fmt check
         run: |
-          if [ -n "$(gofmt -l .)" ]; then
+          # 排除 protobuf 生成文件和 vendor 目录
+          UNFMT=$(gofmt -l . | grep -v '\.pb\.go$' | grep -v '/pb/' | grep -v 'vendor/')
+          if [ -n "$UNFMT" ]; then
             echo "::error::以下文件需要格式化："
-            gofmt -l .
+            echo "$UNFMT"
             exit 1
           fi
 
       - name: Run go vet
         run: go vet ./...
 
-      - name: Build
-        run: go build ./...
+      - name: Build all services
+        run: |
+          go build ./app/user/api/...
+          go build ./app/user/rpc/...
+          go build ./app/activity/api/...
+          go build ./app/activity/rpc/...
 
       - name: Run tests
-        run: go test -v -race ./...
+        run: go test -v -race -count=1 ./...

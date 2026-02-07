@@ -4,13 +4,11 @@
 package types
 
 type ApplyVerifyReq struct {
-	RealName      string `json:"real_name"`
-	SchoolName    string `json:"school_name"`
-	StudentId     string `json:"student_id"`
-	Department    string `json:"department,optional"`
-	AdmissionYear string `json:"admission_year"`
-	FrontImageUrl string `json:"front_image_url"`
-	BackImageUrl  string `json:"back_image_url"`
+	RealName      string `form:"real_name"`
+	SchoolName    string `form:"school_name"`
+	StudentId     string `form:"student_id"`
+	Department    string `form:"department"`
+	AdmissionYear string `form:"admission_year"`
 }
 
 type ApplyVerifyResp struct {

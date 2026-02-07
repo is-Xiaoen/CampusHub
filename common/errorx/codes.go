@@ -73,7 +73,11 @@ const (
 	CodeVerifyRateLimit      = 2208 // 申请过于频繁
 	CodeVerifyInvalidTransit = 2209 // 无效的状态转换
 	CodeVerifyPermissionDeny = 2210 // 无权操作此认证记录
-	CodeVerifyRejectCooldown = 2211 // 拒绝后冷却期内，暂不能申请
+	CodeVerifyRejectCooldown    = 2211 // 拒绝后冷却期内，暂不能申请
+	CodeVerifyImageFormatError  = 2212 // 图片格式不支持
+	CodeVerifyImageTooLarge     = 2213 // 图片大小超出限制
+	CodeVerifyFrontImageMissing = 2214 // 学生证正面照片缺失
+	CodeVerifyBackImageMissing  = 2215 // 学生证详情面照片缺失
 
 	// 用户服务 - OCR识别 2231-2250
 	CodeOcrNetworkTimeout      = 2231 // OCR服务网络超时
@@ -241,7 +245,11 @@ var codeMessages = map[int]string{
 	CodeVerifyRateLimit:        "申请过于频繁，请20秒后再试",
 	CodeVerifyInvalidTransit:   "无效的状态转换",
 	CodeVerifyPermissionDeny:   "无权操作此认证记录",
-	CodeVerifyRejectCooldown:   "您的认证申请被拒绝后24小时内不能重新申请",
+	CodeVerifyRejectCooldown:    "您的认证申请被拒绝后24小时内不能重新申请",
+	CodeVerifyImageFormatError:  "图片格式不支持，仅支持 jpg/jpeg/png",
+	CodeVerifyImageTooLarge:     "图片大小超出限制（最大5MB）",
+	CodeVerifyFrontImageMissing: "请上传学生证正面照片",
+	CodeVerifyBackImageMissing:  "请上传学生证详情面照片",
 	CodeOcrNetworkTimeout:      "识别服务繁忙，请稍后重试",
 	CodeOcrImageInvalid:        "图片无效，请上传清晰的学生证照片",
 	CodeOcrRecognizeFailed:     "识别失败，请重新上传照片",
