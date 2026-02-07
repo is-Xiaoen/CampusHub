@@ -22,6 +22,10 @@ var (
 	ErrTicketNotFound = errors.New("票据不存在")
 )
 
+const (
+	emptyCheckInSnapshotJSON = "{}"
+)
+
 // ==================== ActivityTicket 票据模型 ====================
 
 type ActivityTicket struct {
@@ -244,7 +248,7 @@ func (m *ActivityTicketModel) ResetForReuse(ctx context.Context, tx *gorm.DB, id
 			"status":            TicketStatusUnused,
 			"used_time":         int64(0),
 			"used_location":     "",
-			"check_in_snapshot": "",
+			"check_in_snapshot": emptyCheckInSnapshotJSON,
 		})
 	if result.Error != nil {
 		return result.Error
