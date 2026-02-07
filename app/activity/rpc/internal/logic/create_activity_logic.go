@@ -42,7 +42,38 @@ func (l *CreateActivityLogic) CreateActivity(in *activity.CreateActivityReq) (*a
 		return nil, err
 	}
 
-	// 2. 验证分类是否存在且启用
+	// 2. 校验发布资格（信用分）—— 仅非草稿模式需要校验
+	if !in.IsDraft {
+		canPublishResp, err := l.svcCtx.CreditRpc.CanPublish(l.ctx, &userpb.CanPublishReq{
+			UserId: in.OrganizerId,
+		})
+		if err != nil {
+			l.Errorf("[CreateActivity] 信用分校验失败: userID=%d, err=%v", in.OrganizerId, err)
+			return nil, errorx.NewWithMessage(errorx.CodeInternalError, "信用分校验服务异常，请稍后重试")
+		}
+		if !canPublishResp.Allowed {
+			l.Infof("[CreateActivity] 信用分不足，禁止发布: userID=%d, score=%d, reason=%s",
+				in.OrganizerId, canPublishResp.Score, canPublishResp.Reason)
+			return nil, errorx.NewWithMessage(errorx.CodeCreditCannotPublish, canPublishResp.Reason)
+		}
+		l.Infof("[CreateActivity] 信用分校验通过: userID=%d, score=%d, level=%d",
+			in.OrganizerId, canPublishResp.Score, canPublishResp.Level)
+	}
+
+	// 3. 获取组织者信息（昵称、头像）—— 非关键路径，失败不阻塞创建
+	if in.OrganizerName == "" {
+		userInfoResp, err := l.svcCtx.UserBasicRpc.GetUserInfo(l.ctx, &userpb.GetUserInfoReq{
+			UserId: in.OrganizerId,
+		})
+		if err != nil {
+			l.Errorf("[CreateActivity] 获取用户信息失败（不影响创建）: userID=%d, err=%v", in.OrganizerId, err)
+		} else if userInfoResp.UserInfo != nil {
+			in.OrganizerName = userInfoResp.UserInfo.Nickname
+			in.OrganizerAvatar = userInfoResp.UserInfo.AvatarUrl
+		}
+	}
+
+	// 4. 验证分类是否存在且启用
 	_, err := l.svcCtx.CategoryModel.FindByID(l.ctx, uint64(in.CategoryId))
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -52,13 +83,13 @@ func (l *CreateActivityLogic) CreateActivity(in *activity.CreateActivityReq) (*a
 		return nil, errorx.ErrDBError(err)
 	}
 
-	// 3. 确定初始状态：草稿 or 已发布
+	// 5. 确定初始状态：草稿 or 已发布
 	status := model.StatusDraft
 	if !in.IsDraft {
 		status = model.StatusPublished // MVP: 跳过待审核，直接发布
 	}
 
-	// 4. 检查 DTM 是否可用
+	// 6. 检查 DTM 是否可用
 	if l.svcCtx.DTMClient != nil && l.svcCtx.DTMClient.IsHealthy() {
 		// 使用 DTM SAGA 创建活动
 		return l.createActivityWithDTM(in, int32(status))
