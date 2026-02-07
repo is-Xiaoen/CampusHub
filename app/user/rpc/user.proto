@@ -1012,25 +1012,34 @@ message CheckQQEmailResponse{
 }
 
 service UploadToQiNiu{
-    rpc UploadFile(UploadFileReq) returns(UploadFileResponse);
-    rpc DeleteFile(DeleteFileReq) returns(DeleteFileResponse);
+    // 直接上传用户头像（删除旧图并更新DB）
+    rpc UploadAvatar(UploadAvatarReq) returns(UploadAvatarResp);
+    // 上传学生认证图片（同时处理旧图删除和DB更新）
+    rpc UploadStudentCardImages(UploadStudentCardImagesReq) returns(UploadStudentCardImagesResp);
 }
 
-// 上传文件
-message UploadFileReq{
-    string file_name =1;
-    bytes file_data =2;
+// 上传头像
+message UploadAvatarReq{
+    int64 user_id =1;
+    string file_name =2;
+    bytes file_data =3;
 }
 
-message UploadFileResponse{
-    string file_url =1;
+message UploadAvatarResp{
+    string avatar_url =1;
 }
 
-// 删除文件
-message DeleteFileReq{
-    string file_url =1;
+// 上传学生认证图片请求
+message UploadStudentCardImagesReq {
+    int64 user_id = 1;
+    bytes front_image_data = 2;
+    string front_image_name = 3;
+    bytes back_image_data = 4;
+    string back_image_name = 5;
 }
 
-message DeleteFileResponse{
-    bool success =1;
+// 上传学生认证图片响应
+message UploadStudentCardImagesResp {
+    string front_image_url = 1;
+    string back_image_url = 2;
 }
