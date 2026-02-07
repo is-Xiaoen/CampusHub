@@ -1043,3 +1043,15 @@ message UploadStudentCardImagesResp {
     string front_image_url = 1;
     string back_image_url = 2;
 }
+
+// 上传活动封面请求
+message UploadActivityCoverReq {
+    int64 activity_id = 1;
+    bytes file_data = 2;
+    string file_name = 3;
+}
+
+// 上传活动封面响应
+message UploadActivityCoverResp {
+    string cover_url = 1;
+}
