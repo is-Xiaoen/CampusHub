@@ -40,8 +40,7 @@ func (l *CreateActivityLogic) CreateActivity(req *types.CreateActivityReq) (resp
 	}
 
 	// 3. 调用 RPC 创建活动
-	// 注意：organizer_name 和 organizer_avatar 暂时传空，RPC 层会处理
-	// TODO: 后续可通过 UserRpc.GetUserById 获取完整用户信息
+	// OrganizerName/Avatar 传空，RPC 层通过 UserBasicRpc.GetUserInfo 自动填充
 	rpcResp, err := l.svcCtx.ActivityRpc.CreateActivity(l.ctx, &activityservice.CreateActivityReq{
 		Title:                req.Title,
 		CoverUrl:             req.CoverUrl,
@@ -64,8 +63,8 @@ func (l *CreateActivityLogic) CreateActivity(req *types.CreateActivityReq) (resp
 		TagIds:               req.TagIds,
 		IsDraft:              req.IsDraft,
 		OrganizerId:          userID,
-		OrganizerName:        "", // TODO: 从 UserRpc 获取
-		OrganizerAvatar:      "", // TODO: 从 UserRpc 获取
+		OrganizerName:        "", // RPC 层通过 UserBasicRpc 自动获取
+		OrganizerAvatar:      "", // RPC 层通过 UserBasicRpc 自动获取
 	})
 	if err != nil {
 		l.Errorf("RPC CreateActivity failed: userID=%d, title=%s, err=%v", userID, req.Title, err)
