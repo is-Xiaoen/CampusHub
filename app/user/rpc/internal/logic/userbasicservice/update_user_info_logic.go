@@ -3,8 +3,8 @@ package userbasicservicelogic
 import (
 	"context"
 
-	"activity-platform/app/user/rpc/internal/logic/tagservice"
-	"activity-platform/app/user/rpc/internal/logic/uploadtoqiniu"
+	tagservicelogic "activity-platform/app/user/rpc/internal/logic/tagservice"
+	uploadtoqiniulogic "activity-platform/app/user/rpc/internal/logic/uploadtoqiniu"
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
 	"activity-platform/common/errorx"
@@ -41,30 +41,17 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(in *pb.UpdateUserInfoReq) (*pb.Upda
 	// 2. 处理头像上传与更新
 	// 只有当提供了新的头像数据时才处理
 	if len(in.AvatarImgData) > 0 {
-		uploadLogic := uploadtoqiniulogic.NewUploadFileLogic(l.ctx, l.svcCtx)
-		uploadResp, err := uploadLogic.UploadFile(&pb.UploadFileReq{
+		// 使用统一的 UploadAvatar RPC 处理删除旧图、上传新图与DB更新
+		uploadResp, err := uploadtoqiniulogic.NewUploadAvatarLogic(l.ctx, l.svcCtx).UploadAvatar(&pb.UploadAvatarReq{
+			UserId:   in.UserId,
 			FileName: in.AvatarImgName,
 			FileData: in.AvatarImgData,
 		})
 		if err != nil {
-			return nil, err // UploadFileLogic 已经返回了 status error
+			return nil, err
 		}
-
-		// 如果原用户有头像，且不是默认头像（如果系统有默认头像逻辑），则删除旧头像
-		// 这里假设只要有 URL 就尝试删除
-		if user.AvatarURL != "" {
-			deleteLogic := uploadtoqiniulogic.NewDeleteFileLogic(l.ctx, l.svcCtx)
-			// 删除旧头像失败不阻断流程，仅记录日志
-			_, err := deleteLogic.DeleteFile(&pb.DeleteFileReq{
-				FileUrl: user.AvatarURL,
-			})
-			if err != nil {
-				l.Logger.Errorf("Failed to delete old avatar: %s, error: %v", user.AvatarURL, err)
-			}
-		}
-
-		// 更新为新头像 URL
-		user.AvatarURL = uploadResp.FileUrl
+		// 同步内存对象的头像URL（DB已更新）
+		user.AvatarURL = uploadResp.AvatarUrl
 	}
 
 	// 3. 更新基本信息

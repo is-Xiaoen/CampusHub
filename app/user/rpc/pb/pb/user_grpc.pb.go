@@ -30,7 +30,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.0
 // - protoc             v3.9.0
-// source: app/user/rpc/user.proto
+// source: user.proto
 
 package pb
 
@@ -383,7 +383,7 @@ var CreditService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "app/user/rpc/user.proto",
+	Metadata: "user.proto",
 }
 
 const (
@@ -821,7 +821,7 @@ var VerifyService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "app/user/rpc/user.proto",
+	Metadata: "user.proto",
 }
 
 const (
@@ -1079,7 +1079,7 @@ var TagService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "app/user/rpc/user.proto",
+	Metadata: "user.proto",
 }
 
 const (
@@ -1543,7 +1543,7 @@ var UserBasicService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "app/user/rpc/user.proto",
+	Metadata: "user.proto",
 }
 
 const (
@@ -1687,7 +1687,7 @@ var TagBranchService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "app/user/rpc/user.proto",
+	Metadata: "user.proto",
 }
 
 const (
@@ -1831,7 +1831,7 @@ var CaptchaService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "app/user/rpc/user.proto",
+	Metadata: "user.proto",
 }
 
 const (
@@ -1971,20 +1971,22 @@ var QQEmail_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "app/user/rpc/user.proto",
+	Metadata: "user.proto",
 }
 
 const (
-	UploadToQiNiu_UploadFile_FullMethodName = "/user.UploadToQiNiu/UploadFile"
-	UploadToQiNiu_DeleteFile_FullMethodName = "/user.UploadToQiNiu/DeleteFile"
+	UploadToQiNiu_UploadAvatar_FullMethodName            = "/user.UploadToQiNiu/UploadAvatar"
+	UploadToQiNiu_UploadStudentCardImages_FullMethodName = "/user.UploadToQiNiu/UploadStudentCardImages"
 )
 
 // UploadToQiNiuClient is the client API for UploadToQiNiu service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UploadToQiNiuClient interface {
-	UploadFile(ctx context.Context, in *UploadFileReq, opts ...grpc.CallOption) (*UploadFileResponse, error)
-	DeleteFile(ctx context.Context, in *DeleteFileReq, opts ...grpc.CallOption) (*DeleteFileResponse, error)
+	// 直接上传用户头像（删除旧图并更新DB）
+	UploadAvatar(ctx context.Context, in *UploadAvatarReq, opts ...grpc.CallOption) (*UploadAvatarResp, error)
+	// 上传学生认证图片（同时处理旧图删除和DB更新）
+	UploadStudentCardImages(ctx context.Context, in *UploadStudentCardImagesReq, opts ...grpc.CallOption) (*UploadStudentCardImagesResp, error)
 }
 
 type uploadToQiNiuClient struct {
@@ -1995,20 +1997,20 @@ func NewUploadToQiNiuClient(cc grpc.ClientConnInterface) UploadToQiNiuClient {
 	return &uploadToQiNiuClient{cc}
 }
 
-func (c *uploadToQiNiuClient) UploadFile(ctx context.Context, in *UploadFileReq, opts ...grpc.CallOption) (*UploadFileResponse, error) {
+func (c *uploadToQiNiuClient) UploadAvatar(ctx context.Context, in *UploadAvatarReq, opts ...grpc.CallOption) (*UploadAvatarResp, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UploadFileResponse)
-	err := c.cc.Invoke(ctx, UploadToQiNiu_UploadFile_FullMethodName, in, out, cOpts...)
+	out := new(UploadAvatarResp)
+	err := c.cc.Invoke(ctx, UploadToQiNiu_UploadAvatar_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *uploadToQiNiuClient) DeleteFile(ctx context.Context, in *DeleteFileReq, opts ...grpc.CallOption) (*DeleteFileResponse, error) {
+func (c *uploadToQiNiuClient) UploadStudentCardImages(ctx context.Context, in *UploadStudentCardImagesReq, opts ...grpc.CallOption) (*UploadStudentCardImagesResp, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DeleteFileResponse)
-	err := c.cc.Invoke(ctx, UploadToQiNiu_DeleteFile_FullMethodName, in, out, cOpts...)
+	out := new(UploadStudentCardImagesResp)
+	err := c.cc.Invoke(ctx, UploadToQiNiu_UploadStudentCardImages_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2019,8 +2021,10 @@ func (c *uploadToQiNiuClient) DeleteFile(ctx context.Context, in *DeleteFileReq,
 // All implementations must embed UnimplementedUploadToQiNiuServer
 // for forward compatibility.
 type UploadToQiNiuServer interface {
-	UploadFile(context.Context, *UploadFileReq) (*UploadFileResponse, error)
-	DeleteFile(context.Context, *DeleteFileReq) (*DeleteFileResponse, error)
+	// 直接上传用户头像（删除旧图并更新DB）
+	UploadAvatar(context.Context, *UploadAvatarReq) (*UploadAvatarResp, error)
+	// 上传学生认证图片（同时处理旧图删除和DB更新）
+	UploadStudentCardImages(context.Context, *UploadStudentCardImagesReq) (*UploadStudentCardImagesResp, error)
 	mustEmbedUnimplementedUploadToQiNiuServer()
 }
 
@@ -2031,11 +2035,11 @@ type UploadToQiNiuServer interface {
 // pointer dereference when methods are called.
 type UnimplementedUploadToQiNiuServer struct{}
 
-func (UnimplementedUploadToQiNiuServer) UploadFile(context.Context, *UploadFileReq) (*UploadFileResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method UploadFile not implemented")
+func (UnimplementedUploadToQiNiuServer) UploadAvatar(context.Context, *UploadAvatarReq) (*UploadAvatarResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method UploadAvatar not implemented")
 }
-func (UnimplementedUploadToQiNiuServer) DeleteFile(context.Context, *DeleteFileReq) (*DeleteFileResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method DeleteFile not implemented")
+func (UnimplementedUploadToQiNiuServer) UploadStudentCardImages(context.Context, *UploadStudentCardImagesReq) (*UploadStudentCardImagesResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method UploadStudentCardImages not implemented")
 }
 func (UnimplementedUploadToQiNiuServer) mustEmbedUnimplementedUploadToQiNiuServer() {}
 func (UnimplementedUploadToQiNiuServer) testEmbeddedByValue()                       {}
@@ -2058,38 +2062,38 @@ func RegisterUploadToQiNiuServer(s grpc.ServiceRegistrar, srv UploadToQiNiuServe
 	s.RegisterService(&UploadToQiNiu_ServiceDesc, srv)
 }
 
-func _UploadToQiNiu_UploadFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UploadFileReq)
+func _UploadToQiNiu_UploadAvatar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadAvatarReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UploadToQiNiuServer).UploadFile(ctx, in)
+		return srv.(UploadToQiNiuServer).UploadAvatar(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UploadToQiNiu_UploadFile_FullMethodName,
+		FullMethod: UploadToQiNiu_UploadAvatar_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UploadToQiNiuServer).UploadFile(ctx, req.(*UploadFileReq))
+		return srv.(UploadToQiNiuServer).UploadAvatar(ctx, req.(*UploadAvatarReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UploadToQiNiu_DeleteFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteFileReq)
+func _UploadToQiNiu_UploadStudentCardImages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadStudentCardImagesReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UploadToQiNiuServer).DeleteFile(ctx, in)
+		return srv.(UploadToQiNiuServer).UploadStudentCardImages(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UploadToQiNiu_DeleteFile_FullMethodName,
+		FullMethod: UploadToQiNiu_UploadStudentCardImages_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UploadToQiNiuServer).DeleteFile(ctx, req.(*DeleteFileReq))
+		return srv.(UploadToQiNiuServer).UploadStudentCardImages(ctx, req.(*UploadStudentCardImagesReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2102,14 +2106,14 @@ var UploadToQiNiu_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*UploadToQiNiuServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "UploadFile",
-			Handler:    _UploadToQiNiu_UploadFile_Handler,
+			MethodName: "UploadAvatar",
+			Handler:    _UploadToQiNiu_UploadAvatar_Handler,
 		},
 		{
-			MethodName: "DeleteFile",
-			Handler:    _UploadToQiNiu_DeleteFile_Handler,
+			MethodName: "UploadStudentCardImages",
+			Handler:    _UploadToQiNiu_UploadStudentCardImages_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "app/user/rpc/user.proto",
+	Metadata: "user.proto",
 }
