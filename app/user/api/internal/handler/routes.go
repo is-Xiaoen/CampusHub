@@ -31,6 +31,12 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: base.VerifyCaptchaHandler(serverCtx),
 			},
 			{
+				// 获取所有的兴趣标签
+				Method:  http.MethodGet,
+				Path:    "/interests/tags",
+				Handler: base.GetInterestTagsHandler(serverCtx),
+			},
+			{
 				// 登录
 				Method:  http.MethodPost,
 				Path:    "/login",

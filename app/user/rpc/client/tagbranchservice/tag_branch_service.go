@@ -36,6 +36,8 @@ type (
 	DeleteUserResponse       = pb.DeleteUserResponse
 	ForgetPasswordReq        = pb.ForgetPasswordReq
 	ForgetPasswordResponse   = pb.ForgetPasswordResponse
+	GetAllInterestTagsReq    = pb.GetAllInterestTagsReq
+	GetAllInterestTagsResp   = pb.GetAllInterestTagsResp
 	GetAllTagsReq            = pb.GetAllTagsReq
 	GetAllTagsResp           = pb.GetAllTagsResp
 	GetCaptchaConfigReq      = pb.GetCaptchaConfigReq
