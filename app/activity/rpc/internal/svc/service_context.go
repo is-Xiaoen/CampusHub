@@ -12,6 +12,7 @@ import (
 	"activity-platform/app/activity/rpc/internal/search"
 	"activity-platform/app/user/rpc/client/creditservice"
 	"activity-platform/app/user/rpc/client/tagservice"
+	"activity-platform/app/user/rpc/client/userbasicservice"
 	"activity-platform/app/user/rpc/client/verifyservice"
 	"activity-platform/common/breakerx"
 	"activity-platform/common/messaging"
@@ -64,9 +65,10 @@ type ServiceContext struct {
 	MsgProducer *mq.Producer // 消息发布器（可为 nil，表示未启用）
 
 	// RPC 客户端（调用其他微服务）
-	CreditRpc     creditservice.CreditService // 信用分服务
-	VerifyService verifyservice.VerifyService // 学生认证服务
-	TagRpc        tagservice.TagService       // 标签服务（用于同步标签数据）
+	CreditRpc     creditservice.CreditService       // 信用分服务
+	VerifyService verifyservice.VerifyService       // 学生认证服务
+	TagRpc        tagservice.TagService             // 标签服务（用于同步标签数据）
+	UserBasicRpc  userbasicservice.UserBasicService // 用户基础服务（获取昵称/头像）
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -94,7 +96,8 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	userRpcClient := zrpc.MustNewClient(c.UserRpc)
 	creditRpc := creditservice.NewCreditService(userRpcClient)
 	verifyRpc := verifyservice.NewVerifyService(userRpcClient)
-	tagRpc := tagservice.NewTagService(userRpcClient) // 标签服务客户端
+	tagRpc := tagservice.NewTagService(userRpcClient)                   // 标签服务客户端
+	userBasicRpc := userbasicservice.NewUserBasicService(userRpcClient) // 用户基础服务
 
 	// 5. 初始化缓存服务
 	activityCache := cache.NewActivityCache(rds, db)
@@ -204,6 +207,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		CreditRpc:     creditRpc,
 		VerifyService: verifyRpc,
 		TagRpc:        tagRpc,
+		UserBasicRpc:  userBasicRpc,
 	}
 }
 
