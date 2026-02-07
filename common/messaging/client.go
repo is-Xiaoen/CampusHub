@@ -52,11 +52,29 @@ func NewClient(config Config) (*Client, error) {
 	}
 
 	// 创建 Subscriber
+	subscriberConfig := redisstream.SubscriberConfig{
+		Client:        redisClient,
+		ConsumerGroup: config.ServiceName,
+	}
+
+	// 如果配置了 ClaimInterval，则使用配置值
+	// 设置为 0 可以禁用自动声明（避免 XPENDING 调用）
+	if config.SubscriberConfig.ClaimInterval > 0 {
+		subscriberConfig.ClaimInterval = config.SubscriberConfig.ClaimInterval
+	}
+
+	// 如果配置了 NackResendInterval，则使用配置值
+	if config.SubscriberConfig.NackResendInterval > 0 {
+		subscriberConfig.NackResendSleep = config.SubscriberConfig.NackResendInterval
+	}
+
+	// 如果配置了 MaxIdleTime，则使用配置值
+	if config.SubscriberConfig.MaxIdleTime > 0 {
+		subscriberConfig.MaxIdleTime = config.SubscriberConfig.MaxIdleTime
+	}
+
 	subscriber, err := redisstream.NewSubscriber(
-		redisstream.SubscriberConfig{
-			Client:        redisClient,
-			ConsumerGroup: config.ServiceName,
-		},
+		subscriberConfig,
 		logger,
 	)
 	if err != nil {
