@@ -120,6 +120,33 @@ const (
 	CodeFileConfigError  = 2305 // 文件服务配置错误
 
 	// 聊天服务 4xxx - TODO(马华恩)
+	// 聊天服务 - 群组 4001-4050
+	CodeGroupNotFound         = 4001 // 群组不存在
+	CodeGroupPermissionDenied = 4002 // 无权限操作此群组
+	CodeGroupStatusInvalid    = 4003 // 群组状态不允许此操作
+	CodeGroupMemberNotFound   = 4004 // 群成员不存在
+	CodeGroupMemberExists     = 4005 // 用户已是群成员
+	CodeGroupFull             = 4006 // 群组人数已满
+	CodeGroupOwnerCannotLeave = 4007 // 群主不能退出群组
+
+	// 聊天服务 - 消息 4051-4100
+	CodeMessageNotFound     = 4051 // 消息不存在
+	CodeMessageContentEmpty = 4052 // 消息内容不能为空
+	CodeMessageTypeInvalid  = 4053 // 消息类型无效
+	CodeMessageTooLong      = 4054 // 消息内容过长
+	CodeMessageSendFailed   = 4055 // 消息发送失败
+	CodeMessageDeleteFailed = 4056 // 消息删除失败
+	CodeMessageNotInGroup   = 4057 // 不在该群组中，无法发送消息
+
+	// 聊天服务 - 通知 4101-4150
+	CodeNotificationNotFound       = 4101 // 通知不存在
+	CodeNotificationAlreadyRead    = 4102 // 通知已读
+	CodeNotificationMarkFailed     = 4103 // 标记通知失败
+	CodeNotificationPermissionDeny = 4104 // 无权限操作此通知
+
+	// 聊天服务 - 用户状态 4151-4200
+	CodeUserStatusNotFound   = 4151 // 用户状态不存在
+	CodeUserStatusUpdateFail = 4152 // 更新用户状态失败
 )
 
 // codeMessages 错误码对应的默认消息
@@ -183,6 +210,30 @@ var codeMessages = map[int]string{
 	CodeCategoryDisabled:         "分类已禁用",
 	CodeTagNotFound:              "标签不存在",
 	CodeTagLimitExceeded:         "最多选择5个标签",
+	// 聊天服务 - 群组
+	CodeGroupNotFound:         "群组不存在",
+	CodeGroupPermissionDenied: "无权限操作此群组",
+	CodeGroupStatusInvalid:    "群组状态不允许此操作",
+	CodeGroupMemberNotFound:   "群成员不存在",
+	CodeGroupMemberExists:     "用户已是群成员",
+	CodeGroupFull:             "群组人数已满",
+	CodeGroupOwnerCannotLeave: "群主不能退出群组",
+	// 聊天服务 - 消息
+	CodeMessageNotFound:     "消息不存在",
+	CodeMessageContentEmpty: "消息内容不能为空",
+	CodeMessageTypeInvalid:  "消息类型无效",
+	CodeMessageTooLong:      "消息内容过长",
+	CodeMessageSendFailed:   "消息发送失败",
+	CodeMessageDeleteFailed: "消息删除失败",
+	CodeMessageNotInGroup:   "不在该群组中，无法发送消息",
+	// 聊天服务 - 通知
+	CodeNotificationNotFound:       "通知不存在",
+	CodeNotificationAlreadyRead:    "通知已读",
+	CodeNotificationMarkFailed:     "标记通知失败",
+	CodeNotificationPermissionDeny: "无权限操作此通知",
+	// 聊天服务 - 用户状态
+	CodeUserStatusNotFound:   "用户状态不存在",
+	CodeUserStatusUpdateFail: "更新用户状态失败",
 	// 学生认证
 	CodeVerifyCannotApply:      "当前状态不允许申请认证",
 	CodeVerifyCannotConfirm:    "当前状态不允许确认认证",
