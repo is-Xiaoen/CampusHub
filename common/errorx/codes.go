@@ -63,17 +63,21 @@ const (
 	CodeCreditInvalidChange = 2107 // 无效的信用变更类型
 
 	// 用户服务 - 学生认证 2201-2230
-	CodeVerifyNotFound       = 2201 // 认证记录不存在
-	CodeVerifyAlreadyExist   = 2202 // 认证记录已存在
-	CodeVerifyNotVerified    = 2203 // 用户未通过学生认证
-	CodeVerifyStudentIDUsed  = 2204 // 学号已被其他用户认证
-	CodeVerifyCannotApply    = 2205 // 当前状态不允许申请
-	CodeVerifyCannotConfirm  = 2206 // 当前状态不允许确认
-	CodeVerifyCannotCancel   = 2207 // 当前状态不允许取消
-	CodeVerifyRateLimit      = 2208 // 申请过于频繁
-	CodeVerifyInvalidTransit = 2209 // 无效的状态转换
-	CodeVerifyPermissionDeny = 2210 // 无权操作此认证记录
-	CodeVerifyRejectCooldown = 2211 // 拒绝后冷却期内，暂不能申请
+	CodeVerifyNotFound          = 2201 // 认证记录不存在
+	CodeVerifyAlreadyExist      = 2202 // 认证记录已存在
+	CodeVerifyNotVerified       = 2203 // 用户未通过学生认证
+	CodeVerifyStudentIDUsed     = 2204 // 学号已被其他用户认证
+	CodeVerifyCannotApply       = 2205 // 当前状态不允许申请
+	CodeVerifyCannotConfirm     = 2206 // 当前状态不允许确认
+	CodeVerifyCannotCancel      = 2207 // 当前状态不允许取消
+	CodeVerifyRateLimit         = 2208 // 申请过于频繁
+	CodeVerifyInvalidTransit    = 2209 // 无效的状态转换
+	CodeVerifyPermissionDeny    = 2210 // 无权操作此认证记录
+	CodeVerifyRejectCooldown    = 2211 // 拒绝后冷却期内，暂不能申请
+	CodeVerifyImageFormatError  = 2212 // 图片格式不支持
+	CodeVerifyImageTooLarge     = 2213 // 图片大小超出限制
+	CodeVerifyFrontImageMissing = 2214 // 学生证正面照片缺失
+	CodeVerifyBackImageMissing  = 2215 // 学生证详情面照片缺失
 
 	// 用户服务 - OCR识别 2231-2250
 	CodeOcrNetworkTimeout      = 2231 // OCR服务网络超时
@@ -235,20 +239,24 @@ var codeMessages = map[int]string{
 	CodeUserStatusNotFound:   "用户状态不存在",
 	CodeUserStatusUpdateFail: "更新用户状态失败",
 	// 学生认证
-	CodeVerifyCannotApply:      "当前状态不允许申请认证",
-	CodeVerifyCannotConfirm:    "当前状态不允许确认认证",
-	CodeVerifyCannotCancel:     "当前状态不允许取消认证",
-	CodeVerifyRateLimit:        "申请过于频繁，请20秒后再试",
-	CodeVerifyInvalidTransit:   "无效的状态转换",
-	CodeVerifyPermissionDeny:   "无权操作此认证记录",
-	CodeVerifyRejectCooldown:   "您的认证申请被拒绝后24小时内不能重新申请",
-	CodeOcrNetworkTimeout:      "识别服务繁忙，请稍后重试",
-	CodeOcrImageInvalid:        "图片无效，请上传清晰的学生证照片",
-	CodeOcrRecognizeFailed:     "识别失败，请重新上传照片",
-	CodeOcrServiceUnavailable:  "识别服务暂不可用，请稍后重试",
-	CodeOcrInsufficientBalance: "识别服务暂不可用，请联系管理员",
-	CodeOcrEmptyResult:         "未能识别到有效信息，请上传清晰的学生证照片",
-	CodeOcrConfigInvalid:       "识别服务配置错误，请联系管理员",
+	CodeVerifyCannotApply:       "当前状态不允许申请认证",
+	CodeVerifyCannotConfirm:     "当前状态不允许确认认证",
+	CodeVerifyCannotCancel:      "当前状态不允许取消认证",
+	CodeVerifyRateLimit:         "申请过于频繁，请20秒后再试",
+	CodeVerifyInvalidTransit:    "无效的状态转换",
+	CodeVerifyPermissionDeny:    "无权操作此认证记录",
+	CodeVerifyRejectCooldown:    "您的认证申请被拒绝后24小时内不能重新申请",
+	CodeVerifyImageFormatError:  "图片格式不支持，仅支持 jpg/jpeg/png",
+	CodeVerifyImageTooLarge:     "图片大小超出限制（最大5MB）",
+	CodeVerifyFrontImageMissing: "请上传学生证正面照片",
+	CodeVerifyBackImageMissing:  "请上传学生证详情面照片",
+	CodeOcrNetworkTimeout:       "识别服务繁忙，请稍后重试",
+	CodeOcrImageInvalid:         "图片无效，请上传清晰的学生证照片",
+	CodeOcrRecognizeFailed:      "识别失败，请重新上传照片",
+	CodeOcrServiceUnavailable:   "识别服务暂不可用，请稍后重试",
+	CodeOcrInsufficientBalance:  "识别服务暂不可用，请联系管理员",
+	CodeOcrEmptyResult:          "未能识别到有效信息，请上传清晰的学生证照片",
+	CodeOcrConfigInvalid:        "识别服务配置错误，请联系管理员",
 
 	// 用户标签
 	CodeUserTagUpdateFailed: "用户标签更新失败，请稍后重试",

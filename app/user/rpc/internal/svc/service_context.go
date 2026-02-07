@@ -106,8 +106,15 @@ func NewServiceContext(c config.Config) (*ServiceContext, error) {
 	// 初始化消息客户端（可选，失败不影响服务启动）
 	msgClient := initMsgPublisher(c)
 
-	// 初始化 Activity RPC 客户端
-	activityRpcClient := zrpc.MustNewClient(c.ActivityRpc)
+	// 初始化 Activity RPC 客户端（可选，失败不影响服务启动）
+	var activityRpc activityservice.ActivityService
+	activityRpcClient, err := zrpc.NewClient(c.ActivityRpc)
+	if err != nil {
+		logx.Errorf("Activity RPC 连接失败（非致命）: %v", err)
+	} else {
+		activityRpc = activityservice.NewActivityService(activityRpcClient)
+		logx.Info("Activity RPC 连接初始化成功")
+	}
 
 	return &ServiceContext{
 		Config: c,
@@ -126,8 +133,8 @@ func NewServiceContext(c config.Config) (*ServiceContext, error) {
 		CreditLogModel:            model.NewCreditLogModel(db),
 		StudentVerificationModel:  model.NewStudentVerificationModel(db),
 
-		// 注入 RPC 客户端
-		ActivityRpc: activityservice.NewActivityService(activityRpcClient),
+		// 注入 RPC 客户端（可能为 nil）
+		ActivityRpc: activityRpc,
 
 		// 注入 OCR 工厂
 		OcrFactory: ocrFactory,
