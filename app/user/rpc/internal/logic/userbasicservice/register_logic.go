@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"activity-platform/app/user/model"
+	creditservicelogic "activity-platform/app/user/rpc/internal/logic/creditservice"
 	qqemaillogic "activity-platform/app/user/rpc/internal/logic/qqemail"
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
@@ -76,6 +77,16 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 	if err := l.svcCtx.UserModel.Create(l.ctx, newUser); err != nil {
 		l.Logger.Errorf("Create user failed: %v", err)
 		return nil, errorx.New(errorx.CodeUserRegisterFailed)
+	}
+
+	// 初始化信誉分
+	initCreditLogic := creditservicelogic.NewInitCreditLogic(l.ctx, l.svcCtx)
+	_, err = initCreditLogic.InitCredit(&pb.InitCreditReq{
+		UserId: int64(newUser.UserID),
+	})
+	if err != nil {
+		l.Logger.Errorf("Init credit score failed: %v, userId: %d", err, newUser.UserID)
+		// 即使失败也不中断注册流程
 	}
 
 	// 4. 生成Token (自动登录)
