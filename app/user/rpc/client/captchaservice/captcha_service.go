@@ -36,6 +36,8 @@ type (
 	DeleteUserResponse       = pb.DeleteUserResponse
 	ForgetPasswordReq        = pb.ForgetPasswordReq
 	ForgetPasswordResponse   = pb.ForgetPasswordResponse
+	GetAllInterestTagsReq    = pb.GetAllInterestTagsReq
+	GetAllInterestTagsResp   = pb.GetAllInterestTagsResp
 	GetAllTagsReq            = pb.GetAllTagsReq
 	GetAllTagsResp           = pb.GetAllTagsResp
 	GetCaptchaConfigReq      = pb.GetCaptchaConfigReq
@@ -67,6 +69,8 @@ type (
 	LoginUserInfo            = pb.LoginUserInfo
 	LogoutReq                = pb.LogoutReq
 	LogoutResponse           = pb.LogoutResponse
+	ProcessOcrVerifyReq      = pb.ProcessOcrVerifyReq
+	ProcessOcrVerifyResp     = pb.ProcessOcrVerifyResp
 	RefreshReq               = pb.RefreshReq
 	RefreshResponse          = pb.RefreshResponse
 	RegisterReq              = pb.RegisterReq

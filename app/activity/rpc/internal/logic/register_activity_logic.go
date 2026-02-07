@@ -39,9 +39,25 @@ func NewRegisterActivityLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 // RegisterActivity 报名活动
-func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRequest) (*activity.RegisterActivityResponse, error) {
+func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRequest) (resp *activity.RegisterActivityResponse, err error) {
+	if in == nil {
+		return &activity.RegisterActivityResponse{
+			Result: "fail",
+			Reason: "参数错误",
+		}, nil
+	}
 	userID := in.GetUserId()
 	activityID := in.GetActivityId()
+	defer func() {
+		if r := recover(); r != nil {
+			l.Errorf("报名逻辑panic: userId=%d, activityId=%d, err=%v", userID, activityID, r)
+			resp = &activity.RegisterActivityResponse{
+				Result: "fail",
+				Reason: "报名失败，请稍后重试",
+			}
+			err = nil
+		}
+	}()
 	if userID <= 0 || activityID <= 0 {
 		return &activity.RegisterActivityResponse{
 			Result: "fail",
@@ -50,7 +66,7 @@ func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRe
 	}
 
 	// ==================== 第一步：限流检查 ====================
-	if !l.svcCtx.RegistrationLimiter.AllowCtx(l.ctx) {
+	if l.svcCtx.RegistrationLimiter != nil && !l.svcCtx.RegistrationLimiter.AllowCtx(l.ctx) {
 		return &activity.RegisterActivityResponse{
 			Result: "fail",
 			Reason: "请求过于频繁，请稍后再试",
@@ -109,6 +125,13 @@ func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRe
 			Reason: "信誉校验失败，请稍后重试",
 		}, nil
 	}
+	if creditResp == nil {
+		l.Errorf("信誉校验返回空响应: userId=%d", userID)
+		return &activity.RegisterActivityResponse{
+			Result: "fail",
+			Reason: "信誉校验失败，请稍后重试",
+		}, nil
+	}
 	if !creditResp.GetAllowed() {
 		_ = l.svcCtx.ActivityRegistrationModel.Create(l.ctx, &model.ActivityRegistration{
 			ActivityID: uint64(activityID),
@@ -133,6 +156,13 @@ func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRe
 				Reason: "实名校验失败，请稍后重试",
 			}, nil
 		}
+		if verifyResp == nil {
+			l.Errorf("实名校验返回空响应: userId=%d", userID)
+			return &activity.RegisterActivityResponse{
+				Result: "fail",
+				Reason: "实名校验失败，请稍后重试",
+			}, nil
+		}
 		if !verifyResp.GetIsVerified() {
 			_ = l.svcCtx.ActivityRegistrationModel.Create(l.ctx, &model.ActivityRegistration{
 				ActivityID: uint64(activityID),
@@ -148,40 +178,41 @@ func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRe
 
 	// ==================== 第二步：熔断保护 ====================
 	alreadyRegistered := false
-	err = l.svcCtx.RegistrationBreaker.DoWithFallbackAcceptable(
-		func() error {
-			result, err := l.svcCtx.ActivityRegistrationModel.RegisterWithTicket(
-				l.ctx,
-				uint64(activityID),
-				uint64(userID),
-				func() (*model.TicketPayload, error) {
-					ticketCode, err := generateTicketCode()
-					if err != nil {
-						return nil, err
-					}
-					return &model.TicketPayload{
-						TicketCode: ticketCode,
-						TicketUUID: buildTicketQrPayload(activityID, ticketCode),
-						TotpSecret: deriveTotpSecret(activityID, userID, ticketCode),
-					}, nil
-				},
-			)
-			if err != nil {
-				return err
-			}
-			alreadyRegistered = result.AlreadyRegistered
-			return nil
-		},
-		func(err error) error {
-			return breaker.ErrServiceUnavailable
-		},
-		func(err error) bool {
-			if err == nil {
-				return true
-			}
-			return errors.Is(err, model.ErrActivityQuotaFull)
-		},
-	)
+	genTicketPayload := func() (*model.TicketPayload, error) {
+		ticketCode, err := generateTicketCode()
+		if err != nil {
+			return nil, err
+		}
+		return &model.TicketPayload{
+			TicketCode: ticketCode,
+			TicketUUID: buildTicketQrPayload(activityID, ticketCode),
+			TotpSecret: deriveTotpSecret(activityID, userID, ticketCode),
+		}, nil
+	}
+	registerFn := func() error {
+		registered, err := l.registerWithConsistency(activityID, userID, genTicketPayload)
+		if err != nil {
+			return err
+		}
+		alreadyRegistered = registered
+		return nil
+	}
+	if l.svcCtx.RegistrationBreaker != nil {
+		err = l.svcCtx.RegistrationBreaker.DoWithFallbackAcceptable(
+			registerFn,
+			func(err error) error {
+				return breaker.ErrServiceUnavailable
+			},
+			func(err error) bool {
+				if err == nil {
+					return true
+				}
+				return errors.Is(err, model.ErrActivityQuotaFull)
+			},
+		)
+	} else {
+		err = registerFn()
+	}
 	if err != nil {
 		if errors.Is(err, model.ErrActivityQuotaFull) {
 			return &activity.RegisterActivityResponse{
@@ -203,15 +234,90 @@ func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRe
 		}, nil
 	}
 
-	// 异步发布用户报名事件（非重复报名才发布）
-	l.svcCtx.MsgProducer.PublishMemberJoined(
-		l.ctx, uint64(activityID), uint64(userID),
-	)
+	// 报名成功且为首次/重新报名时发布事件（用于 Chat 服务自动加群）
+	// 事件发布为异步执行，失败不会影响报名主流程
+	l.publishMemberJoinedEvent(activityData.ID, userID)
 
 	return &activity.RegisterActivityResponse{
 		Result: "success",
 		Reason: "",
 	}, nil
+}
+
+// publishMemberJoinedEvent 发布用户报名成功事件
+// - 仅处理有效 ID
+// - Producer 未启用时直接跳过
+// - 发布失败由 Producer 内部记录，不影响主流程
+func (l *RegisterActivityLogic) publishMemberJoinedEvent(activityID uint64, userID int64) {
+	if activityID == 0 || userID <= 0 {
+		return
+	}
+	if l.svcCtx == nil || l.svcCtx.MsgProducer == nil {
+		return
+	}
+	l.svcCtx.MsgProducer.PublishMemberJoined(l.ctx, activityID, uint64(userID))
+}
+
+func (l *RegisterActivityLogic) registerWithConsistency(
+	activityID, userID int64,
+	gen func() (*model.TicketPayload, error),
+) (bool, error) {
+	if gen == nil {
+		return false, errors.New("ticket generator is nil")
+	}
+
+	result, err := l.svcCtx.ActivityRegistrationModel.RegisterWithTicket(
+		l.ctx,
+		uint64(activityID),
+		uint64(userID),
+		gen,
+	)
+	if err != nil {
+		return false, err
+	}
+
+	verifyErr := l.verifyRegistrationWithTicket(activityID, userID)
+	if verifyErr == nil {
+		return result.AlreadyRegistered, nil
+	}
+	if !errors.Is(verifyErr, model.ErrRegistrationNotFound) &&
+		!errors.Is(verifyErr, model.ErrTicketNotFound) {
+		return result.AlreadyRegistered, verifyErr
+	}
+
+	// 数据缺失时修复一次，确保报名记录与票券一致
+	_, err = l.svcCtx.ActivityRegistrationModel.RegisterWithTicket(
+		l.ctx,
+		uint64(activityID),
+		uint64(userID),
+		gen,
+	)
+	if err != nil {
+		return false, err
+	}
+	if err := l.verifyRegistrationWithTicket(activityID, userID); err != nil {
+		return false, err
+	}
+	if errors.Is(verifyErr, model.ErrRegistrationNotFound) {
+		return false, nil
+	}
+	return result.AlreadyRegistered, nil
+}
+
+func (l *RegisterActivityLogic) verifyRegistrationWithTicket(activityID, userID int64) error {
+	reg, err := l.svcCtx.ActivityRegistrationModel.FindByActivityUser(
+		l.ctx,
+		uint64(activityID),
+		uint64(userID),
+	)
+	if err != nil {
+		return err
+	}
+	if reg.Status != model.RegistrationStatusSuccess {
+		return errors.New("registration status not success")
+	}
+	_, err = l.svcCtx.ActivityTicketModel.FindByRegistrationID(l.ctx, reg.ID)
+	return err
 }
 
 const (

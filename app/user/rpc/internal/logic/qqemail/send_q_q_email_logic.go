@@ -41,13 +41,13 @@ func (l *SendQQEmailLogic) SendQQEmail(in *pb.SendQQEmailReq) (*pb.SendQQEmailRe
 	count, err := l.svcCtx.Redis.Incr(l.ctx, limitKey).Result()
 	if err != nil {
 		l.Logger.Errorf("Redis Incr failed: %v", err)
-		return nil, errorx.NewSystemError("系统繁忙，请稍后再试")
+		return nil, errorx.ErrCacheError(err)
 	}
 	if count == 1 {
 		l.svcCtx.Redis.Expire(l.ctx, limitKey, time.Hour)
 	}
 	if count > 10 {
-		return nil, errorx.NewDefaultError("验证码发送太频繁，请1小时后再试")
+		return nil, errorx.New(errorx.CodeCaptchaRateLimit)
 	}
 
 	// 3. 存储验证码到Redis (有效期3分钟)
@@ -56,7 +56,7 @@ func (l *SendQQEmailLogic) SendQQEmail(in *pb.SendQQEmailReq) (*pb.SendQQEmailRe
 	err = l.svcCtx.Redis.Set(l.ctx, key, encrypted, 3*time.Minute).Err()
 	if err != nil {
 		l.Logger.Errorf("Redis Set failed: %v", err)
-		return nil, errorx.NewSystemError("系统繁忙，请稍后再试")
+		return nil, errorx.ErrCacheError(err)
 	}
 
 	// 4. 发送邮件
@@ -90,7 +90,7 @@ func (l *SendQQEmailLogic) SendQQEmail(in *pb.SendQQEmailReq) (*pb.SendQQEmailRe
 	err = email.SendQQEmail(emailCfg, qqEmail, code, sceneStr)
 	if err != nil {
 		l.Logger.Errorf("Send email failed: %v", err)
-		return nil, errorx.NewDefaultError("邮件发送失败，请检查邮箱是否正确")
+		return nil, errorx.New(errorx.CodeEmailSendFailed)
 	}
 
 	return &pb.SendQQEmailResponse{}, nil

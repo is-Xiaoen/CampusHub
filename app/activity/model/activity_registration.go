@@ -276,6 +276,8 @@ func (m *ActivityRegistrationModel) RegisterWithTicket(
 			UserID:     userID,
 			Status:     RegistrationStatusSuccess,
 		}
+		shouldOccupy := true
+		resetTicket := true
 		if err := tx.Create(reg).Error; err != nil {
 			if !isDuplicateKeyErr(err) {
 				return err
@@ -284,48 +286,63 @@ func (m *ActivityRegistrationModel) RegisterWithTicket(
 			if err != nil {
 				return err
 			}
-			if existing.Status == RegistrationStatusSuccess {
+			switch existing.Status {
+			case RegistrationStatusSuccess:
 				result.AlreadyRegistered = true
-				return nil
-			}
-			if existing.Status != RegistrationStatusCanceled && existing.Status != RegistrationStatusFailed {
+				shouldOccupy = false
+				resetTicket = false
+			case RegistrationStatusCanceled, RegistrationStatusFailed:
+				reopened, err := m.ReopenIfCanceledOrFailed(ctx, tx, existing.ID)
+				if err != nil {
+					return err
+				}
+				if !reopened {
+					result.AlreadyRegistered = true
+					shouldOccupy = false
+					resetTicket = false
+				}
+			default:
 				result.AlreadyRegistered = true
-				return nil
-			}
-			reopened, err := m.ReopenIfCanceledOrFailed(ctx, tx, existing.ID)
-			if err != nil {
-				return err
-			}
-			if !reopened {
-				result.AlreadyRegistered = true
-				return nil
+				shouldOccupy = false
+				resetTicket = false
 			}
 			reg = existing
 		}
 
-		if result.AlreadyRegistered {
-			return nil
+		if shouldOccupy {
+			if err := m.OccupyActivityQuota(ctx, tx, activityID); err != nil {
+				return err
+			}
 		}
 
-		if err := m.OccupyActivityQuota(ctx, tx, activityID); err != nil {
-			return err
-		}
-
-		// 先尝试复用已有票券（按报名记录ID更新）
-		reuse := tx.WithContext(ctx).
-			Model(&ActivityTicket{}).
-			Where("registration_id = ?", reg.ID).
-			Updates(map[string]interface{}{
-				"status":            TicketStatusUnused,
-				"used_time":         int64(0),
-				"used_location":     "",
-				"check_in_snapshot": "",
-			})
-		if reuse.Error != nil {
-			return reuse.Error
-		}
-		if reuse.RowsAffected > 0 {
-			return nil
+		if resetTicket {
+			// 先尝试复用已有票券（按报名记录ID更新）
+			reuse := tx.WithContext(ctx).
+				Model(&ActivityTicket{}).
+				Where("registration_id = ?", reg.ID).
+				Updates(map[string]interface{}{
+					"status":            TicketStatusUnused,
+					"used_time":         int64(0),
+					"used_location":     "",
+					"check_in_snapshot": emptyCheckInSnapshotJSON,
+				})
+			if reuse.Error != nil {
+				return reuse.Error
+			}
+			if reuse.RowsAffected > 0 {
+				return nil
+			}
+		} else {
+			var ticket ActivityTicket
+			err := tx.WithContext(ctx).
+				Where("registration_id = ?", reg.ID).
+				First(&ticket).Error
+			if err == nil {
+				return nil
+			}
+			if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+				return err
+			}
 		}
 
 		for i := 0; i < 3; i++ {
@@ -334,13 +351,14 @@ func (m *ActivityRegistrationModel) RegisterWithTicket(
 				return err
 			}
 			ticket := &ActivityTicket{
-				ActivityID:     activityID,
-				UserID:         userID,
-				RegistrationID: reg.ID,
-				TicketCode:     payload.TicketCode,
-				TicketUUID:     payload.TicketUUID,
-				TotpSecret:     payload.TotpSecret,
-				Status:         TicketStatusUnused,
+				ActivityID:      activityID,
+				UserID:          userID,
+				RegistrationID:  reg.ID,
+				TicketCode:      payload.TicketCode,
+				TicketUUID:      payload.TicketUUID,
+				TotpSecret:      payload.TotpSecret,
+				Status:          TicketStatusUnused,
+				CheckInSnapshot: emptyCheckInSnapshotJSON,
 			}
 			if err := tx.Create(ticket).Error; err != nil {
 				if isDuplicateKeyErr(err) {

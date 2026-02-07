@@ -359,6 +359,16 @@ service VerifyService {
     // 调用方: MQ Consumer（OCR回调、人工审核结果）、定时任务（超时处理）
     // 业务逻辑: 处理认证流程中的状态流转
     rpc UpdateVerifyStatus(UpdateVerifyStatusReq) returns (UpdateVerifyStatusResp);
+
+    // ProcessOcrVerify 处理 OCR 识别（供统一 MQ Consumer 调用）
+    // 调用方: app/mq 消费者（消费 verify:events 事件）
+    // 业务逻辑:
+    //   1. 查询认证记录，校验状态（必须为 OcrPending）
+    //   2. 检查是否超时（>10min 直接标记超时）
+    //   3. 调用 OCR 识别（主提供商+备用故障转移）
+    //   4. 成功 → 更新为 WaitConfirm + 回填OCR数据
+    //   5. 失败 → 更新为 OcrFailed
+    rpc ProcessOcrVerify(ProcessOcrVerifyReq) returns (ProcessOcrVerifyResp);
 }
 
 // ============================================================================
@@ -599,6 +609,31 @@ message UpdateVerifyStatusResp {
     int32 after_status = 3;
 }
 
+// ==================== ProcessOcrVerify OCR 识别处理 ====================
+
+// ProcessOcrVerifyReq OCR识别处理请求
+// 由统一 MQ Consumer 消费 verify:events 后调用
+message ProcessOcrVerifyReq {
+    // 认证记录ID
+    int64 verify_id = 1;
+    // 用户ID
+    int64 user_id = 2;
+    // 学生证正面图片URL
+    string front_image_url = 3;
+    // 学生证详情面图片URL
+    string back_image_url = 4;
+}
+
+// ProcessOcrVerifyResp OCR识别处理响应
+message ProcessOcrVerifyResp {
+    // 是否处理成功
+    bool success = 1;
+    // 处理后的状态码（2=待确认, 6=超时, 8=OCR失败）
+    int32 result_status = 2;
+    // 处理描述
+    string message = 3;
+}
+
 // ============================================================================
 // 认证状态说明（仅供参考，实际在 Go 代码中定义常量）
 // ============================================================================
@@ -633,6 +668,8 @@ service TagService {
     rpc GetUserTags(GetUserTagsReq) returns (GetUserTagsResponse);
     // 修改用户兴趣
     rpc UpdateUserTag(UpdateUserTagReq) returns(UpdateUserTagResponse);
+    // 获取所有的兴趣标签
+    rpc GetAllInterestTags(GetAllInterestTagsReq) returns(GetAllInterestTagsResp);
 }
 
 // 修改用户兴趣
@@ -694,6 +731,12 @@ message GetUserTagsResponse {
 message UserTag {
     uint64 id = 1;
     string name = 2;
+}
+
+message GetAllInterestTagsReq {}
+
+message GetAllInterestTagsResp {
+    repeated InterestTag interest_tags = 1;
 }
 
 // ============================================================================

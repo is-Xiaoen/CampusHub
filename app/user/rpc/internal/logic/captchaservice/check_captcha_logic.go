@@ -53,7 +53,7 @@ func (l *CheckCaptchaLogic) CheckCaptcha(in *pb.CheckCaptchaReq) (*pb.CheckCaptc
 
 	if captchaId == "" || captchaKey == "" {
 		l.Errorf("验证码配置缺失")
-		return nil, errorx.ErrInternalError()
+		return nil, errorx.New(errorx.CodeGeetestConfigError)
 	}
 
 	// 2. 生成签名

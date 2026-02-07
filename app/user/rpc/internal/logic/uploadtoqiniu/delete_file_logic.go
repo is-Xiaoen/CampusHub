@@ -7,12 +7,11 @@ import (
 
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
+	"activity-platform/common/errorx"
 
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/storage"
 	"github.com/zeromicro/go-zero/core/logx"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type DeleteFileLogic struct {
@@ -32,25 +31,25 @@ func NewDeleteFileLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Delete
 func (l *DeleteFileLogic) DeleteFile(in *pb.DeleteFileReq) (*pb.DeleteFileResponse, error) {
 	// 1. 基础校验
 	if in.FileUrl == "" {
-		return nil, status.Error(codes.InvalidArgument, "file url is empty")
+		return nil, errorx.ErrInvalidParams("文件URL不能为空")
 	}
 
 	// 2. 从 URL 中提取 Key (文件名)
 	// 假设 URL 格式: http://domain.com/key
 	u, err := url.Parse(in.FileUrl)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid file url")
+		return nil, errorx.ErrInvalidParams("文件URL格式错误")
 	}
 	// 去掉开头的 "/"
 	key := strings.TrimPrefix(u.Path, "/")
 	if key == "" {
-		return nil, status.Error(codes.InvalidArgument, "file key not found in url")
+		return nil, errorx.ErrInvalidParams("无法解析文件Key")
 	}
 
 	// 3. 准备七牛云配置
 	qConfig := l.svcCtx.Config.Qiniu
 	if qConfig.AccessKey == "" || qConfig.SecretKey == "" {
-		return nil, status.Error(codes.Internal, "qiniu config is missing")
+		return nil, errorx.New(errorx.CodeFileConfigError)
 	}
 
 	// 4. 配置 Bucket Manager
@@ -80,7 +79,7 @@ func (l *DeleteFileLogic) DeleteFile(in *pb.DeleteFileReq) (*pb.DeleteFileRespon
 		l.Logger.Errorf("Failed to delete file from qiniu: %v", err)
 		// 如果是文件不存在，也可以视为成功，或者返回特定错误
 		// 这里简单处理：只要 SDK 报错就返回错误
-		return nil, status.Error(codes.Internal, "delete failed")
+		return nil, errorx.New(errorx.CodeFileDeleteFailed)
 	}
 
 	return &pb.DeleteFileResponse{

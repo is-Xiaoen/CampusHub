@@ -133,18 +133,44 @@ func (l *CancelActivitiesLogic) CancelActivities(in *activity.CancelActivityRequ
 	}
 
 	// 5) 异步发布取消报名事件
-	l.svcCtx.MsgProducer.PublishMemberLeft(l.ctx, uint64(activityID), uint64(userID))
+	l.publishMemberLeftEvent(activityID, userID)
 
 	// 6) 发布信用事件：根据距活动开始时间判断 cancel_early 或 cancel_late
 	if activityData.ActivityStartTime > 0 {
 		hoursBeforeStart := (activityData.ActivityStartTime - now) / 3600
 		if hoursBeforeStart >= 24 {
-			l.svcCtx.MsgProducer.PublishCreditEvent(l.ctx, messaging.CreditEventCancelEarly, activityID, userID)
+			l.publishCreditEvent(messaging.CreditEventCancelEarly, activityID, userID)
 		} else {
-			l.svcCtx.MsgProducer.PublishCreditEvent(l.ctx, messaging.CreditEventCancelLate, activityID, userID)
+			l.publishCreditEvent(messaging.CreditEventCancelLate, activityID, userID)
 		}
 	}
 
 	// 7) 成功返回
 	return &activity.CancelActivityResponse{Result: "success"}, nil
+}
+
+// publishMemberLeftEvent 发布取消报名事件（topic: activity.member.left）
+// - Producer 未启用时直接跳过
+// - 发布失败由 Producer 内部记录，不影响主流程
+func (l *CancelActivitiesLogic) publishMemberLeftEvent(activityID, userID int64) {
+	if activityID <= 0 || userID <= 0 {
+		return
+	}
+	if l == nil || l.svcCtx == nil || l.svcCtx.MsgProducer == nil {
+		return
+	}
+	l.svcCtx.MsgProducer.PublishMemberLeft(l.ctx, uint64(activityID), uint64(userID))
+}
+
+// publishCreditEvent 发布信用事件
+// - Producer 未启用时直接跳过
+// - 发布失败由 Producer 内部记录，不影响主流程
+func (l *CancelActivitiesLogic) publishCreditEvent(eventType string, activityID, userID int64) {
+	if eventType == "" || activityID <= 0 || userID <= 0 {
+		return
+	}
+	if l == nil || l.svcCtx == nil || l.svcCtx.MsgProducer == nil {
+		return
+	}
+	l.svcCtx.MsgProducer.PublishCreditEvent(l.ctx, eventType, activityID, userID)
 }

@@ -98,6 +98,10 @@ type GetForgetPasswordCodeReq struct {
 	QqEmail string `form:"qq_email"`
 }
 
+type GetInterestTagsResp struct {
+	InterestTags []InterestTag `json:"interestTags"`
+}
+
 type GetRegisterCodeReq struct {
 	QqEmail string `form:"qq_email"`
 }
@@ -187,11 +191,11 @@ type UpdateInterestResp struct {
 }
 
 type UpdateUserInfoReq struct {
-	Age            int64   `json:"age,optional" form:"age,optional"`
-	Nickname       string  `json:"nickname,optional" form:"nickname,optional"`
-	Introduction   string  `json:"introduction,optional" form:"introduction,optional"`
-	Gender         string  `json:"gender,optional" form:"gender,optional"`
-	InterestTagIds []int64 `json:"interestTagIds,optional" form:"interestTagIds,optional"`
+	Age            int64   `json:"age,optional"`
+	Nickname       string  `json:"nickname,optional"`
+	Introduction   string  `json:"introduction,optional"`
+	Gender         string  `json:"gender,optional"`
+	InterestTagIds []int64 `json:"interestTagIds,optional"`
 }
 
 type UpdateUserInfoResp struct {

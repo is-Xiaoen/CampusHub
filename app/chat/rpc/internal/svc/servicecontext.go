@@ -1,14 +1,17 @@
 package svc
 
 import (
-	"activity-platform/app/chat/model"
-	"activity-platform/app/chat/rpc/internal/config"
-	"activity-platform/common/messaging"
 	"fmt"
 	"log"
 	"time"
 
+	"activity-platform/app/chat/model"
+	"activity-platform/app/chat/rpc/internal/config"
+	"activity-platform/app/user/rpc/pb/pb"
+	"activity-platform/common/messaging"
+
 	"github.com/redis/go-redis/v9"
+	"github.com/zeromicro/go-zero/zrpc"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -25,6 +28,14 @@ type ServiceContext struct {
 
 	// 消息中间件客户端
 	MsgClient *messaging.Client
+
+	// ==================== User RPC 客户端（供 MQ 消费者使用）====================
+
+	// UserCreditRpc User 信用分服务 RPC 客户端
+	UserCreditRpc pb.CreditServiceClient
+
+	// UserVerifyRpc User 认证服务 RPC 客户端
+	UserVerifyRpc pb.VerifyServiceClient
 
 	// Model 层
 	GroupModel        model.GroupModel
@@ -50,11 +61,16 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		log.Fatalf("消息中间件初始化失败: %v", err)
 	}
 
+	// 初始化 User RPC 客户端（信用分 + 认证 共用同一个连接）
+	userRpcConn := zrpc.MustNewClient(c.UserRpc).Conn()
+
 	return &ServiceContext{
 		Config:            c,
 		DB:                db,
 		RedisClient:       redisClient,
 		MsgClient:         msgClient,
+		UserCreditRpc:     pb.NewCreditServiceClient(userRpcConn),
+		UserVerifyRpc:     pb.NewVerifyServiceClient(userRpcConn),
 		GroupModel:        model.NewGroupModel(db),
 		GroupMemberModel:  model.NewGroupMemberModel(db),
 		MessageModel:      model.NewMessageModel(db),

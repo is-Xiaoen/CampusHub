@@ -30,7 +30,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.0
 // - protoc             v3.9.0
-// source: user.proto
+// source: app/user/rpc/user.proto
 
 package pb
 
@@ -383,7 +383,7 @@ var CreditService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "user.proto",
+	Metadata: "app/user/rpc/user.proto",
 }
 
 const (
@@ -394,6 +394,7 @@ const (
 	VerifyService_ConfirmStudentVerify_FullMethodName = "/user.VerifyService/ConfirmStudentVerify"
 	VerifyService_CancelStudentVerify_FullMethodName  = "/user.VerifyService/CancelStudentVerify"
 	VerifyService_UpdateVerifyStatus_FullMethodName   = "/user.VerifyService/UpdateVerifyStatus"
+	VerifyService_ProcessOcrVerify_FullMethodName     = "/user.VerifyService/ProcessOcrVerify"
 )
 
 // VerifyServiceClient is the client API for VerifyService service.
@@ -434,6 +435,15 @@ type VerifyServiceClient interface {
 	// 调用方: MQ Consumer（OCR回调、人工审核结果）、定时任务（超时处理）
 	// 业务逻辑: 处理认证流程中的状态流转
 	UpdateVerifyStatus(ctx context.Context, in *UpdateVerifyStatusReq, opts ...grpc.CallOption) (*UpdateVerifyStatusResp, error)
+	// ProcessOcrVerify 处理 OCR 识别（供统一 MQ Consumer 调用）
+	// 调用方: app/mq 消费者（消费 verify:events 事件）
+	// 业务逻辑:
+	//  1. 查询认证记录，校验状态（必须为 OcrPending）
+	//  2. 检查是否超时（>10min 直接标记超时）
+	//  3. 调用 OCR 识别（主提供商+备用故障转移）
+	//  4. 成功 → 更新为 WaitConfirm + 回填OCR数据
+	//  5. 失败 → 更新为 OcrFailed
+	ProcessOcrVerify(ctx context.Context, in *ProcessOcrVerifyReq, opts ...grpc.CallOption) (*ProcessOcrVerifyResp, error)
 }
 
 type verifyServiceClient struct {
@@ -514,6 +524,16 @@ func (c *verifyServiceClient) UpdateVerifyStatus(ctx context.Context, in *Update
 	return out, nil
 }
 
+func (c *verifyServiceClient) ProcessOcrVerify(ctx context.Context, in *ProcessOcrVerifyReq, opts ...grpc.CallOption) (*ProcessOcrVerifyResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ProcessOcrVerifyResp)
+	err := c.cc.Invoke(ctx, VerifyService_ProcessOcrVerify_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // VerifyServiceServer is the server API for VerifyService service.
 // All implementations must embed UnimplementedVerifyServiceServer
 // for forward compatibility.
@@ -552,6 +572,15 @@ type VerifyServiceServer interface {
 	// 调用方: MQ Consumer（OCR回调、人工审核结果）、定时任务（超时处理）
 	// 业务逻辑: 处理认证流程中的状态流转
 	UpdateVerifyStatus(context.Context, *UpdateVerifyStatusReq) (*UpdateVerifyStatusResp, error)
+	// ProcessOcrVerify 处理 OCR 识别（供统一 MQ Consumer 调用）
+	// 调用方: app/mq 消费者（消费 verify:events 事件）
+	// 业务逻辑:
+	//  1. 查询认证记录，校验状态（必须为 OcrPending）
+	//  2. 检查是否超时（>10min 直接标记超时）
+	//  3. 调用 OCR 识别（主提供商+备用故障转移）
+	//  4. 成功 → 更新为 WaitConfirm + 回填OCR数据
+	//  5. 失败 → 更新为 OcrFailed
+	ProcessOcrVerify(context.Context, *ProcessOcrVerifyReq) (*ProcessOcrVerifyResp, error)
 	mustEmbedUnimplementedVerifyServiceServer()
 }
 
@@ -582,6 +611,9 @@ func (UnimplementedVerifyServiceServer) CancelStudentVerify(context.Context, *Ca
 }
 func (UnimplementedVerifyServiceServer) UpdateVerifyStatus(context.Context, *UpdateVerifyStatusReq) (*UpdateVerifyStatusResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateVerifyStatus not implemented")
+}
+func (UnimplementedVerifyServiceServer) ProcessOcrVerify(context.Context, *ProcessOcrVerifyReq) (*ProcessOcrVerifyResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method ProcessOcrVerify not implemented")
 }
 func (UnimplementedVerifyServiceServer) mustEmbedUnimplementedVerifyServiceServer() {}
 func (UnimplementedVerifyServiceServer) testEmbeddedByValue()                       {}
@@ -730,6 +762,24 @@ func _VerifyService_UpdateVerifyStatus_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _VerifyService_ProcessOcrVerify_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProcessOcrVerifyReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VerifyServiceServer).ProcessOcrVerify(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: VerifyService_ProcessOcrVerify_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VerifyServiceServer).ProcessOcrVerify(ctx, req.(*ProcessOcrVerifyReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // VerifyService_ServiceDesc is the grpc.ServiceDesc for VerifyService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -765,16 +815,21 @@ var VerifyService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "UpdateVerifyStatus",
 			Handler:    _VerifyService_UpdateVerifyStatus_Handler,
 		},
+		{
+			MethodName: "ProcessOcrVerify",
+			Handler:    _VerifyService_ProcessOcrVerify_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "user.proto",
+	Metadata: "app/user/rpc/user.proto",
 }
 
 const (
-	TagService_GetAllTags_FullMethodName    = "/user.TagService/GetAllTags"
-	TagService_GetTagsByIds_FullMethodName  = "/user.TagService/GetTagsByIds"
-	TagService_GetUserTags_FullMethodName   = "/user.TagService/GetUserTags"
-	TagService_UpdateUserTag_FullMethodName = "/user.TagService/UpdateUserTag"
+	TagService_GetAllTags_FullMethodName         = "/user.TagService/GetAllTags"
+	TagService_GetTagsByIds_FullMethodName       = "/user.TagService/GetTagsByIds"
+	TagService_GetUserTags_FullMethodName        = "/user.TagService/GetUserTags"
+	TagService_UpdateUserTag_FullMethodName      = "/user.TagService/UpdateUserTag"
+	TagService_GetAllInterestTags_FullMethodName = "/user.TagService/GetAllInterestTags"
 )
 
 // TagServiceClient is the client API for TagService service.
@@ -786,6 +841,8 @@ type TagServiceClient interface {
 	GetUserTags(ctx context.Context, in *GetUserTagsReq, opts ...grpc.CallOption) (*GetUserTagsResponse, error)
 	// 修改用户兴趣
 	UpdateUserTag(ctx context.Context, in *UpdateUserTagReq, opts ...grpc.CallOption) (*UpdateUserTagResponse, error)
+	// 获取所有的兴趣标签
+	GetAllInterestTags(ctx context.Context, in *GetAllInterestTagsReq, opts ...grpc.CallOption) (*GetAllInterestTagsResp, error)
 }
 
 type tagServiceClient struct {
@@ -836,6 +893,16 @@ func (c *tagServiceClient) UpdateUserTag(ctx context.Context, in *UpdateUserTagR
 	return out, nil
 }
 
+func (c *tagServiceClient) GetAllInterestTags(ctx context.Context, in *GetAllInterestTagsReq, opts ...grpc.CallOption) (*GetAllInterestTagsResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetAllInterestTagsResp)
+	err := c.cc.Invoke(ctx, TagService_GetAllInterestTags_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TagServiceServer is the server API for TagService service.
 // All implementations must embed UnimplementedTagServiceServer
 // for forward compatibility.
@@ -845,6 +912,8 @@ type TagServiceServer interface {
 	GetUserTags(context.Context, *GetUserTagsReq) (*GetUserTagsResponse, error)
 	// 修改用户兴趣
 	UpdateUserTag(context.Context, *UpdateUserTagReq) (*UpdateUserTagResponse, error)
+	// 获取所有的兴趣标签
+	GetAllInterestTags(context.Context, *GetAllInterestTagsReq) (*GetAllInterestTagsResp, error)
 	mustEmbedUnimplementedTagServiceServer()
 }
 
@@ -866,6 +935,9 @@ func (UnimplementedTagServiceServer) GetUserTags(context.Context, *GetUserTagsRe
 }
 func (UnimplementedTagServiceServer) UpdateUserTag(context.Context, *UpdateUserTagReq) (*UpdateUserTagResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateUserTag not implemented")
+}
+func (UnimplementedTagServiceServer) GetAllInterestTags(context.Context, *GetAllInterestTagsReq) (*GetAllInterestTagsResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetAllInterestTags not implemented")
 }
 func (UnimplementedTagServiceServer) mustEmbedUnimplementedTagServiceServer() {}
 func (UnimplementedTagServiceServer) testEmbeddedByValue()                    {}
@@ -960,6 +1032,24 @@ func _TagService_UpdateUserTag_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TagService_GetAllInterestTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllInterestTagsReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TagServiceServer).GetAllInterestTags(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TagService_GetAllInterestTags_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TagServiceServer).GetAllInterestTags(ctx, req.(*GetAllInterestTagsReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TagService_ServiceDesc is the grpc.ServiceDesc for TagService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -983,9 +1073,13 @@ var TagService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "UpdateUserTag",
 			Handler:    _TagService_UpdateUserTag_Handler,
 		},
+		{
+			MethodName: "GetAllInterestTags",
+			Handler:    _TagService_GetAllInterestTags_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "user.proto",
+	Metadata: "app/user/rpc/user.proto",
 }
 
 const (
@@ -1449,7 +1543,7 @@ var UserBasicService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "user.proto",
+	Metadata: "app/user/rpc/user.proto",
 }
 
 const (
@@ -1593,7 +1687,7 @@ var TagBranchService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "user.proto",
+	Metadata: "app/user/rpc/user.proto",
 }
 
 const (
@@ -1737,7 +1831,7 @@ var CaptchaService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "user.proto",
+	Metadata: "app/user/rpc/user.proto",
 }
 
 const (
@@ -1877,7 +1971,7 @@ var QQEmail_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "user.proto",
+	Metadata: "app/user/rpc/user.proto",
 }
 
 const (
@@ -2017,5 +2111,5 @@ var UploadToQiNiu_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "user.proto",
+	Metadata: "app/user/rpc/user.proto",
 }

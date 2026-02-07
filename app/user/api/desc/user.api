@@ -335,6 +335,10 @@ type GetForgetPasswordCodeReq {
 	QqEmail string `form:"qq_email"`
 }
 
+type GetInterestTagsResp {
+	InterestTags []InterestTag `json:"interestTags"`
+}
+
 type GetCodeResp {}
 
 // ============================================================================
@@ -413,6 +417,10 @@ service user-api {
 	@doc "获取忘记密码QQ验证码"
 	@handler GetForgetPasswordCode
 	get /qq_code/forgot_password (GetForgetPasswordCodeReq) returns (GetCodeResp)
+
+	@doc "获取所有的兴趣标签"
+	@handler GetInterestTags
+	get /interests/tags returns (GetInterestTagsResp)
 }
 
 // ==================== 4. 用户信息接口（需要登录）====================
