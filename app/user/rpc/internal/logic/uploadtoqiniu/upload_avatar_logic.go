@@ -64,4 +64,3 @@ func (l *UploadAvatarLogic) UploadAvatar(in *pb.UploadAvatarReq) (*pb.UploadAvat
 		AvatarUrl: avatarUrl,
 	}, nil
 }
-
