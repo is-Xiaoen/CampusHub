@@ -5,14 +5,16 @@ package group
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"activity-platform/app/chat/api/internal/svc"
 	"activity-platform/app/chat/api/internal/types"
 	"activity-platform/app/chat/rpc/chat"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type GetUserGroupsLogic struct {
@@ -30,7 +32,7 @@ func NewGetUserGroupsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Get
 	}
 }
 
-func (l *GetUserGroupsLogic) GetUserGroups(req *types.GetUserGroupsReq) (resp *types.GetUserGroupsResp, err error) {
+func (l *GetUserGroupsLogic) GetUserGroups(req *types.GetUserGroupsReq) (resp *types.GetUserGroupsData, err error) {
 	// 调用 RPC 服务获取用户群列表
 	rpcResp, err := l.svcCtx.ChatRpc.GetUserGroups(l.ctx, &chat.GetUserGroupsReq{
 		UserId:   strconv.FormatInt(req.UserId, 10),
@@ -39,16 +41,16 @@ func (l *GetUserGroupsLogic) GetUserGroups(req *types.GetUserGroupsReq) (resp *t
 	})
 	if err != nil {
 		l.Errorf("调用 RPC 获取用户群列表失败: %v", err)
-		return &types.GetUserGroupsResp{
-			Code:    500,
-			Message: fmt.Sprintf("获取用户群列表失败: %v", err),
-			Data: types.GetUserGroupsData{
-				Groups:   []types.UserGroupInfo{},
-				Total:    0,
-				Page:     req.Page,
-				PageSize: req.PageSize,
-			},
-		}, nil
+		// 处理 gRPC 错误
+		if st, ok := status.FromError(err); ok {
+			switch st.Code() {
+			case codes.NotFound:
+				return nil, errorx.New(errorx.CodeGroupNotFound)
+			default:
+				return nil, errorx.NewWithMessage(errorx.CodeRPCError, "获取用户群列表失败")
+			}
+		}
+		return nil, errorx.NewWithMessage(errorx.CodeInternalError, "获取用户群列表失败")
 	}
 
 	// 转换群聊列表（RPC 现在返回完整的 UserGroupInfo）
@@ -68,14 +70,10 @@ func (l *GetUserGroupsLogic) GetUserGroups(req *types.GetUserGroupsReq) (resp *t
 		})
 	}
 
-	return &types.GetUserGroupsResp{
-		Code:    0,
-		Message: "success",
-		Data: types.GetUserGroupsData{
-			Groups:   groups,
-			Total:    rpcResp.Total,
-			Page:     req.Page,
-			PageSize: req.PageSize,
-		},
+	return &types.GetUserGroupsData{
+		Groups:   groups,
+		Total:    rpcResp.Total,
+		Page:     req.Page,
+		PageSize: req.PageSize,
 	}, nil
 }

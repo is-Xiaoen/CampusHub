@@ -16,8 +16,8 @@ Log:
 
 # ==================== JWT 配置（必须与 user-api 一致）====================
 Auth:
-  AccessSecret: "your-access-secret-key-change-in-production-32chars"
-  AccessExpire: 7200
+  AccessSecret: "kP9vX2mR7qN5zL4tA1wS8yJ3fG6hB0xU"
+  AccessExpire: 7200  # 2小时
 
 # ==================== RPC 服务配置 ====================
 ChatRpc:
@@ -39,6 +39,14 @@ UserRpc:
 
 # ==================== Redis 配置（用于获取用户状态）====================
 Redis:
-  Host: 127.0.0.1:6379
-  Pass: ""
-  DB: 0
+  Host: 192.168.10.4:6379
+  Pass: "123456"
+  DB: 2
+
+# ==================== WebSocket 配置（可选）====================
+WebSocket:
+  Enabled: true                # 是否启用 WebSocket（默认 true）
+  MaxConnections: 10000        # 最大连接数
+  ReadTimeout: 60              # 读取超时（秒）
+  WriteTimeout: 10             # 写入超时（秒）
+  HeartbeatInterval: 30        # 心跳间隔（秒）

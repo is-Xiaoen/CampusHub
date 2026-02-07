@@ -10,6 +10,7 @@ import (
 
 	"activity-platform/app/chat/api/internal/svc"
 	"activity-platform/app/chat/api/internal/types"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -29,7 +30,7 @@ func NewGetUserStatusLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Get
 	}
 }
 
-func (l *GetUserStatusLogic) GetUserStatus(req *types.GetUserStatusReq) (resp *types.GetUserStatusResp, err error) {
+func (l *GetUserStatusLogic) GetUserStatus(req *types.GetUserStatusReq) (resp *types.GetUserStatusData, err error) {
 	// 构建 Redis key
 	key := fmt.Sprintf("user:status:%d", req.UserId)
 
@@ -37,15 +38,16 @@ func (l *GetUserStatusLogic) GetUserStatus(req *types.GetUserStatusReq) (resp *t
 	statusMap, err := l.svcCtx.Redis.HgetallCtx(l.ctx, key)
 	if err != nil {
 		l.Errorf("获取用户状态失败: %v", err)
-		return &types.GetUserStatusResp{
-			Code:    500,
-			Message: "获取用户状态失败",
-			Data: types.GetUserStatusData{
-				IsOnline:      false,
-				LastSeen:      0,
-				LastOnlineAt:  0,
-				LastOfflineAt: 0,
-			},
+		return nil, errorx.NewWithMessage(errorx.CodeCacheError, "获取用户状态失败")
+	}
+
+	// 如果 Redis 中没有数据，返回默认状态
+	if len(statusMap) == 0 {
+		return &types.GetUserStatusData{
+			IsOnline:      false,
+			LastSeen:      0,
+			LastOnlineAt:  0,
+			LastOfflineAt: 0,
 		}, nil
 	}
 
@@ -59,14 +61,10 @@ func (l *GetUserStatusLogic) GetUserStatus(req *types.GetUserStatusReq) (resp *t
 	lastOnlineAt, _ := strconv.ParseInt(statusMap["last_online_at"], 10, 64)
 	lastOfflineAt, _ := strconv.ParseInt(statusMap["last_offline_at"], 10, 64)
 
-	return &types.GetUserStatusResp{
-		Code:    0,
-		Message: "success",
-		Data: types.GetUserStatusData{
-			IsOnline:      isOnline,
-			LastSeen:      lastSeen,
-			LastOnlineAt:  lastOnlineAt,
-			LastOfflineAt: lastOfflineAt,
-		},
+	return &types.GetUserStatusData{
+		IsOnline:      isOnline,
+		LastSeen:      lastSeen,
+		LastOnlineAt:  lastOnlineAt,
+		LastOfflineAt: lastOfflineAt,
 	}, nil
 }
