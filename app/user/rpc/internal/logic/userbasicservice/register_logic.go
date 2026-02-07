@@ -89,6 +89,18 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 		// 即使失败也不中断注册流程
 	}
 
+	// 获取信誉分
+	var creditScore int64
+	getCreditInfoLogic := creditservicelogic.NewGetCreditInfoLogic(l.ctx, l.svcCtx)
+	creditInfo, err := getCreditInfoLogic.GetCreditInfo(&pb.GetCreditInfoReq{
+		UserId: int64(newUser.UserID),
+	})
+	if err == nil {
+		creditScore = creditInfo.Score
+	} else {
+		l.Logger.Errorf("Get credit info failed: %v, userId: %d", err, newUser.UserID)
+	}
+
 	// 4. 生成Token (自动登录)
 	accessJwtId := uuid.New().String()
 	refreshJwtId := uuid.New().String()
@@ -131,6 +143,8 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 			Age:           strconv.FormatInt(newUser.Age, 10),
 			ActivitiesNum: 0,
 			InitiateNum:   0,
+			Credit:        creditScore,
+			QqEmail:       newUser.QQEmail,
 		},
 	}, nil
 }

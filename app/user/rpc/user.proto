@@ -818,6 +818,8 @@ message UpdateUserInfoResponse{
     string avatar_url =5;
     int64 age= 6;
     repeated int64 tag_ids =7;
+    string qq_email = 8;
+    int64 credit = 9;
 }
 
 
@@ -912,6 +914,7 @@ message UserInfo {
     int64 credit = 9;           // 对应 "credit" (参考你CreditService的定义)
     bool is_student_verified = 10; // 对应 "isStudentVerified"
     repeated InterestTag interest_tags = 11; // 对应 "interestTags" 列表
+    string qq_email = 12; // 对应 "qqEmail"
 }
 
 // 刷新token

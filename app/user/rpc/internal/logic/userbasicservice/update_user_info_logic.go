@@ -3,6 +3,7 @@ package userbasicservicelogic
 import (
 	"context"
 
+	creditservicelogic "activity-platform/app/user/rpc/internal/logic/creditservice"
 	tagservicelogic "activity-platform/app/user/rpc/internal/logic/tagservice"
 	uploadtoqiniulogic "activity-platform/app/user/rpc/internal/logic/uploadtoqiniu"
 	"activity-platform/app/user/rpc/internal/svc"
@@ -78,6 +79,18 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(in *pb.UpdateUserInfoReq) (*pb.Upda
 		return nil, err
 	}
 
+	// 5. 获取信誉分 (CreditService)
+	var creditScore int64
+	getCreditInfoLogic := creditservicelogic.NewGetCreditInfoLogic(l.ctx, l.svcCtx)
+	creditInfo, errCredit := getCreditInfoLogic.GetCreditInfo(&pb.GetCreditInfoReq{
+		UserId: int64(user.UserID),
+	})
+	if errCredit == nil {
+		creditScore = creditInfo.Score
+	} else {
+		l.Logger.Errorf("Get credit info failed: %v, userId: %d", errCredit, user.UserID)
+	}
+
 	return &pb.UpdateUserInfoResponse{
 		UserId:    user.UserID,
 		Nickname:  user.Nickname,
@@ -86,5 +99,7 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(in *pb.UpdateUserInfoReq) (*pb.Upda
 		AvatarUrl: user.AvatarURL,
 		Age:       user.Age,
 		TagIds:    in.TagIds,
+		QqEmail:   user.QQEmail,
+		Credit:    creditScore,
 	}, nil
 }

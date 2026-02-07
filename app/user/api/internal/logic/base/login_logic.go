@@ -6,6 +6,7 @@ import (
 	"activity-platform/app/user/api/internal/svc"
 	"activity-platform/app/user/api/internal/types"
 	"activity-platform/app/user/rpc/client/userbasicservice"
+	"activity-platform/common/utils/email"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -69,6 +70,7 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err erro
 			Credit:            rpcResp.UserInfo.UserInfo.Credit,
 			IsStudentVerified: rpcResp.UserInfo.UserInfo.IsStudentVerified,
 			InterestTags:      interestTags,
+			QqEmail:           email.DesensitizeEmail(rpcResp.UserInfo.UserInfo.QqEmail),
 		},
 	}, nil
 }
