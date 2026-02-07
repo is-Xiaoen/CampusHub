@@ -42,3 +42,11 @@ Redis:
   Host: 127.0.0.1:6379
   Pass: ""
   DB: 0
+
+# ==================== WebSocket 配置（可选）====================
+WebSocket:
+  Enabled: true                # 是否启用 WebSocket（默认 true）
+  MaxConnections: 10000        # 最大连接数
+  ReadTimeout: 60              # 读取超时（秒）
+  WriteTimeout: 10             # 写入超时（秒）
+  HeartbeatInterval: 30        # 心跳间隔（秒）
