@@ -45,6 +45,11 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 		return nil, err
 	}
 
+	// 校验密码格式
+	if !encrypt.ValidatePassword(in.Password) {
+		return nil, errorx.NewWithMessage(errorx.CodePasswordInvalid, "密码长度必须为8-20个字符，且包含至少3种字符（大写字母、小写字母、数字、特殊字符）")
+	}
+
 	// 2. 检查邮箱是否已注册
 	exists, err := l.svcCtx.UserModel.ExistsByQQEmail(l.ctx, in.QqEmail)
 	if err != nil {
