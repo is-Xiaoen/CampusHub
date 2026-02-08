@@ -39,7 +39,7 @@ func (c *ActivityCreatedConsumer) handleActivityCreated(msg *message.Message) er
 		return messaging.NewNonRetryableError(fmt.Errorf("解析事件失败: %w", err))
 	}
 
-	c.logger.Infof("收到活动创建事件: activity_id=%s, creator_id=%s, title=%s",
+	c.logger.Infof("收到活动创建事件: activity_id=%d, creator_id=%d, title=%s",
 		event.ActivityID, event.CreatorID, event.Title)
 
 	resp, err := c.chatRpc.CreateGroup(ctx, &chat.CreateGroupReq{
@@ -49,11 +49,11 @@ func (c *ActivityCreatedConsumer) handleActivityCreated(msg *message.Message) er
 		MaxMembers: 500,
 	})
 	if err != nil {
-		c.logger.Errorf("自动创建群聊失败: %v, activity_id=%s", err, event.ActivityID)
+		c.logger.Errorf("自动创建群聊失败: %v, activity_id=%d", err, event.ActivityID)
 		return messaging.NewRetryableError(fmt.Errorf("创建群聊失败: %w", err))
 	}
 
-	c.logger.Infof("自动创建群聊成功: group_id=%s, activity_id=%s", resp.GroupId, event.ActivityID)
+	c.logger.Infof("自动创建群聊成功: group_id=%s, activity_id=%d", resp.GroupId, event.ActivityID)
 
 	_, err = c.chatRpc.CreateNotification(ctx, &chat.CreateNotificationReq{
 		UserId:  event.CreatorID,

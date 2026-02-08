@@ -17,9 +17,9 @@ USE `campushub_chat`;
 CREATE TABLE IF NOT EXISTS `groups` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键',
     `group_id` VARCHAR(64) NOT NULL COMMENT '群聊唯一标识',
-    `activity_id` VARCHAR(64) NOT NULL COMMENT '关联活动ID',
+    `activity_id` BIGINT UNSIGNED NOT NULL COMMENT '关联活动ID',
     `name` VARCHAR(255) NOT NULL COMMENT '群聊名称',
-    `owner_id` VARCHAR(64) NOT NULL COMMENT '群主用户ID',
+    `owner_id` BIGINT UNSIGNED NOT NULL COMMENT '群主用户ID',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 1-正常 2-已解散',
     `max_members` INT NOT NULL COMMENT '最大成员数',
     `member_count` INT NOT NULL DEFAULT 0 COMMENT '当前成员数量',
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS `groups` (
 CREATE TABLE IF NOT EXISTS `group_members` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键',
     `group_id` VARCHAR(64) NOT NULL COMMENT '群聊ID',
-    `user_id` VARCHAR(64) NOT NULL COMMENT '用户ID',
+    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
     `role` TINYINT NOT NULL DEFAULT 1 COMMENT '角色: 1-普通成员 2-群主',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 1-正常 2-已退出',
     `joined_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '加入时间',
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS `messages` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '消息ID（自增主键）',
     `message_id` VARCHAR(64) NOT NULL COMMENT '消息唯一标识',
     `group_id` VARCHAR(64) NOT NULL COMMENT '群聊ID',
-    `sender_id` VARCHAR(64) NOT NULL COMMENT '发送者用户ID',
+    `sender_id` BIGINT UNSIGNED NOT NULL COMMENT '发送者用户ID',
     `msg_type` TINYINT NOT NULL COMMENT '消息类型: 1-文字 2-图片',
     `content` TEXT COMMENT '文本内容',
     `image_url` VARCHAR(512) COMMENT '图片URL',
@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS `messages` (
 CREATE TABLE IF NOT EXISTS `notifications` (
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增主键',
     `notification_id` VARCHAR(64) NOT NULL COMMENT '通知唯一标识',
-    `user_id` VARCHAR(64) NOT NULL COMMENT '用户ID',
+    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
     `type` VARCHAR(32) NOT NULL COMMENT '通知类型: system-系统通知, group_invite-群邀请等',
     `title` VARCHAR(255) NOT NULL COMMENT '通知标题',
     `content` TEXT NOT NULL COMMENT '通知内容',

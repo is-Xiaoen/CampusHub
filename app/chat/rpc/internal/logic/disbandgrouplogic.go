@@ -32,7 +32,7 @@ func (l *DisbandGroupLogic) DisbandGroup(in *chat.DisbandGroupReq) (*chat.Disban
 	if in.GroupId == "" {
 		return nil, status.Error(codes.InvalidArgument, "群聊ID不能为空")
 	}
-	if in.OperatorId == "" {
+	if in.OperatorId == 0 {
 		return nil, status.Error(codes.InvalidArgument, "操作者ID不能为空")
 	}
 

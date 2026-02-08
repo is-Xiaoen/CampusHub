@@ -5,7 +5,6 @@ package notification
 
 import (
 	"context"
-	"strconv"
 
 	"activity-platform/app/chat/api/internal/svc"
 	"activity-platform/app/chat/api/internal/types"
@@ -35,7 +34,7 @@ func NewMarkNotificationReadLogic(ctx context.Context, svcCtx *svc.ServiceContex
 func (l *MarkNotificationReadLogic) MarkNotificationRead(req *types.MarkNotificationReadReq) (resp *types.MarkNotificationReadData, err error) {
 	// 调用 RPC 服务标记通知已读
 	rpcResp, err := l.svcCtx.ChatRpc.MarkNotificationRead(l.ctx, &chat.MarkNotificationReadReq{
-		UserId:          strconv.FormatInt(req.UserId, 10),
+		UserId:          uint64(req.UserId),
 		NotificationIds: req.NotificationIds,
 	})
 	if err != nil {

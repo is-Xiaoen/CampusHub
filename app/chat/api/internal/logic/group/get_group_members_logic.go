@@ -58,7 +58,7 @@ func (l *GetGroupMembersLogic) GetGroupMembers(req *types.GetGroupMembersReq) (r
 	// 收集所有用户ID
 	userIds := make([]int64, 0, len(rpcResp.Members))
 	for _, member := range rpcResp.Members {
-		userIds = append(userIds, mustParseInt64(member.UserId))
+		userIds = append(userIds, int64(member.UserId))
 	}
 
 	// 批量调用 UserRpc 获取用户信息
@@ -82,7 +82,7 @@ func (l *GetGroupMembersLogic) GetGroupMembers(req *types.GetGroupMembersReq) (r
 	// 转换成员列表
 	members := make([]types.GroupMemberInfo, 0, len(rpcResp.Members))
 	for _, member := range rpcResp.Members {
-		userId := mustParseInt64(member.UserId)
+		userId := int64(member.UserId)
 		username := ""
 		avatar := ""
 

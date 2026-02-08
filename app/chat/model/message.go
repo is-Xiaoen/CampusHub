@@ -13,7 +13,7 @@ type Message struct {
 	ID        uint64 `gorm:"primaryKey;autoIncrement:false;column:id" json:"id"` // 复合主键的一部分，禁用自动增长由业务或DB控制
 	MessageID string `gorm:"uniqueIndex:uk_message_id;column:message_id;type:varchar(64);not null" json:"message_id"`
 	GroupID   string `gorm:"index:idx_group_id_created;column:group_id;type:varchar(64);not null" json:"group_id"`
-	SenderID  string `gorm:"index:idx_sender_id;column:sender_id;type:varchar(64);not null" json:"sender_id"`
+	SenderID  uint64 `gorm:"index:idx_sender_id;column:sender_id;type:bigint;not null" json:"sender_id"`
 	MsgType   int8   `gorm:"column:msg_type;type:tinyint;not null" json:"msg_type"`       // 1-文字 2-图片
 	Content   string `gorm:"column:content;type:text" json:"content"`                     // 文本内容
 	ImageURL  string `gorm:"column:image_url;type:varchar(512)" json:"image_url"`         // 图片URL
@@ -33,7 +33,7 @@ type MessageModel interface {
 	Insert(ctx context.Context, data *Message) error
 	FindOne(ctx context.Context, messageID string) (*Message, error)
 	FindByGroupID(ctx context.Context, groupID, beforeID string, limit int32) ([]*Message, error)
-	FindOfflineMessages(ctx context.Context, userID string, afterTime int64) ([]*Message, error)
+	FindOfflineMessages(ctx context.Context, userID uint64, afterTime int64) ([]*Message, error)
 	UpdateStatus(ctx context.Context, messageID string, status int8) error
 }
 
@@ -88,7 +88,7 @@ func (m *defaultMessageModel) FindByGroupID(ctx context.Context, groupID, before
 }
 
 // FindOfflineMessages 查询离线消息
-func (m *defaultMessageModel) FindOfflineMessages(ctx context.Context, userID string, afterTime int64) ([]*Message, error) {
+func (m *defaultMessageModel) FindOfflineMessages(ctx context.Context, userID uint64, afterTime int64) ([]*Message, error) {
 	var messages []*Message
 
 	// 查询用户加入的所有群的消息

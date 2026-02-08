@@ -10,14 +10,14 @@ import (
 // Group 群聊模型
 // 对应数据库表：groups
 type Group struct {
-	ID          uint64    `gorm:"primaryKey;autoIncrement;column:id" json:"id"`                                               // 自增主键
-	GroupID     string    `gorm:"uniqueIndex:uk_group_id;column:group_id;type:varchar(64);not null" json:"group_id"`          // 群聊唯一标识
-	ActivityID  string    `gorm:"uniqueIndex:uk_activity_id;column:activity_id;type:varchar(64);not null" json:"activity_id"` // 关联活动ID
-	Name        string    `gorm:"column:name;type:varchar(255);not null" json:"name"`                                         // 群聊名称
-	OwnerID     string    `gorm:"index:idx_owner_id;column:owner_id;type:varchar(64);not null" json:"owner_id"`               // 群主用户ID
-	Status      int8      `gorm:"index:idx_status;column:status;type:tinyint;not null;default:1" json:"status"`               // 状态: 1-正常 2-已解散
-	MaxMembers  int32     `gorm:"column:max_members;type:int;not null" json:"max_members"`                                    // 最大成员数
-	MemberCount int32     `gorm:"column:member_count;type:int;not null;default:0" json:"member_count"`                        // 成员数量
+	ID          uint64    `gorm:"primaryKey;autoIncrement;column:id" json:"id"`                                          // 自增主键
+	GroupID     string    `gorm:"uniqueIndex:uk_group_id;column:group_id;type:varchar(64);not null" json:"group_id"`     // 群聊唯一标识
+	ActivityID  uint64    `gorm:"uniqueIndex:uk_activity_id;column:activity_id;type:bigint;not null" json:"activity_id"` // 关联活动ID
+	Name        string    `gorm:"column:name;type:varchar(255);not null" json:"name"`                                    // 群聊名称
+	OwnerID     uint64    `gorm:"index:idx_owner_id;column:owner_id;type:bigint;not null" json:"owner_id"`               // 群主用户ID
+	Status      int8      `gorm:"index:idx_status;column:status;type:tinyint;not null;default:1" json:"status"`          // 状态: 1-正常 2-已解散
+	MaxMembers  int32     `gorm:"column:max_members;type:int;not null" json:"max_members"`                               // 最大成员数
+	MemberCount int32     `gorm:"column:member_count;type:int;not null;default:0" json:"member_count"`                   // 成员数量
 	CreatedAt   time.Time `gorm:"column:created_at;type:datetime;not null;default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt   time.Time `gorm:"column:updated_at;type:datetime;not null;default:CURRENT_TIMESTAMP" json:"updated_at"`
 	DeletedAt   time.Time `gorm:"column:deleted_at;type:datetime;not null;default:NULL" json:"deleted_at"`
@@ -32,7 +32,7 @@ func (Group) TableName() string {
 type GroupModel interface {
 	Insert(ctx context.Context, data *Group) error
 	FindOne(ctx context.Context, groupID string) (*Group, error)
-	FindByActivityID(ctx context.Context, activityID string) (*Group, error)
+	FindByActivityID(ctx context.Context, activityID uint64) (*Group, error)
 	Update(ctx context.Context, data *Group) error
 	Delete(ctx context.Context, groupID string) error
 	UpdateStatus(ctx context.Context, groupID string, status int8) error
@@ -67,7 +67,7 @@ func (m *defaultGroupModel) FindOne(ctx context.Context, groupID string) (*Group
 }
 
 // FindByActivityID 根据活动ID查询群聊信息
-func (m *defaultGroupModel) FindByActivityID(ctx context.Context, activityID string) (*Group, error) {
+func (m *defaultGroupModel) FindByActivityID(ctx context.Context, activityID uint64) (*Group, error) {
 	var group Group
 	err := m.db.WithContext(ctx).
 		Where("activity_id = ? AND status = 1", activityID).
