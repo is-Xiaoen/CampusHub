@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/smtp"
+	"strings"
 )
 
 type EmailConfig struct {
@@ -13,6 +14,29 @@ type EmailConfig struct {
 	Password string
 	FromName string
 	Subject  string
+}
+
+// DesensitizeEmail 脱敏邮箱地址
+// 规则: 保留前两位和@符号前两位，中间用****代替
+// 示例: 123456@qq.com -> 12****56@qq.com
+func DesensitizeEmail(email string) string {
+	if email == "" {
+		return ""
+	}
+	parts := strings.Split(email, "@")
+	if len(parts) != 2 {
+		return email
+	}
+	name := parts[0]
+	domain := parts[1]
+
+	if len(name) <= 4 {
+		return email
+	}
+
+	prefix := name[:2]
+	suffix := name[len(name)-2:]
+	return prefix + "****" + suffix + "@" + domain
 }
 
 func SendQQEmail(cfg EmailConfig, toEmail, code, sceneStr string) error {

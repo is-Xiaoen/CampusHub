@@ -3536,6 +3536,8 @@ type UpdateUserInfoResponse struct {
 	AvatarUrl     string                 `protobuf:"bytes,5,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
 	Age           int64                  `protobuf:"varint,6,opt,name=age,proto3" json:"age,omitempty"`
 	TagIds        []int64                `protobuf:"varint,7,rep,packed,name=tag_ids,json=tagIds,proto3" json:"tag_ids,omitempty"`
+	QqEmail       string                 `protobuf:"bytes,8,opt,name=qq_email,json=qqEmail,proto3" json:"qq_email,omitempty"`
+	Credit        int64                  `protobuf:"varint,9,opt,name=credit,proto3" json:"credit,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3617,6 +3619,20 @@ func (x *UpdateUserInfoResponse) GetTagIds() []int64 {
 		return x.TagIds
 	}
 	return nil
+}
+
+func (x *UpdateUserInfoResponse) GetQqEmail() string {
+	if x != nil {
+		return x.QqEmail
+	}
+	return ""
+}
+
+func (x *UpdateUserInfoResponse) GetCredit() int64 {
+	if x != nil {
+		return x.Credit
+	}
+	return 0
 }
 
 type GetGroupUserReq struct {
@@ -4355,6 +4371,7 @@ type UserInfo struct {
 	Credit            int64                  `protobuf:"varint,9,opt,name=credit,proto3" json:"credit,omitempty"`                                                   // 对应 "credit" (参考你CreditService的定义)
 	IsStudentVerified bool                   `protobuf:"varint,10,opt,name=is_student_verified,json=isStudentVerified,proto3" json:"is_student_verified,omitempty"` // 对应 "isStudentVerified"
 	InterestTags      []*InterestTag         `protobuf:"bytes,11,rep,name=interest_tags,json=interestTags,proto3" json:"interest_tags,omitempty"`                   // 对应 "interestTags" 列表
+	QqEmail           string                 `protobuf:"bytes,12,opt,name=qq_email,json=qqEmail,proto3" json:"qq_email,omitempty"`                                  // 对应 "qqEmail"
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -4464,6 +4481,13 @@ func (x *UserInfo) GetInterestTags() []*InterestTag {
 		return x.InterestTags
 	}
 	return nil
+}
+
+func (x *UserInfo) GetQqEmail() string {
+	if x != nil {
+		return x.QqEmail
+	}
+	return ""
 }
 
 // 刷新token
@@ -5767,7 +5791,7 @@ const file_user_proto_rawDesc = "" +
 	"\x0favatar_img_name\x18\x05 \x01(\tR\ravatarImgName\x12&\n" +
 	"\x0favatar_img_data\x18\x06 \x01(\fR\ravatarImgData\x12\x10\n" +
 	"\x03age\x18\a \x01(\x03R\x03age\x12\x17\n" +
-	"\atag_ids\x18\b \x03(\x03R\x06tagIds\"\xcd\x01\n" +
+	"\atag_ids\x18\b \x03(\x03R\x06tagIds\"\x80\x02\n" +
 	"\x16UpdateUserInfoResponse\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1a\n" +
 	"\bnickname\x18\x02 \x01(\tR\bnickname\x12\x1c\n" +
@@ -5776,7 +5800,9 @@ const file_user_proto_rawDesc = "" +
 	"\n" +
 	"avatar_url\x18\x05 \x01(\tR\tavatarUrl\x12\x10\n" +
 	"\x03age\x18\x06 \x01(\x03R\x03age\x12\x17\n" +
-	"\atag_ids\x18\a \x03(\x03R\x06tagIds\"#\n" +
+	"\atag_ids\x18\a \x03(\x03R\x06tagIds\x12\x19\n" +
+	"\bqq_email\x18\b \x01(\tR\aqqEmail\x12\x16\n" +
+	"\x06credit\x18\t \x01(\x03R\x06credit\"#\n" +
 	"\x0fGetGroupUserReq\x12\x10\n" +
 	"\x03ids\x18\x01 \x03(\x03R\x03ids\"A\n" +
 	"\x14GetGroupUserResponse\x12)\n" +
@@ -5823,7 +5849,7 @@ const file_user_proto_rawDesc = "" +
 	"\btag_name\x18\x02 \x01(\tR\atagName\x12\x19\n" +
 	"\btag_icon\x18\x03 \x01(\tR\atagIcon\x12\x19\n" +
 	"\btag_desc\x18\x04 \x01(\tR\atagDesc\x12\x1b\n" +
-	"\ttag_color\x18\x05 \x01(\tR\btagColor\"\xf6\x02\n" +
+	"\ttag_color\x18\x05 \x01(\tR\btagColor\"\x91\x03\n" +
 	"\bUserInfo\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x04R\x06userId\x12\x1a\n" +
 	"\bnickname\x18\x02 \x01(\tR\bnickname\x12\x1d\n" +
@@ -5837,7 +5863,8 @@ const file_user_proto_rawDesc = "" +
 	"\x06credit\x18\t \x01(\x03R\x06credit\x12.\n" +
 	"\x13is_student_verified\x18\n" +
 	" \x01(\bR\x11isStudentVerified\x126\n" +
-	"\rinterest_tags\x18\v \x03(\v2\x11.user.InterestTagR\finterestTags\"1\n" +
+	"\rinterest_tags\x18\v \x03(\v2\x11.user.InterestTagR\finterestTags\x12\x19\n" +
+	"\bqq_email\x18\f \x01(\tR\aqqEmail\"1\n" +
 	"\n" +
 	"RefreshReq\x12#\n" +
 	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"4\n" +

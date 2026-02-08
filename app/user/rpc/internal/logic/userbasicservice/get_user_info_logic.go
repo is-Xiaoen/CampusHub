@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"activity-platform/app/activity/rpc/activity"
+	creditservicelogic "activity-platform/app/user/rpc/internal/logic/creditservice"
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
 	"activity-platform/common/errorx"
@@ -90,6 +91,18 @@ func (l *GetUserInfoLogic) GetUserInfo(in *pb.GetUserInfoReq) (*pb.GetUserInfoRe
 		}
 	}
 
+	// 2.4 信用分 (CreditService)
+	var creditScore int64
+	getCreditInfoLogic := creditservicelogic.NewGetCreditInfoLogic(l.ctx, l.svcCtx)
+	creditInfo, errCredit := getCreditInfoLogic.GetCreditInfo(&pb.GetCreditInfoReq{
+		UserId: int64(user.UserID),
+	})
+	if errCredit == nil {
+		creditScore = creditInfo.Score
+	} else {
+		l.Logger.Errorf("Get credit info failed: %v, userId: %d", errCredit, user.UserID)
+	}
+
 	// 3. 组装响应
 	var genderStr string
 	switch user.Gender {
@@ -113,6 +126,8 @@ func (l *GetUserInfoLogic) GetUserInfo(in *pb.GetUserInfoReq) (*pb.GetUserInfoRe
 			IsStudentVerified: isVerified,
 			InitiateNum:       initiateNum,
 			InterestTags:      interestTags,
+			QqEmail:           user.QQEmail,
+			Credit:            creditScore,
 		},
 	}, nil
 }

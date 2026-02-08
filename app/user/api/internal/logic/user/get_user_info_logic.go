@@ -10,6 +10,7 @@ import (
 	"activity-platform/app/user/api/internal/types"
 	"activity-platform/app/user/rpc/client/userbasicservice"
 	ctxUtils "activity-platform/common/utils/context"
+	"activity-platform/common/utils/email"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -69,5 +70,6 @@ func (l *GetUserInfoLogic) GetUserInfo() (resp *types.UserInfo, err error) {
 		Credit:            userInfo.Credit,
 		IsStudentVerified: userInfo.IsStudentVerified,
 		InterestTags:      interestTags,
+		QqEmail:           email.DesensitizeEmail(userInfo.QqEmail),
 	}, nil
 }
