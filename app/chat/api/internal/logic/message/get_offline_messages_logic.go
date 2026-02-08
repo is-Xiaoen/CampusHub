@@ -5,7 +5,6 @@ package message
 
 import (
 	"context"
-	"strconv"
 
 	"activity-platform/app/chat/api/internal/svc"
 	"activity-platform/app/chat/api/internal/types"
@@ -33,12 +32,9 @@ func NewGetOfflineMessagesLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 }
 
 func (l *GetOfflineMessagesLogic) GetOfflineMessages(req *types.GetOfflineMessagesReq) (resp *types.GetOfflineMessagesData, err error) {
-	// 将请求参数中的 UserId 转换为字符串
-	userId := strconv.FormatInt(req.UserId, 10)
-
 	// 调用 RPC 服务获取离线消息
 	rpcResp, err := l.svcCtx.ChatRpc.GetOfflineMessages(l.ctx, &chat.GetOfflineMessagesReq{
-		UserId:    userId,
+		UserId:    uint64(req.UserId),
 		AfterTime: req.AfterTime,
 	})
 	if err != nil {
@@ -61,7 +57,7 @@ func (l *GetOfflineMessagesLogic) GetOfflineMessages(req *types.GetOfflineMessag
 		messages = append(messages, types.MessageInfo{
 			MessageId:  msg.MessageId,
 			GroupId:    msg.GroupId,
-			SenderId:   mustParseInt64(msg.SenderId),
+			SenderId:   int64(msg.SenderId),
 			SenderName: msg.SenderName,
 			MsgType:    msg.MsgType,
 			Content:    msg.Content,
@@ -72,18 +68,4 @@ func (l *GetOfflineMessagesLogic) GetOfflineMessages(req *types.GetOfflineMessag
 	return &types.GetOfflineMessagesData{
 		Messages: messages,
 	}, nil
-}
-
-// mustParseInt64 将字符串转换为 int64，失败返回 0
-func mustParseInt64(s string) int64 {
-	v, _ := strconv.ParseInt(s, 10, 64)
-	return v
-}
-
-// formatTimestamp 将时间戳转换为字符串格式
-func formatTimestamp(timestamp int64) string {
-	if timestamp == 0 {
-		return ""
-	}
-	return strconv.FormatInt(timestamp, 10)
 }

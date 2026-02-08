@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"strconv"
 
 	"activity-platform/app/chat/rpc/chat"
 	"activity-platform/app/chat/rpc/internal/svc"
@@ -55,7 +56,7 @@ func (l *GetMessageHistoryLogic) GetMessageHistory(in *chat.GetMessageHistoryReq
 			MessageId:  message.MessageID,
 			GroupId:    message.GroupID,
 			SenderId:   message.SenderID,
-			SenderName: message.SenderID, // 暂时使用 SenderID，后续可以调用用户服务获取
+			SenderName: strconv.FormatUint(message.SenderID, 10), // 暂时使用 SenderID，后续可以调用用户服务获取
 			MsgType:    int32(message.MsgType),
 			Content:    message.Content,
 			ImageUrl:   message.ImageURL,

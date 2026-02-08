@@ -5,7 +5,6 @@ package group
 
 import (
 	"context"
-	"strconv"
 
 	"activity-platform/app/chat/api/internal/svc"
 	"activity-platform/app/chat/api/internal/types"
@@ -35,7 +34,7 @@ func NewGetUserGroupsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Get
 func (l *GetUserGroupsLogic) GetUserGroups(req *types.GetUserGroupsReq) (resp *types.GetUserGroupsData, err error) {
 	// 调用 RPC 服务获取用户群列表
 	rpcResp, err := l.svcCtx.ChatRpc.GetUserGroups(l.ctx, &chat.GetUserGroupsReq{
-		UserId:   strconv.FormatInt(req.UserId, 10),
+		UserId:   uint64(req.UserId),
 		Page:     req.Page,
 		PageSize: req.PageSize,
 	})
@@ -58,9 +57,9 @@ func (l *GetUserGroupsLogic) GetUserGroups(req *types.GetUserGroupsReq) (resp *t
 	for _, group := range rpcResp.Groups {
 		groups = append(groups, types.UserGroupInfo{
 			GroupId:       group.GroupId,
-			ActivityId:    mustParseInt64(group.ActivityId),
+			ActivityId:    int64(group.ActivityId),
 			Name:          group.Name,
-			OwnerId:       mustParseInt64(group.OwnerId),
+			OwnerId:       int64(group.OwnerId),
 			MemberCount:   group.MemberCount,
 			Status:        group.Status,
 			Role:          getRoleString(group.Role),

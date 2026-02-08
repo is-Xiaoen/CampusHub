@@ -5,7 +5,6 @@ package notification
 
 import (
 	"context"
-	"strconv"
 
 	"activity-platform/app/chat/api/internal/svc"
 	"activity-platform/app/chat/api/internal/types"
@@ -35,7 +34,7 @@ func NewMarkAllReadLogic(ctx context.Context, svcCtx *svc.ServiceContext) *MarkA
 func (l *MarkAllReadLogic) MarkAllRead(req *types.MarkAllReadReq) (resp *types.MarkAllReadData, err error) {
 	// 调用 RPC 服务标记全部已读
 	rpcResp, err := l.svcCtx.ChatRpc.MarkAllRead(l.ctx, &chat.MarkAllReadReq{
-		UserId: strconv.FormatInt(req.UserId, 10),
+		UserId: uint64(req.UserId),
 	})
 	if err != nil {
 		l.Errorf("调用 RPC 标记全部已读失败: %v", err)

@@ -28,7 +28,7 @@ func NewGetNotificationsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 // GetNotifications 获取通知列表
 func (l *GetNotificationsLogic) GetNotifications(in *chat.GetNotificationsReq) (*chat.GetNotificationsResp, error) {
 	// 1. 参数验证
-	if in.UserId == "" {
+	if in.UserId == 0 {
 		return nil, status.Error(codes.InvalidArgument, "用户ID不能为空")
 	}
 

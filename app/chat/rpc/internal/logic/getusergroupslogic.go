@@ -28,7 +28,7 @@ func NewGetUserGroupsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Get
 // GetUserGroups 获取用户群列表
 func (l *GetUserGroupsLogic) GetUserGroups(in *chat.GetUserGroupsReq) (*chat.GetUserGroupsResp, error) {
 	// 1. 参数验证
-	if in.UserId == "" {
+	if in.UserId == 0 {
 		return nil, status.Error(codes.InvalidArgument, "用户ID不能为空")
 	}
 

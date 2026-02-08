@@ -28,7 +28,7 @@ func NewMarkNotificationReadLogic(ctx context.Context, svcCtx *svc.ServiceContex
 // MarkNotificationRead 标记通知已读
 func (l *MarkNotificationReadLogic) MarkNotificationRead(in *chat.MarkNotificationReadReq) (*chat.MarkNotificationReadResp, error) {
 	// 1. 参数验证
-	if in.UserId == "" {
+	if in.UserId == 0 {
 		return nil, status.Error(codes.InvalidArgument, "用户ID不能为空")
 	}
 	if len(in.NotificationIds) == 0 {

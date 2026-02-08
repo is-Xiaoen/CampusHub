@@ -8,9 +8,9 @@ option go_package = "./chat";
 
 // CreateGroupReq 创建群聊请求
 message CreateGroupReq {
-  string activity_id = 1;  // 关联的活动ID
+  uint64 activity_id = 1;  // 关联的活动ID
   string name = 2;         // 群聊名称
-  string owner_id = 3;     // 群主用户ID
+  uint64 owner_id = 3;     // 群主用户ID
   int32 max_members = 4;   // 最大成员数，默认500
 }
 
@@ -22,7 +22,7 @@ message CreateGroupResp {
 // AddGroupMemberReq 添加群成员请求
 message AddGroupMemberReq {
   string group_id = 1;     // 群聊ID
-  string user_id = 2;      // 用户ID
+  uint64 user_id = 2;      // 用户ID
   int32 role = 3;          // 角色: 1-普通成员 2-群主
 }
 
@@ -34,8 +34,8 @@ message AddGroupMemberResp {
 // RemoveGroupMemberReq 移除群成员请求
 message RemoveGroupMemberReq {
   string group_id = 1;     // 群聊ID
-  string user_id = 2;      // 要移除的用户ID
-  string operator_id = 3;  // 操作者ID
+  uint64 user_id = 2;      // 要移除的用户ID
+  uint64 operator_id = 3;  // 操作者ID
 }
 
 // RemoveGroupMemberResp 移除群成员响应
@@ -46,7 +46,7 @@ message RemoveGroupMemberResp {
 // DisbandGroupReq 解散群聊请求
 message DisbandGroupReq {
   string group_id = 1;     // 群聊ID
-  string operator_id = 2;  // 操作者ID（必须是群主）
+  uint64 operator_id = 2;  // 操作者ID（必须是群主）
 }
 
 // DisbandGroupResp 解散群聊响应
@@ -62,9 +62,9 @@ message GetGroupInfoReq {
 // GroupInfo 群聊信息
 message GroupInfo {
   string group_id = 1;     // 群聊ID
-  string activity_id = 2;  // 关联活动ID
+  uint64 activity_id = 2;  // 关联活动ID
   string name = 3;         // 群聊名称
-  string owner_id = 4;     // 群主用户ID
+  uint64 owner_id = 4;     // 群主用户ID
   int32 status = 5;        // 状态: 1-正常 2-已解散
   int32 max_members = 6;   // 最大成员数
   int32 member_count = 7;  // 当前成员数
@@ -85,7 +85,7 @@ message GetGroupMembersReq {
 
 // GroupMember 群成员信息
 message GroupMember {
-  string user_id = 1;      // 用户ID
+  uint64 user_id = 1;      // 用户ID
   string group_id = 2;     // 群聊ID
   int32 role = 3;          // 角色: 1-普通成员 2-群主
   int64 joined_at = 4;     // 加入时间（时间戳）
@@ -99,7 +99,7 @@ message GetGroupMembersResp {
 
 // GetUserGroupsReq 获取用户群列表请求
 message GetUserGroupsReq {
-  string user_id = 1;      // 用户ID
+  uint64 user_id = 1;      // 用户ID
   int32 page = 2;          // 页码，从1开始
   int32 page_size = 3;     // 每页数量
 }
@@ -107,9 +107,9 @@ message GetUserGroupsReq {
 // UserGroupInfo 用户群聊信息（包含用户特定信息）
 message UserGroupInfo {
   string group_id = 1;     // 群聊ID
-  string activity_id = 2;  // 关联活动ID
+  uint64 activity_id = 2;  // 关联活动ID
   string name = 3;         // 群聊名称
-  string owner_id = 4;     // 群主用户ID
+  uint64 owner_id = 4;     // 群主用户ID
   int32 status = 5;        // 状态: 1-正常 2-已解散
   int32 max_members = 6;   // 最大成员数
   int32 member_count = 7;  // 当前成员数
@@ -128,7 +128,7 @@ message GetUserGroupsResp {
 
 // GetGroupByActivityIdReq 通过活动ID获取群聊请求
 message GetGroupByActivityIdReq {
-  string activity_id = 1;  // 活动ID
+  uint64 activity_id = 1;  // 活动ID
 }
 
 // GetGroupByActivityIdResp 通过活动ID获取群聊响应
@@ -142,7 +142,7 @@ message GetGroupByActivityIdResp {
 message SaveMessageReq {
   string message_id = 1;   // 消息ID
   string group_id = 2;     // 群聊ID
-  string sender_id = 3;    // 发送者ID
+  uint64 sender_id = 3;    // 发送者ID
   int32 msg_type = 4;      // 消息类型: 1-文字 2-图片
   string content = 5;      // 文本内容
   string image_url = 6;    // 图片URL
@@ -165,7 +165,7 @@ message GetMessageHistoryReq {
 message Message {
   string message_id = 1;   // 消息ID
   string group_id = 2;     // 群聊ID
-  string sender_id = 3;    // 发送者ID
+  uint64 sender_id = 3;    // 发送者ID
   string sender_name = 4;  // 发送者名称
   int32 msg_type = 5;      // 消息类型: 1-文字 2-图片
   string content = 6;      // 文本内容
@@ -182,7 +182,7 @@ message GetMessageHistoryResp {
 
 // GetOfflineMessagesReq 获取离线消息请求
 message GetOfflineMessagesReq {
-  string user_id = 1;      // 用户ID
+  uint64 user_id = 1;      // 用户ID
   int64 after_time = 2;    // 查询此时间之后的消息（时间戳）
 }
 
@@ -195,7 +195,7 @@ message GetOfflineMessagesResp {
 
 // CreateNotificationReq 创建系统通知请求
 message CreateNotificationReq {
-  string user_id = 1;      // 接收用户ID
+  uint64 user_id = 1;      // 接收用户ID
   string type = 2;         // 通知类型: activity_joined-报名成功, group_joined-加入群聊等
   string title = 3;        // 通知标题
   string content = 4;      // 通知内容
@@ -208,7 +208,7 @@ message CreateNotificationResp {
 
 // GetNotificationsReq 获取通知列表请求
 message GetNotificationsReq {
-  string user_id = 1;      // 用户ID
+  uint64 user_id = 1;      // 用户ID
   int32 is_read = 2;       // 筛选条件: 0-未读 1-已读 -1-全部
   int32 page = 3;          // 页码，从1开始
   int32 page_size = 4;     // 每页数量
@@ -217,7 +217,7 @@ message GetNotificationsReq {
 // Notification 通知信息
 message Notification {
   string notification_id = 1;  // 通知ID
-  string user_id = 2;          // 接收用户ID
+  uint64 user_id = 2;          // 接收用户ID
   string type = 3;             // 通知类型: activity_joined-报名成功, group_joined-加入群聊等
   string title = 4;            // 通知标题
   string content = 5;          // 通知内容
@@ -234,7 +234,7 @@ message GetNotificationsResp {
 
 // MarkNotificationReadReq 标记通知已读请求
 message MarkNotificationReadReq {
-  string user_id = 1;                      // 用户ID
+  uint64 user_id = 1;                      // 用户ID
   repeated string notification_ids = 2;    // 通知ID列表（支持批量标记）
 }
 
@@ -246,7 +246,7 @@ message MarkNotificationReadResp {
 
 // GetUnreadCountReq 获取未读通知数量请求
 message GetUnreadCountReq {
-  string user_id = 1;          // 用户ID
+  uint64 user_id = 1;          // 用户ID
 }
 
 // GetUnreadCountResp 获取未读通知数量响应
@@ -256,7 +256,7 @@ message GetUnreadCountResp {
 
 // MarkAllReadReq 全部标记已读请求
 message MarkAllReadReq {
-  string user_id = 1;          // 用户ID
+  uint64 user_id = 1;          // 用户ID
 }
 
 // MarkAllReadResp 全部标记已读响应
