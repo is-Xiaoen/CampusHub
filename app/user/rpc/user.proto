@@ -764,6 +764,17 @@ service UserBasicService {
     rpc DeleteUser(DeleteUserReq) returns(DeleteUserResponse);
     // 用户忘记密码
     rpc ForgetPassword(ForgetPasswordReq) returns(ForgetPasswordResponse);
+    // 检查用户是否存在（通过邮箱）
+    rpc CheckUserExists(CheckUserExistsReq) returns(CheckUserExistsResponse);
+}
+
+// 检查用户是否存在
+message CheckUserExistsReq{
+    string qq_email = 1;
+}
+
+message CheckUserExistsResponse{
+    bool exists = 1;
 }
 
 // 用户忘记密码

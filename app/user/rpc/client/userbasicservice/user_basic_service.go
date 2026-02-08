@@ -27,6 +27,8 @@ type (
 	CheckCaptchaResponse        = pb.CheckCaptchaResponse
 	CheckQQEmailReq             = pb.CheckQQEmailReq
 	CheckQQEmailResponse        = pb.CheckQQEmailResponse
+	CheckUserExistsReq          = pb.CheckUserExistsReq
+	CheckUserExistsResponse     = pb.CheckUserExistsResponse
 	ConfirmStudentVerifyReq     = pb.ConfirmStudentVerifyReq
 	ConfirmStudentVerifyResp    = pb.ConfirmStudentVerifyResp
 	CreditLogItem               = pb.CreditLogItem
@@ -121,6 +123,8 @@ type (
 		DeleteUser(ctx context.Context, in *DeleteUserReq, opts ...grpc.CallOption) (*DeleteUserResponse, error)
 		// 用户忘记密码
 		ForgetPassword(ctx context.Context, in *ForgetPasswordReq, opts ...grpc.CallOption) (*ForgetPasswordResponse, error)
+		// 检查用户是否存在（通过邮箱）
+		CheckUserExists(ctx context.Context, in *CheckUserExistsReq, opts ...grpc.CallOption) (*CheckUserExistsResponse, error)
 	}
 
 	defaultUserBasicService struct {
@@ -192,4 +196,10 @@ func (m *defaultUserBasicService) DeleteUser(ctx context.Context, in *DeleteUser
 func (m *defaultUserBasicService) ForgetPassword(ctx context.Context, in *ForgetPasswordReq, opts ...grpc.CallOption) (*ForgetPasswordResponse, error) {
 	client := pb.NewUserBasicServiceClient(m.cli.Conn())
 	return client.ForgetPassword(ctx, in, opts...)
+}
+
+// 检查用户是否存在（通过邮箱）
+func (m *defaultUserBasicService) CheckUserExists(ctx context.Context, in *CheckUserExistsReq, opts ...grpc.CallOption) (*CheckUserExistsResponse, error) {
+	client := pb.NewUserBasicServiceClient(m.cli.Conn())
+	return client.CheckUserExists(ctx, in, opts...)
 }
