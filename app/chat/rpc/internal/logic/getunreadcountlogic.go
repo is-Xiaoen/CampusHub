@@ -28,7 +28,7 @@ func NewGetUnreadCountLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Ge
 // GetUnreadCount 获取未读通知数量
 func (l *GetUnreadCountLogic) GetUnreadCount(in *chat.GetUnreadCountReq) (*chat.GetUnreadCountResp, error) {
 	// 1. 参数验证
-	if in.UserId == "" {
+	if in.UserId == 0 {
 		return nil, status.Error(codes.InvalidArgument, "用户ID不能为空")
 	}
 
