@@ -82,3 +82,9 @@ func (s *UserBasicServiceServer) ForgetPassword(ctx context.Context, in *pb.Forg
 	l := userbasicservicelogic.NewForgetPasswordLogic(ctx, s.svcCtx)
 	return l.ForgetPassword(in)
 }
+
+// 检查用户是否存在（通过邮箱）
+func (s *UserBasicServiceServer) CheckUserExists(ctx context.Context, in *pb.CheckUserExistsReq) (*pb.CheckUserExistsResponse, error) {
+	l := userbasicservicelogic.NewCheckUserExistsLogic(ctx, s.svcCtx)
+	return l.CheckUserExists(in)
+}
