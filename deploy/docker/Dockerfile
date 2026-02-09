@@ -1,66 +1,58 @@
 # ============================================================================
-# CampusHub 多阶段构建 Dockerfile
+# CampusHub 多阶段构建 Dockerfile（加固版）
 # ============================================================================
 #
-# 使用方法：
-#   # 构建 API 服务
-#   docker build --build-arg SERVICE=user --build-arg TYPE=api -t campushub/user-api .
-#   docker build --build-arg SERVICE=activity --build-arg TYPE=api -t campushub/activity-api .
-#   docker build --build-arg SERVICE=chat --build-arg TYPE=api -t campushub/chat-api .
+# 安全改进（v3.1）：
+#   - 非 root 用户运行（appuser:appgroup）
+#   - Alpine 3.20（最新稳定版）
+#   - 零 apk 依赖：CA 证书和时区数据从 builder 阶段复制
+#   - 适配网络受限环境（无需访问 Alpine 仓库）
 #
-#   # 构建 RPC 服务
-#   docker build --build-arg SERVICE=user --build-arg TYPE=rpc -t campushub/user-rpc .
-#   docker build --build-arg SERVICE=activity --build-arg TYPE=rpc -t campushub/activity-rpc .
-#   docker build --build-arg SERVICE=chat --build-arg TYPE=rpc -t campushub/chat-rpc .
+# 使用方法：
+#   docker build --build-arg SERVICE=user --build-arg TYPE=api \
+#     -t ghcr.io/<owner>/campushub/user-api:latest \
+#     -f deploy/docker/Dockerfile .
 #
 # ============================================================================
 
 # ==================== 构建阶段 ====================
 FROM golang:1.24-alpine AS builder
 
+ARG SERVICE
+ARG TYPE
+
 ENV GO111MODULE=on \
-    GOPROXY=https://goproxy.cn,direct \
+    GOPROXY=https://goproxy.cn,https://goproxy.io,direct \
     CGO_ENABLED=0 \
     GOOS=linux \
     GOARCH=amd64
 
-RUN apk add --no-cache git
-
 WORKDIR /build
 
-# 复制依赖文件并下载
+# 利用层缓存：先复制依赖声明，下载依赖
 COPY go.mod go.sum ./
 RUN go mod download
 
-# 复制源码
+# 复制源码并编译
 COPY . .
-
-# 构建参数
-ARG SERVICE=user
-ARG TYPE=rpc
-
-# 根据参数构建不同的服务
-RUN if [ "$TYPE" = "api" ]; then \
-        go build -ldflags="-s -w" -o /app/server ./app/${SERVICE}/api/*.go; \
-    elif [ "$TYPE" = "rpc" ]; then \
-        go build -ldflags="-s -w" -o /app/server ./app/${SERVICE}/rpc/*.go; \
-    fi
+RUN go build -ldflags="-s -w" -o /app/server ./app/${SERVICE}/${TYPE}/
 
 # ==================== 运行阶段 ====================
-FROM alpine:3.18
+FROM alpine:3.20
 
-RUN apk add --no-cache tzdata ca-certificates && \
-    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
-    echo "Asia/Shanghai" > /etc/timezone
+# 从 builder 阶段复制 CA 证书和时区数据（避免 apk add，服务器无法访问 Alpine 仓库）
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /usr/local/go/lib/time/zoneinfo.zip /usr/local/zoneinfo.zip
+ENV ZONEINFO=/usr/local/zoneinfo.zip
+ENV TZ=Asia/Shanghai
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 WORKDIR /app
-
 COPY --from=builder /app/server .
+RUN mkdir -p /app/etc && chown -R appuser:appgroup /app
 
-RUN mkdir -p /app/etc
-
-# API 端口: 8001-8003, RPC 端口: 9001-9003
-EXPOSE 8001 8002 8003 9001 9002 9003
+USER appuser
 
 ENTRYPOINT ["./server"]
 CMD ["-f", "/app/etc/config.yaml"]
