@@ -2,10 +2,11 @@
 # CampusHub 多阶段构建 Dockerfile（加固版）
 # ============================================================================
 #
-# 安全改进（v3.0）：
+# 安全改进（v3.1）：
 #   - 非 root 用户运行（appuser:appgroup）
 #   - Alpine 3.20（最新稳定版）
-#   - 精简构建命令
+#   - 零 apk 依赖：CA 证书和时区数据从 builder 阶段复制
+#   - 适配网络受限环境（无需访问 Alpine 仓库）
 #
 # 使用方法：
 #   docker build --build-arg SERVICE=user --build-arg TYPE=api \
@@ -39,11 +40,13 @@ RUN go build -ldflags="-s -w" -o /app/server ./app/${SERVICE}/${TYPE}/
 # ==================== 运行阶段 ====================
 FROM alpine:3.20
 
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
-    apk add --no-cache tzdata ca-certificates && \
-    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
-    echo "Asia/Shanghai" > /etc/timezone && \
-    addgroup -S appgroup && adduser -S appuser -G appgroup
+# 从 builder 阶段复制 CA 证书和时区数据（避免 apk add，服务器无法访问 Alpine 仓库）
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /usr/local/go/lib/time/zoneinfo.zip /usr/local/zoneinfo.zip
+ENV ZONEINFO=/usr/local/zoneinfo.zip
+ENV TZ=Asia/Shanghai
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 WORKDIR /app
 COPY --from=builder /app/server .
