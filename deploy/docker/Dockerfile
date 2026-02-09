@@ -22,7 +22,7 @@ ARG SERVICE
 ARG TYPE
 
 ENV GO111MODULE=on \
-    GOPROXY=https://goproxy.cn,direct \
+    GOPROXY=https://goproxy.cn,https://goproxy.io,direct \
     CGO_ENABLED=0 \
     GOOS=linux \
     GOARCH=amd64

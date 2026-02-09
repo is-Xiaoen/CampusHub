@@ -45,6 +45,7 @@ jobs:
           echo "Building ${IMAGE}:${SHORT_TAG} ..."
           
           DOCKER_BUILDKIT=1 docker build \
+            --network=host \
             --build-arg SERVICE=${{ inputs.service }} \
             --build-arg TYPE=${{ inputs.type }} \
             -t ${IMAGE}:${SHORT_TAG} \

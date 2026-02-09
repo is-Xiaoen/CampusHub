@@ -19,7 +19,6 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-// ci: verify build pipeline
 var configFile = flag.String("f", "etc/activity.yaml", "配置文件路径")
 
 func main() {
