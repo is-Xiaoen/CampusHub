@@ -1,0 +1,49 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+
+# 文档
+docs/
+*.md
+LICENSE
+
+# 编译产物
+deploy/bin/
+/bin/
+/output/
+/dist/
+/build/
+
+# 测试和覆盖率
+*.test
+*.out
+tests/
+coverage/
+
+# 部署配置（不需要打进镜像，K8s 用 ConfigMap 挂载）
+deploy/docker/config/
+deploy/server/
+deploy/nginx/
+deploy/scripts/
+deploy/sql/
+
+# 环境文件
+.env
+.env.*
+*.local.yaml
+
+# 前端（如果有）
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude/Cursor
+.claude
+.cursor
