@@ -1,0 +1,278 @@
+# ============================================================================
+# CampusHub CI/CD 流水线
+# ============================================================================
+#
+# 流程：
+#   PR → lint-and-test（GitHub-hosted Runner，安全隔离）
+#   Push to main → lint-and-test → detect-changes → build → update-deploy
+#
+# ============================================================================
+
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# PR 和 push 使用不同的并发组，避免互相取消
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GO_VERSION: '1.24'
+
+jobs:
+  # ============================================================================
+  # Job 1: 代码质量检查（PR + Push 都执行，GitHub-hosted Runner）
+  # ============================================================================
+  lint-and-test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Format check
+        run: |
+          UNFMT=$(gofmt -l .)
+          if [ -n "$UNFMT" ]; then
+            echo "::error::以下文件需要 gofmt 格式化："
+            echo "$UNFMT"
+            exit 1
+          fi
+
+      - name: Go vet
+        run: go vet ./...
+
+      - name: Build all
+        run: go build ./...
+
+      - name: Test with race detector
+        # 修复：原代码中 ./... 掉到了下一行，这里合并了
+        run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
+
+      - name: Print coverage
+        # 修复：缩进错误修复
+        run: go tool cover -func=coverage.out | tail -1
+
+  # ============================================================================
+  # Job 2: 检测变更的服务（仅 push to main）
+  # ============================================================================
+  detect-changes:
+    name: Detect Changes
+    # 修复：缩进至 jobs 下
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    outputs:
+      user-api: ${{ steps.filter.outputs.user-api }}
+      user-rpc: ${{ steps.filter.outputs.user-rpc }}
+      activity-api: ${{ steps.filter.outputs.activity-api }}
+      activity-rpc: ${{ steps.filter.outputs.activity-rpc }}
+      chat-api: ${{ steps.filter.outputs.chat-api }}
+      chat-rpc: ${{ steps.filter.outputs.chat-rpc }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            user-api:
+              - 'app/user/api/**'
+              - 'app/user/model/**'
+              - 'common/**'
+              - 'go.mod'
+              - 'go.sum'
+            user-rpc:
+              - 'app/user/rpc/**'
+              - 'app/user/model/**'
+              - 'common/**'
+              - 'go.mod'
+              - 'go.sum'
+            activity-api:
+              - 'app/activity/api/**'
+              - 'app/activity/model/**'
+              - 'common/**'
+              - 'go.mod'
+              - 'go.sum'
+            activity-rpc:
+              - 'app/activity/rpc/**'
+              - 'app/activity/model/**'
+              - 'common/**'
+              - 'go.mod'
+              - 'go.sum'
+            chat-api:
+              - 'app/chat/api/**'
+              - 'app/chat/ws/**'
+              - 'app/chat/model/**'
+              - 'common/**'
+              - 'go.mod'
+              - 'go.sum'
+            chat-rpc:
+              - 'app/chat/rpc/**'
+              - 'app/chat/mq/**'
+              - 'app/chat/model/**'
+              - 'common/**'
+              - 'go.mod'
+              - 'go.sum'
+
+  # ============================================================================
+  # Job 3: 构建镜像 + 推送到 GHCR（Self-hosted Runner）
+  # ============================================================================
+  build-user-api:
+    name: Build user-api
+    needs: [lint-and-test, detect-changes]
+    if: needs.detect-changes.outputs.user-api == 'true'
+    uses: ./.github/workflows/build-service.yml
+    with:
+      service: user
+      type: api
+    secrets: inherit
+
+  build-user-rpc:
+    name: Build user-rpc
+    needs: [lint-and-test, detect-changes]
+    if: needs.detect-changes.outputs.user-rpc == 'true'
+    uses: ./.github/workflows/build-service.yml
+    with:
+      service: user
+      type: rpc
+    secrets: inherit
+
+  build-activity-api:
+    name: Build activity-api
+    needs: [lint-and-test, detect-changes]
+    if: needs.detect-changes.outputs.activity-api == 'true'
+    uses: ./.github/workflows/build-service.yml
+    with:
+      service: activity
+      type: api
+    secrets: inherit
+
+  build-activity-rpc:
+    name: Build activity-rpc
+    needs: [lint-and-test, detect-changes]
+    if: needs.detect-changes.outputs.activity-rpc == 'true'
+    uses: ./.github/workflows/build-service.yml
+    with:
+      service: activity
+      type: rpc
+    secrets: inherit
+
+  build-chat-api:
+    name: Build chat-api
+    needs: [lint-and-test, detect-changes]
+    if: needs.detect-changes.outputs.chat-api == 'true'
+    uses: ./.github/workflows/build-service.yml
+    with:
+      service: chat
+      type: api
+    secrets: inherit
+
+  build-chat-rpc:
+    name: Build chat-rpc
+    needs: [lint-and-test, detect-changes]
+    if: needs.detect-changes.outputs.chat-rpc == 'true'
+    uses: ./.github/workflows/build-service.yml
+    with:
+      service: chat
+      type: rpc
+    secrets: inherit
+
+  # ============================================================================
+  # Job 4: 更新 GitOps 清单仓库
+  # ============================================================================
+  update-deploy-repo:
+    name: Update Deploy Manifests
+    needs:
+      - lint-and-test
+      - detect-changes
+      - build-user-api
+      - build-user-rpc
+      - build-activity-api
+      - build-activity-rpc
+      - build-chat-api
+      - build-chat-rpc
+    # 确保只要前面的构建成功，且确实有变更，就执行
+    if: |
+      always() &&
+      needs.lint-and-test.result == 'success' &&
+      needs.detect-changes.result == 'success'
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - name: Checkout deploy repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/campushub-deploy
+          token: ${{ secrets.DEPLOY_REPO_PAT }}
+          ref: main
+
+      - name: Update image tags
+        run: |
+          TAG="${{ github.sha }}"
+          SHORT_TAG="${TAG:0:7}"
+          
+          # 定义更新函数
+          update_tag() {
+            local service=$1
+            local file="helm/values/$service.yaml"
+            if [ -f "$file" ]; then
+              if command -v yq &> /dev/null; then
+                yq -i '.image.tag = "'"${SHORT_TAG}"'"' "$file"
+              else
+                sed -i 's/^  tag: .*/  tag: "'"${SHORT_TAG}"'"/' "$file"
+              fi
+              echo "Updated $service → ${SHORT_TAG}"
+            else
+              echo "Warning: $file not found, skipping."
+            fi
+          }
+          
+          # 修复：使用标准的 if 结构代替易断裂的 && \ 链条
+          if [[ "${{ needs.detect-changes.outputs.user-api }}" == "true" && "${{ needs.build-user-api.result }}" == "success" ]]; then
+            update_tag "user-api"
+          fi
+          
+          if [[ "${{ needs.detect-changes.outputs.user-rpc }}" == "true" && "${{ needs.build-user-rpc.result }}" == "success" ]]; then
+            update_tag "user-rpc"
+          fi
+          
+          if [[ "${{ needs.detect-changes.outputs.activity-api }}" == "true" && "${{ needs.build-activity-api.result }}" == "success" ]]; then
+            update_tag "activity-api"
+          fi
+          
+          if [[ "${{ needs.detect-changes.outputs.activity-rpc }}" == "true" && "${{ needs.build-activity-rpc.result }}" == "success" ]]; then
+            update_tag "activity-rpc"
+          fi
+          
+          if [[ "${{ needs.detect-changes.outputs.chat-api }}" == "true" && "${{ needs.build-chat-api.result }}" == "success" ]]; then
+            update_tag "chat-api"
+          fi
+          
+          if [[ "${{ needs.detect-changes.outputs.chat-rpc }}" == "true" && "${{ needs.build-chat-rpc.result }}" == "success" ]]; then
+            update_tag "chat-rpc"
+          fi
+          
+          echo "Tag update complete"
+
+      - name: Commit and push
+        # 修复：拼接断裂的 email 和 git 命令
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes to deploy"
+            exit 0
+          fi
+          git commit -m "deploy: update images to ${GITHUB_SHA:0:7}"
+          git push
