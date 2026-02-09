@@ -21,6 +21,11 @@ concurrency:
   group: ci-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
+# GHCR 推送需要 packages:write，整个 workflow 统一声明
+permissions:
+  contents: read
+  packages: write
+
 env:
   GO_VERSION: '1.24'
 

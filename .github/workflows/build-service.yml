@@ -30,6 +30,9 @@ env:
 jobs:
   build:
     runs-on: [self-hosted, linux, x64]
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
 
