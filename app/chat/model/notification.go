@@ -13,7 +13,7 @@ import (
 type Notification struct {
 	ID             uint64 `gorm:"primaryKey;autoIncrement;column:id" json:"id"`
 	NotificationID string `gorm:"uniqueIndex:uk_notification_id;column:notification_id;type:varchar(64);not null" json:"notification_id"`
-	UserID         string `gorm:"index:idx_user_id_created;column:user_id;type:varchar(64);not null" json:"user_id"`
+	UserID         uint64 `gorm:"index:idx_user_id_created;column:user_id;type:bigint;not null" json:"user_id"`
 	Type           string `gorm:"column:type;type:varchar(32);not null" json:"type"` // 通知类型，如 "system", "group_invite"
 	Title          string `gorm:"column:title;type:varchar(255);not null" json:"title"`
 	Content        string `gorm:"column:content;type:text;not null" json:"content"`
@@ -35,10 +35,10 @@ func (Notification) TableName() string {
 type NotificationModel interface {
 	Insert(ctx context.Context, data *Notification) error
 	FindOne(ctx context.Context, notificationID string) (*Notification, error)
-	FindByUserID(ctx context.Context, userID string, isRead int32, page, pageSize int32) ([]*Notification, int64, error)
-	GetUnreadCount(ctx context.Context, userID string) (int64, error)
-	MarkAsRead(ctx context.Context, userID string, notificationIDs []string) (int64, error)
-	MarkAllAsRead(ctx context.Context, userID string) (int64, error)
+	FindByUserID(ctx context.Context, userID uint64, isRead int32, page, pageSize int32) ([]*Notification, int64, error)
+	GetUnreadCount(ctx context.Context, userID uint64) (int64, error)
+	MarkAsRead(ctx context.Context, userID uint64, notificationIDs []string) (int64, error)
+	MarkAllAsRead(ctx context.Context, userID uint64) (int64, error)
 }
 
 // defaultNotificationModel 通知模型默认实现
@@ -69,7 +69,7 @@ func (m *defaultNotificationModel) FindOne(ctx context.Context, notificationID s
 }
 
 // FindByUserID 根据用户ID查询通知列表（分页）
-func (m *defaultNotificationModel) FindByUserID(ctx context.Context, userID string, isRead int32, page, pageSize int32) ([]*Notification, int64, error) {
+func (m *defaultNotificationModel) FindByUserID(ctx context.Context, userID uint64, isRead int32, page, pageSize int32) ([]*Notification, int64, error) {
 	var notifications []*Notification
 	var total int64
 
@@ -98,7 +98,7 @@ func (m *defaultNotificationModel) FindByUserID(ctx context.Context, userID stri
 }
 
 // GetUnreadCount 获取未读通知数量
-func (m *defaultNotificationModel) GetUnreadCount(ctx context.Context, userID string) (int64, error) {
+func (m *defaultNotificationModel) GetUnreadCount(ctx context.Context, userID uint64) (int64, error) {
 	var count int64
 	err := m.db.WithContext(ctx).
 		Model(&Notification{}).
@@ -108,7 +108,7 @@ func (m *defaultNotificationModel) GetUnreadCount(ctx context.Context, userID st
 }
 
 // MarkAsRead 标记指定通知为已读
-func (m *defaultNotificationModel) MarkAsRead(ctx context.Context, userID string, notificationIDs []string) (int64, error) {
+func (m *defaultNotificationModel) MarkAsRead(ctx context.Context, userID uint64, notificationIDs []string) (int64, error) {
 	now := time.Now()
 	result := m.db.WithContext(ctx).
 		Model(&Notification{}).
@@ -127,7 +127,7 @@ func (m *defaultNotificationModel) MarkAsRead(ctx context.Context, userID string
 }
 
 // MarkAllAsRead 标记用户所有通知为已读
-func (m *defaultNotificationModel) MarkAllAsRead(ctx context.Context, userID string) (int64, error) {
+func (m *defaultNotificationModel) MarkAllAsRead(ctx context.Context, userID uint64) (int64, error) {
 	now := time.Now()
 	result := m.db.WithContext(ctx).
 		Model(&Notification{}).

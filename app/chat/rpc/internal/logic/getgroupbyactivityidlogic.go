@@ -30,7 +30,7 @@ func NewGetGroupByActivityIdLogic(ctx context.Context, svcCtx *svc.ServiceContex
 // GetGroupByActivityId 通过活动ID获取群聊
 func (l *GetGroupByActivityIdLogic) GetGroupByActivityId(in *chat.GetGroupByActivityIdReq) (*chat.GetGroupByActivityIdResp, error) {
 	// 1. 参数验证
-	if in.ActivityId == "" {
+	if in.ActivityId == 0 {
 		return nil, status.Error(codes.InvalidArgument, "活动ID不能为空")
 	}
 

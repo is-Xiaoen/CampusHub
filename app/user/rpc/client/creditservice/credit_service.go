@@ -27,6 +27,8 @@ type (
 	CheckCaptchaResponse        = pb.CheckCaptchaResponse
 	CheckQQEmailReq             = pb.CheckQQEmailReq
 	CheckQQEmailResponse        = pb.CheckQQEmailResponse
+	CheckUserExistsReq          = pb.CheckUserExistsReq
+	CheckUserExistsResponse     = pb.CheckUserExistsResponse
 	ConfirmStudentVerifyReq     = pb.ConfirmStudentVerifyReq
 	ConfirmStudentVerifyResp    = pb.ConfirmStudentVerifyResp
 	CreditLogItem               = pb.CreditLogItem

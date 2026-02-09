@@ -31,13 +31,13 @@ func NewCreateGroupLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Creat
 // CreateGroup 创建群聊
 func (l *CreateGroupLogic) CreateGroup(in *chat.CreateGroupReq) (*chat.CreateGroupResp, error) {
 	// 1. 参数验证
-	if in.ActivityId == "" {
+	if in.ActivityId == 0 {
 		return nil, status.Error(codes.InvalidArgument, "活动ID不能为空")
 	}
 	if in.Name == "" {
 		return nil, status.Error(codes.InvalidArgument, "群聊名称不能为空")
 	}
-	if in.OwnerId == "" {
+	if in.OwnerId == 0 {
 		return nil, status.Error(codes.InvalidArgument, "群主ID不能为空")
 	}
 

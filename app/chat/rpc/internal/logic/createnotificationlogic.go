@@ -31,7 +31,7 @@ func NewCreateNotificationLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 // CreateNotification 创建系统通知
 func (l *CreateNotificationLogic) CreateNotification(in *chat.CreateNotificationReq) (*chat.CreateNotificationResp, error) {
 	// 1. 参数验证
-	if in.UserId == "" {
+	if in.UserId == 0 {
 		return nil, status.Error(codes.InvalidArgument, "用户ID不能为空")
 	}
 	if in.Type == "" {

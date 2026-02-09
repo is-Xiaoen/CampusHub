@@ -12,7 +12,7 @@ import (
 type GroupMember struct {
 	ID       uint64    `gorm:"primaryKey;autoIncrement;column:id" json:"id"` // group_id 和 user_id 构成联合唯一索引 uk_group_user
 	GroupID  string    `gorm:"uniqueIndex:uk_group_user;column:group_id;type:varchar(64);not null" json:"group_id"`
-	UserID   string    `gorm:"uniqueIndex:uk_group_user;index:idx_user_id;column:user_id;type:varchar(64);not null" json:"user_id"`
+	UserID   uint64    `gorm:"uniqueIndex:uk_group_user;index:idx_user_id;column:user_id;type:bigint;not null" json:"user_id"`
 	Role     int8      `gorm:"column:role;type:tinyint;not null;default:1" json:"role"`                      // 1-普通成员 2-群主
 	Status   int8      `gorm:"index:idx_status;column:status;type:tinyint;not null;default:1" json:"status"` // 1-正常 2-已退出
 	JoinedAt time.Time `gorm:"column:joined_at;type:datetime;not null;default:CURRENT_TIMESTAMP" json:"joined_at"`
@@ -29,12 +29,12 @@ func (GroupMember) TableName() string {
 // GroupMemberModel 群成员模型接口
 type GroupMemberModel interface {
 	Insert(ctx context.Context, data *GroupMember) error
-	FindOne(ctx context.Context, groupID, userID string) (*GroupMember, error)
+	FindOne(ctx context.Context, groupID string, userID uint64) (*GroupMember, error)
 	FindByGroupID(ctx context.Context, groupID string, page, pageSize int32) ([]*GroupMember, int64, error)
-	FindByUserID(ctx context.Context, userID string, page, pageSize int32) ([]*GroupMember, int64, error)
-	Delete(ctx context.Context, groupID, userID string) error
-	UpdateRole(ctx context.Context, groupID, userID string, role int8) error
-	UpdateStatus(ctx context.Context, groupID, userID string, status int8) error
+	FindByUserID(ctx context.Context, userID uint64, page, pageSize int32) ([]*GroupMember, int64, error)
+	Delete(ctx context.Context, groupID string, userID uint64) error
+	UpdateRole(ctx context.Context, groupID string, userID uint64, role int8) error
+	UpdateStatus(ctx context.Context, groupID string, userID uint64, status int8) error
 }
 
 // defaultGroupMemberModel 群成员模型默认实现
@@ -53,7 +53,7 @@ func (m *defaultGroupMemberModel) Insert(ctx context.Context, data *GroupMember)
 }
 
 // FindOne 查询单个群成员
-func (m *defaultGroupMemberModel) FindOne(ctx context.Context, groupID, userID string) (*GroupMember, error) {
+func (m *defaultGroupMemberModel) FindOne(ctx context.Context, groupID string, userID uint64) (*GroupMember, error) {
 	var member GroupMember
 	err := m.db.WithContext(ctx).
 		Where("group_id = ? AND user_id = ? AND status = 1", groupID, userID).
@@ -87,7 +87,7 @@ func (m *defaultGroupMemberModel) FindByGroupID(ctx context.Context, groupID str
 }
 
 // FindByUserID 根据用户ID查询加入的群列表（分页）
-func (m *defaultGroupMemberModel) FindByUserID(ctx context.Context, userID string, page, pageSize int32) ([]*GroupMember, int64, error) {
+func (m *defaultGroupMemberModel) FindByUserID(ctx context.Context, userID uint64, page, pageSize int32) ([]*GroupMember, int64, error) {
 	var members []*GroupMember
 	var total int64
 
@@ -109,7 +109,7 @@ func (m *defaultGroupMemberModel) FindByUserID(ctx context.Context, userID strin
 }
 
 // Delete 删除群成员（软删除）
-func (m *defaultGroupMemberModel) Delete(ctx context.Context, groupID, userID string) error {
+func (m *defaultGroupMemberModel) Delete(ctx context.Context, groupID string, userID uint64) error {
 	now := time.Now()
 	return m.db.WithContext(ctx).
 		Model(&GroupMember{}).
@@ -121,7 +121,7 @@ func (m *defaultGroupMemberModel) Delete(ctx context.Context, groupID, userID st
 }
 
 // UpdateRole 更新成员角色
-func (m *defaultGroupMemberModel) UpdateRole(ctx context.Context, groupID, userID string, role int8) error {
+func (m *defaultGroupMemberModel) UpdateRole(ctx context.Context, groupID string, userID uint64, role int8) error {
 	return m.db.WithContext(ctx).
 		Model(&GroupMember{}).
 		Where("group_id = ? AND user_id = ?", groupID, userID).
@@ -129,7 +129,7 @@ func (m *defaultGroupMemberModel) UpdateRole(ctx context.Context, groupID, userI
 }
 
 // UpdateStatus 更新成员状态
-func (m *defaultGroupMemberModel) UpdateStatus(ctx context.Context, groupID, userID string, status int8) error {
+func (m *defaultGroupMemberModel) UpdateStatus(ctx context.Context, groupID string, userID uint64, status int8) error {
 	return m.db.WithContext(ctx).
 		Model(&GroupMember{}).
 		Where("group_id = ? AND user_id = ?", groupID, userID).

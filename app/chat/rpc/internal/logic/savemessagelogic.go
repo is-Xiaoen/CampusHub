@@ -48,7 +48,7 @@ func (l *SaveMessageLogic) SaveMessage(in *chat.SaveMessageReq) (*chat.SaveMessa
 		}, err
 	}
 
-	logx.Infof("消息保存成功: message_id=%s, group_id=%s, sender_id=%s",
+	logx.Infof("消息保存成功: message_id=%s, group_id=%s, sender_id=%d",
 		in.MessageId, in.GroupId, in.SenderId)
 
 	return &chat.SaveMessageResp{

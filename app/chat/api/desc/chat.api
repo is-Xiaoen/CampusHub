@@ -135,6 +135,7 @@ type (
 	}
 	// 获取离线消息请求
 	GetOfflineMessagesReq {
+		UserId    int64 `form:"user_id"`
 		AfterTime int64 `form:"after_time"`
 	}
 	// 获取离线消息响应数据

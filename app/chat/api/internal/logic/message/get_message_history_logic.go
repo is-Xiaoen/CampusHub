@@ -6,7 +6,6 @@ package message
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"activity-platform/app/chat/api/internal/svc"
 	"activity-platform/app/chat/api/internal/types"
@@ -62,7 +61,7 @@ func (l *GetMessageHistoryLogic) GetMessageHistory(req *types.GetMessageHistoryR
 		messages = append(messages, types.MessageInfo{
 			MessageId:  msg.MessageId,
 			GroupId:    msg.GroupId,
-			SenderId:   mustParseInt64(msg.SenderId),
+			SenderId:   int64(msg.SenderId),
 			SenderName: msg.SenderName,
 			MsgType:    msg.MsgType,
 			Content:    msg.Content,
@@ -74,12 +73,6 @@ func (l *GetMessageHistoryLogic) GetMessageHistory(req *types.GetMessageHistoryR
 		Messages: messages,
 		HasMore:  rpcResp.HasMore,
 	}, nil
-}
-
-// mustParseInt64 将字符串转换为 int64，失败返回 0
-func mustParseInt64(s string) int64 {
-	v, _ := strconv.ParseInt(s, 10, 64)
-	return v
 }
 
 // formatTimestamp 将时间戳转换为字符串格式

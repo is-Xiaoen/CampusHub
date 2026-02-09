@@ -6,7 +6,6 @@ package notification
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"activity-platform/app/chat/api/internal/svc"
 	"activity-platform/app/chat/api/internal/types"
@@ -36,7 +35,7 @@ func NewGetNotificationsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 func (l *GetNotificationsLogic) GetNotifications(req *types.GetNotificationsReq) (resp *types.GetNotificationsData, err error) {
 	// 调用 RPC 服务获取通知列表
 	rpcResp, err := l.svcCtx.ChatRpc.GetNotifications(l.ctx, &chat.GetNotificationsReq{
-		UserId:   strconv.FormatInt(req.UserId, 10),
+		UserId:   uint64(req.UserId),
 		IsRead:   -1, // -1 表示查询全部
 		Page:     req.Page,
 		PageSize: req.PageSize,

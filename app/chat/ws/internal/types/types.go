@@ -49,7 +49,7 @@ type SendMessageData struct {
 type NewMessageData struct {
 	MessageID  string `json:"message_id"`  // 消息ID
 	GroupID    string `json:"group_id"`    // 群聊ID
-	SenderID   string `json:"sender_id"`   // 发送者ID
+	SenderID   uint64 `json:"sender_id"`   // 发送者ID
 	SenderName string `json:"sender_name"` // 发送者名称
 	MsgType    int32  `json:"msg_type"`    // 消息类型
 	Content    string `json:"content"`     // 内容
