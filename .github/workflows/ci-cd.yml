@@ -1,18 +1,18 @@
 # ============================================================================
-# CampusHub CI/CD 流水线（v2 - 单 Job 优化版）
+# CampusHub CI/CD 流水线（v3 - 网络容错版）
 # ============================================================================
 #
-# 优化点：
-#   1. 合并 6 个构建 Job + 1 个部署 Job → 1 个 Job（省去 6 次 checkout）
-#   2. Dockerfile ARG 后移，go mod download 缓存跨服务复用
-#   3. 所有网络操作（docker push / git clone / git push）自动重试 3 次
-#   4. 部署仓库浅克隆（--depth 1），减少网络传输
+# 针对自托管 Runner 网络不稳定的全面加固：
+#   - 代码拉取：手动 git fetch + 10 次重试（替代 actions/checkout）
+#   - GHCR 登录：5 次重试
+#   - 镜像推送：5 次重试 / 每个镜像
+#   - 部署仓库克隆：10 次重试
+#   - 部署仓库推送：5 次重试
+#   - 基础镜像：Dockerfile 锁定 digest，构建阶段零网络依赖
 #
 # 流程：
 #   PR → lint-and-test（GitHub-hosted）
 #   Push to main → lint-and-test → detect-changes → build-and-deploy（Self-hosted）
-#
-# 预期耗时：6 服务全量构建 ~15-20 分钟（原 ~60 分钟）
 #
 # ============================================================================
 
@@ -24,12 +24,10 @@ on:
   pull_request:
     branches: [main]
 
-# PR 和 push 使用不同的并发组，避免互相取消
 concurrency:
   group: ci-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
-# GHCR 推送需要 packages:write
 permissions:
   contents: read
   packages: write
@@ -40,7 +38,7 @@ env:
 
 jobs:
   # ============================================================================
-  # Job 1: 代码质量检查（GitHub-hosted Runner，PR + Push 都执行）
+  # Job 1: 代码质量检查（GitHub-hosted Runner，网络稳定，无需特殊处理）
   # ============================================================================
   lint-and-test:
     name: Lint & Test
@@ -78,7 +76,7 @@ jobs:
         run: go tool cover -func=coverage.out | tail -1
 
   # ============================================================================
-  # Job 2: 检测变更的服务（GitHub-hosted，仅 push to main）
+  # Job 2: 检测变更的服务（GitHub-hosted，网络稳定）
   # ============================================================================
   detect-changes:
     name: Detect Changes
@@ -137,13 +135,7 @@ jobs:
               - 'go.sum'
 
   # ============================================================================
-  # Job 3: 构建所有变更服务 + 更新部署仓库（单个 Self-hosted Job）
-  #
-  # 核心优化：
-  #   - 1 次 checkout（原 6 次）
-  #   - 1 次 GHCR 登录（原 6 次）
-  #   - Docker 层缓存跨服务复用（go mod download 只跑一次）
-  #   - 网络操作带重试（3 次，间隔 10s）
+  # Job 3: 构建 + 部署（Self-hosted Runner，网络不稳定，全面重试加固）
   # ============================================================================
   build-and-deploy:
     name: Build & Deploy
@@ -157,36 +149,102 @@ jobs:
       needs.detect-changes.outputs.chat-rpc == 'true'
     runs-on: [self-hosted, linux, x64]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
+      # ----------------------------------------------------------------
+      # Step 1: 拉取代码（替代 actions/checkout，10 次重试，总窗口 ~5 分钟）
+      # ----------------------------------------------------------------
+      - name: Checkout with extended retry
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eo pipefail
 
+          # 配置 git 适应慢速/不稳定网络
+          git config --global http.lowSpeedLimit 1000
+          git config --global http.lowSpeedTime 120
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+          REPO_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
+
+          cd "$GITHUB_WORKSPACE"
+
+          # 如果工作区没有 .git，先初始化
+          if [ ! -d ".git" ]; then
+            git init
+            git remote add origin "$REPO_URL"
+          else
+            git remote set-url origin "$REPO_URL"
+          fi
+
+          # 10 次重试拉取目标 commit
+          FETCHED=false
+          for i in $(seq 1 10); do
+            echo "=== Fetch attempt $i/10 ==="
+            if git fetch --no-tags --prune --no-recurse-submodules --depth=1 origin "+${{ github.sha }}:refs/remotes/origin/main"; then
+              FETCHED=true
+              break
+            fi
+            if [ $i -lt 10 ]; then
+              echo "  等待 30s 后重试..."
+              sleep 30
+            fi
+          done
+
+          if [ "$FETCHED" != "true" ]; then
+            echo "❌ 10 次 fetch 均失败，无法拉取代码"
+            exit 1
+          fi
+
+          # 切换到目标 commit 并清理工作区
+          git checkout -f "${{ github.sha }}"
+          git clean -ffdx
+
+          # 清除凭据（等同 persist-credentials: false）
+          git remote set-url origin "https://github.com/${{ github.repository }}.git"
+
+          echo "✅ Checkout 完成: $(git log --oneline -1)"
+
+      # ----------------------------------------------------------------
+      # Step 2: 登录 GHCR（5 次重试）
+      # ----------------------------------------------------------------
       - name: Login to GHCR
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        run: |
+          for i in $(seq 1 5); do
+            echo "  [$i/5] 登录 GHCR..."
+            if echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin 2>&1; then
+              echo "✅ GHCR 登录成功"
+              exit 0
+            fi
+            if [ $i -lt 5 ]; then
+              echo "  等待 10s 后重试..."
+              sleep 10
+            fi
+          done
+          echo "❌ GHCR 登录失败"
+          exit 1
 
+      # ----------------------------------------------------------------
+      # Step 3: 构建并推送所有变更的服务
+      # ----------------------------------------------------------------
       - name: Build and push changed services
         run: |
           set -eo pipefail
           SHORT_TAG=$(echo "${{ github.sha }}" | cut -c1-7)
           BUILT=""
 
-          # 带重试的命令执行器
           retry() {
             local max=$1; shift
             for i in $(seq 1 $max); do
               echo "  [$i/$max] $*"
               if "$@"; then return 0; fi
               if [ $i -lt $max ]; then
-                echo "  重试中（10s）..."
-                sleep 10
+                echo "  重试中（15s）..."
+                sleep 15
               fi
             done
             echo "  ❌ $max 次尝试均失败"
             return 1
           }
 
-          # 构建并推送单个服务
           build_push() {
             local name=$1 service=$2 type=$3
             local image
@@ -205,13 +263,12 @@ jobs:
               -t ${image}:latest \
               -f deploy/docker/Dockerfile .
 
-            retry 3 docker push ${image}:${SHORT_TAG}
-            retry 3 docker push ${image}:latest
+            retry 5 docker push ${image}:${SHORT_TAG}
+            retry 5 docker push ${image}:latest
 
             echo "✅ ${name} → ${image}:${SHORT_TAG}"
           }
 
-          # 按变更检测结果，依次构建
           if [[ "${{ needs.detect-changes.outputs.user-api }}" == "true" ]]; then
             build_push "user-api" "user" "api"
             BUILT="$BUILT user-api"
@@ -237,17 +294,25 @@ jobs:
             BUILT="$BUILT chat-rpc"
           fi
 
-          # 传递给下一个 step
           echo "BUILT_SERVICES=${BUILT}" >> $GITHUB_ENV
           echo ""
           echo "=========================================="
           echo " 全部构建完成:${BUILT}"
           echo "=========================================="
 
+      # ----------------------------------------------------------------
+      # Step 4: 更新部署仓库
+      # ----------------------------------------------------------------
       - name: Update deploy repo
+        env:
+          DEPLOY_PAT: ${{ secrets.DEPLOY_REPO_PAT }}
         run: |
           set -eo pipefail
           SHORT_TAG=$(echo "${{ github.sha }}" | cut -c1-7)
+
+          # 配置 git 适应慢速网络
+          git config --global http.lowSpeedLimit 1000
+          git config --global http.lowSpeedTime 120
 
           retry() {
             local max=$1; shift
@@ -255,21 +320,21 @@ jobs:
               echo "  [$i/$max] $*"
               if "$@"; then return 0; fi
               if [ $i -lt $max ]; then
-                echo "  重试中（10s）..."
-                sleep 10
+                echo "  重试中（30s）..."
+                sleep 30
               fi
             done
             echo "  ❌ $max 次尝试均失败"
             return 1
           }
 
-          # 浅克隆部署仓库（--depth 1 减少传输量）
+          # 克隆部署仓库（10 次重试，总窗口 ~5 分钟）
           DEPLOY_DIR=$(mktemp -d)
-          retry 3 git clone --depth 1 https://x-access-token:${{ secrets.DEPLOY_REPO_PAT }}@github.com/${{ github.repository_owner }}/campushub-deploy.git "$DEPLOY_DIR"
+          retry 10 git clone --depth 1 "https://x-access-token:${DEPLOY_PAT}@github.com/${{ github.repository_owner }}/campushub-deploy.git" "$DEPLOY_DIR"
 
           cd "$DEPLOY_DIR"
 
-          # 更新已构建服务的镜像标签
+          # 更新镜像标签
           for svc in $BUILT_SERVICES; do
             FILE="helm/values/${svc}.yaml"
             if [ -f "$FILE" ]; then
@@ -291,9 +356,8 @@ jobs:
             echo "无变更需要部署"
           else
             git commit -m "deploy: update images to ${SHORT_TAG}"
-            retry 3 git push
+            retry 5 git push
             echo "✅ 部署仓库已更新"
           fi
 
-          # 清理临时目录
           rm -rf "$DEPLOY_DIR"
