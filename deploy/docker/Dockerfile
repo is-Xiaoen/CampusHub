@@ -24,8 +24,6 @@ ENV GO111MODULE=on \
     GOOS=linux \
     GOARCH=amd64
 
-RUN apk add --no-cache git
-
 WORKDIR /build
 
 # 复制依赖文件并下载
@@ -49,7 +47,8 @@ RUN if [ "$TYPE" = "api" ]; then \
 # ==================== 运行阶段 ====================
 FROM alpine:3.18
 
-RUN apk add --no-cache tzdata ca-certificates && \
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+    apk add --no-cache tzdata ca-certificates && \
     cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo "Asia/Shanghai" > /etc/timezone
 
