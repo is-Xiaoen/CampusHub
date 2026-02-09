@@ -1,10 +1,18 @@
 # ============================================================================
-# CampusHub CI/CD 流水线
+# CampusHub CI/CD 流水线（v2 - 单 Job 优化版）
 # ============================================================================
 #
+# 优化点：
+#   1. 合并 6 个构建 Job + 1 个部署 Job → 1 个 Job（省去 6 次 checkout）
+#   2. Dockerfile ARG 后移，go mod download 缓存跨服务复用
+#   3. 所有网络操作（docker push / git clone / git push）自动重试 3 次
+#   4. 部署仓库浅克隆（--depth 1），减少网络传输
+#
 # 流程：
-#   PR → lint-and-test（GitHub-hosted Runner，安全隔离）
-#   Push to main → lint-and-test → detect-changes → build → update-deploy
+#   PR → lint-and-test（GitHub-hosted）
+#   Push to main → lint-and-test → detect-changes → build-and-deploy（Self-hosted）
+#
+# 预期耗时：6 服务全量构建 ~15-20 分钟（原 ~60 分钟）
 #
 # ============================================================================
 
@@ -21,17 +29,18 @@ concurrency:
   group: ci-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
-# GHCR 推送需要 packages:write，整个 workflow 统一声明
+# GHCR 推送需要 packages:write
 permissions:
   contents: read
   packages: write
 
 env:
   GO_VERSION: '1.24'
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/campushub
 
 jobs:
   # ============================================================================
-  # Job 1: 代码质量检查（PR + Push 都执行，GitHub-hosted Runner）
+  # Job 1: 代码质量检查（GitHub-hosted Runner，PR + Push 都执行）
   # ============================================================================
   lint-and-test:
     name: Lint & Test
@@ -63,19 +72,16 @@ jobs:
         run: go build ./...
 
       - name: Test with race detector
-        # 修复：原代码中 ./... 掉到了下一行，这里合并了
         run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
 
       - name: Print coverage
-        # 修复：缩进错误修复
         run: go tool cover -func=coverage.out | tail -1
 
   # ============================================================================
-  # Job 2: 检测变更的服务（仅 push to main）
+  # Job 2: 检测变更的服务（GitHub-hosted，仅 push to main）
   # ============================================================================
   detect-changes:
     name: Detect Changes
-    # 修复：缩进至 jobs 下
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     outputs:
@@ -131,153 +137,161 @@ jobs:
               - 'go.sum'
 
   # ============================================================================
-  # Job 3: 构建镜像 + 推送到 GHCR（Self-hosted Runner）
+  # Job 3: 构建所有变更服务 + 更新部署仓库（单个 Self-hosted Job）
+  #
+  # 核心优化：
+  #   - 1 次 checkout（原 6 次）
+  #   - 1 次 GHCR 登录（原 6 次）
+  #   - Docker 层缓存跨服务复用（go mod download 只跑一次）
+  #   - 网络操作带重试（3 次，间隔 10s）
   # ============================================================================
-  build-user-api:
-    name: Build user-api
+  build-and-deploy:
+    name: Build & Deploy
     needs: [lint-and-test, detect-changes]
-    if: needs.detect-changes.outputs.user-api == 'true'
-    uses: ./.github/workflows/build-service.yml
-    with:
-      service: user
-      type: api
-    secrets: inherit
-
-  build-user-rpc:
-    name: Build user-rpc
-    needs: [lint-and-test, detect-changes]
-    if: needs.detect-changes.outputs.user-rpc == 'true'
-    uses: ./.github/workflows/build-service.yml
-    with:
-      service: user
-      type: rpc
-    secrets: inherit
-
-  build-activity-api:
-    name: Build activity-api
-    needs: [lint-and-test, detect-changes]
-    if: needs.detect-changes.outputs.activity-api == 'true'
-    uses: ./.github/workflows/build-service.yml
-    with:
-      service: activity
-      type: api
-    secrets: inherit
-
-  build-activity-rpc:
-    name: Build activity-rpc
-    needs: [lint-and-test, detect-changes]
-    if: needs.detect-changes.outputs.activity-rpc == 'true'
-    uses: ./.github/workflows/build-service.yml
-    with:
-      service: activity
-      type: rpc
-    secrets: inherit
-
-  build-chat-api:
-    name: Build chat-api
-    needs: [lint-and-test, detect-changes]
-    if: needs.detect-changes.outputs.chat-api == 'true'
-    uses: ./.github/workflows/build-service.yml
-    with:
-      service: chat
-      type: api
-    secrets: inherit
-
-  build-chat-rpc:
-    name: Build chat-rpc
-    needs: [lint-and-test, detect-changes]
-    if: needs.detect-changes.outputs.chat-rpc == 'true'
-    uses: ./.github/workflows/build-service.yml
-    with:
-      service: chat
-      type: rpc
-    secrets: inherit
-
-  # ============================================================================
-  # Job 4: 更新 GitOps 清单仓库
-  # ============================================================================
-  update-deploy-repo:
-    name: Update Deploy Manifests
-    needs:
-      - lint-and-test
-      - detect-changes
-      - build-user-api
-      - build-user-rpc
-      - build-activity-api
-      - build-activity-rpc
-      - build-chat-api
-      - build-chat-rpc
-    # 确保只要前面的构建成功，且确实有变更，就执行
     if: |
-      always() &&
-      needs.lint-and-test.result == 'success' &&
-      needs.detect-changes.result == 'success'
+      needs.detect-changes.outputs.user-api == 'true' ||
+      needs.detect-changes.outputs.user-rpc == 'true' ||
+      needs.detect-changes.outputs.activity-api == 'true' ||
+      needs.detect-changes.outputs.activity-rpc == 'true' ||
+      needs.detect-changes.outputs.chat-api == 'true' ||
+      needs.detect-changes.outputs.chat-rpc == 'true'
     runs-on: [self-hosted, linux, x64]
     steps:
-      - name: Checkout deploy repo
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          repository: ${{ github.repository_owner }}/campushub-deploy
-          token: ${{ secrets.DEPLOY_REPO_PAT }}
-          ref: main
 
-      - name: Update image tags
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build and push changed services
         run: |
-          TAG="${{ github.sha }}"
-          SHORT_TAG="${TAG:0:7}"
-          
-          # 定义更新函数
-          update_tag() {
-            local service=$1
-            local file="helm/values/$service.yaml"
-            if [ -f "$file" ]; then
-              if command -v yq &> /dev/null; then
-                yq -i '.image.tag = "'"${SHORT_TAG}"'"' "$file"
-              else
-                sed -i 's/^  tag: .*/  tag: "'"${SHORT_TAG}"'"/' "$file"
+          set -eo pipefail
+          SHORT_TAG=$(echo "${{ github.sha }}" | cut -c1-7)
+          BUILT=""
+
+          # 带重试的命令执行器
+          retry() {
+            local max=$1; shift
+            for i in $(seq 1 $max); do
+              echo "  [$i/$max] $*"
+              if "$@"; then return 0; fi
+              if [ $i -lt $max ]; then
+                echo "  重试中（10s）..."
+                sleep 10
               fi
-              echo "Updated $service → ${SHORT_TAG}"
-            else
-              echo "Warning: $file not found, skipping."
-            fi
+            done
+            echo "  ❌ $max 次尝试均失败"
+            return 1
           }
-          
-          # 修复：使用标准的 if 结构代替易断裂的 && \ 链条
-          if [[ "${{ needs.detect-changes.outputs.user-api }}" == "true" && "${{ needs.build-user-api.result }}" == "success" ]]; then
-            update_tag "user-api"
-          fi
-          
-          if [[ "${{ needs.detect-changes.outputs.user-rpc }}" == "true" && "${{ needs.build-user-rpc.result }}" == "success" ]]; then
-            update_tag "user-rpc"
-          fi
-          
-          if [[ "${{ needs.detect-changes.outputs.activity-api }}" == "true" && "${{ needs.build-activity-api.result }}" == "success" ]]; then
-            update_tag "activity-api"
-          fi
-          
-          if [[ "${{ needs.detect-changes.outputs.activity-rpc }}" == "true" && "${{ needs.build-activity-rpc.result }}" == "success" ]]; then
-            update_tag "activity-rpc"
-          fi
-          
-          if [[ "${{ needs.detect-changes.outputs.chat-api }}" == "true" && "${{ needs.build-chat-api.result }}" == "success" ]]; then
-            update_tag "chat-api"
-          fi
-          
-          if [[ "${{ needs.detect-changes.outputs.chat-rpc }}" == "true" && "${{ needs.build-chat-rpc.result }}" == "success" ]]; then
-            update_tag "chat-rpc"
-          fi
-          
-          echo "Tag update complete"
 
-      - name: Commit and push
-        # 修复：拼接断裂的 email 和 git 命令
+          # 构建并推送单个服务
+          build_push() {
+            local name=$1 service=$2 type=$3
+            local image
+            image=$(echo "${{ env.IMAGE_PREFIX }}/${name}" | tr '[:upper:]' '[:lower:]')
+
+            echo ""
+            echo "=========================================="
+            echo " 构建 ${name}"
+            echo "=========================================="
+
+            DOCKER_BUILDKIT=1 docker build \
+              --network=host \
+              --build-arg SERVICE=${service} \
+              --build-arg TYPE=${type} \
+              -t ${image}:${SHORT_TAG} \
+              -t ${image}:latest \
+              -f deploy/docker/Dockerfile .
+
+            retry 3 docker push ${image}:${SHORT_TAG}
+            retry 3 docker push ${image}:latest
+
+            echo "✅ ${name} → ${image}:${SHORT_TAG}"
+          }
+
+          # 按变更检测结果，依次构建
+          if [[ "${{ needs.detect-changes.outputs.user-api }}" == "true" ]]; then
+            build_push "user-api" "user" "api"
+            BUILT="$BUILT user-api"
+          fi
+          if [[ "${{ needs.detect-changes.outputs.user-rpc }}" == "true" ]]; then
+            build_push "user-rpc" "user" "rpc"
+            BUILT="$BUILT user-rpc"
+          fi
+          if [[ "${{ needs.detect-changes.outputs.activity-api }}" == "true" ]]; then
+            build_push "activity-api" "activity" "api"
+            BUILT="$BUILT activity-api"
+          fi
+          if [[ "${{ needs.detect-changes.outputs.activity-rpc }}" == "true" ]]; then
+            build_push "activity-rpc" "activity" "rpc"
+            BUILT="$BUILT activity-rpc"
+          fi
+          if [[ "${{ needs.detect-changes.outputs.chat-api }}" == "true" ]]; then
+            build_push "chat-api" "chat" "api"
+            BUILT="$BUILT chat-api"
+          fi
+          if [[ "${{ needs.detect-changes.outputs.chat-rpc }}" == "true" ]]; then
+            build_push "chat-rpc" "chat" "rpc"
+            BUILT="$BUILT chat-rpc"
+          fi
+
+          # 传递给下一个 step
+          echo "BUILT_SERVICES=${BUILT}" >> $GITHUB_ENV
+          echo ""
+          echo "=========================================="
+          echo " 全部构建完成:${BUILT}"
+          echo "=========================================="
+
+      - name: Update deploy repo
         run: |
+          set -eo pipefail
+          SHORT_TAG=$(echo "${{ github.sha }}" | cut -c1-7)
+
+          retry() {
+            local max=$1; shift
+            for i in $(seq 1 $max); do
+              echo "  [$i/$max] $*"
+              if "$@"; then return 0; fi
+              if [ $i -lt $max ]; then
+                echo "  重试中（10s）..."
+                sleep 10
+              fi
+            done
+            echo "  ❌ $max 次尝试均失败"
+            return 1
+          }
+
+          # 浅克隆部署仓库（--depth 1 减少传输量）
+          DEPLOY_DIR=$(mktemp -d)
+          retry 3 git clone --depth 1 https://x-access-token:${{ secrets.DEPLOY_REPO_PAT }}@github.com/${{ github.repository_owner }}/campushub-deploy.git "$DEPLOY_DIR"
+
+          cd "$DEPLOY_DIR"
+
+          # 更新已构建服务的镜像标签
+          for svc in $BUILT_SERVICES; do
+            FILE="helm/values/${svc}.yaml"
+            if [ -f "$FILE" ]; then
+              if command -v yq &> /dev/null; then
+                yq -i '.image.tag = "'"${SHORT_TAG}"'"' "$FILE"
+              else
+                sed -i 's/^  tag: .*/  tag: "'"${SHORT_TAG}"'"/' "$FILE"
+              fi
+              echo "✅ ${svc} → ${SHORT_TAG}"
+            fi
+          done
+
+          # 提交并推送
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
+
           if git diff --staged --quiet; then
-            echo "No changes to deploy"
-            exit 0
+            echo "无变更需要部署"
+          else
+            git commit -m "deploy: update images to ${SHORT_TAG}"
+            retry 3 git push
+            echo "✅ 部署仓库已更新"
           fi
-          git commit -m "deploy: update images to ${GITHUB_SHA:0:7}"
-          git push
+
+          # 清理临时目录
+          rm -rf "$DEPLOY_DIR"
