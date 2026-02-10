@@ -51,7 +51,7 @@ type StatusCron struct {
 	db             *gorm.DB
 	activityModel  *model.ActivityModel
 	statusLogModel *model.ActivityStatusLogModel
-	activityCache  *cache.ActivityCache  // 活动缓存（状态变更后删除缓存）
+	activityCache  *cache.ActivityCache // 活动缓存（状态变更后删除缓存）
 	syncService    *search.SyncService  // ES 同步服务（可为 nil）
 	msgProducer    *mq.Producer         // 消息发布器（可为 nil）
 
