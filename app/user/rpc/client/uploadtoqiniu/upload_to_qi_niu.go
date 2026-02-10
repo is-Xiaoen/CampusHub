@@ -50,6 +50,8 @@ type (
 	GetGroupUserResponse        = pb.GetGroupUserResponse
 	GetTagsByIdsReq             = pb.GetTagsByIdsReq
 	GetTagsByIdsResp            = pb.GetTagsByIdsResp
+	GetUserHomeReq              = pb.GetUserHomeReq
+	GetUserHomeResp             = pb.GetUserHomeResp
 	GetUserInfoReq              = pb.GetUserInfoReq
 	GetUserInfoResponse         = pb.GetUserInfoResponse
 	GetUserTagsReq              = pb.GetUserTagsReq
@@ -97,6 +99,10 @@ type (
 	UploadAvatarResp            = pb.UploadAvatarResp
 	UploadStudentCardImagesReq  = pb.UploadStudentCardImagesReq
 	UploadStudentCardImagesResp = pb.UploadStudentCardImagesResp
+	UserHomeActivityItem        = pb.UserHomeActivityItem
+	UserHomeActivityList        = pb.UserHomeActivityList
+	UserHomeInfo                = pb.UserHomeInfo
+	UserHomeTag                 = pb.UserHomeTag
 	UserInfo                    = pb.UserInfo
 	UserTag                     = pb.UserTag
 	VerifyModifiedData          = pb.VerifyModifiedData
@@ -107,6 +113,8 @@ type (
 		UploadAvatar(ctx context.Context, in *UploadAvatarReq, opts ...grpc.CallOption) (*UploadAvatarResp, error)
 		// 上传学生认证图片（同时处理旧图删除和DB更新）
 		UploadStudentCardImages(ctx context.Context, in *UploadStudentCardImagesReq, opts ...grpc.CallOption) (*UploadStudentCardImagesResp, error)
+		// 上传活动封面
+		UploadActivityCover(ctx context.Context, in *UploadActivityCoverReq, opts ...grpc.CallOption) (*UploadActivityCoverResp, error)
 	}
 
 	defaultUploadToQiNiu struct {
@@ -130,4 +138,10 @@ func (m *defaultUploadToQiNiu) UploadAvatar(ctx context.Context, in *UploadAvata
 func (m *defaultUploadToQiNiu) UploadStudentCardImages(ctx context.Context, in *UploadStudentCardImagesReq, opts ...grpc.CallOption) (*UploadStudentCardImagesResp, error) {
 	client := pb.NewUploadToQiNiuClient(m.cli.Conn())
 	return client.UploadStudentCardImages(ctx, in, opts...)
+}
+
+// 上传活动封面
+func (m *defaultUploadToQiNiu) UploadActivityCover(ctx context.Context, in *UploadActivityCoverReq, opts ...grpc.CallOption) (*UploadActivityCoverResp, error) {
+	client := pb.NewUploadToQiNiuClient(m.cli.Conn())
+	return client.UploadActivityCover(ctx, in, opts...)
 }

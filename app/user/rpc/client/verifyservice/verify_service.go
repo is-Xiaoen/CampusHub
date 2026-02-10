@@ -50,6 +50,8 @@ type (
 	GetGroupUserResponse        = pb.GetGroupUserResponse
 	GetTagsByIdsReq             = pb.GetTagsByIdsReq
 	GetTagsByIdsResp            = pb.GetTagsByIdsResp
+	GetUserHomeReq              = pb.GetUserHomeReq
+	GetUserHomeResp             = pb.GetUserHomeResp
 	GetUserInfoReq              = pb.GetUserInfoReq
 	GetUserInfoResponse         = pb.GetUserInfoResponse
 	GetUserTagsReq              = pb.GetUserTagsReq
@@ -97,6 +99,10 @@ type (
 	UploadAvatarResp            = pb.UploadAvatarResp
 	UploadStudentCardImagesReq  = pb.UploadStudentCardImagesReq
 	UploadStudentCardImagesResp = pb.UploadStudentCardImagesResp
+	UserHomeActivityItem        = pb.UserHomeActivityItem
+	UserHomeActivityList        = pb.UserHomeActivityList
+	UserHomeInfo                = pb.UserHomeInfo
+	UserHomeTag                 = pb.UserHomeTag
 	UserInfo                    = pb.UserInfo
 	UserTag                     = pb.UserTag
 	VerifyModifiedData          = pb.VerifyModifiedData

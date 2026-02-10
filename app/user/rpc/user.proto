@@ -766,6 +766,63 @@ service UserBasicService {
     rpc ForgetPassword(ForgetPasswordReq) returns(ForgetPasswordResponse);
     // 检查用户是否存在（通过邮箱）
     rpc CheckUserExists(CheckUserExistsReq) returns(CheckUserExistsResponse);
+    // 获取用户主页信息
+    rpc GetUserHome(GetUserHomeReq) returns(GetUserHomeResp);
+}
+
+// 获取用户主页信息请求
+message GetUserHomeReq {
+    int64 user_id = 1; // 目标用户ID
+    // 参加活动列表参数
+    int32 joined_page = 2;
+    int32 joined_page_size = 3;
+    string joined_type = 4; // 待参加/已参加
+    // 发起活动列表参数
+    int32 published_page = 5;
+    int32 published_page_size = 6;
+    int32 published_status = 7; // -1=公开, -2=全部
+}
+
+// 获取用户主页信息响应
+message GetUserHomeResp {
+    // 1. 用户信息
+    UserHomeInfo user_info = 1;
+    // 2. 兴趣标签
+    repeated UserHomeTag tags = 2;
+    // 3. 参加活动列表
+    UserHomeActivityList joined_activities = 3;
+    // 4. 发起活动列表
+    UserHomeActivityList published_activities = 4;
+}
+
+message UserHomeInfo {
+    int64 user_id = 1;
+    string nickname = 2;
+    string avatar_url = 3;
+    string introduction = 4;
+    int32 gender = 5;
+    int32 age = 6;
+}
+
+message UserHomeTag {
+    int64 tag_id = 1;
+    string tag_name = 2;
+    string color = 3;
+    string icon = 4;
+    string tag_desc = 5;
+}
+
+message UserHomeActivityList {
+    int32 total = 1;
+    repeated UserHomeActivityItem list = 2;
+}
+
+message UserHomeActivityItem {
+    int64 id = 1;
+    string name = 2;
+    string time = 3;
+    string status = 4;
+    string image_url = 5;
 }
 
 // 检查用户是否存在
@@ -1030,6 +1087,8 @@ service UploadToQiNiu{
     rpc UploadAvatar(UploadAvatarReq) returns(UploadAvatarResp);
     // 上传学生认证图片（同时处理旧图删除和DB更新）
     rpc UploadStudentCardImages(UploadStudentCardImagesReq) returns(UploadStudentCardImagesResp);
+    // 上传活动封面
+    rpc UploadActivityCover(UploadActivityCoverReq) returns(UploadActivityCoverResp);
 }
 
 // 上传头像
