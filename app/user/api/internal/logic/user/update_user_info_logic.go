@@ -59,13 +59,13 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(req *types.UpdateUserInfoReq) (resp
 
 	// 调用 RPC
 	_, err = l.svcCtx.UserBasicServiceRpc.UpdateUserInfo(l.ctx, &userbasicservice.UpdateUserInfoReq{
-		UserId:        userId,
-		Nickname:      req.Nickname,
-		Introduce:     req.Introduction,
-		Gender:        genderInt,
-		AvatarId:      req.AvatarId,
-		Age:           req.Age,
-		TagIds:        req.InterestTagIds,
+		UserId:    userId,
+		Nickname:  req.Nickname,
+		Introduce: req.Introduction,
+		Gender:    genderInt,
+		AvatarId:  req.AvatarId,
+		Age:       req.Age,
+		TagIds:    req.InterestTagIds,
 	})
 	if err != nil {
 		return nil, err
