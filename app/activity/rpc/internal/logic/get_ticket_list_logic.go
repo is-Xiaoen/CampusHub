@@ -2,7 +2,6 @@ package logic
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"activity-platform/app/activity/model"
@@ -61,6 +60,27 @@ func (l *GetTicketListLogic) GetTicketList(in *activity.GetTicketListRequest) (*
 		return nil, err
 	}
 
+	// 批量查询活动信息（避免 N+1 查询）
+	activityIDSet := make(map[uint64]bool, len(tickets))
+	for _, ticket := range tickets {
+		activityIDSet[ticket.ActivityID] = true
+	}
+	activityIDs := make([]uint64, 0, len(activityIDSet))
+	for id := range activityIDSet {
+		activityIDs = append(activityIDs, id)
+	}
+
+	activities, err := l.svcCtx.ActivityModel.FindByIDs(l.ctx, activityIDs)
+	if err != nil {
+		l.Errorf("批量查询活动失败: %v", err)
+		return nil, err
+	}
+
+	activityMap := make(map[uint64]*model.Activity, len(activities))
+	for i := range activities {
+		activityMap[activities[i].ID] = &activities[i]
+	}
+
 	items := make([]*activity.TicketListItem, 0, len(tickets))
 	for _, ticket := range tickets {
 		item := &activity.TicketListItem{
@@ -69,13 +89,9 @@ func (l *GetTicketListLogic) GetTicketList(in *activity.GetTicketListRequest) (*
 			Status:     mapTicketStatus(ticket.Status),
 		}
 
-		activityInfo, err := l.svcCtx.ActivityModel.FindByID(l.ctx, ticket.ActivityID)
-		if err != nil {
-			if errors.Is(err, model.ErrActivityNotFound) {
-				l.Infof("[WARNING] 活动不存在: activityId=%d, ticketId=%d", ticket.ActivityID, ticket.ID)
-			} else {
-				return nil, err
-			}
+		activityInfo, ok := activityMap[ticket.ActivityID]
+		if !ok {
+			l.Infof("[WARNING] 活动不存在: activityId=%d, ticketId=%d", ticket.ActivityID, ticket.ID)
 		} else {
 			item.ActivityName = activityInfo.Title
 			if activityInfo.ActivityStartTime > 0 {
