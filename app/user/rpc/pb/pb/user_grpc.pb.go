@@ -1094,6 +1094,7 @@ const (
 	UserBasicService_DeleteUser_FullMethodName      = "/user.UserBasicService/DeleteUser"
 	UserBasicService_ForgetPassword_FullMethodName  = "/user.UserBasicService/ForgetPassword"
 	UserBasicService_CheckUserExists_FullMethodName = "/user.UserBasicService/CheckUserExists"
+	UserBasicService_GetUserHome_FullMethodName     = "/user.UserBasicService/GetUserHome"
 )
 
 // UserBasicServiceClient is the client API for UserBasicService service.
@@ -1122,6 +1123,8 @@ type UserBasicServiceClient interface {
 	ForgetPassword(ctx context.Context, in *ForgetPasswordReq, opts ...grpc.CallOption) (*ForgetPasswordResponse, error)
 	// 检查用户是否存在（通过邮箱）
 	CheckUserExists(ctx context.Context, in *CheckUserExistsReq, opts ...grpc.CallOption) (*CheckUserExistsResponse, error)
+	// 获取用户主页信息
+	GetUserHome(ctx context.Context, in *GetUserHomeReq, opts ...grpc.CallOption) (*GetUserHomeResp, error)
 }
 
 type userBasicServiceClient struct {
@@ -1242,6 +1245,16 @@ func (c *userBasicServiceClient) CheckUserExists(ctx context.Context, in *CheckU
 	return out, nil
 }
 
+func (c *userBasicServiceClient) GetUserHome(ctx context.Context, in *GetUserHomeReq, opts ...grpc.CallOption) (*GetUserHomeResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUserHomeResp)
+	err := c.cc.Invoke(ctx, UserBasicService_GetUserHome_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserBasicServiceServer is the server API for UserBasicService service.
 // All implementations must embed UnimplementedUserBasicServiceServer
 // for forward compatibility.
@@ -1268,6 +1281,8 @@ type UserBasicServiceServer interface {
 	ForgetPassword(context.Context, *ForgetPasswordReq) (*ForgetPasswordResponse, error)
 	// 检查用户是否存在（通过邮箱）
 	CheckUserExists(context.Context, *CheckUserExistsReq) (*CheckUserExistsResponse, error)
+	// 获取用户主页信息
+	GetUserHome(context.Context, *GetUserHomeReq) (*GetUserHomeResp, error)
 	mustEmbedUnimplementedUserBasicServiceServer()
 }
 
@@ -1310,6 +1325,9 @@ func (UnimplementedUserBasicServiceServer) ForgetPassword(context.Context, *Forg
 }
 func (UnimplementedUserBasicServiceServer) CheckUserExists(context.Context, *CheckUserExistsReq) (*CheckUserExistsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CheckUserExists not implemented")
+}
+func (UnimplementedUserBasicServiceServer) GetUserHome(context.Context, *GetUserHomeReq) (*GetUserHomeResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetUserHome not implemented")
 }
 func (UnimplementedUserBasicServiceServer) mustEmbedUnimplementedUserBasicServiceServer() {}
 func (UnimplementedUserBasicServiceServer) testEmbeddedByValue()                          {}
@@ -1530,6 +1548,24 @@ func _UserBasicService_CheckUserExists_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserBasicService_GetUserHome_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserHomeReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserBasicServiceServer).GetUserHome(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserBasicService_GetUserHome_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserBasicServiceServer).GetUserHome(ctx, req.(*GetUserHomeReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserBasicService_ServiceDesc is the grpc.ServiceDesc for UserBasicService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1580,6 +1616,10 @@ var UserBasicService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckUserExists",
 			Handler:    _UserBasicService_CheckUserExists_Handler,
+		},
+		{
+			MethodName: "GetUserHome",
+			Handler:    _UserBasicService_GetUserHome_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -2017,6 +2057,7 @@ var QQEmail_ServiceDesc = grpc.ServiceDesc{
 const (
 	UploadToQiNiu_UploadAvatar_FullMethodName            = "/user.UploadToQiNiu/UploadAvatar"
 	UploadToQiNiu_UploadStudentCardImages_FullMethodName = "/user.UploadToQiNiu/UploadStudentCardImages"
+	UploadToQiNiu_UploadActivityCover_FullMethodName     = "/user.UploadToQiNiu/UploadActivityCover"
 )
 
 // UploadToQiNiuClient is the client API for UploadToQiNiu service.
@@ -2027,6 +2068,8 @@ type UploadToQiNiuClient interface {
 	UploadAvatar(ctx context.Context, in *UploadAvatarReq, opts ...grpc.CallOption) (*UploadAvatarResp, error)
 	// 上传学生认证图片（同时处理旧图删除和DB更新）
 	UploadStudentCardImages(ctx context.Context, in *UploadStudentCardImagesReq, opts ...grpc.CallOption) (*UploadStudentCardImagesResp, error)
+	// 上传活动封面
+	UploadActivityCover(ctx context.Context, in *UploadActivityCoverReq, opts ...grpc.CallOption) (*UploadActivityCoverResp, error)
 }
 
 type uploadToQiNiuClient struct {
@@ -2057,6 +2100,16 @@ func (c *uploadToQiNiuClient) UploadStudentCardImages(ctx context.Context, in *U
 	return out, nil
 }
 
+func (c *uploadToQiNiuClient) UploadActivityCover(ctx context.Context, in *UploadActivityCoverReq, opts ...grpc.CallOption) (*UploadActivityCoverResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UploadActivityCoverResp)
+	err := c.cc.Invoke(ctx, UploadToQiNiu_UploadActivityCover_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UploadToQiNiuServer is the server API for UploadToQiNiu service.
 // All implementations must embed UnimplementedUploadToQiNiuServer
 // for forward compatibility.
@@ -2065,6 +2118,8 @@ type UploadToQiNiuServer interface {
 	UploadAvatar(context.Context, *UploadAvatarReq) (*UploadAvatarResp, error)
 	// 上传学生认证图片（同时处理旧图删除和DB更新）
 	UploadStudentCardImages(context.Context, *UploadStudentCardImagesReq) (*UploadStudentCardImagesResp, error)
+	// 上传活动封面
+	UploadActivityCover(context.Context, *UploadActivityCoverReq) (*UploadActivityCoverResp, error)
 	mustEmbedUnimplementedUploadToQiNiuServer()
 }
 
@@ -2080,6 +2135,9 @@ func (UnimplementedUploadToQiNiuServer) UploadAvatar(context.Context, *UploadAva
 }
 func (UnimplementedUploadToQiNiuServer) UploadStudentCardImages(context.Context, *UploadStudentCardImagesReq) (*UploadStudentCardImagesResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method UploadStudentCardImages not implemented")
+}
+func (UnimplementedUploadToQiNiuServer) UploadActivityCover(context.Context, *UploadActivityCoverReq) (*UploadActivityCoverResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method UploadActivityCover not implemented")
 }
 func (UnimplementedUploadToQiNiuServer) mustEmbedUnimplementedUploadToQiNiuServer() {}
 func (UnimplementedUploadToQiNiuServer) testEmbeddedByValue()                       {}
@@ -2138,6 +2196,24 @@ func _UploadToQiNiu_UploadStudentCardImages_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UploadToQiNiu_UploadActivityCover_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadActivityCoverReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UploadToQiNiuServer).UploadActivityCover(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UploadToQiNiu_UploadActivityCover_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UploadToQiNiuServer).UploadActivityCover(ctx, req.(*UploadActivityCoverReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UploadToQiNiu_ServiceDesc is the grpc.ServiceDesc for UploadToQiNiu service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2152,6 +2228,10 @@ var UploadToQiNiu_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UploadStudentCardImages",
 			Handler:    _UploadToQiNiu_UploadStudentCardImages_Handler,
+		},
+		{
+			MethodName: "UploadActivityCover",
+			Handler:    _UploadToQiNiu_UploadActivityCover_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

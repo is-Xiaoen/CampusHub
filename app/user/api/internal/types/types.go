@@ -104,6 +104,22 @@ type GetRegisterCodeReq struct {
 	QqEmail string `form:"qq_email"`
 }
 
+type GetUserHomeReq struct {
+	UserId            int64  `path:"user_id"`
+	JoinedPage        int32  `form:"joined_page,optional,default=1"`
+	JoinedPageSize    int32  `form:"joined_page_size,optional,default=10"`
+	JoinedType        string `form:"joined_type,optional"`
+	PublishedPage     int32  `form:"published_page,optional,default=1"`
+	PublishedPageSize int32  `form:"published_page_size,optional,default=10"`
+}
+
+type GetUserHomeResp struct {
+	UserInfo            UserHomeInfo         `json:"userInfo"`
+	Tags                []InterestTag        `json:"tags"`
+	JoinedActivities    UserHomeActivityList `json:"joinedActivities"`
+	PublishedActivities UserHomeActivityList `json:"publishedActivities"`
+}
+
 type GetVerifyCurrentResp struct {
 	HasRecord    bool        `json:"has_record"`
 	VerifyId     int64       `json:"verify_id"`
@@ -198,6 +214,28 @@ type UpdateUserInfoReq struct {
 
 type UpdateUserInfoResp struct {
 	UserInfo
+}
+
+type UserHomeActivityItem struct {
+	Id       int64  `json:"id"`
+	Name     string `json:"name"`
+	Time     string `json:"time"`
+	Status   string `json:"status"`
+	ImageUrl string `json:"imageUrl"`
+}
+
+type UserHomeActivityList struct {
+	Total int32                  `json:"total"`
+	List  []UserHomeActivityItem `json:"list"`
+}
+
+type UserHomeInfo struct {
+	UserId       int64  `json:"userId"`
+	Nickname     string `json:"nickname"`
+	AvatarUrl    string `json:"avatarUrl"`
+	Introduction string `json:"introduction"`
+	Gender       int32  `json:"gender"`
+	Age          int32  `json:"age"`
 }
 
 type UserInfo struct {

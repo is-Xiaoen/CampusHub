@@ -34,3 +34,9 @@ func (s *UploadToQiNiuServer) UploadStudentCardImages(ctx context.Context, in *p
 	l := uploadtoqiniulogic.NewUploadStudentCardImagesLogic(ctx, s.svcCtx)
 	return l.UploadStudentCardImages(in)
 }
+
+// 上传活动封面
+func (s *UploadToQiNiuServer) UploadActivityCover(ctx context.Context, in *pb.UploadActivityCoverReq) (*pb.UploadActivityCoverResp, error) {
+	l := uploadtoqiniulogic.NewUploadActivityCoverLogic(ctx, s.svcCtx)
+	return l.UploadActivityCover(in)
+}
