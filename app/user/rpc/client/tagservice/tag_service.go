@@ -48,6 +48,8 @@ type (
 	GetCreditLogsResp           = pb.GetCreditLogsResp
 	GetGroupUserReq             = pb.GetGroupUserReq
 	GetGroupUserResponse        = pb.GetGroupUserResponse
+	GetSysImageReq              = pb.GetSysImageReq
+	GetSysImageResp             = pb.GetSysImageResp
 	GetTagsByIdsReq             = pb.GetTagsByIdsReq
 	GetTagsByIdsResp            = pb.GetTagsByIdsResp
 	GetUserHomeReq              = pb.GetUserHomeReq
@@ -99,6 +101,8 @@ type (
 	UploadAvatarResp            = pb.UploadAvatarResp
 	UploadStudentCardImagesReq  = pb.UploadStudentCardImagesReq
 	UploadStudentCardImagesResp = pb.UploadStudentCardImagesResp
+	UploadSysImageReq           = pb.UploadSysImageReq
+	UploadSysImageResp          = pb.UploadSysImageResp
 	UserHomeActivityItem        = pb.UserHomeActivityItem
 	UserHomeActivityList        = pb.UserHomeActivityList
 	UserHomeInfo                = pb.UserHomeInfo

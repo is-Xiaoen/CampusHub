@@ -1095,6 +1095,7 @@ const (
 	UserBasicService_ForgetPassword_FullMethodName  = "/user.UserBasicService/ForgetPassword"
 	UserBasicService_CheckUserExists_FullMethodName = "/user.UserBasicService/CheckUserExists"
 	UserBasicService_GetUserHome_FullMethodName     = "/user.UserBasicService/GetUserHome"
+	UserBasicService_GetSysImage_FullMethodName     = "/user.UserBasicService/GetSysImage"
 )
 
 // UserBasicServiceClient is the client API for UserBasicService service.
@@ -1125,6 +1126,8 @@ type UserBasicServiceClient interface {
 	CheckUserExists(ctx context.Context, in *CheckUserExistsReq, opts ...grpc.CallOption) (*CheckUserExistsResponse, error)
 	// 获取用户主页信息
 	GetUserHome(ctx context.Context, in *GetUserHomeReq, opts ...grpc.CallOption) (*GetUserHomeResp, error)
+	// 获取系统图片
+	GetSysImage(ctx context.Context, in *GetSysImageReq, opts ...grpc.CallOption) (*GetSysImageResp, error)
 }
 
 type userBasicServiceClient struct {
@@ -1255,6 +1258,16 @@ func (c *userBasicServiceClient) GetUserHome(ctx context.Context, in *GetUserHom
 	return out, nil
 }
 
+func (c *userBasicServiceClient) GetSysImage(ctx context.Context, in *GetSysImageReq, opts ...grpc.CallOption) (*GetSysImageResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetSysImageResp)
+	err := c.cc.Invoke(ctx, UserBasicService_GetSysImage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserBasicServiceServer is the server API for UserBasicService service.
 // All implementations must embed UnimplementedUserBasicServiceServer
 // for forward compatibility.
@@ -1283,6 +1296,8 @@ type UserBasicServiceServer interface {
 	CheckUserExists(context.Context, *CheckUserExistsReq) (*CheckUserExistsResponse, error)
 	// 获取用户主页信息
 	GetUserHome(context.Context, *GetUserHomeReq) (*GetUserHomeResp, error)
+	// 获取系统图片
+	GetSysImage(context.Context, *GetSysImageReq) (*GetSysImageResp, error)
 	mustEmbedUnimplementedUserBasicServiceServer()
 }
 
@@ -1328,6 +1343,9 @@ func (UnimplementedUserBasicServiceServer) CheckUserExists(context.Context, *Che
 }
 func (UnimplementedUserBasicServiceServer) GetUserHome(context.Context, *GetUserHomeReq) (*GetUserHomeResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetUserHome not implemented")
+}
+func (UnimplementedUserBasicServiceServer) GetSysImage(context.Context, *GetSysImageReq) (*GetSysImageResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetSysImage not implemented")
 }
 func (UnimplementedUserBasicServiceServer) mustEmbedUnimplementedUserBasicServiceServer() {}
 func (UnimplementedUserBasicServiceServer) testEmbeddedByValue()                          {}
@@ -1566,6 +1584,24 @@ func _UserBasicService_GetUserHome_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserBasicService_GetSysImage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSysImageReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserBasicServiceServer).GetSysImage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserBasicService_GetSysImage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserBasicServiceServer).GetSysImage(ctx, req.(*GetSysImageReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserBasicService_ServiceDesc is the grpc.ServiceDesc for UserBasicService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1620,6 +1656,10 @@ var UserBasicService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserHome",
 			Handler:    _UserBasicService_GetUserHome_Handler,
+		},
+		{
+			MethodName: "GetSysImage",
+			Handler:    _UserBasicService_GetSysImage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -2058,6 +2098,7 @@ const (
 	UploadToQiNiu_UploadAvatar_FullMethodName            = "/user.UploadToQiNiu/UploadAvatar"
 	UploadToQiNiu_UploadStudentCardImages_FullMethodName = "/user.UploadToQiNiu/UploadStudentCardImages"
 	UploadToQiNiu_UploadActivityCover_FullMethodName     = "/user.UploadToQiNiu/UploadActivityCover"
+	UploadToQiNiu_UploadSysImage_FullMethodName          = "/user.UploadToQiNiu/UploadSysImage"
 )
 
 // UploadToQiNiuClient is the client API for UploadToQiNiu service.
@@ -2070,6 +2111,8 @@ type UploadToQiNiuClient interface {
 	UploadStudentCardImages(ctx context.Context, in *UploadStudentCardImagesReq, opts ...grpc.CallOption) (*UploadStudentCardImagesResp, error)
 	// 上传活动封面
 	UploadActivityCover(ctx context.Context, in *UploadActivityCoverReq, opts ...grpc.CallOption) (*UploadActivityCoverResp, error)
+	// 上传通用图片并入库
+	UploadSysImage(ctx context.Context, in *UploadSysImageReq, opts ...grpc.CallOption) (*UploadSysImageResp, error)
 }
 
 type uploadToQiNiuClient struct {
@@ -2110,6 +2153,16 @@ func (c *uploadToQiNiuClient) UploadActivityCover(ctx context.Context, in *Uploa
 	return out, nil
 }
 
+func (c *uploadToQiNiuClient) UploadSysImage(ctx context.Context, in *UploadSysImageReq, opts ...grpc.CallOption) (*UploadSysImageResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UploadSysImageResp)
+	err := c.cc.Invoke(ctx, UploadToQiNiu_UploadSysImage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UploadToQiNiuServer is the server API for UploadToQiNiu service.
 // All implementations must embed UnimplementedUploadToQiNiuServer
 // for forward compatibility.
@@ -2120,6 +2173,8 @@ type UploadToQiNiuServer interface {
 	UploadStudentCardImages(context.Context, *UploadStudentCardImagesReq) (*UploadStudentCardImagesResp, error)
 	// 上传活动封面
 	UploadActivityCover(context.Context, *UploadActivityCoverReq) (*UploadActivityCoverResp, error)
+	// 上传通用图片并入库
+	UploadSysImage(context.Context, *UploadSysImageReq) (*UploadSysImageResp, error)
 	mustEmbedUnimplementedUploadToQiNiuServer()
 }
 
@@ -2138,6 +2193,9 @@ func (UnimplementedUploadToQiNiuServer) UploadStudentCardImages(context.Context,
 }
 func (UnimplementedUploadToQiNiuServer) UploadActivityCover(context.Context, *UploadActivityCoverReq) (*UploadActivityCoverResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method UploadActivityCover not implemented")
+}
+func (UnimplementedUploadToQiNiuServer) UploadSysImage(context.Context, *UploadSysImageReq) (*UploadSysImageResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method UploadSysImage not implemented")
 }
 func (UnimplementedUploadToQiNiuServer) mustEmbedUnimplementedUploadToQiNiuServer() {}
 func (UnimplementedUploadToQiNiuServer) testEmbeddedByValue()                       {}
@@ -2214,6 +2272,24 @@ func _UploadToQiNiu_UploadActivityCover_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UploadToQiNiu_UploadSysImage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadSysImageReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UploadToQiNiuServer).UploadSysImage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UploadToQiNiu_UploadSysImage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UploadToQiNiuServer).UploadSysImage(ctx, req.(*UploadSysImageReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UploadToQiNiu_ServiceDesc is the grpc.ServiceDesc for UploadToQiNiu service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2232,6 +2308,10 @@ var UploadToQiNiu_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UploadActivityCover",
 			Handler:    _UploadToQiNiu_UploadActivityCover_Handler,
+		},
+		{
+			MethodName: "UploadSysImage",
+			Handler:    _UploadToQiNiu_UploadSysImage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

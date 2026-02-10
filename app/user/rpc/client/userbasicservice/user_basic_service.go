@@ -48,6 +48,8 @@ type (
 	GetCreditLogsResp           = pb.GetCreditLogsResp
 	GetGroupUserReq             = pb.GetGroupUserReq
 	GetGroupUserResponse        = pb.GetGroupUserResponse
+	GetSysImageReq              = pb.GetSysImageReq
+	GetSysImageResp             = pb.GetSysImageResp
 	GetTagsByIdsReq             = pb.GetTagsByIdsReq
 	GetTagsByIdsResp            = pb.GetTagsByIdsResp
 	GetUserHomeReq              = pb.GetUserHomeReq
@@ -99,6 +101,8 @@ type (
 	UploadAvatarResp            = pb.UploadAvatarResp
 	UploadStudentCardImagesReq  = pb.UploadStudentCardImagesReq
 	UploadStudentCardImagesResp = pb.UploadStudentCardImagesResp
+	UploadSysImageReq           = pb.UploadSysImageReq
+	UploadSysImageResp          = pb.UploadSysImageResp
 	UserHomeActivityItem        = pb.UserHomeActivityItem
 	UserHomeActivityList        = pb.UserHomeActivityList
 	UserHomeInfo                = pb.UserHomeInfo
@@ -133,6 +137,8 @@ type (
 		CheckUserExists(ctx context.Context, in *CheckUserExistsReq, opts ...grpc.CallOption) (*CheckUserExistsResponse, error)
 		// 获取用户主页信息
 		GetUserHome(ctx context.Context, in *GetUserHomeReq, opts ...grpc.CallOption) (*GetUserHomeResp, error)
+		// 获取系统图片
+		GetSysImage(ctx context.Context, in *GetSysImageReq, opts ...grpc.CallOption) (*GetSysImageResp, error)
 	}
 
 	defaultUserBasicService struct {
@@ -216,4 +222,10 @@ func (m *defaultUserBasicService) CheckUserExists(ctx context.Context, in *Check
 func (m *defaultUserBasicService) GetUserHome(ctx context.Context, in *GetUserHomeReq, opts ...grpc.CallOption) (*GetUserHomeResp, error) {
 	client := pb.NewUserBasicServiceClient(m.cli.Conn())
 	return client.GetUserHome(ctx, in, opts...)
+}
+
+// 获取系统图片
+func (m *defaultUserBasicService) GetSysImage(ctx context.Context, in *GetSysImageReq, opts ...grpc.CallOption) (*GetSysImageResp, error) {
+	client := pb.NewUserBasicServiceClient(m.cli.Conn())
+	return client.GetSysImage(ctx, in, opts...)
 }

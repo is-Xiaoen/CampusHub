@@ -48,6 +48,8 @@ type (
 	GetCreditLogsResp           = pb.GetCreditLogsResp
 	GetGroupUserReq             = pb.GetGroupUserReq
 	GetGroupUserResponse        = pb.GetGroupUserResponse
+	GetSysImageReq              = pb.GetSysImageReq
+	GetSysImageResp             = pb.GetSysImageResp
 	GetTagsByIdsReq             = pb.GetTagsByIdsReq
 	GetTagsByIdsResp            = pb.GetTagsByIdsResp
 	GetUserHomeReq              = pb.GetUserHomeReq
@@ -99,6 +101,8 @@ type (
 	UploadAvatarResp            = pb.UploadAvatarResp
 	UploadStudentCardImagesReq  = pb.UploadStudentCardImagesReq
 	UploadStudentCardImagesResp = pb.UploadStudentCardImagesResp
+	UploadSysImageReq           = pb.UploadSysImageReq
+	UploadSysImageResp          = pb.UploadSysImageResp
 	UserHomeActivityItem        = pb.UserHomeActivityItem
 	UserHomeActivityList        = pb.UserHomeActivityList
 	UserHomeInfo                = pb.UserHomeInfo
@@ -115,6 +119,8 @@ type (
 		UploadStudentCardImages(ctx context.Context, in *UploadStudentCardImagesReq, opts ...grpc.CallOption) (*UploadStudentCardImagesResp, error)
 		// 上传活动封面
 		UploadActivityCover(ctx context.Context, in *UploadActivityCoverReq, opts ...grpc.CallOption) (*UploadActivityCoverResp, error)
+		// 上传通用图片并入库
+		UploadSysImage(ctx context.Context, in *UploadSysImageReq, opts ...grpc.CallOption) (*UploadSysImageResp, error)
 	}
 
 	defaultUploadToQiNiu struct {
@@ -144,4 +150,10 @@ func (m *defaultUploadToQiNiu) UploadStudentCardImages(ctx context.Context, in *
 func (m *defaultUploadToQiNiu) UploadActivityCover(ctx context.Context, in *UploadActivityCoverReq, opts ...grpc.CallOption) (*UploadActivityCoverResp, error) {
 	client := pb.NewUploadToQiNiuClient(m.cli.Conn())
 	return client.UploadActivityCover(ctx, in, opts...)
+}
+
+// 上传通用图片并入库
+func (m *defaultUploadToQiNiu) UploadSysImage(ctx context.Context, in *UploadSysImageReq, opts ...grpc.CallOption) (*UploadSysImageResp, error) {
+	client := pb.NewUploadToQiNiuClient(m.cli.Conn())
+	return client.UploadSysImage(ctx, in, opts...)
 }
