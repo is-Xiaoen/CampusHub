@@ -55,8 +55,16 @@ func (l *IncrViewCountLogic) IncrViewCount(in *activity.IncrViewCountReq) (*acti
 
 	activityID := uint64(in.GetId())
 
-	// 2. 查询活动是否存在
-	activityData, err := l.svcCtx.ActivityModel.FindByID(l.ctx, activityID)
+	// 2. 查询活动是否存在（优先走缓存，避免高频接口每次都查 DB）
+	var (
+		activityData *model.Activity
+		err          error
+	)
+	if l.svcCtx.ActivityCache != nil {
+		activityData, err = l.svcCtx.ActivityCache.GetByID(l.ctx, activityID)
+	} else {
+		activityData, err = l.svcCtx.ActivityModel.FindByID(l.ctx, activityID)
+	}
 	if err != nil {
 		if errors.Is(err, model.ErrActivityNotFound) {
 			return nil, errorx.New(errorx.CodeActivityNotFound)
@@ -91,27 +99,28 @@ func (l *IncrViewCountLogic) IncrViewCount(in *activity.IncrViewCountReq) (*acti
 		l.Infof("[WARNING] Redis 防刷检查失败: key=%s, err=%v", redisKey, err)
 	} else if exists {
 		// 已浏览过，不重复计数
-		l.Debugf("重复浏览，跳过计数: activity_id=%d, viewer=%s", activityID, viewerKey)
+		l.Infof("重复浏览，跳过计数: activity_id=%d, viewer=%s", activityID, viewerKey)
 		return &activity.IncrViewCountResp{
 			ViewCount: int64(activityData.ViewCount),
 		}, nil
 	}
 
-	// 5. 设置防刷标记（1小时过期）
-	err = l.svcCtx.Redis.SetexCtx(l.ctx, redisKey, "1", 3600)
-	if err != nil {
-		// Redis 设置失败，降级处理：仍然计数
-		l.Infof("[WARNING] Redis 设置防刷标记失败: key=%s, err=%v", redisKey, err)
-	}
-
-	// 6. 原子更新浏览量
+	// 5. 原子更新浏览量
 	err = l.svcCtx.ActivityModel.IncrViewCount(l.ctx, activityID, 1)
 	if err != nil {
 		l.Errorf("更新浏览量失败: activity_id=%d, err=%v", activityID, err)
-		// 更新失败，返回当前浏览量
+		// 更新失败，返回当前浏览量（不设置防刷标记，下次请求可以重试）
 		return &activity.IncrViewCountResp{
 			ViewCount: int64(activityData.ViewCount),
 		}, nil
+	}
+
+	// 6. DB 更新成功后才设置防刷标记（1小时过期）
+	// 放在 DB 之后：确保浏览量成功递增才标记，避免 DB 失败时浏览量丢失
+	err = l.svcCtx.Redis.SetexCtx(l.ctx, redisKey, "1", 3600)
+	if err != nil {
+		// Redis 设置失败，降级处理：下次可能重复计数，但不丢浏览量
+		l.Infof("[WARNING] Redis 设置防刷标记失败: key=%s, err=%v", redisKey, err)
 	}
 
 	// 7. 返回更新后的浏览量（+1）

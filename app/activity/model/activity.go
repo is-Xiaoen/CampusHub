@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -18,6 +19,23 @@ var (
 	ErrActivityConcurrentUpdate = errors.New("并发更新冲突，请重试")
 	ErrPageTooDeep              = errors.New("不支持查看超过100页的数据，请使用搜索功能")
 )
+
+// allowedTimeFields 允许在 SQL WHERE 条件中使用的时间字段白名单
+// 防止 SQL 注入：timeField 会拼接到 SQL 语句中，必须限制为已知列名
+var allowedTimeFields = map[string]bool{
+	"activity_start_time": true,
+	"activity_end_time":   true,
+	"register_start_time": true,
+	"register_end_time":   true,
+}
+
+// ValidateTimeField 校验时间字段名是否在白名单内
+func ValidateTimeField(field string) error {
+	if !allowedTimeFields[field] {
+		return fmt.Errorf("非法的时间字段: %s", field)
+	}
+	return nil
+}
 
 // ==================== Activity 活动模型 ====================
 
@@ -598,6 +616,10 @@ func escapeKeyword(keyword string) string {
 // BatchUpdateStatusByTime 批量更新状态（定时任务用）
 func (m *ActivityModel) BatchUpdateStatusByTime(ctx context.Context, fromStatus, toStatus int8, timeField string,
 	beforeTime int64, batchSize int) (int64, error) {
+	if err := ValidateTimeField(timeField); err != nil {
+		return 0, err
+	}
+
 	var totalAffected int64
 
 	for {
