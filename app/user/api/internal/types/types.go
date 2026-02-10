@@ -105,12 +105,11 @@ type GetRegisterCodeReq struct {
 }
 
 type GetUserHomeReq struct {
-	UserId            int64  `path:"user_id"`
-	JoinedPage        int32  `form:"joined_page,optional,default=1"`
-	JoinedPageSize    int32  `form:"joined_page_size,optional,default=10"`
-	JoinedType        string `form:"joined_type,optional"`
-	PublishedPage     int32  `form:"published_page,optional,default=1"`
-	PublishedPageSize int32  `form:"published_page_size,optional,default=10"`
+	UserId            int64 `path:"user_id"`
+	JoinedPage        int32 `form:"joined_page,optional,default=1"`
+	JoinedPageSize    int32 `form:"joined_page_size,optional,default=10"`
+	PublishedPage     int32 `form:"published_page,optional,default=1"`
+	PublishedPageSize int32 `form:"published_page_size,optional,default=10"`
 }
 
 type GetUserHomeResp struct {

@@ -3124,9 +3124,8 @@ type GetUserHomeReq struct {
 	state  protoimpl.MessageState `protogen:"open.v1"`
 	UserId int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // 目标用户ID
 	// 参加活动列表参数
-	JoinedPage     int32  `protobuf:"varint,2,opt,name=joined_page,json=joinedPage,proto3" json:"joined_page,omitempty"`
-	JoinedPageSize int32  `protobuf:"varint,3,opt,name=joined_page_size,json=joinedPageSize,proto3" json:"joined_page_size,omitempty"`
-	JoinedType     string `protobuf:"bytes,4,opt,name=joined_type,json=joinedType,proto3" json:"joined_type,omitempty"` // 待参加/已参加
+	JoinedPage     int32 `protobuf:"varint,2,opt,name=joined_page,json=joinedPage,proto3" json:"joined_page,omitempty"`
+	JoinedPageSize int32 `protobuf:"varint,3,opt,name=joined_page_size,json=joinedPageSize,proto3" json:"joined_page_size,omitempty"`
 	// 发起活动列表参数
 	PublishedPage     int32 `protobuf:"varint,5,opt,name=published_page,json=publishedPage,proto3" json:"published_page,omitempty"`
 	PublishedPageSize int32 `protobuf:"varint,6,opt,name=published_page_size,json=publishedPageSize,proto3" json:"published_page_size,omitempty"`
@@ -3184,13 +3183,6 @@ func (x *GetUserHomeReq) GetJoinedPageSize() int32 {
 		return x.JoinedPageSize
 	}
 	return 0
-}
-
-func (x *GetUserHomeReq) GetJoinedType() string {
-	if x != nil {
-		return x.JoinedType
-	}
-	return ""
 }
 
 func (x *GetUserHomeReq) GetPublishedPage() int32 {
@@ -6310,17 +6302,15 @@ const file_user_proto_rawDesc = "" +
 	"\x04name\x18\x02 \x01(\tR\x04name\"\x17\n" +
 	"\x15GetAllInterestTagsReq\"P\n" +
 	"\x16GetAllInterestTagsResp\x126\n" +
-	"\rinterest_tags\x18\x01 \x03(\v2\x11.user.InterestTagR\finterestTags\"\x97\x02\n" +
+	"\rinterest_tags\x18\x01 \x03(\v2\x11.user.InterestTagR\finterestTags\"\xfc\x01\n" +
 	"\x0eGetUserHomeReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1f\n" +
 	"\vjoined_page\x18\x02 \x01(\x05R\n" +
 	"joinedPage\x12(\n" +
-	"\x10joined_page_size\x18\x03 \x01(\x05R\x0ejoinedPageSize\x12\x1f\n" +
-	"\vjoined_type\x18\x04 \x01(\tR\n" +
-	"joinedType\x12%\n" +
+	"\x10joined_page_size\x18\x03 \x01(\x05R\x0ejoinedPageSize\x12%\n" +
 	"\x0epublished_page\x18\x05 \x01(\x05R\rpublishedPage\x12.\n" +
 	"\x13published_page_size\x18\x06 \x01(\x05R\x11publishedPageSize\x12)\n" +
-	"\x10published_status\x18\a \x01(\x05R\x0fpublishedStatus\"\x81\x02\n" +
+	"\x10published_status\x18\a \x01(\x05R\x0fpublishedStatusJ\x04\b\x04\x10\x05\"\x81\x02\n" +
 	"\x0fGetUserHomeResp\x12/\n" +
 	"\tuser_info\x18\x01 \x01(\v2\x12.user.UserHomeInfoR\buserInfo\x12%\n" +
 	"\x04tags\x18\x02 \x03(\v2\x11.user.UserHomeTagR\x04tags\x12G\n" +
