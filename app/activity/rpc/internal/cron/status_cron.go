@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"activity-platform/app/activity/model"
+	"activity-platform/app/activity/rpc/internal/cache"
 	"activity-platform/app/activity/rpc/internal/mq"
 	"activity-platform/common/messaging"
 
@@ -49,7 +50,8 @@ type StatusCron struct {
 	db             *gorm.DB
 	activityModel  *model.ActivityModel
 	statusLogModel *model.ActivityStatusLogModel
-	msgProducer    *mq.Producer // 消息发布器（可为 nil）
+	activityCache  *cache.ActivityCache // 活动缓存（状态变更后删除缓存）
+	msgProducer    *mq.Producer         // 消息发布器（可为 nil）
 
 	intervalSeconds int           // 执行间隔（秒）
 	stopChan        chan struct{} // 停止信号
@@ -64,6 +66,7 @@ func NewStatusCron(
 	db *gorm.DB,
 	activityModel *model.ActivityModel,
 	statusLogModel *model.ActivityStatusLogModel,
+	activityCache *cache.ActivityCache,
 	msgProducer *mq.Producer,
 ) *StatusCron {
 	return &StatusCron{
@@ -71,6 +74,7 @@ func NewStatusCron(
 		db:              db,
 		activityModel:   activityModel,
 		statusLogModel:  statusLogModel,
+		activityCache:   activityCache,
 		msgProducer:     msgProducer,
 		intervalSeconds: defaultIntervalSeconds,
 		stopChan:        make(chan struct{}),
@@ -307,7 +311,15 @@ func (c *StatusCron) transitionOne(
 		return err
 	}
 
-	// 3. 活动结束时异步处理信用事件（Ongoing→Finished）
+	// 3. 删除活动缓存（状态变更后缓存中的 status 已过时）
+	if c.activityCache != nil {
+		if err := c.activityCache.Invalidate(ctx, act.ID); err != nil {
+			logx.Errorf("[StatusCron] 删除活动缓存失败: id=%d, err=%v", act.ID, err)
+			// 缓存删除失败不影响主流程，TTL 到期后自动更新
+		}
+	}
+
+	// 4. 活动结束时异步处理信用事件（Ongoing→Finished）
 	if fromStatus == model.StatusOngoing && toStatus == model.StatusFinished {
 		go c.processFinishedCreditEvents(act.ID, act.OrganizerID)
 	}
