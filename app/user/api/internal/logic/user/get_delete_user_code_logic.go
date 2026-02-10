@@ -40,7 +40,7 @@ func (l *GetDeleteUserCodeLogic) GetDeleteUserCode() error {
 		return err
 	}
 	if user == nil {
-		return nil // User not found, but we shouldn't reveal this info or maybe return error? User exists in token context though.
+		return nil
 	}
 
 	_, err = l.svcCtx.QQEmailRpc.SendQQEmail(l.ctx, &qqemail.SendQQEmailReq{

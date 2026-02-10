@@ -298,11 +298,11 @@ type UpdateInterestResp {
 }
 
 type UpdateUserInfoReq {
-	Age            int64   `json:"age,optional"`
-	Nickname       string  `json:"nickname,optional"`
-	Introduction   string  `json:"introduction,optional"`
-	Gender         string  `json:"gender,optional"`
-	InterestTagIds []int64 `json:"interestTagIds,optional"`
+	Age            int64   `form:"age,optional"`
+	Nickname       string  `form:"nickname,optional"`
+	Introduction   string  `form:"introduction,optional"`
+	Gender         string  `form:"gender,optional"`
+	InterestTagIds []int64 `form:"interestTagIds,optional"`
 }
 
 type UpdateUserInfoResp {
@@ -455,5 +455,49 @@ service user-api {
 	@doc "注销用户"
 	@handler Logoff
 	post /logoff (LogoffReq) returns (LogoffResp)
+
+	@doc "获取用户主页信息"
+	@handler GetUserHome
+	get /users/:user_id/home (GetUserHomeReq) returns (GetUserHomeResp)
+}
+
+// ============================================================================
+// 五、用户主页模块 - 类型定义
+// ============================================================================
+type GetUserHomeReq {
+	UserId            int64 `path:"user_id"`
+	JoinedPage        int32 `form:"joined_page,optional,default=1"`
+	JoinedPageSize    int32 `form:"joined_page_size,optional,default=10"`
+	PublishedPage     int32 `form:"published_page,optional,default=1"`
+	PublishedPageSize int32 `form:"published_page_size,optional,default=10"`
+}
+
+type UserHomeInfo {
+	UserId       int64  `json:"userId"`
+	Nickname     string `json:"nickname"`
+	AvatarUrl    string `json:"avatarUrl"`
+	Introduction string `json:"introduction"`
+	Gender       int32  `json:"gender"`
+	Age          int32  `json:"age"`
+}
+
+type UserHomeActivityItem {
+	Id       int64  `json:"id"`
+	Name     string `json:"name"`
+	Time     string `json:"time"`
+	Status   string `json:"status"`
+	ImageUrl string `json:"imageUrl"`
+}
+
+type UserHomeActivityList {
+	Total int32                  `json:"total"`
+	List  []UserHomeActivityItem `json:"list"`
+}
+
+type GetUserHomeResp {
+	UserInfo            UserHomeInfo         `json:"userInfo"`
+	Tags                []InterestTag        `json:"tags"`
+	JoinedActivities    UserHomeActivityList `json:"joinedActivities"`
+	PublishedActivities UserHomeActivityList `json:"publishedActivities"`
 }
 
