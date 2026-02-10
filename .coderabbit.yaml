@@ -133,7 +133,7 @@ reviews:
   pre_merge_checks:
     custom_checks:
       - name: "错误处理完整性"
-        mode: "required"
+        mode: "error"
         instructions: |
           检查所有新增或修改的 Go 函数：
           - 返回的 error 是否都被处理（不能用 _ 忽略）
@@ -141,7 +141,7 @@ reviews:
           - defer 中的 error 是否被处理
 
       - name: "敏感信息检查"
-        mode: "required"
+        mode: "error"
         instructions: |
           检查是否有硬编码的敏感信息：
           - 密码、密钥、Token
