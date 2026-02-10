@@ -115,7 +115,6 @@ func (l *GetUserHomeLogic) GetUserHome(in *pb.GetUserHomeReq) (*pb.GetUserHomeRe
 		actResp, err := l.svcCtx.ActivityRpc.GetActivityList(l.ctx, &activity.GetActivityListRequest{
 			Page:     page,
 			PageSize: pageSize,
-			Type:     in.JoinedType,
 			UserId:   in.UserId,
 		})
 		if err != nil {

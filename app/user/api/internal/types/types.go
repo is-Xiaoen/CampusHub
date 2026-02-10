@@ -105,12 +105,11 @@ type GetRegisterCodeReq struct {
 }
 
 type GetUserHomeReq struct {
-	UserId            int64  `path:"user_id"`
-	JoinedPage        int32  `form:"joined_page,optional,default=1"`
-	JoinedPageSize    int32  `form:"joined_page_size,optional,default=10"`
-	JoinedType        string `form:"joined_type,optional"`
-	PublishedPage     int32  `form:"published_page,optional,default=1"`
-	PublishedPageSize int32  `form:"published_page_size,optional,default=10"`
+	UserId            int64 `path:"user_id"`
+	JoinedPage        int32 `form:"joined_page,optional,default=1"`
+	JoinedPageSize    int32 `form:"joined_page_size,optional,default=10"`
+	PublishedPage     int32 `form:"published_page,optional,default=1"`
+	PublishedPageSize int32 `form:"published_page_size,optional,default=10"`
 }
 
 type GetUserHomeResp struct {
@@ -205,11 +204,11 @@ type UpdateInterestResp struct {
 }
 
 type UpdateUserInfoReq struct {
-	Age            int64   `json:"age,optional"`
-	Nickname       string  `json:"nickname,optional"`
-	Introduction   string  `json:"introduction,optional"`
-	Gender         string  `json:"gender,optional"`
-	InterestTagIds []int64 `json:"interestTagIds,optional"`
+	Age            int64   `form:"age,optional"`
+	Nickname       string  `form:"nickname,optional"`
+	Introduction   string  `form:"introduction,optional"`
+	Gender         string  `form:"gender,optional"`
+	InterestTagIds []int64 `form:"interestTagIds,optional"`
 }
 
 type UpdateUserInfoResp struct {

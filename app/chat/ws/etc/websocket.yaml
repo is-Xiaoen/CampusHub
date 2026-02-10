@@ -9,6 +9,13 @@ ChatRpc:
       - 192.168.10.4:2379
     Key: chat.rpc
 
+# User RPC 配置
+UserRpc:
+  Etcd:
+    Hosts:
+      - 192.168.10.4:2379
+    Key: user.rpc
+
 # Redis 配置
 Redis:
   Host: 192.168.10.4:6379

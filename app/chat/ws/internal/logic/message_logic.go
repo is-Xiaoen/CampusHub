@@ -14,6 +14,7 @@ import (
 	"activity-platform/app/chat/ws/internal/queue"
 	"activity-platform/app/chat/ws/internal/svc"
 	"activity-platform/app/chat/ws/internal/types"
+	"activity-platform/app/user/rpc/client/userbasicservice"
 	"activity-platform/common/messaging"
 )
 
@@ -93,7 +94,7 @@ func (l *MessageLogic) HandleSendMessage(client *hub.Client, msg *types.WSMessag
 		MessageID:  messageID,
 		GroupID:    sendData.GroupID,
 		SenderID:   senderID,
-		SenderName: "User", // TODO: 从用户服务获取用户名
+		SenderName: l.getUserName(senderID), // 从缓存或 RPC 获取用户名
 		MsgType:    sendData.MsgType,
 		Content:    sendData.Content,
 		ImageURL:   sendData.ImageURL,
@@ -164,7 +165,7 @@ func (l *MessageLogic) HandleSendMessageSync(client *hub.Client, msg *types.WSMe
 		MessageID:  messageID,
 		GroupID:    sendData.GroupID,
 		SenderID:   senderID,
-		SenderName: "User",
+		SenderName: l.getUserName(senderID),
 		MsgType:    sendData.MsgType,
 		Content:    sendData.Content,
 		ImageURL:   sendData.ImageURL,
@@ -216,14 +217,52 @@ func (l *MessageLogic) HandleSendMessageSync(client *hub.Client, msg *types.WSMe
 }
 
 // HandleJoinGroup 处理加入群聊
+// 使用场景：用户在 WebSocket 连接期间报名新活动，需要订阅新群聊的实时消息
 func (l *MessageLogic) HandleJoinGroup(client *hub.Client, msg *types.WSMessage) error {
 	var data types.JoinGroupData
 	if err := json.Unmarshal(msg.Data, &data); err != nil {
 		return err
 	}
 
-	// TODO: 验证用户是否是群成员（调用 RPC）
-	// 这里简化处理，直接加入
+	// 验证用户是否是群成员（防止恶意订阅）
+	userID, err := strconv.ParseUint(client.GetUserID(), 10, 64)
+	if err != nil {
+		logx.Errorf("解析用户ID失败: %v", err)
+		return err
+	}
+
+	// 调用 RPC 获取用户的所有群聊，验证目标群聊是否在其中
+	userGroupsResp, err := l.svcCtx.ChatRpc.GetUserGroups(l.ctx, &chat.GetUserGroupsReq{
+		UserId:   userID,
+		Page:     1,
+		PageSize: 100, // 假设用户不会加入超过100个群聊
+	})
+	if err != nil {
+		logx.Errorf("获取用户群聊列表失败: %v, user_id=%d", err, userID)
+		return err
+	}
+
+	// 检查目标群聊是否在用户的群聊列表中
+	isMember := false
+	for _, group := range userGroupsResp.Groups {
+		if group.GroupId == data.GroupID {
+			isMember = true
+			break
+		}
+	}
+
+	if !isMember {
+		logx.Infof("用户 %d 不是群聊 %s 的成员，拒绝加入", userID, data.GroupID)
+		// 发送错误消息给客户端
+		errorData, _ := json.Marshal(map[string]string{"message": "您不是该群聊的成员"})
+		client.SendMessage(&types.WSMessage{
+			Type:      types.TypeError,
+			MessageID: msg.MessageID,
+			Timestamp: time.Now().Unix(),
+			Data:      errorData,
+		})
+		return nil // 不返回错误，避免断开连接
+	}
 
 	// 将客户端添加到群聊
 	client.GetHub().AddClientToGroup(client, data.GroupID)
@@ -287,4 +326,34 @@ func (l *MessageLogic) autoJoinUserGroups(client *hub.Client, userID string) {
 	}
 
 	logx.Infof("用户 %s 自动加入了 %d 个群聊", userID, len(resp.Groups))
+}
+
+// getUserName 获取用户名（带缓存）
+func (l *MessageLogic) getUserName(userID uint64) string {
+	// 1. 先从缓存查询
+	if name, ok := l.svcCtx.UserCache.Get(userID); ok {
+		return name
+	}
+
+	// 2. 缓存未命中，调用 RPC
+	resp, err := l.svcCtx.UserRpc.GetGroupUser(l.ctx, &userbasicservice.GetGroupUserReq{
+		Ids: []int64{int64(userID)},
+	})
+	if err != nil {
+		logx.Errorf("调用用户服务获取用户信息失败: %v", err)
+		return "用户" // 降级处理
+	}
+
+	if len(resp.Users) == 0 {
+		logx.Infof("用户 %d 不存在", userID)
+		return "用户" // 降级处理
+	}
+
+	name := resp.Users[0].Nickname
+	// 3. 写入缓存（TTL 5分钟）
+	if err := l.svcCtx.UserCache.Set(userID, name, 5*time.Minute); err != nil {
+		logx.Errorf("写入用户缓存失败: %v", err)
+	}
+
+	return name
 }
