@@ -89,6 +89,8 @@ type (
 	UpdatePasswordResponse      = pb.UpdatePasswordResponse
 	UpdateScoreReq              = pb.UpdateScoreReq
 	UpdateScoreResp             = pb.UpdateScoreResp
+	UpdateSysImageRefCountReq   = pb.UpdateSysImageRefCountReq
+	UpdateSysImageRefCountResp  = pb.UpdateSysImageRefCountResp
 	UpdateUserInfoReq           = pb.UpdateUserInfoReq
 	UpdateUserInfoResponse      = pb.UpdateUserInfoResponse
 	UpdateUserTagReq            = pb.UpdateUserTagReq
@@ -139,6 +141,8 @@ type (
 		GetUserHome(ctx context.Context, in *GetUserHomeReq, opts ...grpc.CallOption) (*GetUserHomeResp, error)
 		// 获取系统图片
 		GetSysImage(ctx context.Context, in *GetSysImageReq, opts ...grpc.CallOption) (*GetSysImageResp, error)
+		// 更新图片引用计数
+		UpdateSysImageRefCount(ctx context.Context, in *UpdateSysImageRefCountReq, opts ...grpc.CallOption) (*UpdateSysImageRefCountResp, error)
 	}
 
 	defaultUserBasicService struct {
@@ -228,4 +232,10 @@ func (m *defaultUserBasicService) GetUserHome(ctx context.Context, in *GetUserHo
 func (m *defaultUserBasicService) GetSysImage(ctx context.Context, in *GetSysImageReq, opts ...grpc.CallOption) (*GetSysImageResp, error) {
 	client := pb.NewUserBasicServiceClient(m.cli.Conn())
 	return client.GetSysImage(ctx, in, opts...)
+}
+
+// 更新图片引用计数
+func (m *defaultUserBasicService) UpdateSysImageRefCount(ctx context.Context, in *UpdateSysImageRefCountReq, opts ...grpc.CallOption) (*UpdateSysImageRefCountResp, error) {
+	client := pb.NewUserBasicServiceClient(m.cli.Conn())
+	return client.UpdateSysImageRefCount(ctx, in, opts...)
 }

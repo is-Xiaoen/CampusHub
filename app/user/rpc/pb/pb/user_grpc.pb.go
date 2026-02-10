@@ -1083,19 +1083,20 @@ var TagService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	UserBasicService_GetGroupUser_FullMethodName    = "/user.UserBasicService/GetGroupUser"
-	UserBasicService_Login_FullMethodName           = "/user.UserBasicService/Login"
-	UserBasicService_Logout_FullMethodName          = "/user.UserBasicService/Logout"
-	UserBasicService_Register_FullMethodName        = "/user.UserBasicService/Register"
-	UserBasicService_RefreshToken_FullMethodName    = "/user.UserBasicService/RefreshToken"
-	UserBasicService_GetUserInfo_FullMethodName     = "/user.UserBasicService/GetUserInfo"
-	UserBasicService_UpdatePassword_FullMethodName  = "/user.UserBasicService/UpdatePassword"
-	UserBasicService_UpdateUserInfo_FullMethodName  = "/user.UserBasicService/UpdateUserInfo"
-	UserBasicService_DeleteUser_FullMethodName      = "/user.UserBasicService/DeleteUser"
-	UserBasicService_ForgetPassword_FullMethodName  = "/user.UserBasicService/ForgetPassword"
-	UserBasicService_CheckUserExists_FullMethodName = "/user.UserBasicService/CheckUserExists"
-	UserBasicService_GetUserHome_FullMethodName     = "/user.UserBasicService/GetUserHome"
-	UserBasicService_GetSysImage_FullMethodName     = "/user.UserBasicService/GetSysImage"
+	UserBasicService_GetGroupUser_FullMethodName           = "/user.UserBasicService/GetGroupUser"
+	UserBasicService_Login_FullMethodName                  = "/user.UserBasicService/Login"
+	UserBasicService_Logout_FullMethodName                 = "/user.UserBasicService/Logout"
+	UserBasicService_Register_FullMethodName               = "/user.UserBasicService/Register"
+	UserBasicService_RefreshToken_FullMethodName           = "/user.UserBasicService/RefreshToken"
+	UserBasicService_GetUserInfo_FullMethodName            = "/user.UserBasicService/GetUserInfo"
+	UserBasicService_UpdatePassword_FullMethodName         = "/user.UserBasicService/UpdatePassword"
+	UserBasicService_UpdateUserInfo_FullMethodName         = "/user.UserBasicService/UpdateUserInfo"
+	UserBasicService_DeleteUser_FullMethodName             = "/user.UserBasicService/DeleteUser"
+	UserBasicService_ForgetPassword_FullMethodName         = "/user.UserBasicService/ForgetPassword"
+	UserBasicService_CheckUserExists_FullMethodName        = "/user.UserBasicService/CheckUserExists"
+	UserBasicService_GetUserHome_FullMethodName            = "/user.UserBasicService/GetUserHome"
+	UserBasicService_GetSysImage_FullMethodName            = "/user.UserBasicService/GetSysImage"
+	UserBasicService_UpdateSysImageRefCount_FullMethodName = "/user.UserBasicService/UpdateSysImageRefCount"
 )
 
 // UserBasicServiceClient is the client API for UserBasicService service.
@@ -1128,6 +1129,8 @@ type UserBasicServiceClient interface {
 	GetUserHome(ctx context.Context, in *GetUserHomeReq, opts ...grpc.CallOption) (*GetUserHomeResp, error)
 	// 获取系统图片
 	GetSysImage(ctx context.Context, in *GetSysImageReq, opts ...grpc.CallOption) (*GetSysImageResp, error)
+	// 更新图片引用计数
+	UpdateSysImageRefCount(ctx context.Context, in *UpdateSysImageRefCountReq, opts ...grpc.CallOption) (*UpdateSysImageRefCountResp, error)
 }
 
 type userBasicServiceClient struct {
@@ -1268,6 +1271,16 @@ func (c *userBasicServiceClient) GetSysImage(ctx context.Context, in *GetSysImag
 	return out, nil
 }
 
+func (c *userBasicServiceClient) UpdateSysImageRefCount(ctx context.Context, in *UpdateSysImageRefCountReq, opts ...grpc.CallOption) (*UpdateSysImageRefCountResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateSysImageRefCountResp)
+	err := c.cc.Invoke(ctx, UserBasicService_UpdateSysImageRefCount_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserBasicServiceServer is the server API for UserBasicService service.
 // All implementations must embed UnimplementedUserBasicServiceServer
 // for forward compatibility.
@@ -1298,6 +1311,8 @@ type UserBasicServiceServer interface {
 	GetUserHome(context.Context, *GetUserHomeReq) (*GetUserHomeResp, error)
 	// 获取系统图片
 	GetSysImage(context.Context, *GetSysImageReq) (*GetSysImageResp, error)
+	// 更新图片引用计数
+	UpdateSysImageRefCount(context.Context, *UpdateSysImageRefCountReq) (*UpdateSysImageRefCountResp, error)
 	mustEmbedUnimplementedUserBasicServiceServer()
 }
 
@@ -1346,6 +1361,9 @@ func (UnimplementedUserBasicServiceServer) GetUserHome(context.Context, *GetUser
 }
 func (UnimplementedUserBasicServiceServer) GetSysImage(context.Context, *GetSysImageReq) (*GetSysImageResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetSysImage not implemented")
+}
+func (UnimplementedUserBasicServiceServer) UpdateSysImageRefCount(context.Context, *UpdateSysImageRefCountReq) (*UpdateSysImageRefCountResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateSysImageRefCount not implemented")
 }
 func (UnimplementedUserBasicServiceServer) mustEmbedUnimplementedUserBasicServiceServer() {}
 func (UnimplementedUserBasicServiceServer) testEmbeddedByValue()                          {}
@@ -1602,6 +1620,24 @@ func _UserBasicService_GetSysImage_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserBasicService_UpdateSysImageRefCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateSysImageRefCountReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserBasicServiceServer).UpdateSysImageRefCount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserBasicService_UpdateSysImageRefCount_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserBasicServiceServer).UpdateSysImageRefCount(ctx, req.(*UpdateSysImageRefCountReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserBasicService_ServiceDesc is the grpc.ServiceDesc for UserBasicService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1660,6 +1696,10 @@ var UserBasicService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetSysImage",
 			Handler:    _UserBasicService_GetSysImage_Handler,
+		},
+		{
+			MethodName: "UpdateSysImageRefCount",
+			Handler:    _UserBasicService_UpdateSysImageRefCount_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -100,3 +100,9 @@ func (s *UserBasicServiceServer) GetSysImage(ctx context.Context, in *pb.GetSysI
 	l := userbasicservicelogic.NewGetSysImageLogic(ctx, s.svcCtx)
 	return l.GetSysImage(in)
 }
+
+// 更新图片引用计数
+func (s *UserBasicServiceServer) UpdateSysImageRefCount(ctx context.Context, in *pb.UpdateSysImageRefCountReq) (*pb.UpdateSysImageRefCountResp, error) {
+	l := userbasicservicelogic.NewUpdateSysImageRefCountLogic(ctx, s.svcCtx)
+	return l.UpdateSysImageRefCount(in)
+}

@@ -770,6 +770,8 @@ service UserBasicService {
     rpc GetUserHome(GetUserHomeReq) returns(GetUserHomeResp);
     // 获取系统图片
     rpc GetSysImage(GetSysImageReq) returns (GetSysImageResp);
+    // 更新图片引用计数
+    rpc UpdateSysImageRefCount(UpdateSysImageRefCountReq) returns (UpdateSysImageRefCountResp);
 }
 
 // 获取系统图片请求
@@ -781,6 +783,17 @@ message GetSysImageReq {
 // 获取系统图片响应
 message GetSysImageResp {
     string url = 1;
+}
+
+// 更新图片引用计数请求
+message UpdateSysImageRefCountReq {
+    int64 image_id = 1;
+    int32 delta = 2;
+}
+
+// 更新图片引用计数响应
+message UpdateSysImageRefCountResp {
+    int64 new_ref_count = 1;
 }
 
 // 获取用户主页信息请求
@@ -885,10 +898,9 @@ message UpdateUserInfoReq{
     string nickname =2;
     string introduce =3;
     int64 gender =4;
-    string avatar_img_name =5;
-    bytes avatar_img_data =6;
-    int64 age= 7;
-    repeated int64 tag_ids =8;
+    int64 avatar_id =5;
+    int64 age= 6;
+    repeated int64 tag_ids =7;
 }
 
 message UpdateUserInfoResponse{

@@ -208,6 +208,7 @@ type UpdateUserInfoReq struct {
 	Nickname       string  `form:"nickname,optional"`
 	Introduction   string  `form:"introduction,optional"`
 	Gender         string  `form:"gender,optional"`
+	AvatarId       int64   `form:"avatar_id,optional"`
 	InterestTagIds []int64 `form:"interestTagIds,optional"`
 }
 
@@ -222,6 +223,7 @@ type UploadSysImageReq struct {
 type UploadSysImageResp struct {
 	Id int64 `json:"id"`
 }
+
 type UserHomeActivityItem struct {
 	Id       int64  `json:"id"`
 	Name     string `json:"name"`

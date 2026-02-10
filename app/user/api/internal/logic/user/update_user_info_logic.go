@@ -5,7 +5,6 @@ package user
 
 import (
 	"context"
-	"io"
 	"net/http"
 
 	"activity-platform/app/user/api/internal/svc"
@@ -58,29 +57,13 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(req *types.UpdateUserInfoReq) (resp
 		return nil, err
 	}
 
-	// 处理头像文件
-	var avatarImgName string
-	var avatarImgData []byte
-
-	// 尝试获取文件，忽略错误（如果没有上传文件，err 会是 http.ErrMissingFile，此时不处理头像更新）
-	file, header, err := l.r.FormFile("avatar_image")
-	if err == nil {
-		defer file.Close()
-		avatarImgName = header.Filename
-		avatarImgData, err = io.ReadAll(file)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	// 调用 RPC
 	_, err = l.svcCtx.UserBasicServiceRpc.UpdateUserInfo(l.ctx, &userbasicservice.UpdateUserInfoReq{
 		UserId:        userId,
 		Nickname:      req.Nickname,
 		Introduce:     req.Introduction,
 		Gender:        genderInt,
-		AvatarImgName: avatarImgName,
-		AvatarImgData: avatarImgData,
+		AvatarId:      req.AvatarId,
 		Age:           req.Age,
 		TagIds:        req.InterestTagIds,
 	})
