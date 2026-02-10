@@ -76,7 +76,9 @@ func (l *GetTicketDetailLogic) GetTicketDetail(in *activity.GetTicketDetailReque
 	} else {
 		resp.ActivityName = activityInfo.Title
 		if activityInfo.ActivityStartTime > 0 {
-			resp.ActivityTime = time.Unix(activityInfo.ActivityStartTime, 0).Format("2006-01-02 15:04:05")
+			// 使用东八区（北京时间）
+			cstZone := time.FixedZone("CST", 8*3600)
+			resp.ActivityTime = time.Unix(activityInfo.ActivityStartTime, 0).In(cstZone).Format("2006-01-02 15:04:05")
 		}
 	}
 
