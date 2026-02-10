@@ -376,9 +376,9 @@ func (l *UpdateActivityLogic) buildPublishedUpdates(in *activity.UpdateActivityR
 		return errorx.NewWithMessage(errorx.CodeActivityStatusInvalid, "已发布的活动不能修改标签")
 	}
 
-	// 人数上限特殊处理：有报名后不能减少
+	// 人数上限特殊处理：有报名后不能减少（0=不限制，始终允许）
 	if in.MaxParticipants != nil {
-		if activityData.CurrentParticipants > 0 && uint32(*in.MaxParticipants) < activityData.CurrentParticipants {
+		if *in.MaxParticipants > 0 && activityData.CurrentParticipants > 0 && uint32(*in.MaxParticipants) < activityData.CurrentParticipants {
 			return errorx.NewWithMessage(errorx.CodeActivityStatusInvalid,
 				"有报名记录的活动不能减少人数上限到低于当前报名人数")
 		}
