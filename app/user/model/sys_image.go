@@ -63,6 +63,8 @@ type SysImage struct {
 	CreatedAt time.Time `gorm:"column:created_at;autoCreateTime;not null" json:"created_at"`
 	// 最后更新时间
 	UpdatedAt time.Time `gorm:"column:updated_at;autoUpdateTime;not null" json:"updated_at"`
+	// 逻辑删除时间，NULL表示未删除
+	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
 }
 
 // TableName 指定表名
