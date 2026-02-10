@@ -152,13 +152,22 @@ func (l *ListActivitiesLogic) validateParams(in *activity.ListActivitiesReq) err
 	return nil
 }
 
-// loadCategoryMap 加载分类映射表
+// loadCategoryMap 加载分类映射表（优先从缓存获取）
 //
 // 由于分类数量通常较少（一般不超过 20 个），
 // 直接加载所有分类比按需查询更高效
 func (l *ListActivitiesLogic) loadCategoryMap() map[uint64]string {
-	categoryMap := make(map[uint64]string)
+	// 优先使用缓存
+	if l.svcCtx.CategoryCache != nil {
+		categoryMap, err := l.svcCtx.CategoryCache.GetNameMap(l.ctx)
+		if err == nil {
+			return categoryMap
+		}
+		l.Infof("[WARNING] 从缓存加载分类失败，降级查 DB: %v", err)
+	}
 
+	// 降级查 DB
+	categoryMap := make(map[uint64]string)
 	categories, err := l.svcCtx.CategoryModel.FindAll(l.ctx)
 	if err != nil {
 		l.Infof("[WARNING] 加载分类列表失败: %v", err)
