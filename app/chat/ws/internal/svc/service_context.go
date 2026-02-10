@@ -7,8 +7,10 @@ import (
 	"github.com/zeromicro/go-zero/zrpc"
 
 	"activity-platform/app/chat/rpc/chatservice"
+	"activity-platform/app/chat/ws/internal/cache"
 	"activity-platform/app/chat/ws/internal/config"
 	"activity-platform/app/chat/ws/internal/queue"
+	"activity-platform/app/user/rpc/client/userbasicservice"
 	"activity-platform/common/messaging"
 )
 
@@ -16,16 +18,19 @@ import (
 type ServiceContext struct {
 	Config          config.Config
 	ChatRpc         chatservice.ChatService
+	UserRpc         userbasicservice.UserBasicService
 	MessagingClient *messaging.Client
 	JwtAuth         *JwtAuth
 	RedisClient     *redis.Client
 	SaveQueue       *queue.SaveQueue // 新增：消息保存队列
+	UserCache       *cache.UserCache // 新增：用户信息缓存
 }
 
 // NewServiceContext 创建服务上下文
 func NewServiceContext(c config.Config) *ServiceContext {
 	// 创建 RPC 客户端
 	chatRpc := chatservice.NewChatService(zrpc.MustNewClient(c.ChatRpc))
+	userRpc := userbasicservice.NewUserBasicService(zrpc.MustNewClient(c.UserRpc))
 
 	// 创建 Redis 客户端
 	redisClient := redis.NewClient(&redis.Options{
@@ -67,12 +72,17 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	// 创建消息保存队列（10 个工作协程）
 	saveQueue := queue.NewSaveQueue(chatRpc, 10)
 
+	// 创建用户信息缓存
+	userCache := cache.NewUserCache(redisClient)
+
 	return &ServiceContext{
 		Config:          c,
 		ChatRpc:         chatRpc,
+		UserRpc:         userRpc,
 		MessagingClient: messagingClient,
 		JwtAuth:         NewJwtAuth(c.Auth.AccessSecret),
 		RedisClient:     redisClient,
-		SaveQueue:       saveQueue, // 新增
+		SaveQueue:       saveQueue,
+		UserCache:       userCache,
 	}
 }
