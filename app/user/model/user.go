@@ -45,6 +45,8 @@ type User struct {
 	QQEmail string `gorm:"uniqueIndex:uk_qqemail;column:QQemail;size:100;not null" json:"qq_email"`
 	// 用户昵称
 	Nickname string `gorm:"column:nickname;size:50;not null" json:"nickname"`
+	// 头像图片ID（关联SysImage）
+	AvatarID int64 `gorm:"column:avatar_id;default:0" json:"avatar_id"`
 	// 用户头像URL地址
 	AvatarURL string `gorm:"column:avatar_url;size:255;default:''" json:"avatar_url"`
 	// 用户个人简介

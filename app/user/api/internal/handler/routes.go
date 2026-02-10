@@ -141,12 +141,6 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Path:    "/users/info/password",
 					Handler: user.ChangePasswordHandler(serverCtx),
 				},
-				{
-					// 上传通用系统图片
-					Method:  http.MethodPost,
-					Path:    "/images/upload",
-					Handler: user.UploadSysImageHandler(serverCtx),
-				},
 			}...,
 		),
 		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),

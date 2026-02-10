@@ -89,6 +89,8 @@ type (
 	UpdatePasswordResponse      = pb.UpdatePasswordResponse
 	UpdateScoreReq              = pb.UpdateScoreReq
 	UpdateScoreResp             = pb.UpdateScoreResp
+	UpdateSysImageRefCountReq   = pb.UpdateSysImageRefCountReq
+	UpdateSysImageRefCountResp  = pb.UpdateSysImageRefCountResp
 	UpdateUserInfoReq           = pb.UpdateUserInfoReq
 	UpdateUserInfoResponse      = pb.UpdateUserInfoResponse
 	UpdateUserTagReq            = pb.UpdateUserTagReq

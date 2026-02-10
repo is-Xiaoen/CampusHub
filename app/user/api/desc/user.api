@@ -302,6 +302,7 @@ type UpdateUserInfoReq {
 	Nickname       string  `form:"nickname,optional"`
 	Introduction   string  `form:"introduction,optional"`
 	Gender         string  `form:"gender,optional"`
+	AvatarId       int64   `form:"avatar_id,optional"`
 	InterestTagIds []int64 `form:"interestTagIds,optional"`
 }
 
