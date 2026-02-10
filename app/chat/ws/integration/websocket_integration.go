@@ -12,10 +12,12 @@ import (
 
 	"activity-platform/app/chat/rpc/chatservice"
 	"activity-platform/app/chat/ws/hub"
+	"activity-platform/app/chat/ws/internal/cache"
 	"activity-platform/app/chat/ws/internal/handler"
 	"activity-platform/app/chat/ws/internal/logic"
 	"activity-platform/app/chat/ws/internal/queue"
 	"activity-platform/app/chat/ws/internal/svc"
+	"activity-platform/app/user/rpc/client/userbasicservice"
 	"activity-platform/common/messaging"
 )
 
@@ -34,6 +36,7 @@ type WebSocketConfig struct {
 	RedisPass         string
 	RedisDB           int
 	ChatRpcConfig     zrpc.RpcClientConf
+	UserRpcConfig     zrpc.RpcClientConf
 	JwtSecret         string
 	MaxConnections    int
 	ReadTimeout       int
@@ -54,6 +57,7 @@ func NewWebSocketService(config WebSocketConfig) (*WebSocketService, error) {
 
 	// 创建 RPC 客户端
 	chatRpc := chatservice.NewChatService(zrpc.MustNewClient(config.ChatRpcConfig))
+	userRpc := userbasicservice.NewUserBasicService(zrpc.MustNewClient(config.UserRpcConfig))
 
 	// 创建消息中间件客户端
 	messagingConfig := messaging.Config{
@@ -82,13 +86,18 @@ func NewWebSocketService(config WebSocketConfig) (*WebSocketService, error) {
 	// 创建消息保存队列
 	saveQueue := queue.NewSaveQueue(chatRpc, 10)
 
+	// 创建用户信息缓存
+	userCache := cache.NewUserCache(redisClient)
+
 	// 创建服务上下文
 	serviceContext := &svc.ServiceContext{
 		ChatRpc:         chatRpc,
+		UserRpc:         userRpc,
 		MessagingClient: messagingClient,
 		JwtAuth:         svc.NewJwtAuth(config.JwtSecret),
 		RedisClient:     redisClient,
 		SaveQueue:       saveQueue,
+		UserCache:       userCache,
 	}
 
 	// 创建消息处理器
@@ -115,7 +124,8 @@ func (s *WebSocketService) Start(ctx context.Context) {
 
 // GetWebSocketHandler 获取 WebSocket HTTP 处理器
 func (s *WebSocketService) GetWebSocketHandler() http.HandlerFunc {
-	return handler.WebSocketHandler(s.serviceContext, s.Hub)
+	return handler.
+		WebSocketHandler(s.serviceContext, s.Hub)
 }
 
 // GetHealthHandler 获取健康检查处理器

@@ -84,6 +84,7 @@ func main() {
 			RedisPass:         c.Redis.Pass,
 			RedisDB:           0,
 			ChatRpcConfig:     c.ChatRpc,
+			UserRpcConfig:     c.UserRpc,
 			JwtSecret:         c.Auth.AccessSecret,
 			MaxConnections:    c.WebSocket.MaxConnections,
 			ReadTimeout:       c.WebSocket.ReadTimeout,
