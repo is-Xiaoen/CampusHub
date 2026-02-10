@@ -42,6 +42,7 @@ func main() {
 		ctx.ActivityModel,
 		ctx.StatusLogModel,
 		ctx.ActivityCache,
+		ctx.SyncService,
 		ctx.MsgProducer,
 	)
 	statusCron.Start()

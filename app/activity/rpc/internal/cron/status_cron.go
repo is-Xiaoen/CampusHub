@@ -10,6 +10,7 @@ import (
 	"activity-platform/app/activity/model"
 	"activity-platform/app/activity/rpc/internal/cache"
 	"activity-platform/app/activity/rpc/internal/mq"
+	"activity-platform/app/activity/rpc/internal/search"
 	"activity-platform/common/messaging"
 
 	"github.com/google/uuid"
@@ -50,7 +51,8 @@ type StatusCron struct {
 	db             *gorm.DB
 	activityModel  *model.ActivityModel
 	statusLogModel *model.ActivityStatusLogModel
-	activityCache  *cache.ActivityCache // 活动缓存（状态变更后删除缓存）
+	activityCache  *cache.ActivityCache  // 活动缓存（状态变更后删除缓存）
+	syncService    *search.SyncService  // ES 同步服务（可为 nil）
 	msgProducer    *mq.Producer         // 消息发布器（可为 nil）
 
 	intervalSeconds int           // 执行间隔（秒）
@@ -67,6 +69,7 @@ func NewStatusCron(
 	activityModel *model.ActivityModel,
 	statusLogModel *model.ActivityStatusLogModel,
 	activityCache *cache.ActivityCache,
+	syncService *search.SyncService,
 	msgProducer *mq.Producer,
 ) *StatusCron {
 	return &StatusCron{
@@ -75,6 +78,7 @@ func NewStatusCron(
 		activityModel:   activityModel,
 		statusLogModel:  statusLogModel,
 		activityCache:   activityCache,
+		syncService:     syncService,
 		msgProducer:     msgProducer,
 		intervalSeconds: defaultIntervalSeconds,
 		stopChan:        make(chan struct{}),
@@ -232,6 +236,10 @@ func (c *StatusCron) batchTransition(
 	beforeTime int64,
 	remark string,
 ) (int64, error) {
+	if err := model.ValidateTimeField(timeField); err != nil {
+		return 0, err
+	}
+
 	var totalAffected int64
 
 	for {
@@ -319,7 +327,15 @@ func (c *StatusCron) transitionOne(
 		}
 	}
 
-	// 4. 活动结束时异步处理信用事件（Ongoing→Finished）
+	// 4. 异步更新 ES 索引（状态变更后 ES 中 status 字段已过时）
+	if c.syncService != nil {
+		updatedActivity, err := c.activityModel.FindByID(ctx, act.ID)
+		if err == nil {
+			c.syncService.IndexActivityAsync(updatedActivity)
+		}
+	}
+
+	// 5. 活动结束时异步处理信用事件（Ongoing→Finished）
 	if fromStatus == model.StatusOngoing && toStatus == model.StatusFinished {
 		go c.processFinishedCreditEvents(act.ID, act.OrganizerID)
 	}
@@ -336,6 +352,11 @@ func (c *StatusCron) processFinishedCreditEvents(activityID, organizerID uint64)
 			logx.Errorf("[StatusCron] processFinishedCreditEvents panic: activityId=%d, err=%v", activityID, r)
 		}
 	}()
+
+	// MsgProducer 为 nil 时（MQ 未启用），跳过信用事件处理
+	if c.msgProducer == nil {
+		return
+	}
 
 	ctx := context.Background()
 
