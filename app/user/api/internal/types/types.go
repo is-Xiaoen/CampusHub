@@ -4,13 +4,11 @@
 package types
 
 type ApplyVerifyReq struct {
-	RealName      string `json:"real_name"`
-	SchoolName    string `json:"school_name"`
-	StudentId     string `json:"student_id"`
-	Department    string `json:"department,optional"`
-	AdmissionYear string `json:"admission_year"`
-	FrontImageUrl string `json:"front_image_url"`
-	BackImageUrl  string `json:"back_image_url"`
+	RealName      string `form:"real_name"`
+	SchoolName    string `form:"school_name"`
+	StudentId     string `form:"student_id"`
+	Department    string `form:"department"`
+	AdmissionYear string `form:"admission_year"`
 }
 
 type ApplyVerifyResp struct {
@@ -98,8 +96,28 @@ type GetForgetPasswordCodeReq struct {
 	QqEmail string `form:"qq_email"`
 }
 
+type GetInterestTagsResp struct {
+	InterestTags []InterestTag `json:"interestTags"`
+}
+
 type GetRegisterCodeReq struct {
 	QqEmail string `form:"qq_email"`
+}
+
+type GetUserHomeReq struct {
+	UserId            int64  `path:"user_id"`
+	JoinedPage        int32  `form:"joined_page,optional,default=1"`
+	JoinedPageSize    int32  `form:"joined_page_size,optional,default=10"`
+	JoinedType        string `form:"joined_type,optional"`
+	PublishedPage     int32  `form:"published_page,optional,default=1"`
+	PublishedPageSize int32  `form:"published_page_size,optional,default=10"`
+}
+
+type GetUserHomeResp struct {
+	UserInfo            UserHomeInfo         `json:"userInfo"`
+	Tags                []InterestTag        `json:"tags"`
+	JoinedActivities    UserHomeActivityList `json:"joinedActivities"`
+	PublishedActivities UserHomeActivityList `json:"publishedActivities"`
 }
 
 type GetVerifyCurrentResp struct {
@@ -187,15 +205,37 @@ type UpdateInterestResp struct {
 }
 
 type UpdateUserInfoReq struct {
-	Age            int64   `json:"age,optional" form:"age,optional"`
-	Nickname       string  `json:"nickname,optional" form:"nickname,optional"`
-	Introduction   string  `json:"introduction,optional" form:"introduction,optional"`
-	Gender         string  `json:"gender,optional" form:"gender,optional"`
-	InterestTagIds []int64 `json:"interestTagIds,optional" form:"interestTagIds,optional"`
+	Age            int64   `json:"age,optional"`
+	Nickname       string  `json:"nickname,optional"`
+	Introduction   string  `json:"introduction,optional"`
+	Gender         string  `json:"gender,optional"`
+	InterestTagIds []int64 `json:"interestTagIds,optional"`
 }
 
 type UpdateUserInfoResp struct {
 	UserInfo
+}
+
+type UserHomeActivityItem struct {
+	Id       int64  `json:"id"`
+	Name     string `json:"name"`
+	Time     string `json:"time"`
+	Status   string `json:"status"`
+	ImageUrl string `json:"imageUrl"`
+}
+
+type UserHomeActivityList struct {
+	Total int32                  `json:"total"`
+	List  []UserHomeActivityItem `json:"list"`
+}
+
+type UserHomeInfo struct {
+	UserId       int64  `json:"userId"`
+	Nickname     string `json:"nickname"`
+	AvatarUrl    string `json:"avatarUrl"`
+	Introduction string `json:"introduction"`
+	Gender       int32  `json:"gender"`
+	Age          int32  `json:"age"`
 }
 
 type UserInfo struct {
@@ -210,6 +250,7 @@ type UserInfo struct {
 	Credit            int64         `json:"credit"`
 	IsStudentVerified bool          `json:"isStudentVerified"`
 	InterestTags      []InterestTag `json:"interestTags"`
+	QqEmail           string        `json:"qqEmail"`
 }
 
 type VerifyCaptchaReq struct {

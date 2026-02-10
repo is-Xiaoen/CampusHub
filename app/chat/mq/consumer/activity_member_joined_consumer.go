@@ -39,13 +39,13 @@ func (c *ActivityMemberJoinedConsumer) handleMemberJoined(msg *message.Message) 
 		return messaging.NewNonRetryableError(fmt.Errorf("解析事件失败: %w", err))
 	}
 
-	c.logger.Infof("收到用户报名事件: activity_id=%s, user_id=%s", event.ActivityID, event.UserID)
+	c.logger.Infof("收到用户报名事件: activity_id=%d, user_id=%d", event.ActivityID, event.UserID)
 
 	groupResp, err := c.chatRpc.GetGroupByActivityId(ctx, &chat.GetGroupByActivityIdReq{
 		ActivityId: event.ActivityID,
 	})
 	if err != nil {
-		c.logger.Errorf("查询群聊信息失败: %v, activity_id=%s", err, event.ActivityID)
+		c.logger.Errorf("查询群聊信息失败: %v, activity_id=%d", err, event.ActivityID)
 		return messaging.NewRetryableError(fmt.Errorf("查询群聊失败: %w", err))
 	}
 
@@ -55,12 +55,12 @@ func (c *ActivityMemberJoinedConsumer) handleMemberJoined(msg *message.Message) 
 		Role:    1,
 	})
 	if err != nil {
-		c.logger.Errorf("自动添加群成员失败: %v, group_id=%s, user_id=%s",
+		c.logger.Errorf("自动添加群成员失败: %v, group_id=%s, user_id=%d",
 			err, groupResp.Group.GroupId, event.UserID)
 		return messaging.NewRetryableError(fmt.Errorf("添加群成员失败: %w", err))
 	}
 
-	c.logger.Infof("自动添加群成员成功: group_id=%s, user_id=%s", groupResp.Group.GroupId, event.UserID)
+	c.logger.Infof("自动添加群成员成功: group_id=%s, user_id=%d", groupResp.Group.GroupId, event.UserID)
 
 	_, err = c.chatRpc.CreateNotification(ctx, &chat.CreateNotificationReq{
 		UserId:  event.UserID,

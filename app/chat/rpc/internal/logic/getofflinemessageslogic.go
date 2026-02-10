@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"strconv"
 
 	"activity-platform/app/chat/rpc/chat"
 	"activity-platform/app/chat/rpc/internal/svc"
@@ -28,7 +29,7 @@ func NewGetOfflineMessagesLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 // GetOfflineMessages 获取离线消息
 func (l *GetOfflineMessagesLogic) GetOfflineMessages(in *chat.GetOfflineMessagesReq) (*chat.GetOfflineMessagesResp, error) {
 	// 1. 参数验证
-	if in.UserId == "" {
+	if in.UserId == 0 {
 		return nil, status.Error(codes.InvalidArgument, "用户ID不能为空")
 	}
 	if in.AfterTime <= 0 {
@@ -49,7 +50,7 @@ func (l *GetOfflineMessagesLogic) GetOfflineMessages(in *chat.GetOfflineMessages
 			MessageId:  message.MessageID,
 			GroupId:    message.GroupID,
 			SenderId:   message.SenderID,
-			SenderName: message.SenderID, // 暂时使用 SenderID
+			SenderName: strconv.FormatUint(message.SenderID, 10), // 暂时使用 SenderID
 			MsgType:    int32(message.MsgType),
 			Content:    message.Content,
 			ImageUrl:   message.ImageURL,

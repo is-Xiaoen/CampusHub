@@ -7,10 +7,13 @@ import (
 	"strings"
 	"time"
 
+	"activity-platform/app/user/model"
 	captchaservicelogic "activity-platform/app/user/rpc/internal/logic/captchaservice"
+	creditservicelogic "activity-platform/app/user/rpc/internal/logic/creditservice"
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
 	"activity-platform/common/errorx"
+	"activity-platform/common/utils/email"
 	"activity-platform/common/utils/encrypt"
 	"activity-platform/common/utils/jwt"
 
@@ -59,8 +62,11 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 		return nil, errorx.New(errorx.CodeLoginFailed)
 	}
 
-	if user.Status == 0 { // 0是禁用
+	if user.Status == model.UserStatusDisabled {
 		return nil, errorx.New(errorx.CodeUserDisabled)
+	}
+	if user.Status == model.UserStatusDeleted {
+		return nil, errorx.New(errorx.CodeUserNotFound)
 	}
 
 	// 3. 生成Token
@@ -91,6 +97,18 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 	}
 
 	// 4. 获取用户详细信息 (调用 GetUserInfoLogic 复用逻辑)
+	// 4.1 获取信誉分 (独立调用，确保即使 GetUserInfo 失败也能尝试获取，或者补充 GetUserInfo 缺失的字段)
+	var creditScore int64
+	getCreditInfoLogic := creditservicelogic.NewGetCreditInfoLogic(l.ctx, l.svcCtx)
+	creditInfo, errCredit := getCreditInfoLogic.GetCreditInfo(&pb.GetCreditInfoReq{
+		UserId: int64(user.UserID),
+	})
+	if errCredit == nil {
+		creditScore = creditInfo.Score
+	} else {
+		l.Logger.Errorf("Get credit info failed: %v, userId: %d", errCredit, user.UserID)
+	}
+
 	getUserInfoLogic := NewGetUserInfoLogic(l.ctx, l.svcCtx)
 	userInfoResp, err := getUserInfoLogic.GetUserInfo(&pb.GetUserInfoReq{
 		UserId: int64(user.UserID),
@@ -115,8 +133,15 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 				Introduction: user.Introduction,
 				Gender:       genderStr,
 				Age:          strconv.FormatInt(user.Age, 10),
+				QqEmail:      email.DesensitizeEmail(user.QQEmail),
+				Credit:       creditScore,
 			},
 		}
+	} else {
+		// 成功获取详情后，也需要对邮箱脱敏
+		userInfoResp.UserInfo.QqEmail = email.DesensitizeEmail(userInfoResp.UserInfo.QqEmail)
+		// 填充 Credit 字段
+		userInfoResp.UserInfo.Credit = creditScore
 	}
 
 	return &pb.LoginResponse{

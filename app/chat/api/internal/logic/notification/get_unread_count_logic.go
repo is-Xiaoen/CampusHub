@@ -5,14 +5,14 @@ package notification
 
 import (
 	"context"
-	"fmt"
-	"strconv"
 
 	"activity-platform/app/chat/api/internal/svc"
 	"activity-platform/app/chat/api/internal/types"
 	"activity-platform/app/chat/rpc/chat"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc/status"
 )
 
 type GetUnreadCountLogic struct {
@@ -30,27 +30,24 @@ func NewGetUnreadCountLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Ge
 	}
 }
 
-func (l *GetUnreadCountLogic) GetUnreadCount(req *types.GetUnreadCountReq) (resp *types.GetUnreadCountResp, err error) {
+func (l *GetUnreadCountLogic) GetUnreadCount(req *types.GetUnreadCountReq) (resp *types.GetUnreadCountData, err error) {
 	// 调用 RPC 服务获取未读数量
 	rpcResp, err := l.svcCtx.ChatRpc.GetUnreadCount(l.ctx, &chat.GetUnreadCountReq{
-		UserId: strconv.FormatInt(req.UserId, 10),
+		UserId: uint64(req.UserId),
 	})
 	if err != nil {
 		l.Errorf("调用 RPC 获取未读数量失败: %v", err)
-		return &types.GetUnreadCountResp{
-			Code:    500,
-			Message: fmt.Sprintf("获取未读数量失败: %v", err),
-			Data: types.GetUnreadCountData{
-				Count: 0,
-			},
-		}, nil
+		// 处理 gRPC 错误
+		if st, ok := status.FromError(err); ok {
+			switch st.Code() {
+			default:
+				return nil, errorx.NewWithMessage(errorx.CodeRPCError, "获取未读数量失败")
+			}
+		}
+		return nil, errorx.NewWithMessage(errorx.CodeInternalError, "获取未读数量失败")
 	}
 
-	return &types.GetUnreadCountResp{
-		Code:    0,
-		Message: "success",
-		Data: types.GetUnreadCountData{
-			Count: rpcResp.UnreadCount,
-		},
+	return &types.GetUnreadCountData{
+		Count: rpcResp.UnreadCount,
 	}, nil
 }

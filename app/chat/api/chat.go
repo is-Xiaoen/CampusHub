@@ -1,5 +1,5 @@
 // ============================================================================
-// 聊天服务 API 入口
+// 聊天服务 API + WebSocket 合并版本
 // ============================================================================
 //
 // 负责人：马华恩（E同学）
@@ -9,8 +9,7 @@
 //   - 聊天室列表
 //   - 消息历史查询
 //   - 消息发送（HTTP 方式）
-//
-//   注意：WebSocket 连接在 chat/ws 目录单独实现
+//   - WebSocket 实时连接（集成在同一端口）
 //
 // 启动命令：
 //   go run chat.go -f etc/chat-api.yaml
@@ -24,15 +23,25 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
+	// API 相关
 	"activity-platform/app/chat/api/internal/config"
 	"activity-platform/app/chat/api/internal/handler"
 	"activity-platform/app/chat/api/internal/svc"
 	"activity-platform/common/response"
 
+	// WebSocket 相关
+	wsIntegration "activity-platform/app/chat/ws/integration"
+
 	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest"
 )
 
@@ -63,7 +72,91 @@ func main() {
 	// 注册所有 HTTP 路由处理器
 	handler.RegisterHandlers(server, ctx)
 
+	// ============================================================================
+	// WebSocket 功能集成
+	// ============================================================================
+	var wsService *wsIntegration.WebSocketService
+
+	if c.WebSocket.Enabled {
+		// 创建 WebSocket 配置
+		wsConfig := wsIntegration.WebSocketConfig{
+			RedisHost:         c.Redis.Host,
+			RedisPass:         c.Redis.Pass,
+			RedisDB:           0,
+			ChatRpcConfig:     c.ChatRpc,
+			JwtSecret:         c.Auth.AccessSecret,
+			MaxConnections:    c.WebSocket.MaxConnections,
+			ReadTimeout:       c.WebSocket.ReadTimeout,
+			WriteTimeout:      c.WebSocket.WriteTimeout,
+			HeartbeatInterval: c.WebSocket.HeartbeatInterval,
+		}
+
+		// 创建 WebSocket 服务
+		var err error
+		wsService, err = wsIntegration.NewWebSocketService(wsConfig)
+		if err != nil {
+			logx.Errorf("创建 WebSocket 服务失败: %v", err)
+			panic(err)
+		}
+
+		// 启动 WebSocket Hub
+		hubCtx, hubCancel := context.WithCancel(context.Background())
+		defer hubCancel()
+		wsService.Start(hubCtx)
+
+		// 注册 WebSocket 路由
+		server.AddRoute(rest.Route{
+			Method:  http.MethodGet,
+			Path:    "/ws",
+			Handler: wsService.GetWebSocketHandler(),
+		})
+
+		// WebSocket 健康检查
+		server.AddRoute(rest.Route{
+			Method:  http.MethodGet,
+			Path:    "/ws/health",
+			Handler: wsService.GetHealthHandler(),
+		})
+
+		// 在线用户统计
+		server.AddRoute(rest.Route{
+			Method:  http.MethodGet,
+			Path:    "/ws/stats",
+			Handler: wsService.GetStatsHandler(),
+		})
+
+		logx.Infof("WebSocket 路由: ws://%s:%d/ws", c.Host, c.Port)
+	} else {
+		logx.Info("WebSocket 功能已禁用")
+	}
+
+	// ============================================================================
 	// 启动服务器
+	// ============================================================================
 	fmt.Printf("正在启动 chat-api 服务，监听地址：%s:%d...\n", c.Host, c.Port)
+	fmt.Printf("API 路由: http://%s:%d/api/chat/*\n", c.Host, c.Port)
+	if c.WebSocket.Enabled {
+		fmt.Printf("WebSocket: ws://%s:%d/ws\n", c.Host, c.Port)
+	}
+
+	// 优雅关闭
+	go func() {
+		quit := make(chan os.Signal, 1)
+		signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+		<-quit
+
+		logx.Info("正在关闭服务器...")
+
+		// 关闭 WebSocket 服务
+		if wsService != nil {
+			if err := wsService.Close(); err != nil {
+				logx.Errorf("关闭 WebSocket 服务失败: %v", err)
+			}
+		}
+
+		logx.Info("服务器已停止")
+		os.Exit(0)
+	}()
+
 	server.Start()
 }

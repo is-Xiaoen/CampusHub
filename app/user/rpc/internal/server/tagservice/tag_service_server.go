@@ -43,3 +43,9 @@ func (s *TagServiceServer) UpdateUserTag(ctx context.Context, in *pb.UpdateUserT
 	l := tagservicelogic.NewUpdateUserTagLogic(ctx, s.svcCtx)
 	return l.UpdateUserTag(in)
 }
+
+// 获取所有的兴趣标签
+func (s *TagServiceServer) GetAllInterestTags(ctx context.Context, in *pb.GetAllInterestTagsReq) (*pb.GetAllInterestTagsResp, error) {
+	l := tagservicelogic.NewGetAllInterestTagsLogic(ctx, s.svcCtx)
+	return l.GetAllInterestTags(in)
+}

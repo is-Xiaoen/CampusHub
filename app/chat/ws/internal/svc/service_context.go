@@ -50,6 +50,13 @@ func NewServiceContext(c config.Config) *ServiceContext {
 			MaxInterval:     10 * time.Second,
 			Multiplier:      2.0,
 		},
+		// 配置订阅者选项以避免 XPENDING 语法错误
+		// 如果 Redis 版本 < 6.2.0，可以禁用 ClaimInterval 来避免 XPENDING 调用
+		SubscriberConfig: messaging.SubscriberConfig{
+			ClaimInterval:      0,                // 设置为 0 禁用自动声明（避免 XPENDING 错误）
+			NackResendInterval: time.Second * 10, // 保持 NACK 重发
+			MaxIdleTime:        time.Minute * 5,  // 保持空闲时间检查
+		},
 	}
 
 	messagingClient, err := messaging.NewClient(messagingConfig)

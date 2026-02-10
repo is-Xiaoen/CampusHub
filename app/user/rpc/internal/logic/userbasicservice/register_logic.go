@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"activity-platform/app/user/model"
+	creditservicelogic "activity-platform/app/user/rpc/internal/logic/creditservice"
 	qqemaillogic "activity-platform/app/user/rpc/internal/logic/qqemail"
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
@@ -45,6 +46,11 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 		return nil, err
 	}
 
+	// 校验密码格式
+	if !encrypt.ValidatePassword(in.Password) {
+		return nil, errorx.NewWithMessage(errorx.CodePasswordInvalid, "密码长度必须为8-20个字符，且包含至少3种字符（大写字母、小写字母、数字、特殊字符）")
+	}
+
 	// 2. 检查邮箱是否已注册
 	exists, err := l.svcCtx.UserModel.ExistsByQQEmail(l.ctx, in.QqEmail)
 	if err != nil {
@@ -71,6 +77,28 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 	if err := l.svcCtx.UserModel.Create(l.ctx, newUser); err != nil {
 		l.Logger.Errorf("Create user failed: %v", err)
 		return nil, errorx.New(errorx.CodeUserRegisterFailed)
+	}
+
+	// 初始化信誉分
+	initCreditLogic := creditservicelogic.NewInitCreditLogic(l.ctx, l.svcCtx)
+	_, err = initCreditLogic.InitCredit(&pb.InitCreditReq{
+		UserId: int64(newUser.UserID),
+	})
+	if err != nil {
+		l.Logger.Errorf("Init credit score failed: %v, userId: %d", err, newUser.UserID)
+		// 即使失败也不中断注册流程
+	}
+
+	// 获取信誉分
+	var creditScore int64
+	getCreditInfoLogic := creditservicelogic.NewGetCreditInfoLogic(l.ctx, l.svcCtx)
+	creditInfo, err := getCreditInfoLogic.GetCreditInfo(&pb.GetCreditInfoReq{
+		UserId: int64(newUser.UserID),
+	})
+	if err == nil {
+		creditScore = creditInfo.Score
+	} else {
+		l.Logger.Errorf("Get credit info failed: %v, userId: %d", err, newUser.UserID)
 	}
 
 	// 4. 生成Token (自动登录)
@@ -115,6 +143,8 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 			Age:           strconv.FormatInt(newUser.Age, 10),
 			ActivitiesNum: 0,
 			InitiateNum:   0,
+			Credit:        creditScore,
+			QqEmail:       newUser.QQEmail,
 		},
 	}, nil
 }

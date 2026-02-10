@@ -33,7 +33,7 @@ func (l *RemoveGroupMemberLogic) RemoveGroupMember(in *chat.RemoveGroupMemberReq
 	if in.GroupId == "" {
 		return nil, status.Error(codes.InvalidArgument, "群聊ID不能为空")
 	}
-	if in.UserId == "" {
+	if in.UserId == 0 {
 		return nil, status.Error(codes.InvalidArgument, "用户ID不能为空")
 	}
 

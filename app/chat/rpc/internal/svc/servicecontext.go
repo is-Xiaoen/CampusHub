@@ -61,16 +61,27 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		log.Fatalf("消息中间件初始化失败: %v", err)
 	}
 
-	// 初始化 User RPC 客户端（信用分 + 认证 共用同一个连接）
-	userRpcConn := zrpc.MustNewClient(c.UserRpc).Conn()
+	// 初始化 User RPC 客户端（弱依赖，失败不影响服务启动）
+	var userCreditRpc pb.CreditServiceClient
+	var userVerifyRpc pb.VerifyServiceClient
+
+	userRpcClient, err := zrpc.NewClient(c.UserRpc)
+	if err != nil {
+		log.Printf("[WARN] User RPC 客户端初始化失败: %v (服务将继续启动，但 User 域消费者将不可用)", err)
+	} else {
+		userRpcConn := userRpcClient.Conn()
+		userCreditRpc = pb.NewCreditServiceClient(userRpcConn)
+		userVerifyRpc = pb.NewVerifyServiceClient(userRpcConn)
+		log.Printf("[INFO] User RPC 客户端初始化成功")
+	}
 
 	return &ServiceContext{
 		Config:            c,
 		DB:                db,
 		RedisClient:       redisClient,
 		MsgClient:         msgClient,
-		UserCreditRpc:     pb.NewCreditServiceClient(userRpcConn),
-		UserVerifyRpc:     pb.NewVerifyServiceClient(userRpcConn),
+		UserCreditRpc:     userCreditRpc,
+		UserVerifyRpc:     userVerifyRpc,
 		GroupModel:        model.NewGroupModel(db),
 		GroupMemberModel:  model.NewGroupMemberModel(db),
 		MessageModel:      model.NewMessageModel(db),
@@ -131,6 +142,13 @@ func initMessaging(c config.Config) (*messaging.Client, error) {
 		DLQConfig: messaging.DLQConfig{
 			Enabled:     true,
 			TopicSuffix: ".dlq",
+		},
+		// 配置订阅者选项以避免 XPENDING 语法错误
+		// 如果 Redis 版本 < 6.2.0，可以禁用 ClaimInterval 来避免 XPENDING 调用
+		SubscriberConfig: messaging.SubscriberConfig{
+			ClaimInterval:      0,                // 设置为 0 禁用自动声明（避免 XPENDING 错误）
+			NackResendInterval: time.Second * 10, // 保持 NACK 重发
+			MaxIdleTime:        time.Minute * 5,  // 保持空闲时间检查
 		},
 	}
 

@@ -14,91 +14,107 @@ import (
 )
 
 type (
-	ApplyStudentVerifyReq    = pb.ApplyStudentVerifyReq
-	ApplyStudentVerifyResp   = pb.ApplyStudentVerifyResp
-	CanParticipateReq        = pb.CanParticipateReq
-	CanParticipateResp       = pb.CanParticipateResp
-	CanPublishReq            = pb.CanPublishReq
-	CanPublishResp           = pb.CanPublishResp
-	CancelStudentVerifyReq   = pb.CancelStudentVerifyReq
-	CancelStudentVerifyResp  = pb.CancelStudentVerifyResp
-	CaptchaArgs              = pb.CaptchaArgs
-	CheckCaptchaReq          = pb.CheckCaptchaReq
-	CheckCaptchaResponse     = pb.CheckCaptchaResponse
-	CheckQQEmailReq          = pb.CheckQQEmailReq
-	CheckQQEmailResponse     = pb.CheckQQEmailResponse
-	ConfirmStudentVerifyReq  = pb.ConfirmStudentVerifyReq
-	ConfirmStudentVerifyResp = pb.ConfirmStudentVerifyResp
-	CreditLogItem            = pb.CreditLogItem
-	DeleteFileReq            = pb.DeleteFileReq
-	DeleteFileResponse       = pb.DeleteFileResponse
-	DeleteUserReq            = pb.DeleteUserReq
-	DeleteUserResponse       = pb.DeleteUserResponse
-	ForgetPasswordReq        = pb.ForgetPasswordReq
-	ForgetPasswordResponse   = pb.ForgetPasswordResponse
-	GetAllTagsReq            = pb.GetAllTagsReq
-	GetAllTagsResp           = pb.GetAllTagsResp
-	GetCaptchaConfigReq      = pb.GetCaptchaConfigReq
-	GetCaptchaConfigResponse = pb.GetCaptchaConfigResponse
-	GetCreditInfoReq         = pb.GetCreditInfoReq
-	GetCreditInfoResp        = pb.GetCreditInfoResp
-	GetCreditLogsReq         = pb.GetCreditLogsReq
-	GetCreditLogsResp        = pb.GetCreditLogsResp
-	GetGroupUserReq          = pb.GetGroupUserReq
-	GetGroupUserResponse     = pb.GetGroupUserResponse
-	GetTagsByIdsReq          = pb.GetTagsByIdsReq
-	GetTagsByIdsResp         = pb.GetTagsByIdsResp
-	GetUserInfoReq           = pb.GetUserInfoReq
-	GetUserInfoResponse      = pb.GetUserInfoResponse
-	GetUserTagsReq           = pb.GetUserTagsReq
-	GetUserTagsResponse      = pb.GetUserTagsResponse
-	GetVerifyCurrentReq      = pb.GetVerifyCurrentReq
-	GetVerifyCurrentResp     = pb.GetVerifyCurrentResp
-	GetVerifyInfoReq         = pb.GetVerifyInfoReq
-	GetVerifyInfoResp        = pb.GetVerifyInfoResp
-	GroupUserInfo            = pb.GroupUserInfo
-	InitCreditReq            = pb.InitCreditReq
-	InitCreditResp           = pb.InitCreditResp
-	InterestTag              = pb.InterestTag
-	IsVerifiedReq            = pb.IsVerifiedReq
-	IsVerifiedResp           = pb.IsVerifiedResp
-	LoginReq                 = pb.LoginReq
-	LoginResponse            = pb.LoginResponse
-	LoginUserInfo            = pb.LoginUserInfo
-	LogoutReq                = pb.LogoutReq
-	LogoutResponse           = pb.LogoutResponse
-	ProcessOcrVerifyReq      = pb.ProcessOcrVerifyReq
-	ProcessOcrVerifyResp     = pb.ProcessOcrVerifyResp
-	RefreshReq               = pb.RefreshReq
-	RefreshResponse          = pb.RefreshResponse
-	RegisterReq              = pb.RegisterReq
-	RegisterResponse         = pb.RegisterResponse
-	SendQQEmailReq           = pb.SendQQEmailReq
-	SendQQEmailResponse      = pb.SendQQEmailResponse
-	TagBasicInfo             = pb.TagBasicInfo
-	TagInfo                  = pb.TagInfo
-	TagUsageCountReq         = pb.TagUsageCountReq
-	TagUsageCountResp        = pb.TagUsageCountResp
-	UpdatePasswordReq        = pb.UpdatePasswordReq
-	UpdatePasswordResponse   = pb.UpdatePasswordResponse
-	UpdateScoreReq           = pb.UpdateScoreReq
-	UpdateScoreResp          = pb.UpdateScoreResp
-	UpdateUserInfoReq        = pb.UpdateUserInfoReq
-	UpdateUserInfoResponse   = pb.UpdateUserInfoResponse
-	UpdateUserTagReq         = pb.UpdateUserTagReq
-	UpdateUserTagResponse    = pb.UpdateUserTagResponse
-	UpdateVerifyStatusReq    = pb.UpdateVerifyStatusReq
-	UpdateVerifyStatusResp   = pb.UpdateVerifyStatusResp
-	UploadFileReq            = pb.UploadFileReq
-	UploadFileResponse       = pb.UploadFileResponse
-	UserInfo                 = pb.UserInfo
-	UserTag                  = pb.UserTag
-	VerifyModifiedData       = pb.VerifyModifiedData
-	VerifyOcrData            = pb.VerifyOcrData
+	ApplyStudentVerifyReq       = pb.ApplyStudentVerifyReq
+	ApplyStudentVerifyResp      = pb.ApplyStudentVerifyResp
+	CanParticipateReq           = pb.CanParticipateReq
+	CanParticipateResp          = pb.CanParticipateResp
+	CanPublishReq               = pb.CanPublishReq
+	CanPublishResp              = pb.CanPublishResp
+	CancelStudentVerifyReq      = pb.CancelStudentVerifyReq
+	CancelStudentVerifyResp     = pb.CancelStudentVerifyResp
+	CaptchaArgs                 = pb.CaptchaArgs
+	CheckCaptchaReq             = pb.CheckCaptchaReq
+	CheckCaptchaResponse        = pb.CheckCaptchaResponse
+	CheckQQEmailReq             = pb.CheckQQEmailReq
+	CheckQQEmailResponse        = pb.CheckQQEmailResponse
+	CheckUserExistsReq          = pb.CheckUserExistsReq
+	CheckUserExistsResponse     = pb.CheckUserExistsResponse
+	ConfirmStudentVerifyReq     = pb.ConfirmStudentVerifyReq
+	ConfirmStudentVerifyResp    = pb.ConfirmStudentVerifyResp
+	CreditLogItem               = pb.CreditLogItem
+	DeleteUserReq               = pb.DeleteUserReq
+	DeleteUserResponse          = pb.DeleteUserResponse
+	ForgetPasswordReq           = pb.ForgetPasswordReq
+	ForgetPasswordResponse      = pb.ForgetPasswordResponse
+	GetAllInterestTagsReq       = pb.GetAllInterestTagsReq
+	GetAllInterestTagsResp      = pb.GetAllInterestTagsResp
+	GetAllTagsReq               = pb.GetAllTagsReq
+	GetAllTagsResp              = pb.GetAllTagsResp
+	GetCaptchaConfigReq         = pb.GetCaptchaConfigReq
+	GetCaptchaConfigResponse    = pb.GetCaptchaConfigResponse
+	GetCreditInfoReq            = pb.GetCreditInfoReq
+	GetCreditInfoResp           = pb.GetCreditInfoResp
+	GetCreditLogsReq            = pb.GetCreditLogsReq
+	GetCreditLogsResp           = pb.GetCreditLogsResp
+	GetGroupUserReq             = pb.GetGroupUserReq
+	GetGroupUserResponse        = pb.GetGroupUserResponse
+	GetTagsByIdsReq             = pb.GetTagsByIdsReq
+	GetTagsByIdsResp            = pb.GetTagsByIdsResp
+	GetUserHomeReq              = pb.GetUserHomeReq
+	GetUserHomeResp             = pb.GetUserHomeResp
+	GetUserInfoReq              = pb.GetUserInfoReq
+	GetUserInfoResponse         = pb.GetUserInfoResponse
+	GetUserTagsReq              = pb.GetUserTagsReq
+	GetUserTagsResponse         = pb.GetUserTagsResponse
+	GetVerifyCurrentReq         = pb.GetVerifyCurrentReq
+	GetVerifyCurrentResp        = pb.GetVerifyCurrentResp
+	GetVerifyInfoReq            = pb.GetVerifyInfoReq
+	GetVerifyInfoResp           = pb.GetVerifyInfoResp
+	GroupUserInfo               = pb.GroupUserInfo
+	InitCreditReq               = pb.InitCreditReq
+	InitCreditResp              = pb.InitCreditResp
+	InterestTag                 = pb.InterestTag
+	IsVerifiedReq               = pb.IsVerifiedReq
+	IsVerifiedResp              = pb.IsVerifiedResp
+	LoginReq                    = pb.LoginReq
+	LoginResponse               = pb.LoginResponse
+	LoginUserInfo               = pb.LoginUserInfo
+	LogoutReq                   = pb.LogoutReq
+	LogoutResponse              = pb.LogoutResponse
+	ProcessOcrVerifyReq         = pb.ProcessOcrVerifyReq
+	ProcessOcrVerifyResp        = pb.ProcessOcrVerifyResp
+	RefreshReq                  = pb.RefreshReq
+	RefreshResponse             = pb.RefreshResponse
+	RegisterReq                 = pb.RegisterReq
+	RegisterResponse            = pb.RegisterResponse
+	SendQQEmailReq              = pb.SendQQEmailReq
+	SendQQEmailResponse         = pb.SendQQEmailResponse
+	TagBasicInfo                = pb.TagBasicInfo
+	TagInfo                     = pb.TagInfo
+	TagUsageCountReq            = pb.TagUsageCountReq
+	TagUsageCountResp           = pb.TagUsageCountResp
+	UpdatePasswordReq           = pb.UpdatePasswordReq
+	UpdatePasswordResponse      = pb.UpdatePasswordResponse
+	UpdateScoreReq              = pb.UpdateScoreReq
+	UpdateScoreResp             = pb.UpdateScoreResp
+	UpdateUserInfoReq           = pb.UpdateUserInfoReq
+	UpdateUserInfoResponse      = pb.UpdateUserInfoResponse
+	UpdateUserTagReq            = pb.UpdateUserTagReq
+	UpdateUserTagResponse       = pb.UpdateUserTagResponse
+	UpdateVerifyStatusReq       = pb.UpdateVerifyStatusReq
+	UpdateVerifyStatusResp      = pb.UpdateVerifyStatusResp
+	UploadActivityCoverReq      = pb.UploadActivityCoverReq
+	UploadActivityCoverResp     = pb.UploadActivityCoverResp
+	UploadAvatarReq             = pb.UploadAvatarReq
+	UploadAvatarResp            = pb.UploadAvatarResp
+	UploadStudentCardImagesReq  = pb.UploadStudentCardImagesReq
+	UploadStudentCardImagesResp = pb.UploadStudentCardImagesResp
+	UserHomeActivityItem        = pb.UserHomeActivityItem
+	UserHomeActivityList        = pb.UserHomeActivityList
+	UserHomeInfo                = pb.UserHomeInfo
+	UserHomeTag                 = pb.UserHomeTag
+	UserInfo                    = pb.UserInfo
+	UserTag                     = pb.UserTag
+	VerifyModifiedData          = pb.VerifyModifiedData
+	VerifyOcrData               = pb.VerifyOcrData
 
 	UploadToQiNiu interface {
-		UploadFile(ctx context.Context, in *UploadFileReq, opts ...grpc.CallOption) (*UploadFileResponse, error)
-		DeleteFile(ctx context.Context, in *DeleteFileReq, opts ...grpc.CallOption) (*DeleteFileResponse, error)
+		// 直接上传用户头像（删除旧图并更新DB）
+		UploadAvatar(ctx context.Context, in *UploadAvatarReq, opts ...grpc.CallOption) (*UploadAvatarResp, error)
+		// 上传学生认证图片（同时处理旧图删除和DB更新）
+		UploadStudentCardImages(ctx context.Context, in *UploadStudentCardImagesReq, opts ...grpc.CallOption) (*UploadStudentCardImagesResp, error)
+		// 上传活动封面
+		UploadActivityCover(ctx context.Context, in *UploadActivityCoverReq, opts ...grpc.CallOption) (*UploadActivityCoverResp, error)
 	}
 
 	defaultUploadToQiNiu struct {
@@ -112,12 +128,20 @@ func NewUploadToQiNiu(cli zrpc.Client) UploadToQiNiu {
 	}
 }
 
-func (m *defaultUploadToQiNiu) UploadFile(ctx context.Context, in *UploadFileReq, opts ...grpc.CallOption) (*UploadFileResponse, error) {
+// 直接上传用户头像（删除旧图并更新DB）
+func (m *defaultUploadToQiNiu) UploadAvatar(ctx context.Context, in *UploadAvatarReq, opts ...grpc.CallOption) (*UploadAvatarResp, error) {
 	client := pb.NewUploadToQiNiuClient(m.cli.Conn())
-	return client.UploadFile(ctx, in, opts...)
+	return client.UploadAvatar(ctx, in, opts...)
 }
 
-func (m *defaultUploadToQiNiu) DeleteFile(ctx context.Context, in *DeleteFileReq, opts ...grpc.CallOption) (*DeleteFileResponse, error) {
+// 上传学生认证图片（同时处理旧图删除和DB更新）
+func (m *defaultUploadToQiNiu) UploadStudentCardImages(ctx context.Context, in *UploadStudentCardImagesReq, opts ...grpc.CallOption) (*UploadStudentCardImagesResp, error) {
 	client := pb.NewUploadToQiNiuClient(m.cli.Conn())
-	return client.DeleteFile(ctx, in, opts...)
+	return client.UploadStudentCardImages(ctx, in, opts...)
+}
+
+// 上传活动封面
+func (m *defaultUploadToQiNiu) UploadActivityCover(ctx context.Context, in *UploadActivityCoverReq, opts ...grpc.CallOption) (*UploadActivityCoverResp, error) {
+	client := pb.NewUploadToQiNiuClient(m.cli.Conn())
+	return client.UploadActivityCover(ctx, in, opts...)
 }

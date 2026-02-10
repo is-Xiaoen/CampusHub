@@ -67,6 +67,7 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 			Credit:            rpcResp.UserInfo.Credit,
 			IsStudentVerified: rpcResp.UserInfo.IsStudentVerified,
 			InterestTags:      interestTags,
+			QqEmail:           rpcResp.UserInfo.QqEmail,
 		},
 	}, nil
 }

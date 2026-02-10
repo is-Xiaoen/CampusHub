@@ -24,9 +24,9 @@ const (
 // CreateGroupReq 创建群聊请求
 type CreateGroupReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ActivityId    string                 `protobuf:"bytes,1,opt,name=activity_id,json=activityId,proto3" json:"activity_id,omitempty"`  // 关联的活动ID
+	ActivityId    uint64                 `protobuf:"varint,1,opt,name=activity_id,json=activityId,proto3" json:"activity_id,omitempty"` // 关联的活动ID
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`                                // 群聊名称
-	OwnerId       string                 `protobuf:"bytes,3,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`           // 群主用户ID
+	OwnerId       uint64                 `protobuf:"varint,3,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`          // 群主用户ID
 	MaxMembers    int32                  `protobuf:"varint,4,opt,name=max_members,json=maxMembers,proto3" json:"max_members,omitempty"` // 最大成员数，默认500
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -62,11 +62,11 @@ func (*CreateGroupReq) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *CreateGroupReq) GetActivityId() string {
+func (x *CreateGroupReq) GetActivityId() uint64 {
 	if x != nil {
 		return x.ActivityId
 	}
-	return ""
+	return 0
 }
 
 func (x *CreateGroupReq) GetName() string {
@@ -76,11 +76,11 @@ func (x *CreateGroupReq) GetName() string {
 	return ""
 }
 
-func (x *CreateGroupReq) GetOwnerId() string {
+func (x *CreateGroupReq) GetOwnerId() uint64 {
 	if x != nil {
 		return x.OwnerId
 	}
-	return ""
+	return 0
 }
 
 func (x *CreateGroupReq) GetMaxMembers() int32 {
@@ -139,7 +139,7 @@ func (x *CreateGroupResp) GetGroupId() string {
 type AddGroupMemberReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GroupId       string                 `protobuf:"bytes,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"` // 群聊ID
-	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`    // 用户ID
+	UserId        uint64                 `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`   // 用户ID
 	Role          int32                  `protobuf:"varint,3,opt,name=role,proto3" json:"role,omitempty"`                     // 角色: 1-普通成员 2-群主
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -182,11 +182,11 @@ func (x *AddGroupMemberReq) GetGroupId() string {
 	return ""
 }
 
-func (x *AddGroupMemberReq) GetUserId() string {
+func (x *AddGroupMemberReq) GetUserId() uint64 {
 	if x != nil {
 		return x.UserId
 	}
-	return ""
+	return 0
 }
 
 func (x *AddGroupMemberReq) GetRole() int32 {
@@ -244,9 +244,9 @@ func (x *AddGroupMemberResp) GetSuccess() bool {
 // RemoveGroupMemberReq 移除群成员请求
 type RemoveGroupMemberReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	GroupId       string                 `protobuf:"bytes,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`          // 群聊ID
-	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`             // 要移除的用户ID
-	OperatorId    string                 `protobuf:"bytes,3,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"` // 操作者ID
+	GroupId       string                 `protobuf:"bytes,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`           // 群聊ID
+	UserId        uint64                 `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`             // 要移除的用户ID
+	OperatorId    uint64                 `protobuf:"varint,3,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"` // 操作者ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -288,18 +288,18 @@ func (x *RemoveGroupMemberReq) GetGroupId() string {
 	return ""
 }
 
-func (x *RemoveGroupMemberReq) GetUserId() string {
+func (x *RemoveGroupMemberReq) GetUserId() uint64 {
 	if x != nil {
 		return x.UserId
 	}
-	return ""
+	return 0
 }
 
-func (x *RemoveGroupMemberReq) GetOperatorId() string {
+func (x *RemoveGroupMemberReq) GetOperatorId() uint64 {
 	if x != nil {
 		return x.OperatorId
 	}
-	return ""
+	return 0
 }
 
 // RemoveGroupMemberResp 移除群成员响应
@@ -350,8 +350,8 @@ func (x *RemoveGroupMemberResp) GetSuccess() bool {
 // DisbandGroupReq 解散群聊请求
 type DisbandGroupReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	GroupId       string                 `protobuf:"bytes,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`          // 群聊ID
-	OperatorId    string                 `protobuf:"bytes,2,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"` // 操作者ID（必须是群主）
+	GroupId       string                 `protobuf:"bytes,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`           // 群聊ID
+	OperatorId    uint64                 `protobuf:"varint,2,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"` // 操作者ID（必须是群主）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -393,11 +393,11 @@ func (x *DisbandGroupReq) GetGroupId() string {
 	return ""
 }
 
-func (x *DisbandGroupReq) GetOperatorId() string {
+func (x *DisbandGroupReq) GetOperatorId() uint64 {
 	if x != nil {
 		return x.OperatorId
 	}
-	return ""
+	return 0
 }
 
 // DisbandGroupResp 解散群聊响应
@@ -494,9 +494,9 @@ func (x *GetGroupInfoReq) GetGroupId() string {
 type GroupInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GroupId       string                 `protobuf:"bytes,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`              // 群聊ID
-	ActivityId    string                 `protobuf:"bytes,2,opt,name=activity_id,json=activityId,proto3" json:"activity_id,omitempty"`     // 关联活动ID
+	ActivityId    uint64                 `protobuf:"varint,2,opt,name=activity_id,json=activityId,proto3" json:"activity_id,omitempty"`    // 关联活动ID
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`                                   // 群聊名称
-	OwnerId       string                 `protobuf:"bytes,4,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`              // 群主用户ID
+	OwnerId       uint64                 `protobuf:"varint,4,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`             // 群主用户ID
 	Status        int32                  `protobuf:"varint,5,opt,name=status,proto3" json:"status,omitempty"`                              // 状态: 1-正常 2-已解散
 	MaxMembers    int32                  `protobuf:"varint,6,opt,name=max_members,json=maxMembers,proto3" json:"max_members,omitempty"`    // 最大成员数
 	MemberCount   int32                  `protobuf:"varint,7,opt,name=member_count,json=memberCount,proto3" json:"member_count,omitempty"` // 当前成员数
@@ -542,11 +542,11 @@ func (x *GroupInfo) GetGroupId() string {
 	return ""
 }
 
-func (x *GroupInfo) GetActivityId() string {
+func (x *GroupInfo) GetActivityId() uint64 {
 	if x != nil {
 		return x.ActivityId
 	}
-	return ""
+	return 0
 }
 
 func (x *GroupInfo) GetName() string {
@@ -556,11 +556,11 @@ func (x *GroupInfo) GetName() string {
 	return ""
 }
 
-func (x *GroupInfo) GetOwnerId() string {
+func (x *GroupInfo) GetOwnerId() uint64 {
 	if x != nil {
 		return x.OwnerId
 	}
-	return ""
+	return 0
 }
 
 func (x *GroupInfo) GetStatus() int32 {
@@ -700,7 +700,7 @@ func (x *GetGroupMembersReq) GetPageSize() int32 {
 // GroupMember 群成员信息
 type GroupMember struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`        // 用户ID
+	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`       // 用户ID
 	GroupId       string                 `protobuf:"bytes,2,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`     // 群聊ID
 	Role          int32                  `protobuf:"varint,3,opt,name=role,proto3" json:"role,omitempty"`                         // 角色: 1-普通成员 2-群主
 	JoinedAt      int64                  `protobuf:"varint,4,opt,name=joined_at,json=joinedAt,proto3" json:"joined_at,omitempty"` // 加入时间（时间戳）
@@ -738,11 +738,11 @@ func (*GroupMember) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{12}
 }
 
-func (x *GroupMember) GetUserId() string {
+func (x *GroupMember) GetUserId() uint64 {
 	if x != nil {
 		return x.UserId
 	}
-	return ""
+	return 0
 }
 
 func (x *GroupMember) GetGroupId() string {
@@ -822,7 +822,7 @@ func (x *GetGroupMembersResp) GetTotal() int32 {
 // GetUserGroupsReq 获取用户群列表请求
 type GetUserGroupsReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`        // 用户ID
+	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`       // 用户ID
 	Page          int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`                         // 页码，从1开始
 	PageSize      int32                  `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"` // 每页数量
 	unknownFields protoimpl.UnknownFields
@@ -859,11 +859,11 @@ func (*GetUserGroupsReq) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{14}
 }
 
-func (x *GetUserGroupsReq) GetUserId() string {
+func (x *GetUserGroupsReq) GetUserId() uint64 {
 	if x != nil {
 		return x.UserId
 	}
-	return ""
+	return 0
 }
 
 func (x *GetUserGroupsReq) GetPage() int32 {
@@ -884,9 +884,9 @@ func (x *GetUserGroupsReq) GetPageSize() int32 {
 type UserGroupInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GroupId       string                 `protobuf:"bytes,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`                       // 群聊ID
-	ActivityId    string                 `protobuf:"bytes,2,opt,name=activity_id,json=activityId,proto3" json:"activity_id,omitempty"`              // 关联活动ID
+	ActivityId    uint64                 `protobuf:"varint,2,opt,name=activity_id,json=activityId,proto3" json:"activity_id,omitempty"`             // 关联活动ID
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`                                            // 群聊名称
-	OwnerId       string                 `protobuf:"bytes,4,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`                       // 群主用户ID
+	OwnerId       uint64                 `protobuf:"varint,4,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`                      // 群主用户ID
 	Status        int32                  `protobuf:"varint,5,opt,name=status,proto3" json:"status,omitempty"`                                       // 状态: 1-正常 2-已解散
 	MaxMembers    int32                  `protobuf:"varint,6,opt,name=max_members,json=maxMembers,proto3" json:"max_members,omitempty"`             // 最大成员数
 	MemberCount   int32                  `protobuf:"varint,7,opt,name=member_count,json=memberCount,proto3" json:"member_count,omitempty"`          // 当前成员数
@@ -936,11 +936,11 @@ func (x *UserGroupInfo) GetGroupId() string {
 	return ""
 }
 
-func (x *UserGroupInfo) GetActivityId() string {
+func (x *UserGroupInfo) GetActivityId() uint64 {
 	if x != nil {
 		return x.ActivityId
 	}
-	return ""
+	return 0
 }
 
 func (x *UserGroupInfo) GetName() string {
@@ -950,11 +950,11 @@ func (x *UserGroupInfo) GetName() string {
 	return ""
 }
 
-func (x *UserGroupInfo) GetOwnerId() string {
+func (x *UserGroupInfo) GetOwnerId() uint64 {
 	if x != nil {
 		return x.OwnerId
 	}
-	return ""
+	return 0
 }
 
 func (x *UserGroupInfo) GetStatus() int32 {
@@ -1069,7 +1069,7 @@ func (x *GetUserGroupsResp) GetTotal() int32 {
 // GetGroupByActivityIdReq 通过活动ID获取群聊请求
 type GetGroupByActivityIdReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ActivityId    string                 `protobuf:"bytes,1,opt,name=activity_id,json=activityId,proto3" json:"activity_id,omitempty"` // 活动ID
+	ActivityId    uint64                 `protobuf:"varint,1,opt,name=activity_id,json=activityId,proto3" json:"activity_id,omitempty"` // 活动ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1104,11 +1104,11 @@ func (*GetGroupByActivityIdReq) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{17}
 }
 
-func (x *GetGroupByActivityIdReq) GetActivityId() string {
+func (x *GetGroupByActivityIdReq) GetActivityId() uint64 {
 	if x != nil {
 		return x.ActivityId
 	}
-	return ""
+	return 0
 }
 
 // GetGroupByActivityIdResp 通过活动ID获取群聊响应
@@ -1161,7 +1161,7 @@ type SaveMessageReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	MessageId     string                 `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"` // 消息ID
 	GroupId       string                 `protobuf:"bytes,2,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`       // 群聊ID
-	SenderId      string                 `protobuf:"bytes,3,opt,name=sender_id,json=senderId,proto3" json:"sender_id,omitempty"`    // 发送者ID
+	SenderId      uint64                 `protobuf:"varint,3,opt,name=sender_id,json=senderId,proto3" json:"sender_id,omitempty"`   // 发送者ID
 	MsgType       int32                  `protobuf:"varint,4,opt,name=msg_type,json=msgType,proto3" json:"msg_type,omitempty"`      // 消息类型: 1-文字 2-图片
 	Content       string                 `protobuf:"bytes,5,opt,name=content,proto3" json:"content,omitempty"`                      // 文本内容
 	ImageUrl      string                 `protobuf:"bytes,6,opt,name=image_url,json=imageUrl,proto3" json:"image_url,omitempty"`    // 图片URL
@@ -1213,11 +1213,11 @@ func (x *SaveMessageReq) GetGroupId() string {
 	return ""
 }
 
-func (x *SaveMessageReq) GetSenderId() string {
+func (x *SaveMessageReq) GetSenderId() uint64 {
 	if x != nil {
 		return x.SenderId
 	}
-	return ""
+	return 0
 }
 
 func (x *SaveMessageReq) GetMsgType() int32 {
@@ -1360,7 +1360,7 @@ type Message struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	MessageId     string                 `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`    // 消息ID
 	GroupId       string                 `protobuf:"bytes,2,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`          // 群聊ID
-	SenderId      string                 `protobuf:"bytes,3,opt,name=sender_id,json=senderId,proto3" json:"sender_id,omitempty"`       // 发送者ID
+	SenderId      uint64                 `protobuf:"varint,3,opt,name=sender_id,json=senderId,proto3" json:"sender_id,omitempty"`      // 发送者ID
 	SenderName    string                 `protobuf:"bytes,4,opt,name=sender_name,json=senderName,proto3" json:"sender_name,omitempty"` // 发送者名称
 	MsgType       int32                  `protobuf:"varint,5,opt,name=msg_type,json=msgType,proto3" json:"msg_type,omitempty"`         // 消息类型: 1-文字 2-图片
 	Content       string                 `protobuf:"bytes,6,opt,name=content,proto3" json:"content,omitempty"`                         // 文本内容
@@ -1415,11 +1415,11 @@ func (x *Message) GetGroupId() string {
 	return ""
 }
 
-func (x *Message) GetSenderId() string {
+func (x *Message) GetSenderId() uint64 {
 	if x != nil {
 		return x.SenderId
 	}
-	return ""
+	return 0
 }
 
 func (x *Message) GetSenderName() string {
@@ -1520,7 +1520,7 @@ func (x *GetMessageHistoryResp) GetHasMore() bool {
 // GetOfflineMessagesReq 获取离线消息请求
 type GetOfflineMessagesReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`           // 用户ID
+	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`          // 用户ID
 	AfterTime     int64                  `protobuf:"varint,2,opt,name=after_time,json=afterTime,proto3" json:"after_time,omitempty"` // 查询此时间之后的消息（时间戳）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1556,11 +1556,11 @@ func (*GetOfflineMessagesReq) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{24}
 }
 
-func (x *GetOfflineMessagesReq) GetUserId() string {
+func (x *GetOfflineMessagesReq) GetUserId() uint64 {
 	if x != nil {
 		return x.UserId
 	}
-	return ""
+	return 0
 }
 
 func (x *GetOfflineMessagesReq) GetAfterTime() int64 {
@@ -1618,10 +1618,10 @@ func (x *GetOfflineMessagesResp) GetMessages() []*Message {
 // CreateNotificationReq 创建系统通知请求
 type CreateNotificationReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // 接收用户ID
-	Type          string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`                   // 通知类型: activity_joined-报名成功, group_joined-加入群聊等
-	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`                 // 通知标题
-	Content       string                 `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`             // 通知内容
+	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // 接收用户ID
+	Type          string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`                    // 通知类型: activity_joined-报名成功, group_joined-加入群聊等
+	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`                  // 通知标题
+	Content       string                 `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`              // 通知内容
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1656,11 +1656,11 @@ func (*CreateNotificationReq) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{26}
 }
 
-func (x *CreateNotificationReq) GetUserId() string {
+func (x *CreateNotificationReq) GetUserId() uint64 {
 	if x != nil {
 		return x.UserId
 	}
-	return ""
+	return 0
 }
 
 func (x *CreateNotificationReq) GetType() string {
@@ -1732,7 +1732,7 @@ func (x *CreateNotificationResp) GetNotificationId() string {
 // GetNotificationsReq 获取通知列表请求
 type GetNotificationsReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`        // 用户ID
+	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`       // 用户ID
 	IsRead        int32                  `protobuf:"varint,2,opt,name=is_read,json=isRead,proto3" json:"is_read,omitempty"`       // 筛选条件: 0-未读 1-已读 -1-全部
 	Page          int32                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`                         // 页码，从1开始
 	PageSize      int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"` // 每页数量
@@ -1770,11 +1770,11 @@ func (*GetNotificationsReq) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{28}
 }
 
-func (x *GetNotificationsReq) GetUserId() string {
+func (x *GetNotificationsReq) GetUserId() uint64 {
 	if x != nil {
 		return x.UserId
 	}
-	return ""
+	return 0
 }
 
 func (x *GetNotificationsReq) GetIsRead() int32 {
@@ -1802,7 +1802,7 @@ func (x *GetNotificationsReq) GetPageSize() int32 {
 type Notification struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	NotificationId string                 `protobuf:"bytes,1,opt,name=notification_id,json=notificationId,proto3" json:"notification_id,omitempty"` // 通知ID
-	UserId         string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`                         // 接收用户ID
+	UserId         uint64                 `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`                        // 接收用户ID
 	Type           string                 `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`                                           // 通知类型: activity_joined-报名成功, group_joined-加入群聊等
 	Title          string                 `protobuf:"bytes,4,opt,name=title,proto3" json:"title,omitempty"`                                         // 通知标题
 	Content        string                 `protobuf:"bytes,5,opt,name=content,proto3" json:"content,omitempty"`                                     // 通知内容
@@ -1849,11 +1849,11 @@ func (x *Notification) GetNotificationId() string {
 	return ""
 }
 
-func (x *Notification) GetUserId() string {
+func (x *Notification) GetUserId() uint64 {
 	if x != nil {
 		return x.UserId
 	}
-	return ""
+	return 0
 }
 
 func (x *Notification) GetType() string {
@@ -1955,7 +1955,7 @@ func (x *GetNotificationsResp) GetUnreadCount() int32 {
 // MarkNotificationReadReq 标记通知已读请求
 type MarkNotificationReadReq struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
-	UserId          string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`                            // 用户ID
+	UserId          uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`                           // 用户ID
 	NotificationIds []string               `protobuf:"bytes,2,rep,name=notification_ids,json=notificationIds,proto3" json:"notification_ids,omitempty"` // 通知ID列表（支持批量标记）
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
@@ -1991,11 +1991,11 @@ func (*MarkNotificationReadReq) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{31}
 }
 
-func (x *MarkNotificationReadReq) GetUserId() string {
+func (x *MarkNotificationReadReq) GetUserId() uint64 {
 	if x != nil {
 		return x.UserId
 	}
-	return ""
+	return 0
 }
 
 func (x *MarkNotificationReadReq) GetNotificationIds() []string {
@@ -2061,7 +2061,7 @@ func (x *MarkNotificationReadResp) GetUpdatedCount() int32 {
 // GetUnreadCountReq 获取未读通知数量请求
 type GetUnreadCountReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // 用户ID
+	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // 用户ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2096,11 +2096,11 @@ func (*GetUnreadCountReq) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{33}
 }
 
-func (x *GetUnreadCountReq) GetUserId() string {
+func (x *GetUnreadCountReq) GetUserId() uint64 {
 	if x != nil {
 		return x.UserId
 	}
-	return ""
+	return 0
 }
 
 // GetUnreadCountResp 获取未读通知数量响应
@@ -2151,7 +2151,7 @@ func (x *GetUnreadCountResp) GetUnreadCount() int32 {
 // MarkAllReadReq 全部标记已读请求
 type MarkAllReadReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // 用户ID
+	UserId        uint64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // 用户ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2186,11 +2186,11 @@ func (*MarkAllReadReq) Descriptor() ([]byte, []int) {
 	return file_chat_proto_rawDescGZIP(), []int{35}
 }
 
-func (x *MarkAllReadReq) GetUserId() string {
+func (x *MarkAllReadReq) GetUserId() uint64 {
 	if x != nil {
 		return x.UserId
 	}
-	return ""
+	return 0
 }
 
 // MarkAllReadResp 全部标记已读响应
@@ -2253,30 +2253,30 @@ const file_chat_proto_rawDesc = "" +
 	"\n" +
 	"chat.proto\x12\x04chat\"\x81\x01\n" +
 	"\x0eCreateGroupReq\x12\x1f\n" +
-	"\vactivity_id\x18\x01 \x01(\tR\n" +
+	"\vactivity_id\x18\x01 \x01(\x04R\n" +
 	"activityId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x19\n" +
-	"\bowner_id\x18\x03 \x01(\tR\aownerId\x12\x1f\n" +
+	"\bowner_id\x18\x03 \x01(\x04R\aownerId\x12\x1f\n" +
 	"\vmax_members\x18\x04 \x01(\x05R\n" +
 	"maxMembers\",\n" +
 	"\x0fCreateGroupResp\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\"[\n" +
 	"\x11AddGroupMemberReq\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x12\n" +
+	"\auser_id\x18\x02 \x01(\x04R\x06userId\x12\x12\n" +
 	"\x04role\x18\x03 \x01(\x05R\x04role\".\n" +
 	"\x12AddGroupMemberResp\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"k\n" +
 	"\x14RemoveGroupMemberReq\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1f\n" +
-	"\voperator_id\x18\x03 \x01(\tR\n" +
+	"\auser_id\x18\x02 \x01(\x04R\x06userId\x12\x1f\n" +
+	"\voperator_id\x18\x03 \x01(\x04R\n" +
 	"operatorId\"1\n" +
 	"\x15RemoveGroupMemberResp\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"M\n" +
 	"\x0fDisbandGroupReq\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x1f\n" +
-	"\voperator_id\x18\x02 \x01(\tR\n" +
+	"\voperator_id\x18\x02 \x01(\x04R\n" +
 	"operatorId\",\n" +
 	"\x10DisbandGroupResp\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\",\n" +
@@ -2284,10 +2284,10 @@ const file_chat_proto_rawDesc = "" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\"\xf1\x01\n" +
 	"\tGroupInfo\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x1f\n" +
-	"\vactivity_id\x18\x02 \x01(\tR\n" +
+	"\vactivity_id\x18\x02 \x01(\x04R\n" +
 	"activityId\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x19\n" +
-	"\bowner_id\x18\x04 \x01(\tR\aownerId\x12\x16\n" +
+	"\bowner_id\x18\x04 \x01(\x04R\aownerId\x12\x16\n" +
 	"\x06status\x18\x05 \x01(\x05R\x06status\x12\x1f\n" +
 	"\vmax_members\x18\x06 \x01(\x05R\n" +
 	"maxMembers\x12!\n" +
@@ -2301,7 +2301,7 @@ const file_chat_proto_rawDesc = "" +
 	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\"r\n" +
 	"\vGroupMember\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x19\n" +
+	"\auser_id\x18\x01 \x01(\x04R\x06userId\x12\x19\n" +
 	"\bgroup_id\x18\x02 \x01(\tR\agroupId\x12\x12\n" +
 	"\x04role\x18\x03 \x01(\x05R\x04role\x12\x1b\n" +
 	"\tjoined_at\x18\x04 \x01(\x03R\bjoinedAt\"X\n" +
@@ -2309,15 +2309,15 @@ const file_chat_proto_rawDesc = "" +
 	"\amembers\x18\x01 \x03(\v2\x11.chat.GroupMemberR\amembers\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05total\"\\\n" +
 	"\x10GetUserGroupsReq\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x12\n" +
+	"\auser_id\x18\x01 \x01(\x04R\x06userId\x12\x12\n" +
 	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\"\xf1\x02\n" +
 	"\rUserGroupInfo\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x1f\n" +
-	"\vactivity_id\x18\x02 \x01(\tR\n" +
+	"\vactivity_id\x18\x02 \x01(\x04R\n" +
 	"activityId\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x19\n" +
-	"\bowner_id\x18\x04 \x01(\tR\aownerId\x12\x16\n" +
+	"\bowner_id\x18\x04 \x01(\x04R\aownerId\x12\x16\n" +
 	"\x06status\x18\x05 \x01(\x05R\x06status\x12\x1f\n" +
 	"\vmax_members\x18\x06 \x01(\x05R\n" +
 	"maxMembers\x12!\n" +
@@ -2333,7 +2333,7 @@ const file_chat_proto_rawDesc = "" +
 	"\x06groups\x18\x01 \x03(\v2\x13.chat.UserGroupInfoR\x06groups\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05total\":\n" +
 	"\x17GetGroupByActivityIdReq\x12\x1f\n" +
-	"\vactivity_id\x18\x01 \x01(\tR\n" +
+	"\vactivity_id\x18\x01 \x01(\x04R\n" +
 	"activityId\"A\n" +
 	"\x18GetGroupByActivityIdResp\x12%\n" +
 	"\x05group\x18\x01 \x01(\v2\x0f.chat.GroupInfoR\x05group\"\xb9\x01\n" +
@@ -2341,7 +2341,7 @@ const file_chat_proto_rawDesc = "" +
 	"\n" +
 	"message_id\x18\x01 \x01(\tR\tmessageId\x12\x19\n" +
 	"\bgroup_id\x18\x02 \x01(\tR\agroupId\x12\x1b\n" +
-	"\tsender_id\x18\x03 \x01(\tR\bsenderId\x12\x19\n" +
+	"\tsender_id\x18\x03 \x01(\x04R\bsenderId\x12\x19\n" +
 	"\bmsg_type\x18\x04 \x01(\x05R\amsgType\x12\x18\n" +
 	"\acontent\x18\x05 \x01(\tR\acontent\x12\x1b\n" +
 	"\timage_url\x18\x06 \x01(\tR\bimageUrl\"J\n" +
@@ -2357,7 +2357,7 @@ const file_chat_proto_rawDesc = "" +
 	"\n" +
 	"message_id\x18\x01 \x01(\tR\tmessageId\x12\x19\n" +
 	"\bgroup_id\x18\x02 \x01(\tR\agroupId\x12\x1b\n" +
-	"\tsender_id\x18\x03 \x01(\tR\bsenderId\x12\x1f\n" +
+	"\tsender_id\x18\x03 \x01(\x04R\bsenderId\x12\x1f\n" +
 	"\vsender_name\x18\x04 \x01(\tR\n" +
 	"senderName\x12\x19\n" +
 	"\bmsg_type\x18\x05 \x01(\x05R\amsgType\x12\x18\n" +
@@ -2370,26 +2370,26 @@ const file_chat_proto_rawDesc = "" +
 	"\bmessages\x18\x01 \x03(\v2\r.chat.MessageR\bmessages\x12\x19\n" +
 	"\bhas_more\x18\x02 \x01(\bR\ahasMore\"O\n" +
 	"\x15GetOfflineMessagesReq\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1d\n" +
+	"\auser_id\x18\x01 \x01(\x04R\x06userId\x12\x1d\n" +
 	"\n" +
 	"after_time\x18\x02 \x01(\x03R\tafterTime\"C\n" +
 	"\x16GetOfflineMessagesResp\x12)\n" +
 	"\bmessages\x18\x01 \x03(\v2\r.chat.MessageR\bmessages\"t\n" +
 	"\x15CreateNotificationReq\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x12\n" +
+	"\auser_id\x18\x01 \x01(\x04R\x06userId\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x12\x14\n" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x12\x18\n" +
 	"\acontent\x18\x04 \x01(\tR\acontent\"A\n" +
 	"\x16CreateNotificationResp\x12'\n" +
 	"\x0fnotification_id\x18\x01 \x01(\tR\x0enotificationId\"x\n" +
 	"\x13GetNotificationsReq\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x04R\x06userId\x12\x17\n" +
 	"\ais_read\x18\x02 \x01(\x05R\x06isRead\x12\x12\n" +
 	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\"\xcc\x01\n" +
 	"\fNotification\x12'\n" +
 	"\x0fnotification_id\x18\x01 \x01(\tR\x0enotificationId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x12\n" +
+	"\auser_id\x18\x02 \x01(\x04R\x06userId\x12\x12\n" +
 	"\x04type\x18\x03 \x01(\tR\x04type\x12\x14\n" +
 	"\x05title\x18\x04 \x01(\tR\x05title\x12\x18\n" +
 	"\acontent\x18\x05 \x01(\tR\acontent\x12\x17\n" +
@@ -2401,17 +2401,17 @@ const file_chat_proto_rawDesc = "" +
 	"\x05total\x18\x02 \x01(\x05R\x05total\x12!\n" +
 	"\funread_count\x18\x03 \x01(\x05R\vunreadCount\"]\n" +
 	"\x17MarkNotificationReadReq\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12)\n" +
+	"\auser_id\x18\x01 \x01(\x04R\x06userId\x12)\n" +
 	"\x10notification_ids\x18\x02 \x03(\tR\x0fnotificationIds\"Y\n" +
 	"\x18MarkNotificationReadResp\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12#\n" +
 	"\rupdated_count\x18\x02 \x01(\x05R\fupdatedCount\",\n" +
 	"\x11GetUnreadCountReq\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\"7\n" +
+	"\auser_id\x18\x01 \x01(\x04R\x06userId\"7\n" +
 	"\x12GetUnreadCountResp\x12!\n" +
 	"\funread_count\x18\x01 \x01(\x05R\vunreadCount\")\n" +
 	"\x0eMarkAllReadReq\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\"R\n" +
+	"\auser_id\x18\x01 \x01(\x04R\x06userId\"R\n" +
 	"\x0fMarkAllReadResp\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12%\n" +
 	"\x0eaffected_count\x18\x02 \x01(\x05R\raffectedCount2\x8a\t\n" +

@@ -74,14 +74,10 @@ func (l *SendQQEmailLogic) SendQQEmail(in *pb.SendQQEmailReq) (*pb.SendQQEmailRe
 	switch in.Scene {
 	case "register":
 		sceneStr = "注册账号"
-	case "login":
-		sceneStr = "登录账号"
 	case "forget_password":
 		sceneStr = "找回密码"
 	case "delete_user":
 		sceneStr = "注销账号"
-	case "change_email":
-		sceneStr = "更换邮箱"
 	default:
 		sceneStr = "身份验证"
 	}

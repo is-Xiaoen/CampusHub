@@ -6,13 +6,15 @@ package message
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"activity-platform/app/chat/api/internal/svc"
 	"activity-platform/app/chat/api/internal/types"
 	"activity-platform/app/chat/rpc/chat"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type GetMessageHistoryLogic struct {
@@ -30,7 +32,7 @@ func NewGetMessageHistoryLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 	}
 }
 
-func (l *GetMessageHistoryLogic) GetMessageHistory(req *types.GetMessageHistoryReq) (resp *types.GetMessageHistoryResp, err error) {
+func (l *GetMessageHistoryLogic) GetMessageHistory(req *types.GetMessageHistoryReq) (resp *types.GetMessageHistoryData, err error) {
 	// 调用 RPC 服务获取消息历史
 	rpcResp, err := l.svcCtx.ChatRpc.GetMessageHistory(l.ctx, &chat.GetMessageHistoryReq{
 		GroupId:  req.GroupId,
@@ -39,14 +41,18 @@ func (l *GetMessageHistoryLogic) GetMessageHistory(req *types.GetMessageHistoryR
 	})
 	if err != nil {
 		l.Errorf("调用 RPC 获取消息历史失败: %v", err)
-		return &types.GetMessageHistoryResp{
-			Code:    500,
-			Message: fmt.Sprintf("获取消息历史失败: %v", err),
-			Data: types.GetMessageHistoryData{
-				Messages: []types.MessageInfo{},
-				HasMore:  false,
-			},
-		}, nil
+		// 处理 gRPC 错误
+		if st, ok := status.FromError(err); ok {
+			switch st.Code() {
+			case codes.NotFound:
+				return nil, errorx.New(errorx.CodeGroupNotFound)
+			case codes.PermissionDenied:
+				return nil, errorx.New(errorx.CodeMessageNotInGroup)
+			default:
+				return nil, errorx.NewWithMessage(errorx.CodeRPCError, "获取消息历史失败")
+			}
+		}
+		return nil, errorx.NewWithMessage(errorx.CodeInternalError, "获取消息历史失败")
 	}
 
 	// 转换消息列表
@@ -55,7 +61,7 @@ func (l *GetMessageHistoryLogic) GetMessageHistory(req *types.GetMessageHistoryR
 		messages = append(messages, types.MessageInfo{
 			MessageId:  msg.MessageId,
 			GroupId:    msg.GroupId,
-			SenderId:   mustParseInt64(msg.SenderId),
+			SenderId:   int64(msg.SenderId),
 			SenderName: msg.SenderName,
 			MsgType:    msg.MsgType,
 			Content:    msg.Content,
@@ -63,20 +69,10 @@ func (l *GetMessageHistoryLogic) GetMessageHistory(req *types.GetMessageHistoryR
 		})
 	}
 
-	return &types.GetMessageHistoryResp{
-		Code:    0,
-		Message: "success",
-		Data: types.GetMessageHistoryData{
-			Messages: messages,
-			HasMore:  rpcResp.HasMore,
-		},
+	return &types.GetMessageHistoryData{
+		Messages: messages,
+		HasMore:  rpcResp.HasMore,
 	}, nil
-}
-
-// mustParseInt64 将字符串转换为 int64，失败返回 0
-func mustParseInt64(s string) int64 {
-	v, _ := strconv.ParseInt(s, 10, 64)
-	return v
 }
 
 // formatTimestamp 将时间戳转换为字符串格式

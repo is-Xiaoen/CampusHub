@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"activity-platform/app/activity/rpc/activity"
+	creditservicelogic "activity-platform/app/user/rpc/internal/logic/creditservice"
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
 	"activity-platform/common/errorx"
@@ -47,27 +48,30 @@ func (l *GetUserInfoLogic) GetUserInfo(in *pb.GetUserInfoReq) (*pb.GetUserInfoRe
 		isVerified = false
 	}
 
-	// 2.2 活动统计 (ActivityRpc)
-	registeredCountResp, err := l.svcCtx.ActivityRpc.GetRegisteredCount(l.ctx, &activity.GetRegisteredCountRequest{
-		UserId: user.UserID,
-	})
-	var activitiesNum uint32
-	if err == nil {
-		activitiesNum = uint32(registeredCountResp.Count)
-	} else {
-		l.Logger.Errorf("GetRegisteredCount failed: %v", err)
-	}
+	// 2.2 活动统计 (ActivityRpc，可选依赖)
+	var activitiesNum, initiateNum uint32
+	if l.svcCtx.ActivityRpc != nil {
+		registeredCountResp, err := l.svcCtx.ActivityRpc.GetRegisteredCount(l.ctx, &activity.GetRegisteredCountRequest{
+			UserId: user.UserID,
+		})
+		if err == nil {
+			activitiesNum = uint32(registeredCountResp.Count)
+		} else {
+			l.Logger.Errorf("GetRegisteredCount failed: %v", err)
+		}
 
-	publishedResp, err := l.svcCtx.ActivityRpc.GetUserPublishedActivities(l.ctx, &activity.GetUserPublishedActivitiesReq{
-		UserId:   user.UserID,
-		Page:     1,
-		PageSize: 1, // 只需要总数
-	})
-	var initiateNum uint32
-	if err == nil && publishedResp.Pagination != nil {
-		initiateNum = uint32(publishedResp.Pagination.Total)
+		publishedResp, err := l.svcCtx.ActivityRpc.GetUserPublishedActivities(l.ctx, &activity.GetUserPublishedActivitiesReq{
+			UserId:   user.UserID,
+			Page:     1,
+			PageSize: 1, // 只需要总数
+		})
+		if err == nil && publishedResp.Pagination != nil {
+			initiateNum = uint32(publishedResp.Pagination.Total)
+		} else {
+			l.Logger.Errorf("GetUserPublishedActivities failed: %v", err)
+		}
 	} else {
-		l.Logger.Errorf("GetUserPublishedActivities failed: %v", err)
+		l.Logger.Infof("ActivityRpc 不可用，跳过活动统计")
 	}
 
 	// 2.3 兴趣标签 (Database)
@@ -85,6 +89,18 @@ func (l *GetUserInfoLogic) GetUserInfo(in *pb.GetUserInfoReq) (*pb.GetUserInfoRe
 				})
 			}
 		}
+	}
+
+	// 2.4 信用分 (CreditService)
+	var creditScore int64
+	getCreditInfoLogic := creditservicelogic.NewGetCreditInfoLogic(l.ctx, l.svcCtx)
+	creditInfo, errCredit := getCreditInfoLogic.GetCreditInfo(&pb.GetCreditInfoReq{
+		UserId: int64(user.UserID),
+	})
+	if errCredit == nil {
+		creditScore = creditInfo.Score
+	} else {
+		l.Logger.Errorf("Get credit info failed: %v, userId: %d", errCredit, user.UserID)
 	}
 
 	// 3. 组装响应
@@ -110,6 +126,8 @@ func (l *GetUserInfoLogic) GetUserInfo(in *pb.GetUserInfoReq) (*pb.GetUserInfoRe
 			IsStudentVerified: isVerified,
 			InitiateNum:       initiateNum,
 			InterestTags:      interestTags,
+			QqEmail:           user.QQEmail,
+			Credit:            creditScore,
 		},
 	}, nil
 }

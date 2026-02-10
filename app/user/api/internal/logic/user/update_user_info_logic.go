@@ -13,6 +13,7 @@ import (
 	"activity-platform/app/user/rpc/client/userbasicservice"
 	"activity-platform/common/errorx"
 	ctxUtils "activity-platform/common/utils/context"
+	"activity-platform/common/utils/email"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -130,6 +131,7 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(req *types.UpdateUserInfoReq) (resp
 			Credit:            userInfo.Credit,
 			IsStudentVerified: userInfo.IsStudentVerified,
 			InterestTags:      interestTags,
+			QqEmail:           email.DesensitizeEmail(userInfo.QqEmail),
 		},
 	}, nil
 }

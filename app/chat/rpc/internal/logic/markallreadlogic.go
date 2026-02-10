@@ -28,7 +28,7 @@ func NewMarkAllReadLogic(ctx context.Context, svcCtx *svc.ServiceContext) *MarkA
 // MarkAllRead 全部标记已读
 func (l *MarkAllReadLogic) MarkAllRead(in *chat.MarkAllReadReq) (*chat.MarkAllReadResp, error) {
 	// 1. 参数验证
-	if in.UserId == "" {
+	if in.UserId == 0 {
 		return nil, status.Error(codes.InvalidArgument, "用户ID不能为空")
 	}
 

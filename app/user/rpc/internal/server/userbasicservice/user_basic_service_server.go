@@ -82,3 +82,15 @@ func (s *UserBasicServiceServer) ForgetPassword(ctx context.Context, in *pb.Forg
 	l := userbasicservicelogic.NewForgetPasswordLogic(ctx, s.svcCtx)
 	return l.ForgetPassword(in)
 }
+
+// 检查用户是否存在（通过邮箱）
+func (s *UserBasicServiceServer) CheckUserExists(ctx context.Context, in *pb.CheckUserExistsReq) (*pb.CheckUserExistsResponse, error) {
+	l := userbasicservicelogic.NewCheckUserExistsLogic(ctx, s.svcCtx)
+	return l.CheckUserExists(in)
+}
+
+// 获取用户主页信息
+func (s *UserBasicServiceServer) GetUserHome(ctx context.Context, in *pb.GetUserHomeReq) (*pb.GetUserHomeResp, error) {
+	l := userbasicservicelogic.NewGetUserHomeLogic(ctx, s.svcCtx)
+	return l.GetUserHome(in)
+}

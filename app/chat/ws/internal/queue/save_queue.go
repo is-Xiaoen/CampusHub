@@ -16,7 +16,7 @@ import (
 type SaveMessageTask struct {
 	MessageID string `json:"message_id"`
 	GroupID   string `json:"group_id"`
-	SenderID  string `json:"sender_id"`
+	SenderID  uint64 `json:"sender_id"`
 	MsgType   int32  `json:"msg_type"`
 	Content   string `json:"content"`
 	ImageURL  string `json:"image_url"`

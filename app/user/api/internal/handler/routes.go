@@ -31,6 +31,12 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: base.VerifyCaptchaHandler(serverCtx),
 			},
 			{
+				// 获取所有的兴趣标签
+				Method:  http.MethodGet,
+				Path:    "/interests/tags",
+				Handler: base.GetInterestTagsHandler(serverCtx),
+			},
+			{
 				// 登录
 				Method:  http.MethodPost,
 				Path:    "/login",
@@ -110,6 +116,12 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Method:  http.MethodGet,
 					Path:    "/qq_code/delete_user",
 					Handler: user.GetDeleteUserCodeHandler(serverCtx),
+				},
+				{
+					// 获取用户主页信息
+					Method:  http.MethodGet,
+					Path:    "/users/:user_id/home",
+					Handler: user.GetUserHomeHandler(serverCtx),
 				},
 				{
 					// 获取用户信息

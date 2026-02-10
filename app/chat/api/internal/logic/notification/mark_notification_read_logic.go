@@ -5,14 +5,15 @@ package notification
 
 import (
 	"context"
-	"fmt"
-	"strconv"
 
 	"activity-platform/app/chat/api/internal/svc"
 	"activity-platform/app/chat/api/internal/types"
 	"activity-platform/app/chat/rpc/chat"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type MarkNotificationReadLogic struct {
@@ -30,28 +31,29 @@ func NewMarkNotificationReadLogic(ctx context.Context, svcCtx *svc.ServiceContex
 	}
 }
 
-func (l *MarkNotificationReadLogic) MarkNotificationRead(req *types.MarkNotificationReadReq) (resp *types.MarkNotificationReadResp, err error) {
+func (l *MarkNotificationReadLogic) MarkNotificationRead(req *types.MarkNotificationReadReq) (resp *types.MarkNotificationReadData, err error) {
 	// 调用 RPC 服务标记通知已读
 	rpcResp, err := l.svcCtx.ChatRpc.MarkNotificationRead(l.ctx, &chat.MarkNotificationReadReq{
-		UserId:          strconv.FormatInt(req.UserId, 10),
+		UserId:          uint64(req.UserId),
 		NotificationIds: req.NotificationIds,
 	})
 	if err != nil {
 		l.Errorf("调用 RPC 标记通知已读失败: %v", err)
-		return &types.MarkNotificationReadResp{
-			Code:    500,
-			Message: fmt.Sprintf("标记已读失败: %v", err),
-			Data: types.MarkNotificationReadData{
-				UpdatedCount: 0,
-			},
-		}, nil
+		// 处理 gRPC 错误
+		if st, ok := status.FromError(err); ok {
+			switch st.Code() {
+			case codes.NotFound:
+				return nil, errorx.New(errorx.CodeNotificationNotFound)
+			case codes.PermissionDenied:
+				return nil, errorx.New(errorx.CodeNotificationPermissionDeny)
+			default:
+				return nil, errorx.NewWithMessage(errorx.CodeRPCError, "标记已读失败")
+			}
+		}
+		return nil, errorx.NewWithMessage(errorx.CodeInternalError, "标记已读失败")
 	}
 
-	return &types.MarkNotificationReadResp{
-		Code:    0,
-		Message: "标记成功",
-		Data: types.MarkNotificationReadData{
-			UpdatedCount: rpcResp.UpdatedCount,
-		},
+	return &types.MarkNotificationReadData{
+		UpdatedCount: rpcResp.UpdatedCount,
 	}, nil
 }

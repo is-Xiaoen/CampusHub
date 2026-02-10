@@ -5,14 +5,16 @@ package group
 
 import (
 	"context"
-	"fmt"
 
 	"activity-platform/app/chat/api/internal/svc"
 	"activity-platform/app/chat/api/internal/types"
 	"activity-platform/app/chat/rpc/chat"
 	"activity-platform/app/user/rpc/pb/pb"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type GetGroupMembersLogic struct {
@@ -30,7 +32,7 @@ func NewGetGroupMembersLogic(ctx context.Context, svcCtx *svc.ServiceContext) *G
 	}
 }
 
-func (l *GetGroupMembersLogic) GetGroupMembers(req *types.GetGroupMembersReq) (resp *types.GetGroupMembersResp, err error) {
+func (l *GetGroupMembersLogic) GetGroupMembers(req *types.GetGroupMembersReq) (resp *types.GetGroupMembersData, err error) {
 	// 调用 RPC 服务获取群成员列表
 	rpcResp, err := l.svcCtx.ChatRpc.GetGroupMembers(l.ctx, &chat.GetGroupMembersReq{
 		GroupId:  req.GroupId,
@@ -39,22 +41,24 @@ func (l *GetGroupMembersLogic) GetGroupMembers(req *types.GetGroupMembersReq) (r
 	})
 	if err != nil {
 		l.Errorf("调用 RPC 获取群成员列表失败: %v", err)
-		return &types.GetGroupMembersResp{
-			Code:    500,
-			Message: fmt.Sprintf("获取群成员列表失败: %v", err),
-			Data: types.GetGroupMembersData{
-				Members:  []types.GroupMemberInfo{},
-				Total:    0,
-				Page:     req.Page,
-				PageSize: req.PageSize,
-			},
-		}, nil
+		// 处理 gRPC 错误
+		if st, ok := status.FromError(err); ok {
+			switch st.Code() {
+			case codes.NotFound:
+				return nil, errorx.New(errorx.CodeGroupNotFound)
+			case codes.PermissionDenied:
+				return nil, errorx.New(errorx.CodeGroupPermissionDenied)
+			default:
+				return nil, errorx.NewWithMessage(errorx.CodeRPCError, "获取群成员列表失败")
+			}
+		}
+		return nil, errorx.NewWithMessage(errorx.CodeInternalError, "获取群成员列表失败")
 	}
 
 	// 收集所有用户ID
 	userIds := make([]int64, 0, len(rpcResp.Members))
 	for _, member := range rpcResp.Members {
-		userIds = append(userIds, mustParseInt64(member.UserId))
+		userIds = append(userIds, int64(member.UserId))
 	}
 
 	// 批量调用 UserRpc 获取用户信息
@@ -78,7 +82,7 @@ func (l *GetGroupMembersLogic) GetGroupMembers(req *types.GetGroupMembersReq) (r
 	// 转换成员列表
 	members := make([]types.GroupMemberInfo, 0, len(rpcResp.Members))
 	for _, member := range rpcResp.Members {
-		userId := mustParseInt64(member.UserId)
+		userId := int64(member.UserId)
 		username := ""
 		avatar := ""
 
@@ -97,14 +101,10 @@ func (l *GetGroupMembersLogic) GetGroupMembers(req *types.GetGroupMembersReq) (r
 		})
 	}
 
-	return &types.GetGroupMembersResp{
-		Code:    0,
-		Message: "success",
-		Data: types.GetGroupMembersData{
-			Members:  members,
-			Total:    rpcResp.Total,
-			Page:     req.Page,
-			PageSize: req.PageSize,
-		},
+	return &types.GetGroupMembersData{
+		Members:  members,
+		Total:    rpcResp.Total,
+		Page:     req.Page,
+		PageSize: req.PageSize,
 	}, nil
 }

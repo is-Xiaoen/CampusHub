@@ -23,12 +23,20 @@ func NewUploadToQiNiuServer(svcCtx *svc.ServiceContext) *UploadToQiNiuServer {
 	}
 }
 
-func (s *UploadToQiNiuServer) UploadFile(ctx context.Context, in *pb.UploadFileReq) (*pb.UploadFileResponse, error) {
-	l := uploadtoqiniulogic.NewUploadFileLogic(ctx, s.svcCtx)
-	return l.UploadFile(in)
+// 直接上传用户头像（删除旧图并更新DB）
+func (s *UploadToQiNiuServer) UploadAvatar(ctx context.Context, in *pb.UploadAvatarReq) (*pb.UploadAvatarResp, error) {
+	l := uploadtoqiniulogic.NewUploadAvatarLogic(ctx, s.svcCtx)
+	return l.UploadAvatar(in)
 }
 
-func (s *UploadToQiNiuServer) DeleteFile(ctx context.Context, in *pb.DeleteFileReq) (*pb.DeleteFileResponse, error) {
-	l := uploadtoqiniulogic.NewDeleteFileLogic(ctx, s.svcCtx)
-	return l.DeleteFile(in)
+// 上传学生认证图片（同时处理旧图删除和DB更新）
+func (s *UploadToQiNiuServer) UploadStudentCardImages(ctx context.Context, in *pb.UploadStudentCardImagesReq) (*pb.UploadStudentCardImagesResp, error) {
+	l := uploadtoqiniulogic.NewUploadStudentCardImagesLogic(ctx, s.svcCtx)
+	return l.UploadStudentCardImages(in)
+}
+
+// 上传活动封面
+func (s *UploadToQiNiuServer) UploadActivityCover(ctx context.Context, in *pb.UploadActivityCoverReq) (*pb.UploadActivityCoverResp, error) {
+	l := uploadtoqiniulogic.NewUploadActivityCoverLogic(ctx, s.svcCtx)
+	return l.UploadActivityCover(in)
 }

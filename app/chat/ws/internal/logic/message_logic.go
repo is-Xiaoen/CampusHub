@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -80,11 +81,18 @@ func (l *MessageLogic) HandleSendMessage(client *hub.Client, msg *types.WSMessag
 	messageID := uuid.New().String()
 	now := time.Now().Unix()
 
+	// 将 string 类型的 UserID 转换为 uint64
+	senderID, err := strconv.ParseUint(client.GetUserID(), 10, 64)
+	if err != nil {
+		logx.Errorf("解析用户ID失败: %v", err)
+		return err
+	}
+
 	// 构造新消息数据
 	newMsgData := types.NewMessageData{
 		MessageID:  messageID,
 		GroupID:    sendData.GroupID,
-		SenderID:   client.GetUserID(),
+		SenderID:   senderID,
 		SenderName: "User", // TODO: 从用户服务获取用户名
 		MsgType:    sendData.MsgType,
 		Content:    sendData.Content,
@@ -116,7 +124,7 @@ func (l *MessageLogic) HandleSendMessage(client *hub.Client, msg *types.WSMessag
 	task := &queue.SaveMessageTask{
 		MessageID: messageID,
 		GroupID:   sendData.GroupID,
-		SenderID:  client.GetUserID(),
+		SenderID:  senderID,
 		MsgType:   sendData.MsgType,
 		Content:   sendData.Content,
 		ImageURL:  sendData.ImageURL,
@@ -144,11 +152,18 @@ func (l *MessageLogic) HandleSendMessageSync(client *hub.Client, msg *types.WSMe
 	messageID := uuid.New().String()
 	now := time.Now().Unix()
 
+	// 将 string 类型的 UserID 转换为 uint64
+	senderID, err := strconv.ParseUint(client.GetUserID(), 10, 64)
+	if err != nil {
+		logx.Errorf("解析用户ID失败: %v", err)
+		return err
+	}
+
 	// 构造新消息数据
 	newMsgData := types.NewMessageData{
 		MessageID:  messageID,
 		GroupID:    sendData.GroupID,
-		SenderID:   client.GetUserID(),
+		SenderID:   senderID,
 		SenderName: "User",
 		MsgType:    sendData.MsgType,
 		Content:    sendData.Content,
@@ -157,10 +172,10 @@ func (l *MessageLogic) HandleSendMessageSync(client *hub.Client, msg *types.WSMe
 	}
 
 	// 1. 先保存消息到数据库（同步，确保可靠性）
-	_, err := l.svcCtx.ChatRpc.SaveMessage(l.ctx, &chat.SaveMessageReq{
+	_, err = l.svcCtx.ChatRpc.SaveMessage(l.ctx, &chat.SaveMessageReq{
 		MessageId: messageID,
 		GroupId:   sendData.GroupID,
-		SenderId:  client.GetUserID(),
+		SenderId:  senderID,
 		MsgType:   sendData.MsgType,
 		Content:   sendData.Content,
 		ImageUrl:  sendData.ImageURL,
@@ -248,9 +263,16 @@ func (l *MessageLogic) HandleMarkRead(client *hub.Client, msg *types.WSMessage) 
 
 // autoJoinUserGroups 自动加入用户的所有群聊
 func (l *MessageLogic) autoJoinUserGroups(client *hub.Client, userID string) {
+	// 将 string 类型的 UserID 转换为 uint64
+	userIDUint, err := strconv.ParseUint(userID, 10, 64)
+	if err != nil {
+		logx.Errorf("解析用户ID失败: %v", err)
+		return
+	}
+
 	// 调用 RPC 获取用户的所有群聊
 	resp, err := l.svcCtx.ChatRpc.GetUserGroups(l.ctx, &chat.GetUserGroupsReq{
-		UserId:   userID,
+		UserId:   userIDUint,
 		Page:     1,
 		PageSize: 100,
 	})
