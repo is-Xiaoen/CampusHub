@@ -32,7 +32,6 @@ func (l *GetUserHomeLogic) GetUserHome(req *types.GetUserHomeReq) (resp *types.G
 		UserId:            req.UserId,
 		JoinedPage:        req.JoinedPage,
 		JoinedPageSize:    req.JoinedPageSize,
-		JoinedType:        req.JoinedType,
 		PublishedPage:     req.PublishedPage,
 		PublishedPageSize: req.PublishedPageSize,
 		PublishedStatus:   -2, // 固定查询全部活动

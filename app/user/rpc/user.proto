@@ -776,7 +776,7 @@ message GetUserHomeReq {
     // 参加活动列表参数
     int32 joined_page = 2;
     int32 joined_page_size = 3;
-    string joined_type = 4; // 待参加/已参加
+    reserved 4;
     // 发起活动列表参数
     int32 published_page = 5;
     int32 published_page_size = 6;
