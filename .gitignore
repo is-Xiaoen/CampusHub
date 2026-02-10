@@ -100,7 +100,7 @@ app/*/ws/etc/*.yaml
 docs/plan/
 context.md
 docs/audit/
-
+history.md
 # 部署配置（包含敏感信息）
 deploy/docker/config/*.yaml
 deploy/docker/config/
