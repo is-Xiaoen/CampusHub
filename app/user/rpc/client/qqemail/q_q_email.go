@@ -99,6 +99,8 @@ type (
 	UploadAvatarResp            = pb.UploadAvatarResp
 	UploadStudentCardImagesReq  = pb.UploadStudentCardImagesReq
 	UploadStudentCardImagesResp = pb.UploadStudentCardImagesResp
+	UploadSysImageReq           = pb.UploadSysImageReq
+	UploadSysImageResp          = pb.UploadSysImageResp
 	UserHomeActivityItem        = pb.UserHomeActivityItem
 	UserHomeActivityList        = pb.UserHomeActivityList
 	UserHomeInfo                = pb.UserHomeInfo

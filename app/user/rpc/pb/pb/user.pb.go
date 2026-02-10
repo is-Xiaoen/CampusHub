@@ -6035,6 +6035,144 @@ func (x *UploadActivityCoverResp) GetCoverUrl() string {
 	return ""
 }
 
+// 上传通用图片请求
+type UploadSysImageReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	OriginName    string                 `protobuf:"bytes,2,opt,name=origin_name,json=originName,proto3" json:"origin_name,omitempty"`
+	BizType       string                 `protobuf:"bytes,3,opt,name=biz_type,json=bizType,proto3" json:"biz_type,omitempty"`
+	FileSize      int64                  `protobuf:"varint,4,opt,name=file_size,json=fileSize,proto3" json:"file_size,omitempty"`
+	MimeType      string                 `protobuf:"bytes,5,opt,name=mime_type,json=mimeType,proto3" json:"mime_type,omitempty"`
+	Extension     string                 `protobuf:"bytes,6,opt,name=extension,proto3" json:"extension,omitempty"`
+	ImageData     []byte                 `protobuf:"bytes,7,opt,name=image_data,json=imageData,proto3" json:"image_data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadSysImageReq) Reset() {
+	*x = UploadSysImageReq{}
+	mi := &file_user_proto_msgTypes[93]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadSysImageReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadSysImageReq) ProtoMessage() {}
+
+func (x *UploadSysImageReq) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[93]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadSysImageReq.ProtoReflect.Descriptor instead.
+func (*UploadSysImageReq) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{93}
+}
+
+func (x *UploadSysImageReq) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *UploadSysImageReq) GetOriginName() string {
+	if x != nil {
+		return x.OriginName
+	}
+	return ""
+}
+
+func (x *UploadSysImageReq) GetBizType() string {
+	if x != nil {
+		return x.BizType
+	}
+	return ""
+}
+
+func (x *UploadSysImageReq) GetFileSize() int64 {
+	if x != nil {
+		return x.FileSize
+	}
+	return 0
+}
+
+func (x *UploadSysImageReq) GetMimeType() string {
+	if x != nil {
+		return x.MimeType
+	}
+	return ""
+}
+
+func (x *UploadSysImageReq) GetExtension() string {
+	if x != nil {
+		return x.Extension
+	}
+	return ""
+}
+
+func (x *UploadSysImageReq) GetImageData() []byte {
+	if x != nil {
+		return x.ImageData
+	}
+	return nil
+}
+
+// 上传通用图片响应
+type UploadSysImageResp struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadSysImageResp) Reset() {
+	*x = UploadSysImageResp{}
+	mi := &file_user_proto_msgTypes[94]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadSysImageResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadSysImageResp) ProtoMessage() {}
+
+func (x *UploadSysImageResp) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[94]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadSysImageResp.ProtoReflect.Descriptor instead.
+func (*UploadSysImageResp) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{94}
+}
+
+func (x *UploadSysImageResp) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
 var File_user_proto protoreflect.FileDescriptor
 
 const file_user_proto_rawDesc = "" +
@@ -6506,7 +6644,19 @@ const file_user_proto_rawDesc = "" +
 	"\tfile_data\x18\x02 \x01(\fR\bfileData\x12\x1b\n" +
 	"\tfile_name\x18\x03 \x01(\tR\bfileName\"6\n" +
 	"\x17UploadActivityCoverResp\x12\x1b\n" +
-	"\tcover_url\x18\x01 \x01(\tR\bcoverUrl2\x86\x03\n" +
+	"\tcover_url\x18\x01 \x01(\tR\bcoverUrl\"\xdf\x01\n" +
+	"\x11UploadSysImageReq\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1f\n" +
+	"\vorigin_name\x18\x02 \x01(\tR\n" +
+	"originName\x12\x19\n" +
+	"\bbiz_type\x18\x03 \x01(\tR\abizType\x12\x1b\n" +
+	"\tfile_size\x18\x04 \x01(\x03R\bfileSize\x12\x1b\n" +
+	"\tmime_type\x18\x05 \x01(\tR\bmimeType\x12\x1c\n" +
+	"\textension\x18\x06 \x01(\tR\textension\x12\x1d\n" +
+	"\n" +
+	"image_data\x18\a \x01(\fR\timageData\"$\n" +
+	"\x12UploadSysImageResp\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id2\x86\x03\n" +
 	"\rCreditService\x12@\n" +
 	"\rGetCreditInfo\x12\x16.user.GetCreditInfoReq\x1a\x17.user.GetCreditInfoResp\x12@\n" +
 	"\rGetCreditLogs\x12\x16.user.GetCreditLogsReq\x1a\x17.user.GetCreditLogsResp\x12C\n" +
@@ -6556,11 +6706,12 @@ const file_user_proto_rawDesc = "" +
 	"\fCheckCaptcha\x12\x15.user.CheckCaptchaReq\x1a\x1a.user.CheckCaptchaResponse2\x8c\x01\n" +
 	"\aQQEmail\x12>\n" +
 	"\vSendQQEmail\x12\x14.user.SendQQEmailReq\x1a\x19.user.SendQQEmailResponse\x12A\n" +
-	"\fCheckQQEmail\x12\x15.user.CheckQQEmailReq\x1a\x1a.user.CheckQQEmailResponse2\x82\x02\n" +
+	"\fCheckQQEmail\x12\x15.user.CheckQQEmailReq\x1a\x1a.user.CheckQQEmailResponse2\xc7\x02\n" +
 	"\rUploadToQiNiu\x12=\n" +
 	"\fUploadAvatar\x12\x15.user.UploadAvatarReq\x1a\x16.user.UploadAvatarResp\x12^\n" +
 	"\x17UploadStudentCardImages\x12 .user.UploadStudentCardImagesReq\x1a!.user.UploadStudentCardImagesResp\x12R\n" +
-	"\x13UploadActivityCover\x12\x1c.user.UploadActivityCoverReq\x1a\x1d.user.UploadActivityCoverRespB\x06Z\x04./pbb\x06proto3"
+	"\x13UploadActivityCover\x12\x1c.user.UploadActivityCoverReq\x1a\x1d.user.UploadActivityCoverResp\x12C\n" +
+	"\x0eUploadSysImage\x12\x17.user.UploadSysImageReq\x1a\x18.user.UploadSysImageRespB\x06Z\x04./pbb\x06proto3"
 
 var (
 	file_user_proto_rawDescOnce sync.Once
@@ -6574,7 +6725,7 @@ func file_user_proto_rawDescGZIP() []byte {
 	return file_user_proto_rawDescData
 }
 
-var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 93)
+var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 95)
 var file_user_proto_goTypes = []any{
 	(*GetCreditInfoReq)(nil),            // 0: user.GetCreditInfoReq
 	(*GetCreditInfoResp)(nil),           // 1: user.GetCreditInfoResp
@@ -6669,6 +6820,8 @@ var file_user_proto_goTypes = []any{
 	(*UploadStudentCardImagesResp)(nil), // 90: user.UploadStudentCardImagesResp
 	(*UploadActivityCoverReq)(nil),      // 91: user.UploadActivityCoverReq
 	(*UploadActivityCoverResp)(nil),     // 92: user.UploadActivityCoverResp
+	(*UploadSysImageReq)(nil),           // 93: user.UploadSysImageReq
+	(*UploadSysImageResp)(nil),          // 94: user.UploadSysImageResp
 }
 var file_user_proto_depIdxs = []int32{
 	3,  // 0: user.GetCreditLogsResp.list:type_name -> user.CreditLogItem
@@ -6732,48 +6885,50 @@ var file_user_proto_depIdxs = []int32{
 	87, // 58: user.UploadToQiNiu.UploadAvatar:input_type -> user.UploadAvatarReq
 	89, // 59: user.UploadToQiNiu.UploadStudentCardImages:input_type -> user.UploadStudentCardImagesReq
 	91, // 60: user.UploadToQiNiu.UploadActivityCover:input_type -> user.UploadActivityCoverReq
-	1,  // 61: user.CreditService.GetCreditInfo:output_type -> user.GetCreditInfoResp
-	4,  // 62: user.CreditService.GetCreditLogs:output_type -> user.GetCreditLogsResp
-	6,  // 63: user.CreditService.CanParticipate:output_type -> user.CanParticipateResp
-	8,  // 64: user.CreditService.CanPublish:output_type -> user.CanPublishResp
-	10, // 65: user.CreditService.InitCredit:output_type -> user.InitCreditResp
-	12, // 66: user.CreditService.UpdateScore:output_type -> user.UpdateScoreResp
-	14, // 67: user.VerifyService.GetVerifyCurrent:output_type -> user.GetVerifyCurrentResp
-	16, // 68: user.VerifyService.GetVerifyInfo:output_type -> user.GetVerifyInfoResp
-	18, // 69: user.VerifyService.IsVerified:output_type -> user.IsVerifiedResp
-	20, // 70: user.VerifyService.ApplyStudentVerify:output_type -> user.ApplyStudentVerifyResp
-	23, // 71: user.VerifyService.ConfirmStudentVerify:output_type -> user.ConfirmStudentVerifyResp
-	25, // 72: user.VerifyService.CancelStudentVerify:output_type -> user.CancelStudentVerifyResp
-	28, // 73: user.VerifyService.UpdateVerifyStatus:output_type -> user.UpdateVerifyStatusResp
-	30, // 74: user.VerifyService.ProcessOcrVerify:output_type -> user.ProcessOcrVerifyResp
-	35, // 75: user.TagService.GetAllTags:output_type -> user.GetAllTagsResp
-	37, // 76: user.TagService.GetTagsByIds:output_type -> user.GetTagsByIdsResp
-	40, // 77: user.TagService.GetUserTags:output_type -> user.GetUserTagsResponse
-	32, // 78: user.TagService.UpdateUserTag:output_type -> user.UpdateUserTagResponse
-	43, // 79: user.TagService.GetAllInterestTags:output_type -> user.GetAllInterestTagsResp
-	61, // 80: user.UserBasicService.GetGroupUser:output_type -> user.GetGroupUserResponse
-	64, // 81: user.UserBasicService.Login:output_type -> user.LoginResponse
-	67, // 82: user.UserBasicService.Logout:output_type -> user.LogoutResponse
-	69, // 83: user.UserBasicService.Register:output_type -> user.RegisterResponse
-	75, // 84: user.UserBasicService.RefreshToken:output_type -> user.RefreshResponse
-	71, // 85: user.UserBasicService.GetUserInfo:output_type -> user.GetUserInfoResponse
-	57, // 86: user.UserBasicService.UpdatePassword:output_type -> user.UpdatePasswordResponse
-	59, // 87: user.UserBasicService.UpdateUserInfo:output_type -> user.UpdateUserInfoResponse
-	55, // 88: user.UserBasicService.DeleteUser:output_type -> user.DeleteUserResponse
-	53, // 89: user.UserBasicService.ForgetPassword:output_type -> user.ForgetPasswordResponse
-	51, // 90: user.UserBasicService.CheckUserExists:output_type -> user.CheckUserExistsResponse
-	45, // 91: user.UserBasicService.GetUserHome:output_type -> user.GetUserHomeResp
-	77, // 92: user.TagBranchService.IncrTagUsageCount:output_type -> user.TagUsageCountResp
-	77, // 93: user.TagBranchService.DecrTagUsageCount:output_type -> user.TagUsageCountResp
-	79, // 94: user.CaptchaService.GetCaptchaConfig:output_type -> user.GetCaptchaConfigResponse
-	81, // 95: user.CaptchaService.CheckCaptcha:output_type -> user.CheckCaptchaResponse
-	84, // 96: user.QQEmail.SendQQEmail:output_type -> user.SendQQEmailResponse
-	86, // 97: user.QQEmail.CheckQQEmail:output_type -> user.CheckQQEmailResponse
-	88, // 98: user.UploadToQiNiu.UploadAvatar:output_type -> user.UploadAvatarResp
-	90, // 99: user.UploadToQiNiu.UploadStudentCardImages:output_type -> user.UploadStudentCardImagesResp
-	92, // 100: user.UploadToQiNiu.UploadActivityCover:output_type -> user.UploadActivityCoverResp
-	61, // [61:101] is the sub-list for method output_type
-	21, // [21:61] is the sub-list for method input_type
+	93, // 61: user.UploadToQiNiu.UploadSysImage:input_type -> user.UploadSysImageReq
+	1,  // 62: user.CreditService.GetCreditInfo:output_type -> user.GetCreditInfoResp
+	4,  // 63: user.CreditService.GetCreditLogs:output_type -> user.GetCreditLogsResp
+	6,  // 64: user.CreditService.CanParticipate:output_type -> user.CanParticipateResp
+	8,  // 65: user.CreditService.CanPublish:output_type -> user.CanPublishResp
+	10, // 66: user.CreditService.InitCredit:output_type -> user.InitCreditResp
+	12, // 67: user.CreditService.UpdateScore:output_type -> user.UpdateScoreResp
+	14, // 68: user.VerifyService.GetVerifyCurrent:output_type -> user.GetVerifyCurrentResp
+	16, // 69: user.VerifyService.GetVerifyInfo:output_type -> user.GetVerifyInfoResp
+	18, // 70: user.VerifyService.IsVerified:output_type -> user.IsVerifiedResp
+	20, // 71: user.VerifyService.ApplyStudentVerify:output_type -> user.ApplyStudentVerifyResp
+	23, // 72: user.VerifyService.ConfirmStudentVerify:output_type -> user.ConfirmStudentVerifyResp
+	25, // 73: user.VerifyService.CancelStudentVerify:output_type -> user.CancelStudentVerifyResp
+	28, // 74: user.VerifyService.UpdateVerifyStatus:output_type -> user.UpdateVerifyStatusResp
+	30, // 75: user.VerifyService.ProcessOcrVerify:output_type -> user.ProcessOcrVerifyResp
+	35, // 76: user.TagService.GetAllTags:output_type -> user.GetAllTagsResp
+	37, // 77: user.TagService.GetTagsByIds:output_type -> user.GetTagsByIdsResp
+	40, // 78: user.TagService.GetUserTags:output_type -> user.GetUserTagsResponse
+	32, // 79: user.TagService.UpdateUserTag:output_type -> user.UpdateUserTagResponse
+	43, // 80: user.TagService.GetAllInterestTags:output_type -> user.GetAllInterestTagsResp
+	61, // 81: user.UserBasicService.GetGroupUser:output_type -> user.GetGroupUserResponse
+	64, // 82: user.UserBasicService.Login:output_type -> user.LoginResponse
+	67, // 83: user.UserBasicService.Logout:output_type -> user.LogoutResponse
+	69, // 84: user.UserBasicService.Register:output_type -> user.RegisterResponse
+	75, // 85: user.UserBasicService.RefreshToken:output_type -> user.RefreshResponse
+	71, // 86: user.UserBasicService.GetUserInfo:output_type -> user.GetUserInfoResponse
+	57, // 87: user.UserBasicService.UpdatePassword:output_type -> user.UpdatePasswordResponse
+	59, // 88: user.UserBasicService.UpdateUserInfo:output_type -> user.UpdateUserInfoResponse
+	55, // 89: user.UserBasicService.DeleteUser:output_type -> user.DeleteUserResponse
+	53, // 90: user.UserBasicService.ForgetPassword:output_type -> user.ForgetPasswordResponse
+	51, // 91: user.UserBasicService.CheckUserExists:output_type -> user.CheckUserExistsResponse
+	45, // 92: user.UserBasicService.GetUserHome:output_type -> user.GetUserHomeResp
+	77, // 93: user.TagBranchService.IncrTagUsageCount:output_type -> user.TagUsageCountResp
+	77, // 94: user.TagBranchService.DecrTagUsageCount:output_type -> user.TagUsageCountResp
+	79, // 95: user.CaptchaService.GetCaptchaConfig:output_type -> user.GetCaptchaConfigResponse
+	81, // 96: user.CaptchaService.CheckCaptcha:output_type -> user.CheckCaptchaResponse
+	84, // 97: user.QQEmail.SendQQEmail:output_type -> user.SendQQEmailResponse
+	86, // 98: user.QQEmail.CheckQQEmail:output_type -> user.CheckQQEmailResponse
+	88, // 99: user.UploadToQiNiu.UploadAvatar:output_type -> user.UploadAvatarResp
+	90, // 100: user.UploadToQiNiu.UploadStudentCardImages:output_type -> user.UploadStudentCardImagesResp
+	92, // 101: user.UploadToQiNiu.UploadActivityCover:output_type -> user.UploadActivityCoverResp
+	94, // 102: user.UploadToQiNiu.UploadSysImage:output_type -> user.UploadSysImageResp
+	62, // [62:103] is the sub-list for method output_type
+	21, // [21:62] is the sub-list for method input_type
 	21, // [21:21] is the sub-list for extension type_name
 	21, // [21:21] is the sub-list for extension extendee
 	0,  // [0:21] is the sub-list for field type_name
@@ -6790,7 +6945,7 @@ func file_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_user_proto_rawDesc), len(file_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   93,
+			NumMessages:   95,
 			NumExtensions: 0,
 			NumServices:   8,
 		},
