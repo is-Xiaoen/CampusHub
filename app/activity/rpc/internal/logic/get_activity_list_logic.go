@@ -127,7 +127,12 @@ func (l *GetActivityListLogic) GetActivityList(in *activity.GetActivityListReque
 }
 
 func parseAttendStatus(value string) (int, error) {
-	switch strings.TrimSpace(value) {
+	trimmed := strings.TrimSpace(value)
+	// 空值返回 -1 表示查询全部
+	if trimmed == "" {
+		return -1, nil
+	}
+	switch trimmed {
 	case "待参加", "pending", "not_joined":
 		return int(model.AttendStatusNotJoined), nil
 	case "已参加", "joined":
