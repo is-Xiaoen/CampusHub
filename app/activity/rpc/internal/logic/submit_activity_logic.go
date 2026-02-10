@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"errors"
+	"time"
 
 	"activity-platform/app/activity/model"
 	"activity-platform/app/activity/rpc/activity"
@@ -65,9 +66,24 @@ func (l *SubmitActivityLogic) SubmitActivity(in *activity.SubmitActivityReq) (*a
 			"只有草稿状态的活动可以提交")
 	}
 
-	// 5. 事务：更新状态 + 记录日志
+	// 5. 时间重新校验：草稿可能保存很久，提交时需确认时间仍有效
+	now := time.Now().Unix()
+	if activityData.ActivityEndTime <= now {
+		return nil, errorx.NewWithMessage(errorx.CodeActivityTimeInvalid,
+			"活动结束时间已过期，请修改后重新提交")
+	}
+	if activityData.ActivityStartTime <= now {
+		return nil, errorx.NewWithMessage(errorx.CodeActivityTimeInvalid,
+			"活动开始时间已过期，请修改后重新提交")
+	}
+	if activityData.RegisterEndTime <= now {
+		return nil, errorx.NewWithMessage(errorx.CodeActivityTimeInvalid,
+			"报名截止时间已过期，请修改后重新提交")
+	}
+
+	// 6. 事务：更新状态 + 记录日志
 	err = l.svcCtx.DB.WithContext(l.ctx).Transaction(func(tx *gorm.DB) error {
-		// 5.1 更新状态为已发布（MVP: 跳过待审核）
+		// 6.1 更新状态为已发布（MVP: 跳过待审核）
 		oldStatus := activityData.Status
 		err := l.svcCtx.ActivityModel.UpdateStatus(
 			l.ctx, tx,
@@ -83,7 +99,7 @@ func (l *SubmitActivityLogic) SubmitActivity(in *activity.SubmitActivityReq) (*a
 			return err
 		}
 
-		// 5.2 记录状态变更日志
+		// 6.2 记录状态变更日志
 		statusLog := &model.ActivityStatusLog{
 			ActivityID:   uint64(in.Id),
 			FromStatus:   oldStatus,

@@ -12,6 +12,9 @@ type Config struct {
 	// Chat RPC 配置
 	ChatRpc zrpc.RpcClientConf
 
+	// User RPC 配置
+	UserRpc zrpc.RpcClientConf
+
 	// Redis 配置
 	Redis RedisConf
 
