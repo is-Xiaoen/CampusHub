@@ -94,3 +94,9 @@ func (s *UserBasicServiceServer) GetUserHome(ctx context.Context, in *pb.GetUser
 	l := userbasicservicelogic.NewGetUserHomeLogic(ctx, s.svcCtx)
 	return l.GetUserHome(in)
 }
+
+// 获取系统图片
+func (s *UserBasicServiceServer) GetSysImage(ctx context.Context, in *pb.GetSysImageReq) (*pb.GetSysImageResp, error) {
+	l := userbasicservicelogic.NewGetSysImageLogic(ctx, s.svcCtx)
+	return l.GetSysImage(in)
+}

@@ -215,6 +215,13 @@ type UpdateUserInfoResp struct {
 	UserInfo
 }
 
+type UploadSysImageReq struct {
+	BizType string `form:"biz_type"`
+}
+
+type UploadSysImageResp struct {
+	Id int64 `json:"id"`
+}
 type UserHomeActivityItem struct {
 	Id       int64  `json:"id"`
 	Name     string `json:"name"`

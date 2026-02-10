@@ -768,6 +768,19 @@ service UserBasicService {
     rpc CheckUserExists(CheckUserExistsReq) returns(CheckUserExistsResponse);
     // 获取用户主页信息
     rpc GetUserHome(GetUserHomeReq) returns(GetUserHomeResp);
+    // 获取系统图片
+    rpc GetSysImage(GetSysImageReq) returns (GetSysImageResp);
+}
+
+// 获取系统图片请求
+message GetSysImageReq {
+    int64 user_id = 1;
+    int64 image_id = 2;
+}
+
+// 获取系统图片响应
+message GetSysImageResp {
+    string url = 1;
 }
 
 // 获取用户主页信息请求
@@ -1089,6 +1102,8 @@ service UploadToQiNiu{
     rpc UploadStudentCardImages(UploadStudentCardImagesReq) returns(UploadStudentCardImagesResp);
     // 上传活动封面
     rpc UploadActivityCover(UploadActivityCoverReq) returns(UploadActivityCoverResp);
+    // 上传通用图片并入库
+    rpc UploadSysImage(UploadSysImageReq) returns(UploadSysImageResp);
 }
 
 // 上传头像
@@ -1127,4 +1142,20 @@ message UploadActivityCoverReq {
 // 上传活动封面响应
 message UploadActivityCoverResp {
     string cover_url = 1;
+}
+
+// 上传通用图片请求
+message UploadSysImageReq {
+    int64 user_id = 1;
+    string origin_name = 2;
+    string biz_type = 3;
+    int64 file_size = 4;
+    string mime_type = 5;
+    string extension = 6;
+    bytes image_data = 7;
+}
+
+// 上传通用图片响应
+message UploadSysImageResp {
+    int64 id = 1;
 }
