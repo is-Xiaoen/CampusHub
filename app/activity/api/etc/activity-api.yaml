@@ -25,7 +25,7 @@ Log:
 # ==================== JWT 配置（必须与 user-api 一致！）====================
 # 重要：此 Secret 必须与 user-api.yaml 中的完全一致，否则 Token 验证会失败
 Auth:
-  AccessSecret: "your-access-secret-key-change-in-production-32chars"
+  AccessSecret: "kP9vX2mR7qN5zL4tA1wS8yJ3fG6hB0xU"
   AccessExpire: 7200
 
 # ==================== RPC 服务配置 ====================

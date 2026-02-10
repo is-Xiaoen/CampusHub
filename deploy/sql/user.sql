@@ -28,8 +28,7 @@ CREATE TABLE `users` (
     UNIQUE KEY `uk_qqemail` (`QQemail`) -- 保证QQ邮箱唯一，避免重复注册
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户基础信息表';
 
--- TODO(杨春路): user_details 表字段待补充（nickname, avatar, phone 等）
--- TODO(杨春路): user_tags 用户兴趣标签表
+
 
 -- 1. user_credits 信用分表（CreditService依赖）
 CREATE TABLE `user_credits` (
@@ -134,3 +133,24 @@ CREATE TABLE IF NOT EXISTS `dtm_barrier` (
     UNIQUE KEY `uk_gid_branchid_op_barrierid` (`gid`, `branch_id`, `op`, `barrier_id`),
     KEY `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC COMMENT='DTM子事务屏障表';
+
+
+CREATE TABLE `sys_images` (
+                              `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键，自增ID',
+                              `url` varchar(500) NOT NULL COMMENT '图片存储相对路径或完整URL',
+                              `origin_name` varchar(255) DEFAULT NULL COMMENT '原始文件名',
+                              `biz_type` varchar(32) NOT NULL COMMENT '业务类型: avatar, activity_cover, identity_auth',
+                              `file_size` int NOT NULL DEFAULT '0' COMMENT '文件大小(字节)',
+                              `mime_type` varchar(64) DEFAULT NULL COMMENT '图片格式: image/jpeg, image/png等',
+                              `extension` varchar(10) DEFAULT NULL COMMENT '后缀名: jpg, png',
+                              `ref_count` int NOT NULL DEFAULT '0' COMMENT '核心字段：引用计数，默认为0',
+                              `uploader_id` bigint NOT NULL COMMENT '上传者用户ID，用于权限校验',
+                              `status` tinyint NOT NULL DEFAULT '0' COMMENT '状态: 0-审核中, 1-正常, 2-封禁, 3-待清理',
+                              `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '上传时间',
+                              `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
+                              PRIMARY KEY (`id`),
+    -- 索引优化
+                              INDEX `idx_uploader` (`uploader_id`), -- 关键：用于实现你要求的身份校验逻辑
+                              INDEX `idx_biz_status` (`biz_type`, `status`), -- 方便管理后台按业务和状态筛选
+                              INDEX `idx_ref_count` (`ref_count`) -- 方便定时清理脚本扫描引用为0的孤儿图片
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='图片资源中心表';
