@@ -88,3 +88,9 @@ func (s *UserBasicServiceServer) CheckUserExists(ctx context.Context, in *pb.Che
 	l := userbasicservicelogic.NewCheckUserExistsLogic(ctx, s.svcCtx)
 	return l.CheckUserExists(in)
 }
+
+// 获取用户主页信息
+func (s *UserBasicServiceServer) GetUserHome(ctx context.Context, in *pb.GetUserHomeReq) (*pb.GetUserHomeResp, error) {
+	l := userbasicservicelogic.NewGetUserHomeLogic(ctx, s.svcCtx)
+	return l.GetUserHome(in)
+}

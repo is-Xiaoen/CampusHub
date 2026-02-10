@@ -118,6 +118,12 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Handler: user.GetDeleteUserCodeHandler(serverCtx),
 				},
 				{
+					// 获取用户主页信息
+					Method:  http.MethodGet,
+					Path:    "/users/:user_id/home",
+					Handler: user.GetUserHomeHandler(serverCtx),
+				},
+				{
 					// 获取用户信息
 					Method:  http.MethodGet,
 					Path:    "/users/details",

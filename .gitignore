@@ -23,6 +23,7 @@ specs
 tools
 docs/batch_query_network.md
 tests
+learning
 
 # Test binary
 *.test

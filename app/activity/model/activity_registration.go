@@ -146,23 +146,30 @@ func (m *ActivityRegistrationModel) ListByUserID(ctx context.Context, userID uin
 }
 
 // ListByUserAttendStatus 获取用户报名但未参加/已参加的活动列表
+// attendStatus: -1=全部, 0=待参加, 1=已参加
 func (m *ActivityRegistrationModel) ListByUserAttendStatus(ctx context.Context, userID uint64, attendStatus int, offset, limit int) ([]ActivityRegistration, error) {
-	var ticketStatus int8
-	switch attendStatus {
-	case int(AttendStatusNotJoined):
-		ticketStatus = TicketStatusUnused
-	case int(AttendStatusJoined):
-		ticketStatus = TicketStatusUsed
-	default:
-		return nil, ErrAttendStatusInvalid
-	}
-
 	var regs []ActivityRegistration
-	err := m.db.WithContext(ctx).
+	query := m.db.WithContext(ctx).
 		Table("activity_registrations r").
 		Select("r.*").
 		Joins("INNER JOIN activity_tickets t ON t.registration_id = r.id").
-		Where("r.user_id = ? AND r.status = ? AND t.status = ?", userID, RegistrationStatusSuccess, ticketStatus).
+		Where("r.user_id = ? AND r.status = ?", userID, RegistrationStatusSuccess)
+
+	// attendStatus 为 -1 时查询全部，否则筛选对应状态
+	if attendStatus >= 0 {
+		var ticketStatus int8
+		switch attendStatus {
+		case int(AttendStatusNotJoined):
+			ticketStatus = TicketStatusUnused
+		case int(AttendStatusJoined):
+			ticketStatus = TicketStatusUsed
+		default:
+			return nil, ErrAttendStatusInvalid
+		}
+		query = query.Where("t.status = ?", ticketStatus)
+	}
+
+	err := query.
 		Order("r.created_at DESC").
 		Offset(offset).
 		Limit(limit).
@@ -193,23 +200,29 @@ func (m *ActivityRegistrationModel) CountByUserID(ctx context.Context, userID ui
 }
 
 // CountByUserAttendStatus 统计用户报名但未参加/已参加数量
+// attendStatus: -1=全部, 0=待参加, 1=已参加
 func (m *ActivityRegistrationModel) CountByUserAttendStatus(ctx context.Context, userID uint64, attendStatus int) (int64, error) {
-	var ticketStatus int8
-	switch attendStatus {
-	case int(AttendStatusNotJoined):
-		ticketStatus = TicketStatusUnused
-	case int(AttendStatusJoined):
-		ticketStatus = TicketStatusUsed
-	default:
-		return 0, ErrAttendStatusInvalid
-	}
-
 	var count int64
-	err := m.db.WithContext(ctx).
+	query := m.db.WithContext(ctx).
 		Table("activity_registrations r").
 		Joins("INNER JOIN activity_tickets t ON t.registration_id = r.id").
-		Where("r.user_id = ? AND r.status = ? AND t.status = ?", userID, RegistrationStatusSuccess, ticketStatus).
-		Count(&count).Error
+		Where("r.user_id = ? AND r.status = ?", userID, RegistrationStatusSuccess)
+
+	// attendStatus 为 -1 时查询全部，否则筛选对应状态
+	if attendStatus >= 0 {
+		var ticketStatus int8
+		switch attendStatus {
+		case int(AttendStatusNotJoined):
+			ticketStatus = TicketStatusUnused
+		case int(AttendStatusJoined):
+			ticketStatus = TicketStatusUsed
+		default:
+			return 0, ErrAttendStatusInvalid
+		}
+		query = query.Where("t.status = ?", ticketStatus)
+	}
+
+	err := query.Count(&count).Error
 	return count, err
 }
 
