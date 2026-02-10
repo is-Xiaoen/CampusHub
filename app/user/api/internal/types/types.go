@@ -204,11 +204,11 @@ type UpdateInterestResp struct {
 }
 
 type UpdateUserInfoReq struct {
-	Age            int64   `json:"age,optional"`
-	Nickname       string  `json:"nickname,optional"`
-	Introduction   string  `json:"introduction,optional"`
-	Gender         string  `json:"gender,optional"`
-	InterestTagIds []int64 `json:"interestTagIds,optional"`
+	Age            int64   `form:"age,optional"`
+	Nickname       string  `form:"nickname,optional"`
+	Introduction   string  `form:"introduction,optional"`
+	Gender         string  `form:"gender,optional"`
+	InterestTagIds []int64 `form:"interestTagIds,optional"`
 }
 
 type UpdateUserInfoResp struct {
