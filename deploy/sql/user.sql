@@ -17,6 +17,7 @@ CREATE TABLE `users` (
     `QQemail` VARCHAR(100) NOT NULL COMMENT 'QQ邮箱（用户登录/标识用）',
     `nickname` VARCHAR(50) NOT NULL COMMENT '用户昵称',
     `avatar_url` VARCHAR(255) DEFAULT '' COMMENT '用户头像URL地址',
+    `avatar_id` BIGINT UNSIGNED DEFAULT NULL COMMENT '用户头像图片ID，关联sys_images表',
     `introduction` VARCHAR(500) DEFAULT '' COMMENT '用户个人简介',
     `status` TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '用户状态：0-禁用，1-正常，2-注销',
     `password` VARCHAR(255) NOT NULL COMMENT '用户密码（建议存储加密后的值，如BCrypt哈希）',
