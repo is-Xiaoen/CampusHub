@@ -48,6 +48,8 @@ type (
 	GetCreditLogsResp           = pb.GetCreditLogsResp
 	GetGroupUserReq             = pb.GetGroupUserReq
 	GetGroupUserResponse        = pb.GetGroupUserResponse
+	GetSysImageReq              = pb.GetSysImageReq
+	GetSysImageResp             = pb.GetSysImageResp
 	GetTagsByIdsReq             = pb.GetTagsByIdsReq
 	GetTagsByIdsResp            = pb.GetTagsByIdsResp
 	GetUserHomeReq              = pb.GetUserHomeReq

@@ -768,6 +768,19 @@ service UserBasicService {
     rpc CheckUserExists(CheckUserExistsReq) returns(CheckUserExistsResponse);
     // 获取用户主页信息
     rpc GetUserHome(GetUserHomeReq) returns(GetUserHomeResp);
+    // 获取系统图片
+    rpc GetSysImage(GetSysImageReq) returns (GetSysImageResp);
+}
+
+// 获取系统图片请求
+message GetSysImageReq {
+    int64 user_id = 1;
+    int64 image_id = 2;
+}
+
+// 获取系统图片响应
+message GetSysImageResp {
+    string url = 1;
 }
 
 // 获取用户主页信息请求
