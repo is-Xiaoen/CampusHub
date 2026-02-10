@@ -134,9 +134,11 @@ func (l *CancelActivityLogic) CancelActivity(in *activity.CancelActivityReq) (*a
 	}
 
 	// 异步发布活动取消事件（通知所有已报名参与者）
-	l.svcCtx.MsgProducer.PublishActivityCancelled(
-		l.ctx, uint64(in.Id), uint64(in.OperatorId), in.Reason,
-	)
+	if l.svcCtx.MsgProducer != nil {
+		l.svcCtx.MsgProducer.PublishActivityCancelled(
+			l.ctx, uint64(in.Id), uint64(in.OperatorId), in.Reason,
+		)
+	}
 
 	l.Infof("活动取消成功: id=%d, operatorId=%d, isAdmin=%v, fromStatus=%d(%s), reason=%s",
 		in.Id, in.OperatorId, in.IsAdmin, oldStatus, model.StatusText[oldStatus], in.Reason)

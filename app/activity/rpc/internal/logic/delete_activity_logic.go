@@ -117,7 +117,7 @@ func (l *DeleteActivityLogic) DeleteActivity(in *activity.DeleteActivityReq) (*a
 	}
 
 	// 有报名记录时，发布删除活动信用事件（扣组织者信用分）
-	if activityData.CurrentParticipants > 0 {
+	if activityData.CurrentParticipants > 0 && l.svcCtx.MsgProducer != nil {
 		l.svcCtx.MsgProducer.PublishCreditEvent(
 			l.ctx, messaging.CreditEventHostDelete, int64(in.Id), int64(activityData.OrganizerID),
 		)
