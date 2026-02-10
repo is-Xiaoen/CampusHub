@@ -149,6 +149,7 @@ CREATE TABLE `sys_images` (
                               `status` tinyint NOT NULL DEFAULT '0' COMMENT '状态: 0-审核中, 1-正常, 2-封禁, 3-待清理',
                               `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '上传时间',
                               `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
+                              `deleted_at` datetime DEFAULT NULL COMMENT '逻辑删除时间，NULL表示未删除',
                               PRIMARY KEY (`id`),
     -- 索引优化
                               INDEX `idx_uploader` (`uploader_id`), -- 关键：用于实现你要求的身份校验逻辑
