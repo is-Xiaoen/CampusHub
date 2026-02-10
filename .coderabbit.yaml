@@ -1,0 +1,171 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# CodeRabbit 配置文件
+# 文档：https://docs.coderabbit.ai/getting-started/yaml-configuration
+
+# ==================== 基础设置 ====================
+language: "zh-CN"
+
+tone_instructions: >
+  请用中文回复。语气专业但友好，像一个有经验的 Go 后端工程师在做 Code Review。
+  重点关注：并发安全、错误处理、性能问题、安全漏洞。
+  对于好的实现也给出肯定。
+
+early_access: false
+
+# ==================== Review 配置 ====================
+reviews:
+  # chill = 正常审查，assertive = 严格审查（会指出更多细节问题）
+  profile: "assertive"
+
+  # PR 摘要
+  high_level_summary: true
+  high_level_summary_placeholder: "@coderabbitai summary"
+
+  # 折叠文件变更列表（PR 文件多时更整洁）
+  collapse_walkthrough: true
+
+  # 关联 Issue 分析
+  assess_linked_issues: true
+  related_issues: true
+  related_prs: true
+
+  # 建议标签和 Reviewer
+  suggested_labels: true
+  suggested_reviewers: true
+
+  # 不生成诗歌（正经项目不需要）
+  poem: false
+
+  # 显示 review 状态
+  review_status: true
+
+  # 文件过滤：忽略自动生成的文件和配置
+  path_filters:
+    - "!**/*.pb.go"
+    - "!**/*_grpc.pb.go"
+    - "!**/mock_*.go"
+    - "!**/go.sum"
+    - "!**/.github/workflows/**"
+    - "!**/deploy/docker/config/**"
+
+  # ==================== 自动 Review 配置 ====================
+  auto_review:
+    enabled: true
+    # 增量 review（只审查新增的 commit，不重复审查已审过的）
+    auto_incremental_review: true
+    # 不审查 Draft PR
+    drafts: false
+    # 只在 PR 目标为 main 分支时触发
+    base_branches:
+      - "main"
+    # 跳过标题包含这些关键词的 PR
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+      - "wip"
+
+  # ==================== 路径级别的审查指令 ====================
+  path_instructions:
+    # Go 业务逻辑代码
+    - path: "app/**/logic/**/*.go"
+      instructions: |
+        这是 go-zero 微服务的业务逻辑层，重点检查：
+        1. 错误处理：是否所有错误都被正确处理，不能忽略 error
+        2. 并发安全：是否有数据竞争风险，共享资源是否加锁
+        3. 资源释放：数据库连接、文件句柄等是否用 defer 关闭
+        4. 日志规范：关键操作是否有日志，日志级别是否合理
+        5. 幂等性：写操作是否考虑了重复请求
+        6. SQL 注入：是否使用了参数化查询而不是字符串拼接
+
+    # Model 层（数据库操作）
+    - path: "app/**/model/**/*.go"
+      instructions: |
+        这是数据模型层，重点检查：
+        1. SQL 性能：查询是否使用了索引，是否有 N+1 问题
+        2. 事务边界：需要原子性的操作是否在同一事务中
+        3. 乐观锁：并发更新是否使用了 version 字段或 gorm.Expr
+        4. 批量操作：大量数据是否使用批量插入/更新而非循环单条
+        5. 软删除：是否正确处理了 deleted_at 字段
+
+    # API Handler 层
+    - path: "app/**/handler/**/*.go"
+      instructions: |
+        这是 HTTP Handler 层，重点检查：
+        1. 参数校验：用户输入是否做了合法性验证
+        2. 权限检查：是否正确从 JWT 中提取用户身份
+        3. 响应格式：是否统一使用 httpx.OkJsonCtx 返回
+        4. 不应包含业务逻辑：Handler 只做参数解析和转发
+
+    # RPC Proto 文件
+    - path: "app/**/*.proto"
+      instructions: |
+        检查 Proto 定义：
+        1. 字段命名：是否使用 snake_case
+        2. 字段编号：是否有跳号或重复
+        3. 向后兼容：修改时是否保留了旧字段编号
+
+    # 测试代码
+    - path: "**/*_test.go"
+      instructions: |
+        检查测试质量：
+        1. 是否覆盖了正常路径和异常路径
+        2. 表驱动测试：多组用例是否用 table-driven 模式
+        3. 是否使用了 testify/assert 而非手动 if 判断
+        4. Mock：外部依赖是否正确 mock
+
+    # Dockerfile 和 CI/CD
+    - path: "deploy/**"
+      instructions: |
+        检查部署配置：
+        1. Dockerfile：是否使用多阶段构建，是否以非 root 用户运行
+        2. 安全：是否暴露了密钥或密码
+        3. 资源限制：是否设置了合理的 CPU/Memory limits
+
+    # 公共代码
+    - path: "common/**/*.go"
+      instructions: |
+        公共代码影响所有服务，需要更严格的审查：
+        1. 向后兼容：修改是否会影响已有的调用方
+        2. 接口设计：公共函数签名是否清晰、易用
+        3. 性能：是否有不必要的内存分配或反射调用
+
+  # ==================== 合并前检查 ====================
+  pre_merge_checks:
+    custom_checks:
+      - name: "错误处理完整性"
+        mode: "required"
+        instructions: |
+          检查所有新增或修改的 Go 函数：
+          - 返回的 error 是否都被处理（不能用 _ 忽略）
+          - 是否有 panic 风险（如 nil pointer dereference）
+          - defer 中的 error 是否被处理
+
+      - name: "敏感信息检查"
+        mode: "required"
+        instructions: |
+          检查是否有硬编码的敏感信息：
+          - 密码、密钥、Token
+          - 数据库连接字符串
+          - 第三方 API Key
+          这些应该在配置文件中，不应出现在代码里。
+
+# ==================== 对话设置 ====================
+chat:
+  auto_reply: true
+
+# ==================== 知识库设置 ====================
+knowledge_base:
+  # 让 AI 学习项目的编码规范
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "CLAUDE.md"
+      - "docs/guide/架构规范说明.md"
+
+  # 学习历史 Review 的反馈
+  learnings:
+    scope: "local"
+
+  # 关联 PR 历史
+  pull_requests:
+    scope: "local"
