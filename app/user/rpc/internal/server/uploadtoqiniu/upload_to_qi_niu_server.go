@@ -40,3 +40,9 @@ func (s *UploadToQiNiuServer) UploadActivityCover(ctx context.Context, in *pb.Up
 	l := uploadtoqiniulogic.NewUploadActivityCoverLogic(ctx, s.svcCtx)
 	return l.UploadActivityCover(in)
 }
+
+// 上传通用图片并入库
+func (s *UploadToQiNiuServer) UploadSysImage(ctx context.Context, in *pb.UploadSysImageReq) (*pb.UploadSysImageResp, error) {
+	l := uploadtoqiniulogic.NewUploadSysImageLogic(ctx, s.svcCtx)
+	return l.UploadSysImage(in)
+}

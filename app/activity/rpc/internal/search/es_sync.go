@@ -186,13 +186,16 @@ func (s *SyncService) FullSync(ctx context.Context) error {
 		failCount  int    = 0
 	)
 
+	// 预加载所有分类名称（分类数据量小，通常 <50 条，一次加载即可）
+	catNameMap := s.loadCategoryNameMap(ctx)
+
 	for {
 		// 1. 分批查询（游标分页，基于 ID）
 		var activities []model.Activity
+		// GORM 自动过滤 soft-deleted 记录，无需显式 deleted_at IS NULL
 		err := s.db.WithContext(ctx).
 			Where("id > ?", lastID).
 			Where("status IN ?", []int8{model.StatusPublished, model.StatusOngoing, model.StatusFinished}).
-			Where("deleted_at IS NULL").
 			Order("id ASC").
 			Limit(batchSize).
 			Find(&activities).Error
@@ -209,7 +212,14 @@ func (s *SyncService) FullSync(ctx context.Context) error {
 		// 更新游标
 		lastID = activities[len(activities)-1].ID
 
-		// 2. 转换文档（绑定 doc 和对应的 activity 元数据，防止索引对齐问题）
+		// 2. 批量加载标签（避免 N+1 查询，每批只需 1 次 SQL）
+		activityIDs := make([]uint64, len(activities))
+		for i := range activities {
+			activityIDs[i] = activities[i].ID
+		}
+		tagsMap := s.loadTagsMap(ctx, activityIDs)
+
+		// 3. 转换文档（使用预加载的分类和标签数据，零额外查询）
 		type docEntry struct {
 			doc     ActivityDoc
 			id      uint64
@@ -217,12 +227,7 @@ func (s *SyncService) FullSync(ctx context.Context) error {
 		}
 		entries := make([]docEntry, 0, len(activities))
 		for i := range activities {
-			doc, err := s.convertToDoc(ctx, &activities[i])
-			if err != nil {
-				logx.Errorf("[ESSync] 转换文档失败 id=%d: %v", activities[i].ID, err)
-				failCount++
-				continue
-			}
+			doc := s.buildDocFromMaps(&activities[i], catNameMap, tagsMap)
 			entries = append(entries, docEntry{
 				doc:     doc,
 				id:      activities[i].ID,
@@ -230,7 +235,7 @@ func (s *SyncService) FullSync(ctx context.Context) error {
 			})
 		}
 
-		// 3. 批量索引
+		// 4. 批量索引
 		bulkRequest := s.es.client.Bulk().Index(s.es.indexName)
 		for _, entry := range entries {
 			req := elastic.NewBulkIndexRequest().
@@ -241,7 +246,7 @@ func (s *SyncService) FullSync(ctx context.Context) error {
 			bulkRequest.Add(req)
 		}
 
-		// 4. 执行批量索引
+		// 5. 执行批量索引
 		response, err := bulkRequest.Do(ctx)
 		if err != nil {
 			logx.Errorf("[ESSync] 批量索引失败 lastID=%d: %v", lastID, err)
@@ -249,7 +254,7 @@ func (s *SyncService) FullSync(ctx context.Context) error {
 			continue
 		}
 
-		// 5. 统计
+		// 6. 统计
 		totalCount += len(response.Succeeded())
 		failCount += len(response.Failed())
 
@@ -352,9 +357,109 @@ func (s *SyncService) convertToDoc(ctx context.Context, activity *model.Activity
 	return doc, nil
 }
 
+// ==================== 批量同步辅助方法 ====================
+
+// loadCategoryNameMap 预加载所有分类名称到 map
+// 分类数据量小（通常 <50 条），一次全量加载即可，避免 N+1 查询
+func (s *SyncService) loadCategoryNameMap(ctx context.Context) map[uint64]string {
+	result := make(map[uint64]string)
+	if s.catModel == nil {
+		return result
+	}
+	categories, err := s.catModel.FindAll(ctx)
+	if err != nil {
+		logx.Errorf("[ESSync] 预加载分类失败: %v", err)
+		return result
+	}
+	for _, c := range categories {
+		result[c.ID] = c.Name
+	}
+	return result
+}
+
+// loadTagsMap 批量加载活动标签到 map
+// 一次 SQL 查询所有活动的标签，返回 map[活动ID][]TagCache
+func (s *SyncService) loadTagsMap(ctx context.Context, activityIDs []uint64) map[uint64][]model.TagCache {
+	if s.tagModel == nil || len(activityIDs) == 0 {
+		return make(map[uint64][]model.TagCache)
+	}
+	tagsMap, err := s.tagModel.FindByActivityIDs(ctx, activityIDs)
+	if err != nil {
+		logx.Errorf("[ESSync] 批量加载标签失败: %v", err)
+		return make(map[uint64][]model.TagCache)
+	}
+	return tagsMap
+}
+
+// buildDocFromMaps 使用预加载数据构建 ES 文档（零额外查询）
+// 用于 FullSync 等批量场景，避免 N+1 查询问题
+func (s *SyncService) buildDocFromMaps(activity *model.Activity, catNameMap map[uint64]string, tagsMap map[uint64][]model.TagCache) ActivityDoc {
+	doc := ActivityDoc{
+		ID:          activity.ID,
+		Title:       activity.Title,
+		Description: activity.Description,
+		CategoryID:  activity.CategoryID,
+		Status:      activity.Status,
+
+		OrganizerID:     activity.OrganizerID,
+		OrganizerName:   activity.OrganizerName,
+		OrganizerAvatar: activity.OrganizerAvatar,
+
+		Location:      activity.Location,
+		AddressDetail: activity.AddressDetail,
+
+		RegisterStartTime: activity.RegisterStartTime,
+		RegisterEndTime:   activity.RegisterEndTime,
+		ActivityStartTime: activity.ActivityStartTime,
+		ActivityEndTime:   activity.ActivityEndTime,
+
+		MaxParticipants:     activity.MaxParticipants,
+		CurrentParticipants: activity.CurrentParticipants,
+		ViewCount:           activity.ViewCount,
+
+		CoverURL:  activity.CoverURL,
+		CoverType: activity.CoverType,
+
+		CreatedAt: activity.CreatedAt,
+		UpdatedAt: activity.UpdatedAt,
+	}
+
+	// 地理坐标
+	if activity.Latitude != 0 || activity.Longitude != 0 {
+		doc.GeoLocation = &GeoPoint{
+			Lat: activity.Latitude,
+			Lon: activity.Longitude,
+		}
+	}
+
+	// 分类名称（从预加载 map 查找）
+	doc.CategoryName = catNameMap[activity.CategoryID]
+
+	// 标签（从预加载 map 查找）
+	if tags, ok := tagsMap[activity.ID]; ok {
+		doc.Tags = make([]string, len(tags))
+		for i, tag := range tags {
+			doc.Tags[i] = tag.Name
+		}
+	}
+
+	// 搜索建议
+	doc.Suggest = &Suggest{
+		Input: []string{activity.Title},
+		Contexts: map[string]string{
+			"category": fmt.Sprintf("%d", activity.CategoryID),
+		},
+	}
+
+	return doc
+}
+
 // ==================== 增量同步 ====================
 
 // IncrementalSync 增量同步（基于更新时间）
+//
+// 使用游标分页避免一次加载所有数据导致 OOM
+// 每批最多 500 条，通过 ID 游标推进
 func (s *SyncService) IncrementalSync(ctx context.Context, since time.Time) error {
 	if s.es == nil {
 		return nil
@@ -362,25 +467,59 @@ func (s *SyncService) IncrementalSync(ctx context.Context, since time.Time) erro
 
 	logx.Infof("[ESSync] 开始增量同步，起始时间: %v", since)
 
-	var activities []model.Activity
-	err := s.db.WithContext(ctx).
-		Where("updated_at >= ?", since.Unix()).
-		Where("deleted_at IS NULL").
-		Find(&activities).Error
+	const batchSize = 500
+	var (
+		lastID       uint64 = 0
+		sinceUnix           = since.Unix()
+		successCount int    = 0
+		failCount    int    = 0
+	)
 
-	if err != nil {
-		return fmt.Errorf("查询增量数据失败: %w", err)
-	}
+	for {
+		var activities []model.Activity
+		err := s.db.WithContext(ctx).
+			Where("id > ? AND updated_at >= ?", lastID, sinceUnix).
+			Order("id ASC").
+			Limit(batchSize).
+			Find(&activities).Error
 
-	successCount := 0
-	for i := range activities {
-		if err := s.IndexActivity(ctx, &activities[i]); err != nil {
-			logx.Errorf("[ESSync] 增量同步失败 id=%d: %v", activities[i].ID, err)
-		} else {
-			successCount++
+		if err != nil {
+			return fmt.Errorf("查询增量数据失败: %w", err)
 		}
+
+		if len(activities) == 0 {
+			break
+		}
+
+		lastID = activities[len(activities)-1].ID
+
+		for i := range activities {
+			if activities[i].IsPublic() {
+				// 公开活动：索引到 ES
+				if err := s.IndexActivity(ctx, &activities[i]); err != nil {
+					logx.Errorf("[ESSync] 增量同步失败 id=%d: %v", activities[i].ID, err)
+					failCount++
+				} else {
+					successCount++
+				}
+			} else {
+				// 非公开活动（草稿/待审核/已拒绝/已取消）：从 ES 删除
+				if err := s.DeleteActivity(ctx, activities[i].ID); err != nil {
+					logx.Errorf("[ESSync] 增量删除失败 id=%d: %v", activities[i].ID, err)
+					failCount++
+				} else {
+					successCount++
+				}
+			}
+		}
+
+		if len(activities) < batchSize {
+			break
+		}
+
+		time.Sleep(100 * time.Millisecond)
 	}
 
-	logx.Infof("[ESSync] 增量同步完成，共处理 %d 条，成功 %d 条", len(activities), successCount)
+	logx.Infof("[ESSync] 增量同步完成，成功 %d 条，失败 %d 条", successCount, failCount)
 	return nil
 }

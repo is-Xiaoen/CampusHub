@@ -94,6 +94,12 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			[]rest.Middleware{serverCtx.UserRoleMiddleware},
 			[]rest.Route{
 				{
+					// 上传系统图片
+					Method:  http.MethodPost,
+					Path:    "/images/upload",
+					Handler: user.UploadSysImageHandler(serverCtx),
+				},
+				{
 					// 修改兴趣
 					Method:  http.MethodPost,
 					Path:    "/interests",

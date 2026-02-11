@@ -5,7 +5,6 @@ import (
 
 	creditservicelogic "activity-platform/app/user/rpc/internal/logic/creditservice"
 	tagservicelogic "activity-platform/app/user/rpc/internal/logic/tagservice"
-	uploadtoqiniulogic "activity-platform/app/user/rpc/internal/logic/uploadtoqiniu"
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
 	"activity-platform/common/errorx"
@@ -39,20 +38,20 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(in *pb.UpdateUserInfoReq) (*pb.Upda
 		return nil, errorx.New(errorx.CodeUserNotFound)
 	}
 
-	// 2. 处理头像上传与更新
-	// 只有当提供了新的头像数据时才处理
-	if len(in.AvatarImgData) > 0 {
-		// 使用统一的 UploadAvatar RPC 处理删除旧图、上传新图与DB更新
-		uploadResp, err := uploadtoqiniulogic.NewUploadAvatarLogic(l.ctx, l.svcCtx).UploadAvatar(&pb.UploadAvatarReq{
-			UserId:   in.UserId,
-			FileName: in.AvatarImgName,
-			FileData: in.AvatarImgData,
+	// 2. 处理头像ID：使用 GetSysImage 查询URL，并更新 avatar_id
+	var avatarURL string
+	if in.AvatarId > 0 {
+		imgResp, err := NewGetSysImageLogic(l.ctx, l.svcCtx).GetSysImage(&pb.GetSysImageReq{
+			UserId:  in.UserId,
+			ImageId: in.AvatarId,
 		})
 		if err != nil {
 			return nil, err
 		}
-		// 同步内存对象的头像URL（DB已更新）
-		user.AvatarURL = uploadResp.AvatarUrl
+		// 不再保存 AvatarURL 到数据库，仅用于本次响应
+		avatarURL = imgResp.Url
+		// 更新 AvatarID（模型需包含该字段，数据库需存在 avatar_id）
+		user.AvatarID = in.AvatarId
 	}
 
 	// 3. 更新基本信息
@@ -96,7 +95,7 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(in *pb.UpdateUserInfoReq) (*pb.Upda
 		Nickname:  user.Nickname,
 		Introduce: user.Introduction,
 		Gender:    user.Gender,
-		AvatarUrl: user.AvatarURL,
+		AvatarUrl: avatarURL,
 		Age:       user.Age,
 		TagIds:    in.TagIds,
 		QqEmail:   user.QQEmail,

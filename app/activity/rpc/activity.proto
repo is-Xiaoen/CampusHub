@@ -324,6 +324,7 @@ message CreateActivityReq {
   int64 organizer_id = 21;
   string organizer_name = 22;
   string organizer_avatar = 23;
+  int64 cover_image_id = 24;     // 封面图片ID(关联sys_images)
 }
 
 message CreateActivityResp {
@@ -355,6 +356,7 @@ message UpdateActivityReq {
   repeated int64 tag_ids = 21;
   bool update_tags = 22;
   int64 operator_id = 23;
+  optional int64 cover_image_id = 24;  // 封面图片ID(关联sys_images)
 }
 
 message UpdateActivityResp {
@@ -600,6 +602,7 @@ message CreateActivityActionReq {
   int64 organizer_id = 22;
   string organizer_name = 23;
   string organizer_avatar = 24;
+  int64 cover_image_id = 25;     // 封面图片ID(关联sys_images)
 }
 
 // CreateActivityActionResp 创建活动正向操作响应

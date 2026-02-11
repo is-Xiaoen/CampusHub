@@ -3,6 +3,7 @@ package uploadtoqiniulogic
 import (
 	"context"
 
+	"activity-platform/app/user/model"
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/app/user/rpc/pb/pb"
 	"activity-platform/common/errorx"
@@ -40,24 +41,33 @@ func (l *UploadAvatarLogic) UploadAvatar(in *pb.UploadAvatarReq) (*pb.UploadAvat
 		return nil, errorx.New(errorx.CodeUserNotFound)
 	}
 
-	// 删除旧头像（尽力而为，失败不阻断）
-	if user.AvatarURL != "" {
-		if err := deleteFromQiniu(l.ctx, l.svcCtx, user.AvatarURL); err != nil {
-			l.Logger.Errorf("Delete old avatar failed, url=%s, err=%v", user.AvatarURL, err)
-		}
-	}
+	// 删除旧头像（逻辑保留但需适配新模式，暂时跳过或通过SysImage清理）
+	// if user.AvatarID > 0 { ... }
 
-	// 上传新头像
-	avatarUrl, err := uploadToQiniu(l.ctx, l.svcCtx, in.FileData, in.FileName)
+	// 上传新头像 (通过 UploadSysImageLogic)
+	uploadLogic := NewUploadSysImageLogic(l.ctx, l.svcCtx)
+	uploadResp, err := uploadLogic.UploadSysImage(&pb.UploadSysImageReq{
+		UserId:     in.UserId,
+		ImageData:  in.FileData,
+		OriginName: in.FileName,
+		BizType:    model.SysImageBizTypeAvatar,
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	// 更新数据库
-	user.AvatarURL = avatarUrl
+	user.AvatarID = uploadResp.Id
 	if err := l.svcCtx.UserModel.Update(l.ctx, user); err != nil {
 		l.Logger.Errorf("Update user avatar failed, userId=%d, err=%v", in.UserId, err)
 		return nil, errorx.New(errorx.CodeUserUpdateFailed)
+	}
+
+	// 获取图片URL用于返回
+	sysImage, err := l.svcCtx.SysImageModel.FindByID(l.ctx, uploadResp.Id)
+	var avatarUrl string
+	if err == nil {
+		avatarUrl = sysImage.URL
 	}
 
 	return &pb.UploadAvatarResp{

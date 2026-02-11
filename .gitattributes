@@ -1,0 +1,11 @@
+# Go 源码强制 LF（gofmt 要求 LF，Windows CRLF 会导致 CI lint 失败）
+*.go text eol=lf
+*.proto text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.mod text eol=lf
+*.sum text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+Dockerfile text eol=lf
+Makefile text eol=lf

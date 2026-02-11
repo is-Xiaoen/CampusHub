@@ -67,6 +67,8 @@ type ServiceContext struct {
 
 	// StudentVerificationModel 学生认证数据访问层
 	StudentVerificationModel model.IStudentVerificationModel
+	// SysImageModel 图片资源中心数据访问层
+	SysImageModel model.ISysImageModel
 
 	// ==================== RPC 服务 ====================
 
@@ -132,6 +134,7 @@ func NewServiceContext(c config.Config) (*ServiceContext, error) {
 		UserCreditModel:           model.NewUserCreditModel(db),
 		CreditLogModel:            model.NewCreditLogModel(db),
 		StudentVerificationModel:  model.NewStudentVerificationModel(db),
+		SysImageModel:             model.NewSysImageModel(db),
 
 		// 注入 RPC 客户端（可能为 nil）
 		ActivityRpc: activityRpc,

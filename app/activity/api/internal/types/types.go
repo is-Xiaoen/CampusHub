@@ -100,7 +100,7 @@ type Category struct {
 
 type CreateActivityReq struct {
 	Title                string  `json:"title"`               // 必填，2-100字
-	CoverUrl             string  `json:"coverUrl"`            // 必填
+	CoverImageId         int64   `json:"coverImageId"`        // 必填，封面图片ID
 	CoverType            int32   `json:"coverType,default=1"` // 1=图片(默认), 2=视频
 	Content              string  `json:"content,optional"`    // 富文本
 	CategoryId           int64   `json:"categoryId"`          // 必填
@@ -301,7 +301,7 @@ type UpdateActivityReq struct {
 	Id                   int64    `path:"id"`      // 路径参数
 	Version              int32    `json:"version"` // 乐观锁版本号（必填）
 	Title                *string  `json:"title,optional"`
-	CoverUrl             *string  `json:"coverUrl,optional"`
+	CoverImageId         *int64   `json:"coverImageId,optional"`
 	CoverType            *int32   `json:"coverType,optional"`
 	Content              *string  `json:"content,optional"`
 	CategoryId           *int64   `json:"categoryId,optional"`

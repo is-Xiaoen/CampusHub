@@ -3,7 +3,6 @@ package mq
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"activity-platform/common/messaging"
@@ -65,8 +64,8 @@ func (p *Producer) publishAsync(topic string, payload interface{}) {
 // PublishActivityCreated 发布活动创建事件
 func (p *Producer) PublishActivityCreated(ctx context.Context, activityID uint64, creatorID uint64, title string) {
 	p.publishAsync(messaging.TopicActivityCreated, messaging.ActivityCreatedEvent{
-		ActivityID: fmt.Sprintf("%d", activityID),
-		CreatorID:  fmt.Sprintf("%d", creatorID),
+		ActivityID: activityID,
+		CreatorID:  creatorID,
 		Title:      title,
 		CreatedAt:  time.Now(),
 	})
@@ -75,8 +74,8 @@ func (p *Producer) PublishActivityCreated(ctx context.Context, activityID uint64
 // PublishMemberJoined 发布用户报名事件
 func (p *Producer) PublishMemberJoined(ctx context.Context, activityID uint64, userID uint64) {
 	p.publishAsync(messaging.TopicActivityMemberJoined, messaging.ActivityMemberJoinedEvent{
-		ActivityID: fmt.Sprintf("%d", activityID),
-		UserID:     fmt.Sprintf("%d", userID),
+		ActivityID: activityID,
+		UserID:     userID,
 		JoinedAt:   time.Now(),
 	})
 }
@@ -84,8 +83,8 @@ func (p *Producer) PublishMemberJoined(ctx context.Context, activityID uint64, u
 // PublishMemberLeft 发布用户取消报名事件
 func (p *Producer) PublishMemberLeft(ctx context.Context, activityID uint64, userID uint64) {
 	p.publishAsync(messaging.TopicActivityMemberLeft, messaging.ActivityMemberLeftEvent{
-		ActivityID: fmt.Sprintf("%d", activityID),
-		UserID:     fmt.Sprintf("%d", userID),
+		ActivityID: activityID,
+		UserID:     userID,
 		LeftAt:     time.Now(),
 	})
 }
@@ -93,8 +92,8 @@ func (p *Producer) PublishMemberLeft(ctx context.Context, activityID uint64, use
 // PublishActivityCancelled 发布活动取消事件
 func (p *Producer) PublishActivityCancelled(ctx context.Context, activityID uint64, cancelledBy uint64, reason string) {
 	p.publishAsync(messaging.TopicActivityCancelled, messaging.ActivityCancelledEvent{
-		ActivityID:  fmt.Sprintf("%d", activityID),
-		CancelledBy: fmt.Sprintf("%d", cancelledBy),
+		ActivityID:  activityID,
+		CancelledBy: cancelledBy,
 		Reason:      reason,
 		CancelledAt: time.Now(),
 	})
