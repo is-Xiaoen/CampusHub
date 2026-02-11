@@ -148,6 +148,14 @@ type ApplyVerifyResp {
 	CreatedAt string `json:"created_at"`
 }
 
+type UploadSysImageReq {
+	BizType string `form:"bizType"` // avatar/activity_cover/identity_auth
+}
+
+type UploadSysImageResp {
+	Id int64 `json:"id"`
+}
+
 // 用户修改后的数据
 type ModifiedData {
 	// 姓名
@@ -302,7 +310,7 @@ type UpdateUserInfoReq {
 	Nickname       string  `form:"nickname,optional"`
 	Introduction   string  `form:"introduction,optional"`
 	Gender         string  `form:"gender,optional"`
-	AvatarId       int64   `form:"avatar_id,optional"`
+	AvatarId       int64   `form:"avatarId,optional"`
 	InterestTagIds []int64 `form:"interestTagIds,optional"`
 }
 
@@ -440,6 +448,10 @@ service user-api {
 	@doc "修改兴趣"
 	@handler UpdateInterest
 	post /interests (UpdateInterestReq) returns (UpdateInterestResp)
+
+	@doc "上传系统图片"
+	@handler UploadSysImage
+	post /images/upload (UploadSysImageReq) returns (UploadSysImageResp)
 
 	@doc "获取用户信息"
 	@handler GetUserInfo
