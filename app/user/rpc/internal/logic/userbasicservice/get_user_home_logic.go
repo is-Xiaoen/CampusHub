@@ -54,10 +54,23 @@ func (l *GetUserHomeLogic) GetUserHome(in *pb.GetUserHomeReq) (*pb.GetUserHomeRe
 		}
 
 		// 填充用户信息
+		var avatarUrl string
+		if user.AvatarID > 0 {
+			imgResp, err := NewGetSysImageLogic(l.ctx, l.svcCtx).GetSysImage(&pb.GetSysImageReq{
+				UserId:  user.UserID,
+				ImageId: user.AvatarID,
+			})
+			if err == nil {
+				avatarUrl = imgResp.Url
+			} else {
+				l.Logger.Errorf("GetSysImage failed for user home: %v", err)
+			}
+		}
+
 		resp.UserInfo = &pb.UserHomeInfo{
 			UserId:       user.UserID,
 			Nickname:     user.Nickname,
-			AvatarUrl:    user.AvatarURL,
+			AvatarUrl:    avatarUrl,
 			Introduction: user.Introduction,
 			Gender:       int32(user.Gender),
 			Age:          int32(user.Age),

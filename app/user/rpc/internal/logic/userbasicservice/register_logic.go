@@ -69,7 +69,6 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 		Status:     model.UserStatusNormal,
 		Gender:     model.UserGenderUnknown, // 默认未知
 		Age:        0,                       // 默认0
-		AvatarURL:  "",                      // 默认空
 		CreateTime: time.Now(),
 		UpdateTime: time.Now(),
 	}
@@ -137,7 +136,7 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 		UserInfo: &pb.UserInfo{
 			UserId:        uint64(newUser.UserID),
 			Nickname:      newUser.Nickname,
-			AvatarUrl:     newUser.AvatarURL,
+			AvatarUrl:     "",
 			Introduction:  newUser.Introduction,
 			Gender:        "未知",
 			Age:           strconv.FormatInt(newUser.Age, 10),
