@@ -69,7 +69,6 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 		Status:     model.UserStatusNormal,
 		Gender:     model.UserGenderUnknown, // 默认未知
 		Age:        0,                       // 默认0
-		AvatarURL:  "",                      // 默认空
 		CreateTime: time.Now(),
 		UpdateTime: time.Now(),
 	}
@@ -131,13 +130,26 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 	}
 
 	// 5. 返回响应
+	// 如果存在头像ID，尝试通过 userId + avatarId 获取头像URL
+	var avatarURL string
+	if newUser.AvatarID > 0 {
+		imgResp, imgErr := NewGetSysImageLogic(l.ctx, l.svcCtx).GetSysImage(&pb.GetSysImageReq{
+			UserId:  int64(newUser.UserID),
+			ImageId: newUser.AvatarID,
+		})
+		if imgErr == nil {
+			avatarURL = imgResp.Url
+		} else {
+			l.Logger.Errorf("注册流程获取头像URL失败: %v, userId=%d, imageId=%d", imgErr, newUser.UserID, newUser.AvatarID)
+		}
+	}
 	return &pb.RegisterResponse{
 		AccessToken:  shortToken.Token,
 		RefreshToken: longToken.Token,
 		UserInfo: &pb.UserInfo{
 			UserId:        uint64(newUser.UserID),
 			Nickname:      newUser.Nickname,
-			AvatarUrl:     newUser.AvatarURL,
+			AvatarUrl:     avatarURL,
 			Introduction:  newUser.Introduction,
 			Gender:        "未知",
 			Age:           strconv.FormatInt(newUser.Age, 10),

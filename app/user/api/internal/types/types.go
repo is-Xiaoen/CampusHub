@@ -208,11 +208,20 @@ type UpdateUserInfoReq struct {
 	Nickname       string  `form:"nickname,optional"`
 	Introduction   string  `form:"introduction,optional"`
 	Gender         string  `form:"gender,optional"`
+	AvatarId       int64   `form:"avatarId,optional"`
 	InterestTagIds []int64 `form:"interestTagIds,optional"`
 }
 
 type UpdateUserInfoResp struct {
 	UserInfo
+}
+
+type UploadSysImageReq struct {
+	BizType string `form:"bizType"` // avatar/activity_cover/identity_auth
+}
+
+type UploadSysImageResp struct {
+	Id int64 `json:"id"`
 }
 
 type UserHomeActivityItem struct {

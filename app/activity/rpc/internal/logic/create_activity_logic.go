@@ -100,15 +100,39 @@ func (l *CreateActivityLogic) CreateActivity(in *activity.CreateActivityReq) (*a
 	return l.createActivityLocal(in, int8(status))
 }
 
+// resolveCoverURL 通过 SysImage 服务解析封面图片 URL
+func (l *CreateActivityLogic) resolveCoverURL(organizerID, coverImageID int64) (string, error) {
+	resp, err := l.svcCtx.UserBasicRpc.GetSysImage(l.ctx, &userpb.GetSysImageReq{
+		UserId:  organizerID,
+		ImageId: coverImageID,
+	})
+	if err != nil {
+		l.Errorf("[CreateActivity] 获取封面图片信息失败: organizerId=%d, imageId=%d, err=%v",
+			organizerID, coverImageID, err)
+		return "", errorx.NewWithMessage(errorx.CodeInternalError, "获取封面图片信息失败")
+	}
+	if resp.Url == "" {
+		return "", errorx.ErrInvalidParams("封面图片不存在或已失效")
+	}
+	return resp.Url, nil
+}
+
 // createActivityWithDTM 使用 DTM SAGA 创建活动
 func (l *CreateActivityLogic) createActivityWithDTM(in *activity.CreateActivityReq, status int32) (*activity.CreateActivityResp, error) {
 	// 1. 去重并过滤无效标签 ID
 	validTagIDs := l.filterValidTagIDs(in.TagIds)
 
-	// 2. 构建 Activity 分支请求
+	// 2. 解析封面图片 URL（写入时解析，读取时直接使用）
+	coverURL, err := l.resolveCoverURL(in.OrganizerId, in.CoverImageId)
+	if err != nil {
+		return nil, err
+	}
+
+	// 3. 构建 Activity 分支请求
 	activityReq := &activity.CreateActivityActionReq{
 		Title:                in.Title,
-		CoverUrl:             in.CoverUrl,
+		CoverUrl:             coverURL,
+		CoverImageId:         in.CoverImageId,
 		CoverType:            in.CoverType,
 		Content:              in.Content,
 		CategoryId:           in.CategoryId,
@@ -133,7 +157,7 @@ func (l *CreateActivityLogic) createActivityWithDTM(in *activity.CreateActivityR
 		OrganizerAvatar:      in.OrganizerAvatar,
 	}
 
-	// 3. 构建 User 标签计数请求（如果有标签）
+	// 4. 构建 User 标签计数请求（如果有标签）
 	var tagReq *userpb.TagUsageCountReq
 	hasTags := len(validTagIDs) > 0
 	if hasTags {
@@ -143,11 +167,11 @@ func (l *CreateActivityLogic) createActivityWithDTM(in *activity.CreateActivityR
 		}
 	}
 
-	// 4. 记录 SAGA 发起前的时间戳，用于后续精准查询创建的活动
+	// 5. 记录 SAGA 发起前的时间戳，用于后续精准查询创建的活动
 	// 原理：activity.created_at >= beforeCreate，缩小查询范围避免同名活动误匹配
 	beforeCreate := time.Now().Unix()
 
-	// 5. 发起 SAGA 事务
+	// 6. 发起 SAGA 事务
 	cfg := l.svcCtx.Config.DTM
 	gid, err := l.svcCtx.DTMClient.CreateActivitySaga(l.ctx, dtm.CreateActivitySagaReq{
 		ActivityRpcURL: cfg.ActivityRpcURL,
@@ -183,7 +207,7 @@ func (l *CreateActivityLogic) createActivityWithDTM(in *activity.CreateActivityR
 	}
 
 	// 7. 异步发布活动创建事件（仅已发布状态，草稿不需要通知）
-	if createdActivity.Status == model.StatusPublished {
+	if createdActivity.Status == model.StatusPublished && l.svcCtx.MsgProducer != nil {
 		l.svcCtx.MsgProducer.PublishActivityCreated(
 			l.ctx, createdActivity.ID, uint64(in.OrganizerId), in.Title,
 		)
@@ -197,10 +221,17 @@ func (l *CreateActivityLogic) createActivityWithDTM(in *activity.CreateActivityR
 
 // createActivityLocal 使用本地事务创建活动（DTM 不可用时的降级方案）
 func (l *CreateActivityLogic) createActivityLocal(in *activity.CreateActivityReq, status int8) (*activity.CreateActivityResp, error) {
+	// 解析封面图片 URL
+	coverURL, err := l.resolveCoverURL(in.OrganizerId, in.CoverImageId)
+	if err != nil {
+		return nil, err
+	}
+
 	// 构建活动对象
 	activityData := &model.Activity{
 		Title:                in.Title,
-		CoverURL:             in.CoverUrl,
+		CoverURL:             coverURL,
+		CoverImageID:         in.CoverImageId,
 		CoverType:            int8(in.CoverType),
 		Description:          in.Content,
 		CategoryID:           uint64(in.CategoryId),
@@ -224,7 +255,7 @@ func (l *CreateActivityLogic) createActivityLocal(in *activity.CreateActivityReq
 	}
 
 	// 事务：创建活动 + 绑定标签
-	err := l.svcCtx.DB.WithContext(l.ctx).Transaction(func(tx *gorm.DB) error {
+	err = l.svcCtx.DB.WithContext(l.ctx).Transaction(func(tx *gorm.DB) error {
 		// 创建活动
 		if err := tx.Create(activityData).Error; err != nil {
 			return err
@@ -253,7 +284,7 @@ func (l *CreateActivityLogic) createActivityLocal(in *activity.CreateActivityReq
 	}
 
 	// 异步发布活动创建事件（仅已发布状态，草稿不需要通知）
-	if activityData.Status == model.StatusPublished {
+	if activityData.Status == model.StatusPublished && l.svcCtx.MsgProducer != nil {
 		l.svcCtx.MsgProducer.PublishActivityCreated(
 			l.ctx, activityData.ID, uint64(in.OrganizerId), in.Title,
 		)
@@ -291,7 +322,7 @@ func (l *CreateActivityLogic) validateParams(in *activity.CreateActivityReq) err
 	}
 
 	// 2. 封面校验
-	if in.CoverUrl == "" {
+	if in.CoverImageId <= 0 {
 		return errorx.ErrInvalidParams("请上传活动封面")
 	}
 	if in.CoverType != 1 && in.CoverType != 2 {

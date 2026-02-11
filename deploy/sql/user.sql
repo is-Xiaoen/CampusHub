@@ -17,6 +17,7 @@ CREATE TABLE `users` (
     `QQemail` VARCHAR(100) NOT NULL COMMENT 'QQ邮箱（用户登录/标识用）',
     `nickname` VARCHAR(50) NOT NULL COMMENT '用户昵称',
     `avatar_url` VARCHAR(255) DEFAULT '' COMMENT '用户头像URL地址',
+    `avatar_id` BIGINT UNSIGNED DEFAULT NULL COMMENT '用户头像图片ID，关联sys_images表',
     `introduction` VARCHAR(500) DEFAULT '' COMMENT '用户个人简介',
     `status` TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '用户状态：0-禁用，1-正常，2-注销',
     `password` VARCHAR(255) NOT NULL COMMENT '用户密码（建议存储加密后的值，如BCrypt哈希）',
@@ -148,6 +149,7 @@ CREATE TABLE `sys_images` (
                               `status` tinyint NOT NULL DEFAULT '0' COMMENT '状态: 0-审核中, 1-正常, 2-封禁, 3-待清理',
                               `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '上传时间',
                               `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
+                              `deleted_at` datetime DEFAULT NULL COMMENT '逻辑删除时间，NULL表示未删除',
                               PRIMARY KEY (`id`),
     -- 索引优化
                               INDEX `idx_uploader` (`uploader_id`), -- 关键：用于实现你要求的身份校验逻辑

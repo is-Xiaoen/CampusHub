@@ -77,6 +77,7 @@ func (l *CreateActivityActionLogic) CreateActivityAction(in *activity.CreateActi
 		act := &model.Activity{
 			Title:                in.Title,
 			CoverURL:             in.CoverUrl,
+			CoverImageID:         in.CoverImageId,
 			CoverType:            int8(in.CoverType),
 			Description:          in.Content,
 			CategoryID:           uint64(in.CategoryId),
@@ -106,15 +107,15 @@ func (l *CreateActivityActionLogic) CreateActivityAction(in *activity.CreateActi
 		// 3.2 执行 SQL 插入（使用原生 SQL）
 		result, err := tx.ExecContext(l.ctx, `
 			INSERT INTO activities (
-				title, cover_url, cover_type, description, category_id,
+				title, cover_url, cover_image_id, cover_type, description, category_id,
 				organizer_id, organizer_name, organizer_avatar, contact_phone,
 				register_start_time, register_end_time, activity_start_time, activity_end_time,
 				location, address_detail, longitude, latitude,
 				max_participants, current_participants, require_approval, require_student_verify, min_credit_score,
 				status, version, created_at, updated_at
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`,
-			act.Title, act.CoverURL, act.CoverType, act.Description, act.CategoryID,
+			act.Title, act.CoverURL, act.CoverImageID, act.CoverType, act.Description, act.CategoryID,
 			act.OrganizerID, act.OrganizerName, act.OrganizerAvatar, act.ContactPhone,
 			act.RegisterStartTime, act.RegisterEndTime, act.ActivityStartTime, act.ActivityEndTime,
 			act.Location, act.AddressDetail, act.Longitude, act.Latitude,

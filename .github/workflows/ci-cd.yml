@@ -1,18 +1,24 @@
 # ============================================================================
-# CampusHub CI/CD 流水线（v3 - 网络容错版）
+# CampusHub CI/CD 流水线（v4 - 本地部署加速版）
 # ============================================================================
 #
-# 针对自托管 Runner 网络不稳定的全面加固：
+# 核心优化（Runner 与 K3s 在同一台机器）：
+#   - 构建后本地导入 K3s containerd（docker save | k3s ctr images import）
+#   - GHCR 推送改为异步后台，不阻塞部署流程
+#   - 多服务 GHCR 推送并行执行
+#
+# 网络容错：
 #   - 代码拉取：手动 git fetch + 10 次重试（替代 actions/checkout）
 #   - GHCR 登录：5 次重试
-#   - 镜像推送：5 次重试 / 每个镜像
+#   - GHCR 推送：3 次重试 / 每个镜像（异步后台）
 #   - 部署仓库克隆：10 次重试
 #   - 部署仓库推送：5 次重试
 #   - 基础镜像：Dockerfile 锁定 digest，构建阶段零网络依赖
 #
 # 流程：
-#   PR → lint-and-test（GitHub-hosted）
-#   Push to main → lint-and-test → detect-changes → build-and-deploy（Self-hosted）
+#   PR → lint-and-test（GitHub-hosted，通过才能合并）
+#   Push to main → detect-changes → build-and-deploy（Self-hosted）
+#     构建 → 本地导入 K3s → 异步推 GHCR → 更新部署仓库 → ArgoCD 自动同步
 #
 # ============================================================================
 
@@ -38,10 +44,11 @@ env:
 
 jobs:
   # ============================================================================
-  # Job 1: 代码质量检查（GitHub-hosted Runner，网络稳定，无需特殊处理）
+  # Job 1: 代码质量检查（仅 PR 时运行，合并到 main 后不重复跑）
   # ============================================================================
   lint-and-test:
     name: Lint & Test
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -139,7 +146,7 @@ jobs:
   # ============================================================================
   build-and-deploy:
     name: Build & Deploy
-    needs: [lint-and-test, detect-changes]
+    needs: [detect-changes]
     if: |
       needs.detect-changes.outputs.user-api == 'true' ||
       needs.detect-changes.outputs.user-rpc == 'true' ||
@@ -150,7 +157,28 @@ jobs:
     runs-on: [self-hosted, linux, x64]
     steps:
       # ----------------------------------------------------------------
-      # Step 1: 拉取代码（替代 actions/checkout，10 次重试，总窗口 ~5 分钟）
+      # Step 0: 清理旧 Docker 镜像和构建缓存（防止磁盘撑爆）
+      # ----------------------------------------------------------------
+      - name: Cleanup old Docker data
+        run: |
+          echo "=== 清理前磁盘使用 ==="
+          df -h /var | tail -1
+          echo ""
+          docker system df 2>/dev/null || true
+          echo ""
+
+          # 清理 3 天前的未使用镜像和构建缓存
+          docker image prune -a -f --filter "until=72h" 2>/dev/null || true
+          docker builder prune -a -f --filter "until=72h" 2>/dev/null || true
+          # 清理已停止的容器
+          docker container prune -f 2>/dev/null || true
+
+          echo ""
+          echo "=== 清理后磁盘使用 ==="
+          df -h /var | tail -1
+
+      # ----------------------------------------------------------------
+      # Step 1: 拉取代码（替代 actions/checkout，10 次重试，总窗口 ~2 分钟）
       # ----------------------------------------------------------------
       - name: Checkout with extended retry
         env:
@@ -184,8 +212,8 @@ jobs:
               break
             fi
             if [ $i -lt 10 ]; then
-              echo "  等待 30s 后重试..."
-              sleep 30
+              echo "  等待 10s 后重试..."
+              sleep 10
             fi
           done
 
@@ -223,13 +251,14 @@ jobs:
           exit 1
 
       # ----------------------------------------------------------------
-      # Step 3: 构建并推送所有变更的服务
+      # Step 3: 构建 → 本地导入 K3s → 异步推送 GHCR
       # ----------------------------------------------------------------
-      - name: Build and push changed services
+      - name: Build, import to K3s, and async push GHCR
         run: |
           set -eo pipefail
           SHORT_TAG=$(echo "${{ github.sha }}" | cut -c1-7)
           BUILT=""
+          PUSH_PIDS=""
 
           retry() {
             local max=$1; shift
@@ -255,6 +284,7 @@ jobs:
             echo " 构建 ${name}"
             echo "=========================================="
 
+            # 1. 构建镜像
             DOCKER_BUILDKIT=1 docker build \
               --network=host \
               --build-arg SERVICE=${service} \
@@ -263,10 +293,19 @@ jobs:
               -t ${image}:latest \
               -f deploy/docker/Dockerfile .
 
-            retry 5 docker push ${image}:${SHORT_TAG}
-            retry 5 docker push ${image}:latest
+            # 2. 本地导入 K3s containerd（Runner 与 K3s 同机，秒级完成）
+            echo "  导入 ${name} 到 K3s containerd..."
+            docker save ${image}:${SHORT_TAG} | sudo /usr/local/bin/k3s ctr images import -
 
-            echo "✅ ${name} → ${image}:${SHORT_TAG}"
+            # 3. 异步推送 GHCR（后台运行，多服务推送并行，不阻塞构建）
+            echo "  启动 GHCR 后台推送..."
+            (
+              retry 3 docker push ${image}:${SHORT_TAG}
+              retry 3 docker push ${image}:latest
+            ) &
+            PUSH_PIDS="$PUSH_PIDS $!"
+
+            echo "✅ ${name} 本地就绪，GHCR 后台推送中"
           }
 
           if [[ "${{ needs.detect-changes.outputs.user-api }}" == "true" ]]; then
@@ -294,10 +333,21 @@ jobs:
             BUILT="$BUILT chat-rpc"
           fi
 
+          # 等待所有 GHCR 后台推送完成（失败不阻塞部署）
+          if [ -n "$PUSH_PIDS" ]; then
+            echo ""
+            echo "=========================================="
+            echo " 等待 GHCR 后台推送完成..."
+            echo "=========================================="
+            for pid in $PUSH_PIDS; do
+              wait $pid 2>/dev/null || echo "  ⚠️ 推送 PID=$pid 失败（不影响本地部署）"
+            done
+          fi
+
           echo "BUILT_SERVICES=${BUILT}" >> $GITHUB_ENV
           echo ""
           echo "=========================================="
-          echo " 全部构建完成:${BUILT}"
+          echo " 全部完成:${BUILT}"
           echo "=========================================="
 
       # ----------------------------------------------------------------

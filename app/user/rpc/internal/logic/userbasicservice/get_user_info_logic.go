@@ -103,6 +103,20 @@ func (l *GetUserInfoLogic) GetUserInfo(in *pb.GetUserInfoReq) (*pb.GetUserInfoRe
 		l.Logger.Errorf("Get credit info failed: %v, userId: %d", errCredit, user.UserID)
 	}
 
+	// 2.5 头像URL：通过 avatar_id + user_id 查询（不直接使用数据库中的URL）
+	var avatarUrl string
+	if user.AvatarID > 0 {
+		imgResp, err := NewGetSysImageLogic(l.ctx, l.svcCtx).GetSysImage(&pb.GetSysImageReq{
+			UserId:  user.UserID,
+			ImageId: user.AvatarID,
+		})
+		if err == nil {
+			avatarUrl = imgResp.Url
+		} else {
+			l.Logger.Errorf("GetSysImage for avatar failed: %v, userId: %d, imageId: %d", err, user.UserID, user.AvatarID)
+		}
+	}
+
 	// 3. 组装响应
 	var genderStr string
 	switch user.Gender {
@@ -118,7 +132,7 @@ func (l *GetUserInfoLogic) GetUserInfo(in *pb.GetUserInfoReq) (*pb.GetUserInfoRe
 		UserInfo: &pb.UserInfo{
 			UserId:            uint64(user.UserID),
 			Nickname:          user.Nickname,
-			AvatarUrl:         user.AvatarURL,
+			AvatarUrl:         avatarUrl,
 			Introduction:      user.Introduction,
 			Gender:            genderStr,
 			Age:               strconv.FormatInt(user.Age, 10),

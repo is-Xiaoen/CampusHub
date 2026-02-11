@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -19,17 +20,35 @@ var (
 	ErrPageTooDeep              = errors.New("不支持查看超过100页的数据，请使用搜索功能")
 )
 
+// allowedTimeFields 允许在 SQL WHERE 条件中使用的时间字段白名单
+// 防止 SQL 注入：timeField 会拼接到 SQL 语句中，必须限制为已知列名
+var allowedTimeFields = map[string]bool{
+	"activity_start_time": true,
+	"activity_end_time":   true,
+	"register_start_time": true,
+	"register_end_time":   true,
+}
+
+// ValidateTimeField 校验时间字段名是否在白名单内
+func ValidateTimeField(field string) error {
+	if !allowedTimeFields[field] {
+		return fmt.Errorf("非法的时间字段: %s", field)
+	}
+	return nil
+}
+
 // ==================== Activity 活动模型 ====================
 
 type Activity struct {
 	ID uint64 `gorm:"primaryKey;autoIncrement" json:"id"`
 
 	// 基本信息
-	Title       string `gorm:"type:varchar(100);not null;comment:活动标题" json:"title"`
-	CoverURL    string `gorm:"type:varchar(500);not null;comment:封面URL" json:"cover_url"`
-	CoverType   int8   `gorm:"default:1;comment:封面类型: 1图片 2视频"  json:"cover_type"`
-	Description string `gorm:"type:text;comment:活动详情(富文本)" json:"description"`
-	CategoryID  uint64 `gorm:"index:idx_category_status,priority:1;not null;comment:分类ID" json:"category_id"`
+	Title        string `gorm:"type:varchar(100);not null;comment:活动标题" json:"title"`
+	CoverURL     string `gorm:"type:varchar(500);not null;comment:封面URL" json:"cover_url"`
+	CoverImageID int64  `gorm:"default:0;comment:封面图片ID(关联sys_images)" json:"cover_image_id"`
+	CoverType    int8   `gorm:"default:1;comment:封面类型: 1图片 2视频"  json:"cover_type"`
+	Description  string `gorm:"type:text;comment:活动详情(富文本)" json:"description"`
+	CategoryID   uint64 `gorm:"index:idx_category_status,priority:1;not null;comment:分类ID" json:"category_id"`
 
 	// 组织者信息（冗余存储，避免联表查询）
 	OrganizerID     uint64 `gorm:"index;not null;comment:组织者用户ID" json:"organizer_id"`
@@ -163,6 +182,7 @@ func (m *ActivityModel) Update(ctx context.Context, activity *Activity) error {
 		Updates(map[string]interface{}{
 			"title":                  activity.Title,
 			"cover_url":              activity.CoverURL,
+			"cover_image_id":         activity.CoverImageID,
 			"cover_type":             activity.CoverType,
 			"description":            activity.Description,
 			"category_id":            activity.CategoryID,
@@ -598,6 +618,10 @@ func escapeKeyword(keyword string) string {
 // BatchUpdateStatusByTime 批量更新状态（定时任务用）
 func (m *ActivityModel) BatchUpdateStatusByTime(ctx context.Context, fromStatus, toStatus int8, timeField string,
 	beforeTime int64, batchSize int) (int64, error) {
+	if err := ValidateTimeField(timeField); err != nil {
+		return 0, err
+	}
+
 	var totalAffected int64
 
 	for {
