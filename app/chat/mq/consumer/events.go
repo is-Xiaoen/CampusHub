@@ -23,3 +23,11 @@ type ActivityMemberLeftEvent struct {
 	UserID     uint64    `json:"user_id"`
 	LeftAt     time.Time `json:"left_at"`
 }
+
+// ActivityCancelledEvent 活动取消事件
+type ActivityCancelledEvent struct {
+	ActivityID  uint64    `json:"activity_id"`
+	CancelledBy uint64    `json:"cancelled_by"`
+	Reason      string    `json:"reason"`
+	CancelledAt time.Time `json:"cancelled_at"`
+}
