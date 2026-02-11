@@ -43,7 +43,7 @@ func (l *CreateActivityLogic) CreateActivity(req *types.CreateActivityReq) (resp
 	// OrganizerName/Avatar 传空，RPC 层通过 UserBasicRpc.GetUserInfo 自动填充
 	rpcResp, err := l.svcCtx.ActivityRpc.CreateActivity(l.ctx, &activityservice.CreateActivityReq{
 		Title:                req.Title,
-		CoverUrl:             req.CoverUrl,
+		CoverImageId:         req.CoverImageId,
 		CoverType:            req.CoverType,
 		Content:              req.Content,
 		CategoryId:           req.CategoryId,
@@ -90,7 +90,7 @@ func (l *CreateActivityLogic) validateParams(req *types.CreateActivityReq) error
 	}
 
 	// 封面校验
-	if req.CoverUrl == "" {
+	if req.CoverImageId <= 0 {
 		return errorx.ErrInvalidParams("请上传活动封面")
 	}
 
