@@ -129,7 +129,7 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 			UserInfo: &pb.UserInfo{
 				UserId:       uint64(user.UserID),
 				Nickname:     user.Nickname,
-				AvatarUrl:    user.AvatarURL,
+				AvatarUrl:    "", // AvatarURL needs to be fetched separately, leaving empty on fallback
 				Introduction: user.Introduction,
 				Gender:       genderStr,
 				Age:          strconv.FormatInt(user.Age, 10),

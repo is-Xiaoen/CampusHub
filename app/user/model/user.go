@@ -47,8 +47,6 @@ type User struct {
 	Nickname string `gorm:"column:nickname;size:50;not null" json:"nickname"`
 	// 头像图片ID（关联SysImage）
 	AvatarID int64 `gorm:"column:avatar_id;default:0" json:"avatar_id"`
-	// 用户头像URL地址
-	AvatarURL string `gorm:"column:avatar_url;size:255;default:''" json:"avatar_url"`
 	// 用户个人简介
 	Introduction string `gorm:"column:introduction;size:500;default:''" json:"introduction"`
 	// 用户状态：0-禁用，1-正常，2-注销
