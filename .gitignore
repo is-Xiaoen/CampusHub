@@ -21,7 +21,7 @@ common/messaging/README.md
 .specify
 specs
 tools
-docs/batch_query_network.md
+learning/batch_query_network.md
 tests
 learning
 
