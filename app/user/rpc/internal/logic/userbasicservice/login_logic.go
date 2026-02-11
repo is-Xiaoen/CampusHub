@@ -92,7 +92,7 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 	// key: token:refresh:{refreshJwtId}  value: userId
 	refreshTokenKey := fmt.Sprintf("token:refresh:%s", refreshJwtId)
 	if err := l.svcCtx.Redis.Set(l.ctx, refreshTokenKey, user.UserID, time.Duration(l.svcCtx.Config.JWT.RefreshExpire)*time.Second).Err(); err != nil {
-		l.Logger.Errorf("Set refresh token to redis failed: %v", err)
+		l.Logger.Errorf("刷新令牌写入Redis失败: %v", err)
 		return nil, errorx.ErrCacheError(err)
 	}
 
@@ -106,7 +106,7 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 	if errCredit == nil {
 		creditScore = creditInfo.Score
 	} else {
-		l.Logger.Errorf("Get credit info failed: %v, userId: %d", errCredit, user.UserID)
+		l.Logger.Errorf("获取信用分信息失败: %v, userId=%d", errCredit, user.UserID)
 	}
 
 	getUserInfoLogic := NewGetUserInfoLogic(l.ctx, l.svcCtx)
@@ -115,7 +115,20 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 	})
 	if err != nil {
 		// 即使获取详情失败，登录也算成功，只是信息不全
-		l.Logger.Errorf("GetUserInfo failed during login: %v", err)
+		l.Logger.Errorf("登录流程获取用户信息失败: %v", err)
+		// 尝试通过 avatarId + userId 获取头像URL
+		var avatarURL string
+		if user.AvatarID > 0 {
+			imgResp, imgErr := NewGetSysImageLogic(l.ctx, l.svcCtx).GetSysImage(&pb.GetSysImageReq{
+				UserId:  int64(user.UserID),
+				ImageId: user.AvatarID,
+			})
+			if imgErr == nil {
+				avatarURL = imgResp.Url
+			} else {
+				l.Logger.Errorf("登录降级获取头像URL失败: %v, userId=%d, imageId=%d", imgErr, user.UserID, user.AvatarID)
+			}
+		}
 		var genderStr string
 		switch user.Gender {
 		case 1:
@@ -129,7 +142,7 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 			UserInfo: &pb.UserInfo{
 				UserId:       uint64(user.UserID),
 				Nickname:     user.Nickname,
-				AvatarUrl:    "", // AvatarURL needs to be fetched separately, leaving empty on fallback
+				AvatarUrl:    avatarURL,
 				Introduction: user.Introduction,
 				Gender:       genderStr,
 				Age:          strconv.FormatInt(user.Age, 10),
