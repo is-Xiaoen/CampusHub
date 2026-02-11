@@ -157,6 +157,27 @@ jobs:
     runs-on: [self-hosted, linux, x64]
     steps:
       # ----------------------------------------------------------------
+      # Step 0: 清理旧 Docker 镜像和构建缓存（防止磁盘撑爆）
+      # ----------------------------------------------------------------
+      - name: Cleanup old Docker data
+        run: |
+          echo "=== 清理前磁盘使用 ==="
+          df -h /var | tail -1
+          echo ""
+          docker system df 2>/dev/null || true
+          echo ""
+
+          # 清理 3 天前的未使用镜像和构建缓存
+          docker image prune -a -f --filter "until=72h" 2>/dev/null || true
+          docker builder prune -a -f --filter "until=72h" 2>/dev/null || true
+          # 清理已停止的容器
+          docker container prune -f 2>/dev/null || true
+
+          echo ""
+          echo "=== 清理后磁盘使用 ==="
+          df -h /var | tail -1
+
+      # ----------------------------------------------------------------
       # Step 1: 拉取代码（替代 actions/checkout，10 次重试，总窗口 ~2 分钟）
       # ----------------------------------------------------------------
       - name: Checkout with extended retry
