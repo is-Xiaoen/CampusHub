@@ -28,7 +28,7 @@ func NewGetUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetUs
 	}
 }
 
-// 获取用户的信息
+// GetUserInfo 获取用户的信息
 func (l *GetUserInfoLogic) GetUserInfo(in *pb.GetUserInfoReq) (*pb.GetUserInfoResponse, error) {
 	// 1. 查询用户基础信息
 	user, err := l.svcCtx.UserModel.FindByUserID(l.ctx, int64(in.UserId))
