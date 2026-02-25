@@ -222,7 +222,11 @@ type UploadSysImageReq struct {
 }
 
 type UploadSysImageResp struct {
-	Id int64 `json:"id"`
+	Id         int64  `json:"id"`
+	Url        string `json:"url"`
+	FileSize   int64  `json:"file_size"`
+	OriginName string `json:"origin_name"`
+	BizType    string `json:"biz_type"`
 }
 
 type UserHomeActivityItem struct {
