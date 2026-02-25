@@ -6320,6 +6320,10 @@ func (x *UploadSysImageReq) GetImageData() []byte {
 type UploadSysImageResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Url           string                 `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
+	FileSize      int64                  `protobuf:"varint,3,opt,name=file_size,json=fileSize,proto3" json:"file_size,omitempty"`
+	OriginName    string                 `protobuf:"bytes,4,opt,name=origin_name,json=originName,proto3" json:"origin_name,omitempty"`
+	BizType       string                 `protobuf:"bytes,5,opt,name=biz_type,json=bizType,proto3" json:"biz_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -6359,6 +6363,34 @@ func (x *UploadSysImageResp) GetId() int64 {
 		return x.Id
 	}
 	return 0
+}
+
+func (x *UploadSysImageResp) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+func (x *UploadSysImageResp) GetFileSize() int64 {
+	if x != nil {
+		return x.FileSize
+	}
+	return 0
+}
+
+func (x *UploadSysImageResp) GetOriginName() string {
+	if x != nil {
+		return x.OriginName
+	}
+	return ""
+}
+
+func (x *UploadSysImageResp) GetBizType() string {
+	if x != nil {
+		return x.BizType
+	}
+	return ""
 }
 
 var File_user_proto protoreflect.FileDescriptor
@@ -6851,9 +6883,14 @@ const file_user_proto_rawDesc = "" +
 	"\tmime_type\x18\x05 \x01(\tR\bmimeType\x12\x1c\n" +
 	"\textension\x18\x06 \x01(\tR\textension\x12\x1d\n" +
 	"\n" +
-	"image_data\x18\a \x01(\fR\timageData\"$\n" +
+	"image_data\x18\a \x01(\fR\timageData\"\x8f\x01\n" +
 	"\x12UploadSysImageResp\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id2\x86\x03\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x10\n" +
+	"\x03url\x18\x02 \x01(\tR\x03url\x12\x1b\n" +
+	"\tfile_size\x18\x03 \x01(\x03R\bfileSize\x12\x1f\n" +
+	"\vorigin_name\x18\x04 \x01(\tR\n" +
+	"originName\x12\x19\n" +
+	"\bbiz_type\x18\x05 \x01(\tR\abizType2\x86\x03\n" +
 	"\rCreditService\x12@\n" +
 	"\rGetCreditInfo\x12\x16.user.GetCreditInfoReq\x1a\x17.user.GetCreditInfoResp\x12@\n" +
 	"\rGetCreditLogs\x12\x16.user.GetCreditLogsReq\x1a\x17.user.GetCreditLogsResp\x12C\n" +

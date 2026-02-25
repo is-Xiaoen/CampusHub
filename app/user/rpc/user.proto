@@ -1170,4 +1170,8 @@ message UploadSysImageReq {
 // 上传通用图片响应
 message UploadSysImageResp {
     int64 id = 1;
+    string url = 2;
+    int64 file_size = 3;
+    string origin_name = 4;
+    string biz_type = 5;
 }
