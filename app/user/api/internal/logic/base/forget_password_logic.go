@@ -6,7 +6,7 @@ import (
 	"activity-platform/app/user/api/internal/svc"
 	"activity-platform/app/user/api/internal/types"
 	"activity-platform/app/user/rpc/client/userbasicservice"
-	ctxUtils "activity-platform/common/utils/context"
+	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -27,17 +27,14 @@ func NewForgetPasswordLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Fo
 }
 
 func (l *ForgetPasswordLogic) ForgetPassword(req *types.ForgetPasswordReq) (resp *types.ForgetPasswordResp, err error) {
-	// 从上下文获取 userId（go-zero jwt:Auth 自动注入）
-	userId, err := ctxUtils.GetUserIdFromCtx(l.ctx)
-	if err != nil {
-		return nil, err
+	if req.QqEmail == "" {
+		return nil, errorx.ErrInvalidParams("qq_email不能为空")
 	}
 
-	// 调用 RPC 层忘记密码
 	rpcResp, err := l.svcCtx.UserBasicServiceRpc.ForgetPassword(l.ctx, &userbasicservice.ForgetPasswordReq{
+		QqEmail:     req.QqEmail,
 		QqCode:      req.QqCode,
 		NewPassword: req.NewPassword,
-		UserId:      userId,
 	})
 	if err != nil {
 		return nil, err

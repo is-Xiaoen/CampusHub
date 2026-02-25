@@ -62,6 +62,7 @@ type CreditLogItem struct {
 }
 
 type ForgetPasswordReq struct {
+	QqEmail     string `json:"qq_email"`
 	QqCode      string `json:"qq_code"`
 	NewPassword string `json:"new_password"`
 }

@@ -9,6 +9,7 @@ import (
 	"activity-platform/common/utils/encrypt"
 
 	"activity-platform/common/errorx"
+
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -33,10 +34,12 @@ func (l *ForgetPasswordLogic) ForgetPassword(in *pb.ForgetPasswordReq) (*pb.Forg
 		return nil, errorx.NewWithMessage(errorx.CodePasswordInvalid, "密码必须包含大小写字母、数字和特殊字符，长度8-20位")
 	}
 
-	// 2. 查询用户
-	user, err := l.svcCtx.UserModel.FindByUserID(l.ctx, in.UserId)
+	if in.QqEmail == "" {
+		return nil, errorx.ErrInvalidParams("qq_email不能为空")
+	}
+	user, err := l.svcCtx.UserModel.FindByQQEmail(l.ctx, in.QqEmail)
 	if err != nil {
-		l.Logger.Errorf("FindByUserID error: %v, userId: %d", err, in.UserId)
+		l.Logger.Errorf("FindByQQEmail error: %v, email: %s", err, in.QqEmail)
 		return nil, errorx.ErrDBError(err)
 	}
 	if user == nil {
