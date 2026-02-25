@@ -49,8 +49,8 @@ func (l *UpdateActivityLogic) UpdateActivity(req *types.UpdateActivityReq) (resp
 			return nil, errorx.ErrInvalidParams("标题长度需在2-100字符之间")
 		}
 	}
-	if req.CoverUrl != nil && *req.CoverUrl == "" {
-		return nil, errorx.ErrInvalidParams("封面URL不能为空")
+	if req.CoverImageId != nil && *req.CoverImageId <= 0 {
+		return nil, errorx.ErrInvalidParams("封面图片ID无效")
 	}
 	if req.Location != nil && *req.Location == "" {
 		return nil, errorx.ErrInvalidParams("活动地点不能为空")
@@ -72,8 +72,8 @@ func (l *UpdateActivityLogic) UpdateActivity(req *types.UpdateActivityReq) (resp
 	if req.Title != nil {
 		rpcReq.Title = req.Title
 	}
-	if req.CoverUrl != nil {
-		rpcReq.CoverUrl = req.CoverUrl
+	if req.CoverImageId != nil {
+		rpcReq.CoverImageId = req.CoverImageId
 	}
 	if req.CoverType != nil {
 		rpcReq.CoverType = req.CoverType

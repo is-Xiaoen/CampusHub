@@ -8,6 +8,7 @@ import (
 	"activity-platform/app/activity/model"
 	"activity-platform/app/activity/rpc/activity"
 	"activity-platform/app/activity/rpc/internal/svc"
+	userpb "activity-platform/app/user/rpc/pb/pb"
 	"activity-platform/common/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -234,12 +235,17 @@ func (l *UpdateActivityLogic) buildAllFieldUpdates(in *activity.UpdateActivityRe
 		updates["title"] = *in.Title
 	}
 
-	// 封面
-	if in.CoverUrl != nil {
-		if *in.CoverUrl == "" {
-			return errorx.ErrInvalidParams("封面URL不能为空")
+	// 封面图片
+	if in.CoverImageId != nil {
+		if *in.CoverImageId <= 0 {
+			return errorx.ErrInvalidParams("封面图片ID无效")
 		}
-		updates["cover_url"] = *in.CoverUrl
+		coverURL, err := l.resolveCoverURL(in.OperatorId, *in.CoverImageId)
+		if err != nil {
+			return err
+		}
+		updates["cover_image_id"] = *in.CoverImageId
+		updates["cover_url"] = coverURL
 	}
 	if in.CoverType != nil {
 		if *in.CoverType != 1 && *in.CoverType != 2 {
@@ -392,11 +398,16 @@ func (l *UpdateActivityLogic) buildPublishedUpdates(in *activity.UpdateActivityR
 	if in.Content != nil {
 		updates["description"] = *in.Content
 	}
-	if in.CoverUrl != nil {
-		if *in.CoverUrl == "" {
-			return errorx.ErrInvalidParams("封面URL不能为空")
+	if in.CoverImageId != nil {
+		if *in.CoverImageId <= 0 {
+			return errorx.ErrInvalidParams("封面图片ID无效")
 		}
-		updates["cover_url"] = *in.CoverUrl
+		coverURL, err := l.resolveCoverURL(in.OperatorId, *in.CoverImageId)
+		if err != nil {
+			return err
+		}
+		updates["cover_image_id"] = *in.CoverImageId
+		updates["cover_url"] = coverURL
 	}
 	if in.CoverType != nil {
 		if *in.CoverType != 1 && *in.CoverType != 2 {
@@ -409,6 +420,23 @@ func (l *UpdateActivityLogic) buildPublishedUpdates(in *activity.UpdateActivityR
 	}
 
 	return nil
+}
+
+// resolveCoverURL 通过 SysImage 服务解析封面图片 URL
+func (l *UpdateActivityLogic) resolveCoverURL(operatorID, coverImageID int64) (string, error) {
+	resp, err := l.svcCtx.UserBasicRpc.GetSysImage(l.ctx, &userpb.GetSysImageReq{
+		UserId:  operatorID,
+		ImageId: coverImageID,
+	})
+	if err != nil {
+		l.Errorf("[UpdateActivity] 获取封面图片信息失败: operatorId=%d, imageId=%d, err=%v",
+			operatorID, coverImageID, err)
+		return "", errorx.NewWithMessage(errorx.CodeInternalError, "获取封面图片信息失败")
+	}
+	if resp.Url == "" {
+		return "", errorx.ErrInvalidParams("封面图片不存在或已失效")
+	}
+	return resp.Url, nil
 }
 
 // validateTimeLogic 校验时间逻辑

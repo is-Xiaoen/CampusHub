@@ -116,30 +116,36 @@ func registerConsumers(svcCtx *svc.ServiceContext, chatRpcServer chat.ChatServic
 	memberLeftConsumer := consumer.NewActivityMemberLeftConsumer(chatRpcClient)
 	memberLeftConsumer.Subscribe(svcCtx.MsgClient)
 
+	// 4. 活动取消事件 → 自动解散群聊
+	activityCancelledConsumer := consumer.NewActivityCancelledConsumer(chatRpcClient)
+	activityCancelledConsumer.Subscribe(svcCtx.MsgClient)
+
 	// ==================== User 域消费者（调 User RPC）====================
 
 	// 只有当 User RPC 客户端可用时，才注册 User 域消费者
 	if svcCtx.UserCreditRpc != nil && svcCtx.UserVerifyRpc != nil {
-		// 4. 信用分变更事件 → 调 UserRpc.UpdateScore
+		// 5. 信用分变更事件 → 调 UserRpc.UpdateScore
 		creditConsumer := consumer.NewCreditChangeConsumer(svcCtx.UserCreditRpc)
 		creditConsumer.Subscribe(svcCtx.MsgClient)
 
-		// 5. OCR 认证事件 → 调 UserRpc.ProcessOcrVerify
+		// 6. OCR 认证事件 → 调 UserRpc.ProcessOcrVerify
 		verifyConsumer := consumer.NewVerifyOcrConsumer(svcCtx.UserVerifyRpc)
 		verifyConsumer.Subscribe(svcCtx.MsgClient)
 
-		logx.Info("已注册 5 个 MQ 消费者:")
+		logx.Info("已注册 6 个 MQ 消费者:")
 		logx.Info("  - activity.created       -> chat-auto-create-group")
 		logx.Info("  - activity.member.joined -> chat-auto-add-member")
 		logx.Info("  - activity.member.left   -> chat-auto-remove-member")
+		logx.Info("  - activity.cancelled     -> chat-auto-disband-group")
 		logx.Info("  - credit:events          -> credit-event-handler")
 		logx.Info("  - verify:events          -> verify-event-handler")
 	} else {
 		logx.Infof("[WARN] User RPC 不可用，已跳过 User 域消费者注册")
-		logx.Info("已注册 3 个 MQ 消费者:")
+		logx.Info("已注册 4 个 MQ 消费者:")
 		logx.Info("  - activity.created       -> chat-auto-create-group")
 		logx.Info("  - activity.member.joined -> chat-auto-add-member")
 		logx.Info("  - activity.member.left   -> chat-auto-remove-member")
+		logx.Info("  - activity.cancelled     -> chat-auto-disband-group")
 	}
 }
 

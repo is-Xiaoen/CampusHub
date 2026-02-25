@@ -43,11 +43,12 @@ type Activity struct {
 	ID uint64 `gorm:"primaryKey;autoIncrement" json:"id"`
 
 	// 基本信息
-	Title       string `gorm:"type:varchar(100);not null;comment:活动标题" json:"title"`
-	CoverURL    string `gorm:"type:varchar(500);not null;comment:封面URL" json:"cover_url"`
-	CoverType   int8   `gorm:"default:1;comment:封面类型: 1图片 2视频"  json:"cover_type"`
-	Description string `gorm:"type:text;comment:活动详情(富文本)" json:"description"`
-	CategoryID  uint64 `gorm:"index:idx_category_status,priority:1;not null;comment:分类ID" json:"category_id"`
+	Title        string `gorm:"type:varchar(100);not null;comment:活动标题" json:"title"`
+	CoverURL     string `gorm:"type:varchar(500);not null;comment:封面URL" json:"cover_url"`
+	CoverImageID int64  `gorm:"default:0;comment:封面图片ID(关联sys_images)" json:"cover_image_id"`
+	CoverType    int8   `gorm:"default:1;comment:封面类型: 1图片 2视频"  json:"cover_type"`
+	Description  string `gorm:"type:text;comment:活动详情(富文本)" json:"description"`
+	CategoryID   uint64 `gorm:"index:idx_category_status,priority:1;not null;comment:分类ID" json:"category_id"`
 
 	// 组织者信息（冗余存储，避免联表查询）
 	OrganizerID     uint64 `gorm:"index;not null;comment:组织者用户ID" json:"organizer_id"`
@@ -181,6 +182,7 @@ func (m *ActivityModel) Update(ctx context.Context, activity *Activity) error {
 		Updates(map[string]interface{}{
 			"title":                  activity.Title,
 			"cover_url":              activity.CoverURL,
+			"cover_image_id":         activity.CoverImageID,
 			"cover_type":             activity.CoverType,
 			"description":            activity.Description,
 			"category_id":            activity.CategoryID,
