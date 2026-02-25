@@ -88,20 +88,27 @@ func (l *VerifyTicketLogic) VerifyTicket(in *activity.VerifyTicketRequest) (*act
 
 	// 4) 标记核销（幂等防重）
 	snapshot := buildVerifySnapshot(activityInfo, ticket, nowUnix)
-	result := l.svcCtx.DB.WithContext(l.ctx).
-		Model(&model.ActivityTicket{}).
-		Where("id = ? AND status = ?", ticket.ID, model.TicketStatusUnused).
-		Updates(map[string]interface{}{
-			"status":            model.TicketStatusUsed,
-			"used_time":         nowUnix,
-			"used_location":     activityInfo.Location,
-			"check_in_snapshot": snapshot,
-		})
-	if result.Error != nil {
-		l.Errorf("核销更新票据失败: activityId=%d, ticketCode=%s, err=%v", activityID, ticketCode, result.Error)
-		return &activity.VerifyTicketResponse{Result: "fail"}, nil
+	l.Infof("[VerifyTicket] 开始核销: TicketID=%d, CurrentStatus=%d, TargetStatus=%d, Time=%d",
+		ticket.ID, ticket.Status, model.TicketStatusUsed, nowUnix)
+
+	err = l.svcCtx.ActivityTicketModel.MarkUsed(
+		l.ctx,
+		ticket.ID,
+		nowUnix,
+		activityInfo.Location,
+		snapshot,
+	)
+	if err == nil {
+		l.Infof("[VerifyTicket] 核销成功: TicketID=%d, NewStatus=%d", ticket.ID, model.TicketStatusUsed)
 	}
-	if result.RowsAffected == 0 {
+	if err != nil {
+		if errors.Is(err, model.ErrTicketNotFound) {
+			// 票券不存在或状态已变更（已核销/已作废等）
+			l.Infof("核销失败: 票券状态已变更或不存在, activityId=%d, ticketCode=%s, ticketId=%d",
+				activityID, ticketCode, ticket.ID)
+			return &activity.VerifyTicketResponse{Result: "fail"}, nil
+		}
+		l.Errorf("核销更新票据失败: activityId=%d, ticketCode=%s, err=%v", activityID, ticketCode, err)
 		return &activity.VerifyTicketResponse{Result: "fail"}, nil
 	}
 

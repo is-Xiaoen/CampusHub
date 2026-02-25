@@ -88,6 +88,15 @@ func (l *RegisterActivityLogic) RegisterActivity(in *activity.RegisterActivityRe
 			Reason: "活动查询失败，请稍后重试",
 		}, nil
 	}
+
+	// 检查是否是活动发布者
+	if activityData.OrganizerID == uint64(userID) {
+		return &activity.RegisterActivityResponse{
+			Result: "fail",
+			Reason: "活动发布者无法报名",
+		}, nil
+	}
+
 	now := time.Now().Unix()
 	if activityData.Status != model.StatusPublished {
 		return &activity.RegisterActivityResponse{
