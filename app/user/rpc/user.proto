@@ -864,7 +864,7 @@ message CheckUserExistsResponse{
 message ForgetPasswordReq{
     string qq_code =1;
     string new_password =2;
-    int64 user_id =3;
+    string qq_email =3;
 }
 
 message ForgetPasswordResponse{

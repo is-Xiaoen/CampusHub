@@ -3857,7 +3857,7 @@ type ForgetPasswordReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	QqCode        string                 `protobuf:"bytes,1,opt,name=qq_code,json=qqCode,proto3" json:"qq_code,omitempty"`
 	NewPassword   string                 `protobuf:"bytes,2,opt,name=new_password,json=newPassword,proto3" json:"new_password,omitempty"`
-	UserId        int64                  `protobuf:"varint,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	QqEmail       string                 `protobuf:"bytes,3,opt,name=qq_email,json=qqEmail,proto3" json:"qq_email,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3906,11 +3906,11 @@ func (x *ForgetPasswordReq) GetNewPassword() string {
 	return ""
 }
 
-func (x *ForgetPasswordReq) GetUserId() int64 {
+func (x *ForgetPasswordReq) GetQqEmail() string {
 	if x != nil {
-		return x.UserId
+		return x.QqEmail
 	}
-	return 0
+	return ""
 }
 
 type ForgetPasswordResponse struct {
@@ -6678,11 +6678,11 @@ const file_user_proto_rawDesc = "" +
 	"\x12CheckUserExistsReq\x12\x19\n" +
 	"\bqq_email\x18\x01 \x01(\tR\aqqEmail\"1\n" +
 	"\x17CheckUserExistsResponse\x12\x16\n" +
-	"\x06exists\x18\x01 \x01(\bR\x06exists\"h\n" +
+	"\x06exists\x18\x01 \x01(\bR\x06exists\"j\n" +
 	"\x11ForgetPasswordReq\x12\x17\n" +
 	"\aqq_code\x18\x01 \x01(\tR\x06qqCode\x12!\n" +
-	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\x12\x17\n" +
-	"\auser_id\x18\x03 \x01(\x03R\x06userId\"2\n" +
+	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\x12\x19\n" +
+	"\bqq_email\x18\x03 \x01(\tR\aqqEmail\"2\n" +
 	"\x16ForgetPasswordResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"A\n" +
 	"\rDeleteUserReq\x12\x17\n" +
