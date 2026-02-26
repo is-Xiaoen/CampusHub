@@ -75,6 +75,10 @@ func (l *UploadSysImageLogic) UploadSysImage(req *types.UploadSysImageReq) (resp
 	}
 
 	return &types.UploadSysImageResp{
-		Id: rpcResp.Id,
+		Id:         rpcResp.Id,
+		Url:        rpcResp.Url,
+		FileSize:   rpcResp.FileSize,
+		OriginName: rpcResp.OriginName,
+		BizType:    rpcResp.BizType,
 	}, nil
 }

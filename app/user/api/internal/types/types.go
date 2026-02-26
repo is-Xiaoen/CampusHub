@@ -64,6 +64,7 @@ type CreditLogItem struct {
 }
 
 type ForgetPasswordReq struct {
+	QqEmail     string `json:"qq_email"`
 	QqCode      string `json:"qq_code"`
 	NewPassword string `json:"new_password"`
 }
@@ -223,7 +224,11 @@ type UploadSysImageReq struct {
 }
 
 type UploadSysImageResp struct {
-	Id int64 `json:"id"`
+	Id         int64  `json:"id"`
+	Url        string `json:"url"`
+	FileSize   int64  `json:"file_size"`
+	OriginName string `json:"origin_name"`
+	BizType    string `json:"biz_type"`
 }
 
 type UserHomeActivityItem struct {
