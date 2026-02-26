@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"errors"
+	"time"
 
 	"activity-platform/app/activity/model"
 	"activity-platform/app/activity/rpc/activity"
@@ -195,23 +196,31 @@ func (l *ListActivitiesLogic) buildActivityListItem(
 	// 获取标签列表
 	tags := tagsMap[act.ID]
 
+	// 计算报名状态
+	now := time.Now().Unix()
+	regStatus, regStatusText := model.ComputeRegistrationStatus(
+		act.Status, act.RegisterStartTime, act.RegisterEndTime, now,
+	)
+
 	return &activity.ActivityListItem{
-		Id:                  int64(act.ID),
-		Title:               act.Title,
-		CoverUrl:            act.CoverURL,
-		CoverType:           int32(act.CoverType),
-		CategoryName:        categoryName,
-		OrganizerName:       act.OrganizerName,
-		OrganizerAvatar:     act.OrganizerAvatar,
-		ActivityStartTime:   act.ActivityStartTime,
-		Location:            act.Location,
-		MaxParticipants:     int32(act.MaxParticipants),
-		CurrentParticipants: int32(act.CurrentParticipants),
-		Status:              int32(act.Status),
-		StatusText:          act.StatusText(),
-		Tags:                convertTagCachesForList(tags),
-		ViewCount:           int64(act.ViewCount),
-		CreatedAt:           act.CreatedAt,
+		Id:                     int64(act.ID),
+		Title:                  act.Title,
+		CoverUrl:               act.CoverURL,
+		CoverType:              int32(act.CoverType),
+		CategoryName:           categoryName,
+		OrganizerName:          act.OrganizerName,
+		OrganizerAvatar:        act.OrganizerAvatar,
+		ActivityStartTime:      act.ActivityStartTime,
+		Location:               act.Location,
+		MaxParticipants:        int32(act.MaxParticipants),
+		CurrentParticipants:    int32(act.CurrentParticipants),
+		Status:                 int32(act.Status),
+		StatusText:             act.StatusText(),
+		Tags:                   convertTagCachesForList(tags),
+		ViewCount:              int64(act.ViewCount),
+		CreatedAt:              act.CreatedAt,
+		RegistrationStatus:     regStatus,
+		RegistrationStatusText: regStatusText,
 	}
 }
 
