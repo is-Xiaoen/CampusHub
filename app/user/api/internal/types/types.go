@@ -9,6 +9,8 @@ type ApplyVerifyReq struct {
 	StudentId     string `form:"student_id"`
 	Department    string `form:"department"`
 	AdmissionYear string `form:"admission_year"`
+	FrontImageUrl string `form:"front_image_url"`
+	BackImageUrl  string `form:"back_image_url"`
 }
 
 type ApplyVerifyResp struct {
