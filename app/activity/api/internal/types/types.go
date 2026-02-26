@@ -4,58 +4,62 @@
 package types
 
 type ActivityDetail struct {
-	Id                   int64   `json:"id"`
-	Title                string  `json:"title"`
-	CoverUrl             string  `json:"coverUrl"`
-	CoverType            int32   `json:"coverType"` // 1=图片, 2=视频
-	Content              string  `json:"content"`   // 富文本
-	CategoryId           int64   `json:"categoryId"`
-	CategoryName         string  `json:"categoryName"`
-	OrganizerId          int64   `json:"organizerId"`
-	OrganizerName        string  `json:"organizerName"`
-	OrganizerAvatar      string  `json:"organizerAvatar"`
-	ContactPhone         string  `json:"contactPhone,omitempty"` // 脱敏
-	RegisterStartTime    int64   `json:"registerStartTime"`      // 时间戳秒
-	RegisterEndTime      int64   `json:"registerEndTime"`
-	ActivityStartTime    int64   `json:"activityStartTime"`
-	ActivityEndTime      int64   `json:"activityEndTime"`
-	Location             string  `json:"location"`
-	AddressDetail        string  `json:"addressDetail,omitempty"`
-	Longitude            float64 `json:"longitude,omitempty"`
-	Latitude             float64 `json:"latitude,omitempty"`
-	MaxParticipants      int32   `json:"maxParticipants"` // 0=不限
-	CurrentParticipants  int32   `json:"currentParticipants"`
-	RequireApproval      bool    `json:"requireApproval"`
-	RequireStudentVerify bool    `json:"requireStudentVerify"`
-	MinCreditScore       int32   `json:"minCreditScore"`
-	Status               int32   `json:"status"` // 0-6
-	StatusText           string  `json:"statusText"`
-	RejectReason         string  `json:"rejectReason,omitempty"`
-	ViewCount            int64   `json:"viewCount"`
-	LikeCount            int64   `json:"likeCount"`
-	Tags                 []Tag   `json:"tags"`
-	CreatedAt            int64   `json:"createdAt"`
-	UpdatedAt            int64   `json:"updatedAt"`
-	Version              int32   `json:"version"` // 乐观锁版本号
+	Id                     int64   `json:"id"`
+	Title                  string  `json:"title"`
+	CoverUrl               string  `json:"coverUrl"`
+	CoverType              int32   `json:"coverType"` // 1=图片, 2=视频
+	Content                string  `json:"content"`   // 富文本
+	CategoryId             int64   `json:"categoryId"`
+	CategoryName           string  `json:"categoryName"`
+	OrganizerId            int64   `json:"organizerId"`
+	OrganizerName          string  `json:"organizerName"`
+	OrganizerAvatar        string  `json:"organizerAvatar"`
+	ContactPhone           string  `json:"contactPhone,omitempty"` // 脱敏
+	RegisterStartTime      int64   `json:"registerStartTime"`      // 时间戳秒
+	RegisterEndTime        int64   `json:"registerEndTime"`
+	ActivityStartTime      int64   `json:"activityStartTime"`
+	ActivityEndTime        int64   `json:"activityEndTime"`
+	Location               string  `json:"location"`
+	AddressDetail          string  `json:"addressDetail,omitempty"`
+	Longitude              float64 `json:"longitude,omitempty"`
+	Latitude               float64 `json:"latitude,omitempty"`
+	MaxParticipants        int32   `json:"maxParticipants"` // 0=不限
+	CurrentParticipants    int32   `json:"currentParticipants"`
+	RequireApproval        bool    `json:"requireApproval"`
+	RequireStudentVerify   bool    `json:"requireStudentVerify"`
+	MinCreditScore         int32   `json:"minCreditScore"`
+	Status                 int32   `json:"status"` // 0-6
+	StatusText             string  `json:"statusText"`
+	RejectReason           string  `json:"rejectReason,omitempty"`
+	ViewCount              int64   `json:"viewCount"`
+	LikeCount              int64   `json:"likeCount"`
+	Tags                   []Tag   `json:"tags"`
+	CreatedAt              int64   `json:"createdAt"`
+	UpdatedAt              int64   `json:"updatedAt"`
+	Version                int32   `json:"version"`                // 乐观锁版本号
+	RegistrationStatus     int32   `json:"registrationStatus"`     // 报名状态: 0=不适用, 1=未开始, 2=报名中, 3=已截止
+	RegistrationStatusText string  `json:"registrationStatusText"` // 报名状态文本
 }
 
 type ActivityListItem struct {
-	Id                  int64  `json:"id"`
-	Title               string `json:"title"`
-	CoverUrl            string `json:"coverUrl"`
-	CoverType           int32  `json:"coverType"`
-	CategoryName        string `json:"categoryName"`
-	OrganizerName       string `json:"organizerName"`
-	OrganizerAvatar     string `json:"organizerAvatar"`
-	ActivityStartTime   int64  `json:"activityStartTime"`
-	Location            string `json:"location"`
-	MaxParticipants     int32  `json:"maxParticipants"`
-	CurrentParticipants int32  `json:"currentParticipants"`
-	Status              int32  `json:"status"`
-	StatusText          string `json:"statusText"`
-	Tags                []Tag  `json:"tags"`
-	ViewCount           int64  `json:"viewCount"`
-	CreatedAt           int64  `json:"createdAt"`
+	Id                     int64  `json:"id"`
+	Title                  string `json:"title"`
+	CoverUrl               string `json:"coverUrl"`
+	CoverType              int32  `json:"coverType"`
+	CategoryName           string `json:"categoryName"`
+	OrganizerName          string `json:"organizerName"`
+	OrganizerAvatar        string `json:"organizerAvatar"`
+	ActivityStartTime      int64  `json:"activityStartTime"`
+	Location               string `json:"location"`
+	MaxParticipants        int32  `json:"maxParticipants"`
+	CurrentParticipants    int32  `json:"currentParticipants"`
+	Status                 int32  `json:"status"`
+	StatusText             string `json:"statusText"`
+	Tags                   []Tag  `json:"tags"`
+	ViewCount              int64  `json:"viewCount"`
+	CreatedAt              int64  `json:"createdAt"`
+	RegistrationStatus     int32  `json:"registrationStatus"`     // 报名状态: 0=不适用, 1=未开始, 2=报名中, 3=已截止
+	RegistrationStatusText string `json:"registrationStatusText"` // 报名状态文本
 }
 
 type ActivityListItems struct {
