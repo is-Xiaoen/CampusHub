@@ -94,6 +94,14 @@ func (l *CancelStudentVerifyLogic) CancelStudentVerify(
 		l.Errorf("CancelStudentVerify 更新状态失败: verifyId=%d, err=%v", in.VerifyId, err)
 		return nil, errorx.ErrDBError(err)
 	}
+	publishVerifyProgress(
+		l.ctx,
+		l.svcCtx,
+		in.UserId,
+		in.VerifyId,
+		newStatus,
+		constants.VerifyOperatorUserCancel,
+	)
 
 	l.Infof("CancelStudentVerify 取消成功: userId=%d, verifyId=%d, reason=%s",
 		in.UserId, in.VerifyId, in.CancelReason)

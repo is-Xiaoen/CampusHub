@@ -152,6 +152,16 @@ func (l *ApplyStudentVerifyLogic) ApplyStudentVerify(in *pb.ApplyStudentVerifyRe
 			in.UserId, verifyID)
 	}
 
+	// 发布认证进度事件（状态=OCR审核中），失败不影响主流程
+	publishVerifyProgress(
+		l.ctx,
+		l.svcCtx,
+		in.UserId,
+		verifyID,
+		constants.VerifyStatusOcrPending,
+		constants.VerifyOperatorUserApply,
+	)
+
 	// 6. 发布认证申请事件到 MQ，异步触发 OCR 处理
 	l.publishVerifyEvent(verifyID, in)
 
