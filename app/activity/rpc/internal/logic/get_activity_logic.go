@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"errors"
+	"time"
 
 	"activity-platform/app/activity/model"
 	"activity-platform/app/activity/rpc/activity"
@@ -119,40 +120,47 @@ func (l *GetActivityLogic) GetActivity(in *activity.GetActivityReq) (*activity.G
 
 // buildActivityDetail 构建活动详情响应
 func (l *GetActivityLogic) buildActivityDetail(act *model.Activity, categoryName string, tags []model.TagCache) *activity.ActivityDetail {
+	now := time.Now().Unix()
+	regStatus, regStatusText := model.ComputeRegistrationStatus(
+		act.Status, act.RegisterStartTime, act.RegisterEndTime, now,
+	)
+
 	return &activity.ActivityDetail{
-		Id:                   int64(act.ID),
-		Title:                act.Title,
-		CoverUrl:             act.CoverURL,
-		CoverType:            int32(act.CoverType),
-		Content:              act.Description,
-		CategoryId:           int64(act.CategoryID),
-		CategoryName:         categoryName,
-		OrganizerId:          int64(act.OrganizerID),
-		OrganizerName:        act.OrganizerName,
-		OrganizerAvatar:      act.OrganizerAvatar,
-		ContactPhone:         maskPhone(act.ContactPhone), // 手机号脱敏
-		RegisterStartTime:    act.RegisterStartTime,
-		RegisterEndTime:      act.RegisterEndTime,
-		ActivityStartTime:    act.ActivityStartTime,
-		ActivityEndTime:      act.ActivityEndTime,
-		Location:             act.Location,
-		AddressDetail:        act.AddressDetail,
-		Longitude:            act.Longitude,
-		Latitude:             act.Latitude,
-		MaxParticipants:      int32(act.MaxParticipants),
-		CurrentParticipants:  int32(act.CurrentParticipants),
-		RequireApproval:      act.RequireApproval,
-		RequireStudentVerify: act.RequireStudentVerify,
-		MinCreditScore:       int32(act.MinCreditScore),
-		Status:               int32(act.Status),
-		StatusText:           act.StatusText(),
-		RejectReason:         act.RejectReason,
-		ViewCount:            int64(act.ViewCount),
-		LikeCount:            int64(act.LikeCount),
-		Tags:                 convertTagCaches(tags),
-		CreatedAt:            act.CreatedAt,
-		UpdatedAt:            act.UpdatedAt,
-		Version:              int32(act.Version),
+		Id:                     int64(act.ID),
+		Title:                  act.Title,
+		CoverUrl:               act.CoverURL,
+		CoverType:              int32(act.CoverType),
+		Content:                act.Description,
+		CategoryId:             int64(act.CategoryID),
+		CategoryName:           categoryName,
+		OrganizerId:            int64(act.OrganizerID),
+		OrganizerName:          act.OrganizerName,
+		OrganizerAvatar:        act.OrganizerAvatar,
+		ContactPhone:           maskPhone(act.ContactPhone), // 手机号脱敏
+		RegisterStartTime:      act.RegisterStartTime,
+		RegisterEndTime:        act.RegisterEndTime,
+		ActivityStartTime:      act.ActivityStartTime,
+		ActivityEndTime:        act.ActivityEndTime,
+		Location:               act.Location,
+		AddressDetail:          act.AddressDetail,
+		Longitude:              act.Longitude,
+		Latitude:               act.Latitude,
+		MaxParticipants:        int32(act.MaxParticipants),
+		CurrentParticipants:    int32(act.CurrentParticipants),
+		RequireApproval:        act.RequireApproval,
+		RequireStudentVerify:   act.RequireStudentVerify,
+		MinCreditScore:         int32(act.MinCreditScore),
+		Status:                 int32(act.Status),
+		StatusText:             act.StatusText(),
+		RejectReason:           act.RejectReason,
+		ViewCount:              int64(act.ViewCount),
+		LikeCount:              int64(act.LikeCount),
+		Tags:                   convertTagCaches(tags),
+		CreatedAt:              act.CreatedAt,
+		UpdatedAt:              act.UpdatedAt,
+		Version:                int32(act.Version),
+		RegistrationStatus:     regStatus,
+		RegistrationStatusText: regStatusText,
 	}
 }
 
