@@ -19,14 +19,62 @@ const (
 )
 
 // StatusText 状态文本映射
+//
+// 注意：StatusPublished 是活动生命周期状态（"已发布"），不是报名状态
+// 报名状态由 ComputeRegistrationStatus 根据时间动态计算
 var StatusText = map[int8]string{
 	StatusDraft:     "草稿",
 	StatusPending:   "待审核",
-	StatusPublished: "报名中",
+	StatusPublished: "已发布",
 	StatusOngoing:   "进行中",
 	StatusFinished:  "已结束",
 	StatusRejected:  "已拒绝",
 	StatusCancelled: "已取消",
+}
+
+// 报名状态常量（动态计算，不持久化）
+
+const (
+	RegStatusNotApplicable int32 = 0 // 不适用（草稿/待审核/已拒绝/已取消）
+	RegStatusNotStarted    int32 = 1 // 未开始报名
+	RegStatusOpen          int32 = 2 // 报名中
+	RegStatusClosed        int32 = 3 // 报名已截止
+)
+
+// regStatusText 报名状态文本映射
+var regStatusText = map[int32]string{
+	RegStatusNotApplicable: "",
+	RegStatusNotStarted:    "未开始报名",
+	RegStatusOpen:          "报名中",
+	RegStatusClosed:        "报名已截止",
+}
+
+// ComputeRegistrationStatus 根据活动状态和报名时间计算报名状态
+//
+// 规则：
+//   - 非公开状态（草稿/待审核/已拒绝/已取消）：返回 0（不适用）
+//   - 已结束：返回 3（报名已截止）
+//   - 已发布/进行中：根据当前时间与报名时间窗口判断
+func ComputeRegistrationStatus(status int8, registerStartTime, registerEndTime, now int64) (int32, string) {
+	// 非公开状态：不适用
+	if status == StatusDraft || status == StatusPending ||
+		status == StatusRejected || status == StatusCancelled {
+		return RegStatusNotApplicable, regStatusText[RegStatusNotApplicable]
+	}
+
+	// 已结束：报名已截止
+	if status == StatusFinished {
+		return RegStatusClosed, regStatusText[RegStatusClosed]
+	}
+
+	// 已发布/进行中：根据时间判断
+	if now < registerStartTime {
+		return RegStatusNotStarted, regStatusText[RegStatusNotStarted]
+	}
+	if now <= registerEndTime {
+		return RegStatusOpen, regStatusText[RegStatusOpen]
+	}
+	return RegStatusClosed, regStatusText[RegStatusClosed]
 }
 
 // 操作人类型

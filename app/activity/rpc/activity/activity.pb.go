@@ -232,42 +232,44 @@ func (x *Pagination) GetTotalPages() int32 {
 
 // ActivityDetail 活动详情（完整信息）
 type ActivityDetail struct {
-	state                protoimpl.MessageState `protogen:"open.v1"`
-	Id                   int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Title                string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	CoverUrl             string                 `protobuf:"bytes,3,opt,name=cover_url,json=coverUrl,proto3" json:"cover_url,omitempty"`
-	CoverType            int32                  `protobuf:"varint,4,opt,name=cover_type,json=coverType,proto3" json:"cover_type,omitempty"` // 1=图片, 2=视频
-	Content              string                 `protobuf:"bytes,5,opt,name=content,proto3" json:"content,omitempty"`                       // 富文本
-	CategoryId           int64                  `protobuf:"varint,6,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
-	CategoryName         string                 `protobuf:"bytes,7,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
-	OrganizerId          int64                  `protobuf:"varint,8,opt,name=organizer_id,json=organizerId,proto3" json:"organizer_id,omitempty"`
-	OrganizerName        string                 `protobuf:"bytes,9,opt,name=organizer_name,json=organizerName,proto3" json:"organizer_name,omitempty"`
-	OrganizerAvatar      string                 `protobuf:"bytes,10,opt,name=organizer_avatar,json=organizerAvatar,proto3" json:"organizer_avatar,omitempty"`
-	ContactPhone         string                 `protobuf:"bytes,11,opt,name=contact_phone,json=contactPhone,proto3" json:"contact_phone,omitempty"`                   // 脱敏
-	RegisterStartTime    int64                  `protobuf:"varint,12,opt,name=register_start_time,json=registerStartTime,proto3" json:"register_start_time,omitempty"` // 时间戳秒
-	RegisterEndTime      int64                  `protobuf:"varint,13,opt,name=register_end_time,json=registerEndTime,proto3" json:"register_end_time,omitempty"`
-	ActivityStartTime    int64                  `protobuf:"varint,14,opt,name=activity_start_time,json=activityStartTime,proto3" json:"activity_start_time,omitempty"`
-	ActivityEndTime      int64                  `protobuf:"varint,15,opt,name=activity_end_time,json=activityEndTime,proto3" json:"activity_end_time,omitempty"`
-	Location             string                 `protobuf:"bytes,16,opt,name=location,proto3" json:"location,omitempty"`
-	AddressDetail        string                 `protobuf:"bytes,17,opt,name=address_detail,json=addressDetail,proto3" json:"address_detail,omitempty"`
-	Longitude            float64                `protobuf:"fixed64,18,opt,name=longitude,proto3" json:"longitude,omitempty"`
-	Latitude             float64                `protobuf:"fixed64,19,opt,name=latitude,proto3" json:"latitude,omitempty"`
-	MaxParticipants      int32                  `protobuf:"varint,20,opt,name=max_participants,json=maxParticipants,proto3" json:"max_participants,omitempty"` // 0=不限
-	CurrentParticipants  int32                  `protobuf:"varint,21,opt,name=current_participants,json=currentParticipants,proto3" json:"current_participants,omitempty"`
-	RequireApproval      bool                   `protobuf:"varint,22,opt,name=require_approval,json=requireApproval,proto3" json:"require_approval,omitempty"`
-	RequireStudentVerify bool                   `protobuf:"varint,23,opt,name=require_student_verify,json=requireStudentVerify,proto3" json:"require_student_verify,omitempty"`
-	MinCreditScore       int32                  `protobuf:"varint,24,opt,name=min_credit_score,json=minCreditScore,proto3" json:"min_credit_score,omitempty"`
-	Status               int32                  `protobuf:"varint,25,opt,name=status,proto3" json:"status,omitempty"` // 0-6
-	StatusText           string                 `protobuf:"bytes,26,opt,name=status_text,json=statusText,proto3" json:"status_text,omitempty"`
-	RejectReason         string                 `protobuf:"bytes,27,opt,name=reject_reason,json=rejectReason,proto3" json:"reject_reason,omitempty"`
-	ViewCount            int64                  `protobuf:"varint,28,opt,name=view_count,json=viewCount,proto3" json:"view_count,omitempty"`
-	LikeCount            int64                  `protobuf:"varint,29,opt,name=like_count,json=likeCount,proto3" json:"like_count,omitempty"`
-	Tags                 []*Tag                 `protobuf:"bytes,30,rep,name=tags,proto3" json:"tags,omitempty"`
-	CreatedAt            int64                  `protobuf:"varint,31,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt            int64                  `protobuf:"varint,32,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	Version              int32                  `protobuf:"varint,33,opt,name=version,proto3" json:"version,omitempty"` // 乐观锁版本号
-	unknownFields        protoimpl.UnknownFields
-	sizeCache            protoimpl.SizeCache
+	state                  protoimpl.MessageState `protogen:"open.v1"`
+	Id                     int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Title                  string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	CoverUrl               string                 `protobuf:"bytes,3,opt,name=cover_url,json=coverUrl,proto3" json:"cover_url,omitempty"`
+	CoverType              int32                  `protobuf:"varint,4,opt,name=cover_type,json=coverType,proto3" json:"cover_type,omitempty"` // 1=图片, 2=视频
+	Content                string                 `protobuf:"bytes,5,opt,name=content,proto3" json:"content,omitempty"`                       // 富文本
+	CategoryId             int64                  `protobuf:"varint,6,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	CategoryName           string                 `protobuf:"bytes,7,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
+	OrganizerId            int64                  `protobuf:"varint,8,opt,name=organizer_id,json=organizerId,proto3" json:"organizer_id,omitempty"`
+	OrganizerName          string                 `protobuf:"bytes,9,opt,name=organizer_name,json=organizerName,proto3" json:"organizer_name,omitempty"`
+	OrganizerAvatar        string                 `protobuf:"bytes,10,opt,name=organizer_avatar,json=organizerAvatar,proto3" json:"organizer_avatar,omitempty"`
+	ContactPhone           string                 `protobuf:"bytes,11,opt,name=contact_phone,json=contactPhone,proto3" json:"contact_phone,omitempty"`                   // 脱敏
+	RegisterStartTime      int64                  `protobuf:"varint,12,opt,name=register_start_time,json=registerStartTime,proto3" json:"register_start_time,omitempty"` // 时间戳秒
+	RegisterEndTime        int64                  `protobuf:"varint,13,opt,name=register_end_time,json=registerEndTime,proto3" json:"register_end_time,omitempty"`
+	ActivityStartTime      int64                  `protobuf:"varint,14,opt,name=activity_start_time,json=activityStartTime,proto3" json:"activity_start_time,omitempty"`
+	ActivityEndTime        int64                  `protobuf:"varint,15,opt,name=activity_end_time,json=activityEndTime,proto3" json:"activity_end_time,omitempty"`
+	Location               string                 `protobuf:"bytes,16,opt,name=location,proto3" json:"location,omitempty"`
+	AddressDetail          string                 `protobuf:"bytes,17,opt,name=address_detail,json=addressDetail,proto3" json:"address_detail,omitempty"`
+	Longitude              float64                `protobuf:"fixed64,18,opt,name=longitude,proto3" json:"longitude,omitempty"`
+	Latitude               float64                `protobuf:"fixed64,19,opt,name=latitude,proto3" json:"latitude,omitempty"`
+	MaxParticipants        int32                  `protobuf:"varint,20,opt,name=max_participants,json=maxParticipants,proto3" json:"max_participants,omitempty"` // 0=不限
+	CurrentParticipants    int32                  `protobuf:"varint,21,opt,name=current_participants,json=currentParticipants,proto3" json:"current_participants,omitempty"`
+	RequireApproval        bool                   `protobuf:"varint,22,opt,name=require_approval,json=requireApproval,proto3" json:"require_approval,omitempty"`
+	RequireStudentVerify   bool                   `protobuf:"varint,23,opt,name=require_student_verify,json=requireStudentVerify,proto3" json:"require_student_verify,omitempty"`
+	MinCreditScore         int32                  `protobuf:"varint,24,opt,name=min_credit_score,json=minCreditScore,proto3" json:"min_credit_score,omitempty"`
+	Status                 int32                  `protobuf:"varint,25,opt,name=status,proto3" json:"status,omitempty"` // 0-6
+	StatusText             string                 `protobuf:"bytes,26,opt,name=status_text,json=statusText,proto3" json:"status_text,omitempty"`
+	RejectReason           string                 `protobuf:"bytes,27,opt,name=reject_reason,json=rejectReason,proto3" json:"reject_reason,omitempty"`
+	ViewCount              int64                  `protobuf:"varint,28,opt,name=view_count,json=viewCount,proto3" json:"view_count,omitempty"`
+	LikeCount              int64                  `protobuf:"varint,29,opt,name=like_count,json=likeCount,proto3" json:"like_count,omitempty"`
+	Tags                   []*Tag                 `protobuf:"bytes,30,rep,name=tags,proto3" json:"tags,omitempty"`
+	CreatedAt              int64                  `protobuf:"varint,31,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt              int64                  `protobuf:"varint,32,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Version                int32                  `protobuf:"varint,33,opt,name=version,proto3" json:"version,omitempty"`                                                              // 乐观锁版本号
+	RegistrationStatus     int32                  `protobuf:"varint,34,opt,name=registration_status,json=registrationStatus,proto3" json:"registration_status,omitempty"`              // 报名状态: 0=不适用, 1=未开始报名, 2=报名中, 3=报名已截止
+	RegistrationStatusText string                 `protobuf:"bytes,35,opt,name=registration_status_text,json=registrationStatusText,proto3" json:"registration_status_text,omitempty"` // 报名状态文本
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *ActivityDetail) Reset() {
@@ -531,27 +533,43 @@ func (x *ActivityDetail) GetVersion() int32 {
 	return 0
 }
 
+func (x *ActivityDetail) GetRegistrationStatus() int32 {
+	if x != nil {
+		return x.RegistrationStatus
+	}
+	return 0
+}
+
+func (x *ActivityDetail) GetRegistrationStatusText() string {
+	if x != nil {
+		return x.RegistrationStatusText
+	}
+	return ""
+}
+
 // ActivityListItem 活动列表项（简化信息）
 type ActivityListItem struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	Id                  int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Title               string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
-	CoverUrl            string                 `protobuf:"bytes,3,opt,name=cover_url,json=coverUrl,proto3" json:"cover_url,omitempty"`
-	CoverType           int32                  `protobuf:"varint,4,opt,name=cover_type,json=coverType,proto3" json:"cover_type,omitempty"`
-	CategoryName        string                 `protobuf:"bytes,5,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
-	OrganizerName       string                 `protobuf:"bytes,6,opt,name=organizer_name,json=organizerName,proto3" json:"organizer_name,omitempty"`
-	OrganizerAvatar     string                 `protobuf:"bytes,7,opt,name=organizer_avatar,json=organizerAvatar,proto3" json:"organizer_avatar,omitempty"`
-	ActivityStartTime   int64                  `protobuf:"varint,8,opt,name=activity_start_time,json=activityStartTime,proto3" json:"activity_start_time,omitempty"`
-	Location            string                 `protobuf:"bytes,9,opt,name=location,proto3" json:"location,omitempty"`
-	MaxParticipants     int32                  `protobuf:"varint,10,opt,name=max_participants,json=maxParticipants,proto3" json:"max_participants,omitempty"`
-	CurrentParticipants int32                  `protobuf:"varint,11,opt,name=current_participants,json=currentParticipants,proto3" json:"current_participants,omitempty"`
-	Status              int32                  `protobuf:"varint,12,opt,name=status,proto3" json:"status,omitempty"`
-	StatusText          string                 `protobuf:"bytes,13,opt,name=status_text,json=statusText,proto3" json:"status_text,omitempty"`
-	Tags                []*Tag                 `protobuf:"bytes,14,rep,name=tags,proto3" json:"tags,omitempty"`
-	ViewCount           int64                  `protobuf:"varint,15,opt,name=view_count,json=viewCount,proto3" json:"view_count,omitempty"`
-	CreatedAt           int64                  `protobuf:"varint,16,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	state                  protoimpl.MessageState `protogen:"open.v1"`
+	Id                     int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Title                  string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	CoverUrl               string                 `protobuf:"bytes,3,opt,name=cover_url,json=coverUrl,proto3" json:"cover_url,omitempty"`
+	CoverType              int32                  `protobuf:"varint,4,opt,name=cover_type,json=coverType,proto3" json:"cover_type,omitempty"`
+	CategoryName           string                 `protobuf:"bytes,5,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
+	OrganizerName          string                 `protobuf:"bytes,6,opt,name=organizer_name,json=organizerName,proto3" json:"organizer_name,omitempty"`
+	OrganizerAvatar        string                 `protobuf:"bytes,7,opt,name=organizer_avatar,json=organizerAvatar,proto3" json:"organizer_avatar,omitempty"`
+	ActivityStartTime      int64                  `protobuf:"varint,8,opt,name=activity_start_time,json=activityStartTime,proto3" json:"activity_start_time,omitempty"`
+	Location               string                 `protobuf:"bytes,9,opt,name=location,proto3" json:"location,omitempty"`
+	MaxParticipants        int32                  `protobuf:"varint,10,opt,name=max_participants,json=maxParticipants,proto3" json:"max_participants,omitempty"`
+	CurrentParticipants    int32                  `protobuf:"varint,11,opt,name=current_participants,json=currentParticipants,proto3" json:"current_participants,omitempty"`
+	Status                 int32                  `protobuf:"varint,12,opt,name=status,proto3" json:"status,omitempty"`
+	StatusText             string                 `protobuf:"bytes,13,opt,name=status_text,json=statusText,proto3" json:"status_text,omitempty"`
+	Tags                   []*Tag                 `protobuf:"bytes,14,rep,name=tags,proto3" json:"tags,omitempty"`
+	ViewCount              int64                  `protobuf:"varint,15,opt,name=view_count,json=viewCount,proto3" json:"view_count,omitempty"`
+	CreatedAt              int64                  `protobuf:"varint,16,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	RegistrationStatus     int32                  `protobuf:"varint,17,opt,name=registration_status,json=registrationStatus,proto3" json:"registration_status,omitempty"`              // 报名状态: 0=不适用, 1=未开始报名, 2=报名中, 3=报名已截止
+	RegistrationStatusText string                 `protobuf:"bytes,18,opt,name=registration_status_text,json=registrationStatusText,proto3" json:"registration_status_text,omitempty"` // 报名状态文本
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *ActivityListItem) Reset() {
@@ -694,6 +712,20 @@ func (x *ActivityListItem) GetCreatedAt() int64 {
 		return x.CreatedAt
 	}
 	return 0
+}
+
+func (x *ActivityListItem) GetRegistrationStatus() int32 {
+	if x != nil {
+		return x.RegistrationStatus
+	}
+	return 0
+}
+
+func (x *ActivityListItem) GetRegistrationStatusText() string {
+	if x != nil {
+		return x.RegistrationStatusText
+	}
+	return ""
 }
 
 // 报名活动请求
@@ -4516,7 +4548,8 @@ const file_activity_proto_rawDesc = "" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x14\n" +
 	"\x05total\x18\x03 \x01(\x03R\x05total\x12\x1f\n" +
 	"\vtotal_pages\x18\x04 \x01(\x05R\n" +
-	"totalPages\"\xa1\t\n" +
+	"totalPages\"\x8c\n" +
+	"\n" +
 	"\x0eActivityDetail\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12\x1b\n" +
@@ -4558,7 +4591,9 @@ const file_activity_proto_rawDesc = "" +
 	"created_at\x18\x1f \x01(\x03R\tcreatedAt\x12\x1d\n" +
 	"\n" +
 	"updated_at\x18  \x01(\x03R\tupdatedAt\x12\x18\n" +
-	"\aversion\x18! \x01(\x05R\aversion\"\xaf\x04\n" +
+	"\aversion\x18! \x01(\x05R\aversion\x12/\n" +
+	"\x13registration_status\x18\" \x01(\x05R\x12registrationStatus\x128\n" +
+	"\x18registration_status_text\x18# \x01(\tR\x16registrationStatusText\"\x9a\x05\n" +
 	"\x10ActivityListItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12\x1b\n" +
@@ -4580,7 +4615,9 @@ const file_activity_proto_rawDesc = "" +
 	"\n" +
 	"view_count\x18\x0f \x01(\x03R\tviewCount\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x10 \x01(\x03R\tcreatedAt\"S\n" +
+	"created_at\x18\x10 \x01(\x03R\tcreatedAt\x12/\n" +
+	"\x13registration_status\x18\x11 \x01(\x05R\x12registrationStatus\x128\n" +
+	"\x18registration_status_text\x18\x12 \x01(\tR\x16registrationStatusText\"S\n" +
 	"\x17RegisterActivityRequest\x12\x1f\n" +
 	"\vactivity_id\x18\x01 \x01(\x03R\n" +
 	"activityId\x12\x17\n" +

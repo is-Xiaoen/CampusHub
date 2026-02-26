@@ -48,6 +48,11 @@ func main() {
 	statusCron.Start()
 	defer statusCron.Stop()
 
+	// 4.5 启动标签同步定时任务（从用户服务同步标签数据到 tag_cache）
+	tagSyncCron := cron.NewTagSyncCron(ctx.Redis, ctx.TagRpc, ctx.TagCacheModel)
+	tagSyncCron.Start()
+	defer tagSyncCron.Stop()
+
 	// 5. DTM 客户端关闭（如果启用）
 	if ctx.DTMClient != nil {
 		defer ctx.DTMClient.Close()
