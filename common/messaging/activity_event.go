@@ -9,6 +9,9 @@ const (
 	TopicActivityMemberJoined = "activity.member.joined"
 	TopicActivityMemberLeft   = "activity.member.left"
 	TopicActivityCancelled    = "activity.cancelled"
+
+	TopicGroupMemberAdded   = "chat.group.member.added"
+	TopicGroupMemberRemoved = "chat.group.member.removed"
 )
 
 // ==================== 事件结构体 ====================
@@ -46,4 +49,11 @@ type ActivityCancelledEvent struct {
 	CancelledBy uint64    `json:"cancelled_by"`
 	Reason      string    `json:"reason"`
 	CancelledAt time.Time `json:"cancelled_at"`
+}
+
+// GroupMemberChangedEvent 群成员变更事件
+// 消费者：WS 服务（自动订阅/取消订阅群聊实时消息）
+type GroupMemberChangedEvent struct {
+	GroupID string `json:"group_id"`
+	UserID  uint64 `json:"user_id"`
 }

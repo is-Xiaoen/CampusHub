@@ -24,6 +24,7 @@ tools
 learning/batch_query_network.md
 tests
 learning
+articles
 
 # Test binary
 *.test

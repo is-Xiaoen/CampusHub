@@ -40,7 +40,7 @@ func NewGetVerifyInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Get
 
 // GetVerifyInfo 获取已通过的认证信息
 // 业务逻辑:
-//   - 仅返回已通过认证用户的脱敏信息
+//   - 仅返回已通过认证用户的信息（用户侧姓名/学号全量回显）
 //   - 用于个人中心-认证信息页面展示
 func (l *GetVerifyInfoLogic) GetVerifyInfo(in *pb.GetVerifyInfoReq) (*pb.GetVerifyInfoResp, error) {
 	// 1. 参数校验
@@ -70,8 +70,8 @@ func (l *GetVerifyInfoLogic) GetVerifyInfo(in *pb.GetVerifyInfoReq) (*pb.GetVeri
 		}, nil
 	}
 
-	// 4. 构建响应（脱敏处理）
-	resp := BuildMaskedVerifyInfo(verification)
+	// 4. 构建响应（用户侧全量回显）
+	resp := BuildVerifyInfo(verification)
 
 	l.Infof("GetVerifyInfo 查询成功: userId=%d, school=%s",
 		in.UserId, verification.SchoolName)

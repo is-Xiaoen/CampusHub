@@ -48,6 +48,9 @@ type Config struct {
 
 	// Qiniu 七牛云配置
 	Qiniu QiniuConf `json:",optional"`
+
+	// SensitiveData 敏感数据加密配置（必填）
+	SensitiveData SensitiveDataConf
 }
 
 // MessagingConf 消息发布器配置
@@ -61,6 +64,14 @@ type RedisStreamConf struct {
 	Addr     string `json:",default=localhost:6379"`
 	Password string `json:",optional"`
 	DB       int    `json:",default=0"`
+}
+
+// SensitiveDataConf 敏感字段加解密配置
+type SensitiveDataConf struct {
+	// AesKey AES-256-GCM 密钥（base64，解码后 32 字节）
+	AesKey string
+	// HashKey 学号哈希密钥（base64，解码后 32 字节）
+	HashKey string
 }
 
 // QiniuConf 七牛云配置

@@ -120,7 +120,11 @@ func (c *Client) SendMessage(msg *types.WSMessage) error {
 	if err != nil {
 		return err
 	}
+	return c.sendRaw(data)
+}
 
+// sendRaw 将已序列化的字节数据投递到发送缓冲区
+func (c *Client) sendRaw(data []byte) error {
 	select {
 	case c.send <- data:
 		return nil

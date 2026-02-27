@@ -80,11 +80,11 @@ type GetCreditLogsResp {
 // ============================================================================
 // OCR识别/认证数据
 type VerifyData {
-	// 姓名（脱敏显示）
+	// 姓名（全量回显）
 	RealName string `json:"real_name"`
 	// 学校名称
 	SchoolName string `json:"school_name"`
-	// 学号（脱敏显示）
+	// 学号（全量回显）
 	StudentId string `json:"student_id"`
 	// 院系
 	Department string `json:"department"`
@@ -122,7 +122,7 @@ type GetVerifyCurrentResp {
 	UpdatedAt string `json:"updated_at,optional"`
 }
 
-// 提交学生认证申请请求（multipart/form-data，文件由 Handler 手动解析）
+// 提交学生认证申请请求（multipart/form-data）
 type ApplyVerifyReq {
 	// 姓名
 	RealName string `form:"real_name"`
@@ -134,6 +134,10 @@ type ApplyVerifyReq {
 	Department string `form:"department"`
 	// 入学年份
 	AdmissionYear string `form:"admission_year"`
+	// 学生证正面照片URL
+	FrontImageUrl string `form:"front_image_url"`
+	// 学生证详情面照片URL
+	BackImageUrl string `form:"back_image_url"`
 }
 
 // 提交学生认证申请响应
@@ -316,6 +320,7 @@ type UpdateUserInfoReq {
 	Introduction   string  `form:"introduction,optional"`
 	Gender         string  `form:"gender,optional"`
 	AvatarId       int64   `form:"avatarId,optional"`
+	AvatarUrl      string  `form:"avatarUrl,optional"`
 	InterestTagIds []int64 `form:"interestTagIds,optional"`
 }
 

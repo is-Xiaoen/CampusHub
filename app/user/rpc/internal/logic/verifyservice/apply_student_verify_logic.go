@@ -68,8 +68,7 @@ func (l *ApplyStudentVerifyLogic) ApplyStudentVerify(in *pb.ApplyStudentVerifyRe
 		return nil, errorx.ErrDBError(err)
 	}
 	if exists {
-		l.Infof("[WARN] ApplyStudentVerify 学号已被占用: school=%s, studentId=%s",
-			in.SchoolName, in.StudentId)
+		l.Infof("[WARN] ApplyStudentVerify 学号已被占用: school=%s", in.SchoolName)
 		return nil, errorx.ErrVerifyStudentIDUsed()
 	}
 
@@ -151,6 +150,16 @@ func (l *ApplyStudentVerifyLogic) ApplyStudentVerify(in *pb.ApplyStudentVerifyRe
 		l.Infof("ApplyStudentVerify 更新记录成功: userId=%d, verifyId=%d",
 			in.UserId, verifyID)
 	}
+
+	// 发布认证进度事件（状态=OCR审核中），失败不影响主流程
+	publishVerifyProgress(
+		l.ctx,
+		l.svcCtx,
+		in.UserId,
+		verifyID,
+		constants.VerifyStatusOcrPending,
+		constants.VerifyOperatorUserApply,
+	)
 
 	// 6. 发布认证申请事件到 MQ，异步触发 OCR 处理
 	l.publishVerifyEvent(verifyID, in)

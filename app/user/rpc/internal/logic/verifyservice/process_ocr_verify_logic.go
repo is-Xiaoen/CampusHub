@@ -114,6 +114,14 @@ func (l *ProcessOcrVerifyLogic) ProcessOcrVerify(in *pb.ProcessOcrVerifyReq) (*p
 			l.Errorf("[ProcessOcr] 标记超时失败: verifyId=%d, err=%v", in.VerifyId, updateErr)
 			return nil, errorx.ErrDBError(updateErr)
 		}
+		publishVerifyProgress(
+			l.ctx,
+			l.svcCtx,
+			in.UserId,
+			in.VerifyId,
+			constants.VerifyStatusTimeout,
+			constants.VerifyOperatorTimeoutJob,
+		)
 		return &pb.ProcessOcrVerifyResp{
 			Success:      true,
 			ResultStatus: int32(constants.VerifyStatusTimeout),
@@ -127,8 +135,19 @@ func (l *ProcessOcrVerifyLogic) ProcessOcrVerify(in *pb.ProcessOcrVerifyReq) (*p
 		updates := map[string]interface{}{
 			"operator": constants.VerifyOperatorOcrCallback,
 		}
-		_ = l.svcCtx.StudentVerificationModel.UpdateStatus(
-			l.ctx, in.VerifyId, constants.VerifyStatusOcrFailed, updates)
+		if updateErr := l.svcCtx.StudentVerificationModel.UpdateStatus(
+			l.ctx, in.VerifyId, constants.VerifyStatusOcrFailed, updates); updateErr != nil {
+			l.Errorf("[ProcessOcr] 标记OCR失败失败: verifyId=%d, err=%v", in.VerifyId, updateErr)
+		} else {
+			publishVerifyProgress(
+				l.ctx,
+				l.svcCtx,
+				in.UserId,
+				in.VerifyId,
+				constants.VerifyStatusOcrFailed,
+				constants.VerifyOperatorOcrCallback,
+			)
+		}
 		return &pb.ProcessOcrVerifyResp{
 			Success:      true,
 			ResultStatus: int32(constants.VerifyStatusOcrFailed),
@@ -164,6 +183,14 @@ func (l *ProcessOcrVerifyLogic) ProcessOcrVerify(in *pb.ProcessOcrVerifyReq) (*p
 			l.Errorf("[ProcessOcr] 标记OCR失败: verifyId=%d, err=%v", in.VerifyId, updateErr)
 			return nil, errorx.ErrDBError(updateErr)
 		}
+		publishVerifyProgress(
+			l.ctx,
+			l.svcCtx,
+			in.UserId,
+			in.VerifyId,
+			constants.VerifyStatusOcrFailed,
+			constants.VerifyOperatorOcrCallback,
+		)
 
 		// 清除缓存
 		l.deleteVerifyCache(in.UserId)
@@ -176,8 +203,8 @@ func (l *ProcessOcrVerifyLogic) ProcessOcrVerify(in *pb.ProcessOcrVerifyReq) (*p
 	}
 
 	// ==================== Step 6: OCR 成功，更新为 WaitConfirm ====================
-	l.Infof("[ProcessOcr] OCR识别成功: verifyId=%d, platform=%s, school=%s, name=%s",
-		in.VerifyId, ocrResult.Platform, ocrResult.SchoolName, ocrResult.RealName)
+	l.Infof("[ProcessOcr] OCR识别成功: verifyId=%d, platform=%s",
+		in.VerifyId, ocrResult.Platform)
 
 	// 再次检查状态（防止 OCR 期间用户取消）
 	if l.isStatusChanged(in.VerifyId) {
@@ -205,6 +232,14 @@ func (l *ProcessOcrVerifyLogic) ProcessOcrVerify(in *pb.ProcessOcrVerifyReq) (*p
 		l.Errorf("[ProcessOcr] 更新OCR结果失败: verifyId=%d, err=%v", in.VerifyId, updateErr)
 		return nil, errorx.ErrDBError(updateErr)
 	}
+	publishVerifyProgress(
+		l.ctx,
+		l.svcCtx,
+		in.UserId,
+		in.VerifyId,
+		constants.VerifyStatusWaitConfirm,
+		constants.VerifyOperatorOcrCallback,
+	)
 
 	// 清除缓存
 	l.deleteVerifyCache(in.UserId)

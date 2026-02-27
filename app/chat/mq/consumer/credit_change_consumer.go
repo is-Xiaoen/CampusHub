@@ -44,7 +44,7 @@ var eventTypeToReason = map[string]string{
 	messaging.CreditEventCancelLate:  "临期取消活动报名（<24h）",
 	messaging.CreditEventNoShow:      "活动爽约未签到",
 	messaging.CreditEventHostSuccess: "成功举办活动",
-	messaging.CreditEventHostDelete:  "删除已有报名的活动",
+	messaging.CreditEventHostDelete:  "组织者违约（取消/删除已有报名活动）",
 }
 
 // CreditChangeConsumer 信用分变更消费者

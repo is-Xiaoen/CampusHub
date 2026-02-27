@@ -3,7 +3,7 @@
 #
 # 重要：Auth.AccessSecret 必须与 user-api 一致！
 Name: activity-api
-Host: 0.0.0.0
+Host: 192.168.22.11
 Port: 8002
 MaxConns: 10000
 CpuThreshold: 900
