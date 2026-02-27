@@ -51,9 +51,6 @@ type Hub struct {
 type MessageHandler interface {
 	HandleAuth(client *Client, msg *types.WSMessage) error
 	HandleSendMessage(client *Client, msg *types.WSMessage) error
-	HandleJoinGroup(client *Client, msg *types.WSMessage) error
-	HandleLeaveGroup(client *Client, msg *types.WSMessage) error
-	HandleMarkRead(client *Client, msg *types.WSMessage) error
 }
 
 // NewHub 创建新的 Hub
@@ -160,15 +157,6 @@ func (h *Hub) handleClientMessage(client *Client, msg *types.WSMessage) {
 	case types.TypeSendMessage:
 		err = h.messageHandler.HandleSendMessage(client, msg)
 
-	case types.TypeJoinGroup:
-		err = h.messageHandler.HandleJoinGroup(client, msg)
-
-	case types.TypeLeaveGroup:
-		err = h.messageHandler.HandleLeaveGroup(client, msg)
-
-	case types.TypeMarkRead:
-		err = h.messageHandler.HandleMarkRead(client, msg)
-
 	default:
 		client.SendError(400, "未知的消息类型")
 		return
@@ -182,18 +170,22 @@ func (h *Hub) handleClientMessage(client *Client, msg *types.WSMessage) {
 
 // BroadcastToGroup 向群聊广播消息
 func (h *Hub) BroadcastToGroup(groupID string, msg *types.WSMessage) {
-	h.mu.RLock()
-	clients, ok := h.groups[groupID]
-	h.mu.RUnlock()
+	data, err := json.Marshal(msg)
+	if err != nil {
+		logx.Errorf("序列化消息失败: %v", err)
+		return
+	}
 
-	if !ok {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	clients, ok := h.groups[groupID]
+	if !ok || len(clients) == 0 {
 		return
 	}
 
 	for client := range clients {
-		if client.IsInGroup(groupID) {
-			client.SendMessage(msg)
-		}
+		client.sendRaw(data)
 	}
 }
 
@@ -231,35 +223,39 @@ func (h *Hub) subscribeMessages(ctx context.Context) {
 		return nil
 	})
 
-	// 订阅系统通知
-	h.messagingClient.Subscribe("chat.notification.new", "ws-notification-handler", func(msg *message.Message) error {
-		var notifData types.NotificationData
-		if err := json.Unmarshal(msg.Payload, &notifData); err != nil {
+	// 订阅群成员加入事件
+	h.messagingClient.Subscribe(messaging.TopicGroupMemberAdded, "ws-group-member-added", func(msg *message.Message) error {
+		var event messaging.GroupMemberChangedEvent
+		if err := json.Unmarshal(msg.Payload, &event); err != nil {
 			return messaging.NewNonRetryableError(err)
 		}
 
-		// 从消息元数据中获取目标用户ID
-		userID := msg.Metadata.Get("user_id")
-		if userID == "" {
-			return messaging.NewNonRetryableError(errors.New("消息元数据中缺少 user_id"))
+		h.mu.RLock()
+		client, ok := h.clients[fmt.Sprintf("%d", event.UserID)]
+		h.mu.RUnlock()
+
+		if ok {
+			h.AddClientToGroup(client, event.GroupID)
+			logx.Infof("用户 %d 自动订阅群聊 %s", event.UserID, event.GroupID)
+		}
+		return nil
+	})
+
+	// 订阅群成员移除事件
+	h.messagingClient.Subscribe(messaging.TopicGroupMemberRemoved, "ws-group-member-removed", func(msg *message.Message) error {
+		var event messaging.GroupMemberChangedEvent
+		if err := json.Unmarshal(msg.Payload, &event); err != nil {
+			return messaging.NewNonRetryableError(err)
 		}
 
-		// 发送给指定用户
-		wsMsg := &types.WSMessage{
-			Type:      types.TypeNotification,
-			MessageID: notifData.NotificationID,
-			Timestamp: notifData.CreatedAt,
-			Data:      json.RawMessage(msg.Payload),
-		}
-		if err := h.SendToUser(userID, wsMsg); err != nil {
-			// 用户不在线，不算错误
-			if err == ErrUserNotOnline {
-				logx.Infof("用户 %s 不在线，跳过通知", userID)
-				return nil
-			}
-			return err
-		}
+		h.mu.RLock()
+		client, ok := h.clients[fmt.Sprintf("%d", event.UserID)]
+		h.mu.RUnlock()
 
+		if ok {
+			h.RemoveClientFromGroup(client, event.GroupID)
+			logx.Infof("用户 %d 自动取消订阅群聊 %s", event.UserID, event.GroupID)
+		}
 		return nil
 	})
 
