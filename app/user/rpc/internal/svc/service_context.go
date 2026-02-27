@@ -71,7 +71,7 @@ type ServiceContext struct {
 
 	// SensitiveCodec 学生认证敏感字段编解码器
 	SensitiveCodec model.SensitiveDataCodec
-	
+
 	// SysImageModel 图片资源中心数据访问层
 	SysImageModel model.ISysImageModel
 
