@@ -14,8 +14,9 @@ import (
 
 // ActivityMemberJoinedConsumer 用户报名成功事件消费者
 type ActivityMemberJoinedConsumer struct {
-	chatRpc chat.ChatServiceClient
-	logger  logx.Logger
+	chatRpc   chat.ChatServiceClient
+	msgClient *messaging.Client
+	logger    logx.Logger
 }
 
 func NewActivityMemberJoinedConsumer(chatRpc chat.ChatServiceClient) *ActivityMemberJoinedConsumer {
@@ -26,6 +27,7 @@ func NewActivityMemberJoinedConsumer(chatRpc chat.ChatServiceClient) *ActivityMe
 }
 
 func (c *ActivityMemberJoinedConsumer) Subscribe(msgClient *messaging.Client) {
+	c.msgClient = msgClient
 	msgClient.Subscribe("activity.member.joined", "chat-auto-add-member", c.handleMemberJoined)
 	c.logger.Info("已订阅 activity.member.joined 事件")
 }
@@ -61,6 +63,16 @@ func (c *ActivityMemberJoinedConsumer) handleMemberJoined(msg *message.Message) 
 	}
 
 	c.logger.Infof("自动添加群成员成功: group_id=%s, user_id=%d", groupResp.Group.GroupId, event.UserID)
+
+	// 发布群成员变更事件，通知 WS 服务自动订阅
+	memberEvent := messaging.GroupMemberChangedEvent{
+		GroupID: groupResp.Group.GroupId,
+		UserID:  event.UserID,
+	}
+	eventPayload, _ := json.Marshal(memberEvent)
+	if err := c.msgClient.Publish(ctx, messaging.TopicGroupMemberAdded, eventPayload); err != nil {
+		c.logger.Errorf("发布群成员加入事件失败: %v", err)
+	}
 
 	_, err = c.chatRpc.CreateNotification(ctx, &chat.CreateNotificationReq{
 		UserId:  event.UserID,

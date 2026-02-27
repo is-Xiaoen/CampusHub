@@ -14,8 +14,9 @@ import (
 
 // ActivityMemberLeftConsumer 用户取消报名事件消费者
 type ActivityMemberLeftConsumer struct {
-	chatRpc chat.ChatServiceClient
-	logger  logx.Logger
+	chatRpc   chat.ChatServiceClient
+	msgClient *messaging.Client
+	logger    logx.Logger
 }
 
 func NewActivityMemberLeftConsumer(chatRpc chat.ChatServiceClient) *ActivityMemberLeftConsumer {
@@ -26,6 +27,7 @@ func NewActivityMemberLeftConsumer(chatRpc chat.ChatServiceClient) *ActivityMemb
 }
 
 func (c *ActivityMemberLeftConsumer) Subscribe(msgClient *messaging.Client) {
+	c.msgClient = msgClient
 	msgClient.Subscribe("activity.member.left", "chat-auto-remove-member", c.handleMemberLeft)
 	c.logger.Info("已订阅 activity.member.left 事件")
 }
@@ -61,6 +63,16 @@ func (c *ActivityMemberLeftConsumer) handleMemberLeft(msg *message.Message) erro
 	}
 
 	c.logger.Infof("自动移除群成员成功: group_id=%s, user_id=%d", groupResp.Group.GroupId, event.UserID)
+
+	// 发布群成员变更事件，通知 WS 服务自动取消订阅
+	memberEvent := messaging.GroupMemberChangedEvent{
+		GroupID: groupResp.Group.GroupId,
+		UserID:  event.UserID,
+	}
+	eventPayload, _ := json.Marshal(memberEvent)
+	if err := c.msgClient.Publish(ctx, messaging.TopicGroupMemberRemoved, eventPayload); err != nil {
+		c.logger.Errorf("发布群成员移除事件失败: %v", err)
+	}
 
 	_, err = c.chatRpc.CreateNotification(ctx, &chat.CreateNotificationReq{
 		UserId:  event.UserID,

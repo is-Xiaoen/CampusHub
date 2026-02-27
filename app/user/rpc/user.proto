@@ -901,6 +901,7 @@ message UpdateUserInfoReq{
     int64 avatar_id =5;
     int64 age= 6;
     repeated int64 tag_ids =7;
+    string avatar_url =8;
 }
 
 message UpdateUserInfoResponse{

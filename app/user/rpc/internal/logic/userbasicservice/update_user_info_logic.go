@@ -38,20 +38,24 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(in *pb.UpdateUserInfoReq) (*pb.Upda
 		return nil, errorx.New(errorx.CodeUserNotFound)
 	}
 
-	// 2. 处理头像ID：使用 GetSysImage 查询URL，并更新 avatar_id
-	var avatarURL string
+	// 2. 处理头像：优先直接赋值 url 和 id，若仅有 id 则查询 url
+	avatarURL := in.AvatarUrl
+	if avatarURL != "" {
+		user.AvatarURL = avatarURL
+	}
 	if in.AvatarId > 0 {
-		imgResp, err := NewGetSysImageLogic(l.ctx, l.svcCtx).GetSysImage(&pb.GetSysImageReq{
-			UserId:  in.UserId,
-			ImageId: in.AvatarId,
-		})
-		if err != nil {
-			return nil, err
-		}
-		// 不再保存 AvatarURL 到数据库，仅用于本次响应
-		avatarURL = imgResp.Url
-		// 更新 AvatarID（模型需包含该字段，数据库需存在 avatar_id）
 		user.AvatarID = in.AvatarId
+		if avatarURL == "" {
+			imgResp, err := NewGetSysImageLogic(l.ctx, l.svcCtx).GetSysImage(&pb.GetSysImageReq{
+				UserId:  in.UserId,
+				ImageId: in.AvatarId,
+			})
+			if err != nil {
+				return nil, err
+			}
+			avatarURL = imgResp.Url
+			user.AvatarURL = avatarURL
+		}
 	}
 
 	// 3. 更新基本信息

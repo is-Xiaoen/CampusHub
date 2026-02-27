@@ -64,6 +64,7 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(req *types.UpdateUserInfoReq) (resp
 		Introduce: req.Introduction,
 		Gender:    genderInt,
 		AvatarId:  req.AvatarId,
+		AvatarUrl: req.AvatarUrl,
 		Age:       req.Age,
 		TagIds:    req.InterestTagIds,
 	})
