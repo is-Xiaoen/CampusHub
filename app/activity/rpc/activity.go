@@ -53,6 +53,17 @@ func main() {
 	tagSyncCron.Start()
 	defer tagSyncCron.Stop()
 
+	// 4.5 启动推荐列表缓存定时任务
+	recommendCron := cron.NewRecommendCron(
+		ctx.Redis,
+		ctx.DB,
+		ctx.ActivityModel,
+		ctx.TagStatsModel,
+		ctx.TagCacheModel,
+	)
+	recommendCron.Start()
+	defer recommendCron.Stop()
+
 	// 5. DTM 客户端关闭（如果启用）
 	if ctx.DTMClient != nil {
 		defer ctx.DTMClient.Close()

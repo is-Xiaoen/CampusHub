@@ -40,6 +40,11 @@ JWT:
   AccessExpire: 7200
   RefreshExpire: 604800
 
+# 敏感数据加密配置（生产环境务必替换为强随机密钥）
+SensitiveData:
+  AesKey: fPzoQlvF1kORgn4dzV2R2koMhgfn874Z2twDZA6sbKM=
+  HashKey: BurHvmWw3rd04h/WuCHNgJ/d6QMsLS+2XdFtdgHhM4M=
+
 # 短信服务配置
 SMS:
   Provider: mock

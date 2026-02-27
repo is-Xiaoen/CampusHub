@@ -8,7 +8,6 @@ import (
 	"math"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"activity-platform/app/activity/model"
@@ -196,11 +195,24 @@ func buildVerifySnapshot(activityInfo *model.Activity, ticket *model.ActivityTic
 }
 
 const (
+	// 缓存相关
 	recommendCacheTTLSeconds = 300
 	recommendMaxPop          = 10000
 	recommendMaxCandidates   = 1000
 	recommendUserTagSample   = 50
 	recommendUserTagMax      = 20
+
+	// 推荐列表缓存键
+	recommendListCacheKeyPrefix = "activity:recommend:list_cache:"
+
+	// 评分权重
+	tagMatchWeight      = 0.4 // 标签匹配权重
+	hotScoreWeight      = 0.3 // 热度权重
+	timeRelevanceWeight = 0.3 // 时间相关性权重
+
+	// 距离衰减相关
+	distanceDecayFactor = 100.0 // 距离衰减系数(km)，越大衰减越慢
+	distanceBonusFactor = 0.3   // 距离加权系数
 )
 
 // RecommendActivitiesInput 活动推荐算法入参
@@ -211,12 +223,27 @@ type RecommendActivitiesInput struct {
 	UserLongitude float64
 }
 
+// ActivityScoreDTO 活动评分数据传输对象（用于预计算缓存）
+type ActivityScoreDTO struct {
+	ActivityID    uint64  `json:"activity_id"`
+	TotalScore    float64 `json:"total_score"`    // 综合评分
+	TagMatch      float64 `json:"tag_match"`      // 标签匹配分
+	HotScore      float64 `json:"hot_score"`      // 热度分
+	TimeRelevance float64 `json:"time_relevance"` // 时间相关性分
+	ViewCount     uint32  `json:"view_count"`     // 浏览量（新用户排序用）
+	ActivityTitle string  `json:"activity_title"` // 活动标题（调试用）
+}
+
 type scoredActivity struct {
 	id    int64
 	score float64
 }
 
 // RecommendActivities 计算并返回推荐活动ID列表
+// 重构后支持：
+// 1. 存量用户使用预计算缓存（recommend_list_cache），由定时任务每10分钟更新
+// 2. 新用户按浏览量排序
+// 3. 实时地理位置二次加权
 func (l *VerifyTicketLogic) RecommendActivities(in *RecommendActivitiesInput) ([]int64, error) {
 	if in == nil {
 		return []int64{}, errors.New("nil recommend input")
@@ -229,98 +256,15 @@ func (l *VerifyTicketLogic) RecommendActivities(in *RecommendActivitiesInput) ([
 		limit = 10
 	}
 
-	cacheKey := fmt.Sprintf("activity:recommend:%d:%d", in.UserID, limit)
-	if in.UserLatitude != 0 || in.UserLongitude != 0 {
-		cacheKey = fmt.Sprintf("activity:recommend:%d:%d:%.4f:%.4f", in.UserID, limit, in.UserLatitude, in.UserLongitude)
-	}
-	if cached, err := l.svcCtx.Redis.Get(cacheKey); err == nil {
-		cached = strings.TrimSpace(cached)
-		if cached != "" {
-			var ids []int64
-			if jsonErr := json.Unmarshal([]byte(cached), &ids); jsonErr == nil {
-				return ids, nil
-			}
-		}
+	// 1. 尝试从预计算缓存获取推荐列表（存量用户）
+	cachedList, err := l.getRecommendListCache()
+	if err == nil && len(cachedList) > 0 {
+		// 存量用户：使用预计算的推荐列表 + 实时地理位置加权
+		return l.applyLocationWeightingAndSort(cachedList, in.UserLatitude, in.UserLongitude, limit)
 	}
 
-	userTags, userLat, userLng, hasUserLoc := l.getUserProfile(in.UserID)
-	if in.UserLatitude != 0 || in.UserLongitude != 0 {
-		userLat = in.UserLatitude
-		userLng = in.UserLongitude
-		hasUserLoc = true
-	}
-	activities, err := l.getCandidateActivities(in.UserID, recommendMaxCandidates)
-	if err != nil {
-		return nil, err
-	}
-	if len(activities) == 0 {
-		return []int64{}, nil
-	}
-
-	activityIDs := make([]uint64, 0, len(activities))
-	for _, act := range activities {
-		activityIDs = append(activityIDs, act.ID)
-	}
-	tagsMap, err := l.getActivityTagsMap(activityIDs)
-	if err != nil {
-		l.Infof("[WARNING] 批量获取活动标签失败: err=%v", err)
-		tagsMap = nil
-	}
-
-	scores := make([]scoredActivity, len(activities))
-	workerCount := 16
-	if len(activities) < workerCount {
-		workerCount = len(activities)
-	}
-
-	jobs := make(chan int)
-	var wg sync.WaitGroup
-	wg.Add(workerCount)
-	for i := 0; i < workerCount; i++ {
-		go func() {
-			defer wg.Done()
-			for idx := range jobs {
-				act := activities[idx]
-				var activityTags []string
-				if tagsMap != nil {
-					activityTags = tagsMap[act.ID]
-				} else {
-					activityTags = l.getActivityTags(int64(act.ID))
-				}
-
-				tagScore := calculateTagScore(userTags, activityTags)
-				popScore := calculatePopScore(act.CurrentParticipants, act.ViewCount)
-				locScore := calculateLocScore(userLat, userLng, act.Latitude, act.Longitude, hasUserLoc)
-				timeScore := calculateTimeScore(act.ActivityStartTime, time.Now())
-
-				final := tagScore*0.3 + popScore*0.3 + locScore*0.2 + timeScore*0.2
-				final = clampScore(final)
-				scores[idx] = scoredActivity{id: int64(act.ID), score: final}
-			}
-		}()
-	}
-	for i := range activities {
-		jobs <- i
-	}
-	close(jobs)
-	wg.Wait()
-
-	sort.Slice(scores, func(i, j int) bool {
-		return scores[i].score > scores[j].score
-	})
-	if limit > len(scores) {
-		limit = len(scores)
-	}
-	ids := make([]int64, 0, limit)
-	for i := 0; i < limit; i++ {
-		ids = append(ids, scores[i].id)
-	}
-
-	if data, err := json.Marshal(ids); err == nil {
-		_ = l.svcCtx.Redis.Setex(cacheKey, string(data), recommendCacheTTLSeconds)
-	}
-
-	return ids, nil
+	// 2. 缓存未命中，视为新用户：按浏览量排序
+	return l.getNewUserRecommendations(in.UserLatitude, in.UserLongitude, limit)
 }
 
 // calculateTagScore 标签相似度(Jaccard)
@@ -660,4 +604,131 @@ func normalizeTagName(tag string) string {
 		return ""
 	}
 	return strings.ToLower(name)
+}
+
+// ==================== 重构后的推荐相关方法 ====================
+
+// getRecommendListCache 获取预计算的推荐列表缓存
+// 返回的缓存由定时任务每10分钟更新一次
+func (l *VerifyTicketLogic) getRecommendListCache() ([]ActivityScoreDTO, error) {
+	cacheKey := recommendListCacheKeyPrefix + "global"
+	cached, err := l.svcCtx.Redis.Get(cacheKey)
+	if err != nil {
+		return nil, err
+	}
+
+	cached = strings.TrimSpace(cached)
+	if cached == "" {
+		return nil, errors.New("recommend list cache not found")
+	}
+
+	var list []ActivityScoreDTO
+	if jsonErr := json.Unmarshal([]byte(cached), &list); jsonErr != nil {
+		l.Errorf("[RecommendActivities] 解析推荐列表缓存失败: err=%v", jsonErr)
+		return nil, jsonErr
+	}
+
+	if len(list) == 0 {
+		return nil, errors.New("empty recommend list cache")
+	}
+
+	return list, nil
+}
+
+// applyLocationWeightingAndSort 应用地理位置加权并返回最终推荐结果
+// 对于存量用户，在预计算分数基础上加上距离加权分
+func (l *VerifyTicketLogic) applyLocationWeightingAndSort(cachedList []ActivityScoreDTO, userLat, userLng float64, limit int) ([]int64, error) {
+	// 如果没有提供用户位置，直接按预计算分数返回
+	if userLat == 0 || userLng == 0 {
+		result := make([]int64, 0, limit)
+		for i := 0; i < limit && i < len(cachedList); i++ {
+			result = append(result, int64(cachedList[i].ActivityID))
+		}
+		return result, nil
+	}
+
+	// 计算每个活动的最终分数 = 预计算分数 + 距离加权分
+	type finalScoredActivity struct {
+		id         int64
+		finalScore float64
+	}
+	finalScores := make([]finalScoredActivity, len(cachedList))
+
+	for i, item := range cachedList {
+		// 获取活动详情以获取经纬度
+		activity, err := l.svcCtx.ActivityModel.FindByID(l.ctx, item.ActivityID)
+		if err != nil {
+			// 如果查询失败，使用原分数
+			finalScores[i] = finalScoredActivity{
+				id:         int64(item.ActivityID),
+				finalScore: item.TotalScore,
+			}
+			continue
+		}
+
+		// 计算距离加权分
+		distanceBonus := l.calculateDistanceBonus(userLat, userLng, activity.Latitude, activity.Longitude)
+
+		// 最终分数 = 预计算分数 + 距离加权分
+		finalScore := item.TotalScore + distanceBonus
+
+		finalScores[i] = finalScoredActivity{
+			id:         int64(item.ActivityID),
+			finalScore: finalScore,
+		}
+	}
+
+	// 按最终分数降序排序
+	sort.Slice(finalScores, func(i, j int) bool {
+		return finalScores[i].finalScore > finalScores[j].finalScore
+	})
+
+	// 返回前 N 个
+	result := make([]int64, 0, limit)
+	for i := 0; i < limit && i < len(finalScores); i++ {
+		result = append(result, finalScores[i].id)
+	}
+
+	return result, nil
+}
+
+// calculateDistanceBonus 计算距离加权分
+// 使用 Redis GEODIST 获取距离，距离越近分数越高
+func (l *VerifyTicketLogic) calculateDistanceBonus(userLat, userLng, actLat, actLng float64) float64 {
+	// 如果活动没有位置信息，返回默认分数
+	if actLat == 0 || actLng == 0 {
+		return 0
+	}
+
+	// 使用本地计算距离（Haversine公式）
+	distance := haversineDistance(userLat, userLng, actLat, actLng)
+
+	// 距离加权分：距离越近分数越高，使用指数衰减
+	// bonus = distanceBonusFactor * exp(-distance / distanceDecayFactor)
+	bonus := distanceBonusFactor * math.Exp(-distance/distanceDecayFactor)
+
+	return bonus
+}
+
+// getNewUserRecommendations 新用户推荐逻辑
+// 按浏览量（view_count）从高到低排序，直接返回
+func (l *VerifyTicketLogic) getNewUserRecommendations(userLat, userLng float64, limit int) ([]int64, error) {
+	// 查询已发布的活动，按浏览量降序排序
+	activities, err := l.svcCtx.ActivityModel.FindPublishedOrderByViewCount(l.ctx, limit)
+	if err != nil {
+		l.Errorf("[RecommendActivities] 查询新用户推荐活动失败: err=%v", err)
+		return nil, err
+	}
+
+	if len(activities) == 0 {
+		return []int64{}, nil
+	}
+
+	// 直接返回按浏览量排序的活动ID列表
+	result := make([]int64, 0, len(activities))
+	for _, act := range activities {
+		result = append(result, int64(act.ID))
+	}
+
+	return result, nil
 }

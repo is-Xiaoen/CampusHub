@@ -196,7 +196,7 @@ func (c *Client) Subscribe(
 		dlqMiddleware, err := c.createDLQMiddleware(topic, handlerName)
 		if err != nil {
 			// 记录错误但不影响订阅
-			c.Router.Logger().Error("Failed to create DLQ middleware", err, watermill.LogFields{
+			c.Router.Logger().Error("创建 DLQ 中间件失败", err, watermill.LogFields{
 				"topic":       topic,
 				"handlerName": handlerName,
 			})
