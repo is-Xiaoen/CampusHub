@@ -68,6 +68,13 @@ func (l *GetActivityBasicLogic) GetActivityBasic(in *activity.GetActivityBasicRe
 		categoryName = category.Name
 	}
 
+	// 3.5 获取组织者最新信息（头像/昵称可能已更新）
+	organizerMap := fetchOrganizerMap(l.ctx, l.svcCtx, []uint64{activityData.OrganizerID})
+	if info, ok := organizerMap[activityData.OrganizerID]; ok {
+		activityData.OrganizerName = info.Name
+		activityData.OrganizerAvatar = info.Avatar
+	}
+
 	// 4. 构建响应
 	l.Debugf("获取活动基本信息成功: id=%d, title=%s", activityData.ID, activityData.Title)
 

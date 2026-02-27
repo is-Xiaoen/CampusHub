@@ -119,6 +119,19 @@ func (l *GetUserPublishedActivitiesLogic) GetUserPublishedActivities(in *activit
 	// 6.3 加载分类映射表
 	categoryMap := l.loadCategoryMap()
 
+	// 6.4 获取组织者最新信息（头像/昵称可能已更新）
+	organizerIDs := make([]uint64, len(result.List))
+	for i, act := range result.List {
+		organizerIDs[i] = act.OrganizerID
+	}
+	organizerMap := fetchOrganizerMap(l.ctx, l.svcCtx, organizerIDs)
+	for i := range result.List {
+		if info, ok := organizerMap[result.List[i].OrganizerID]; ok {
+			result.List[i].OrganizerName = info.Name
+			result.List[i].OrganizerAvatar = info.Avatar
+		}
+	}
+
 	// 7. 构建响应列表
 	list := make([]*activity.ActivityListItem, len(result.List))
 	for i, act := range result.List {

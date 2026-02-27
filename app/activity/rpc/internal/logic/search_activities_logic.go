@@ -82,9 +82,20 @@ func (l *SearchActivitiesLogic) searchWithES(in *activity.SearchActivitiesReq) (
 		return nil, err
 	}
 
-	// 3. 转换响应
+	// 3. 获取组织者最新信息（头像/昵称可能已更新）
+	orgIDs := make([]uint64, len(result.Activities))
+	for i, doc := range result.Activities {
+		orgIDs[i] = doc.OrganizerID
+	}
+	organizerMap := fetchOrganizerMap(l.ctx, l.svcCtx, orgIDs)
+
+	// 4. 转换响应
 	list := make([]*activity.ActivityListItem, len(result.Activities))
 	for i, doc := range result.Activities {
+		if info, ok := organizerMap[doc.OrganizerID]; ok {
+			doc.OrganizerName = info.Name
+			doc.OrganizerAvatar = info.Avatar
+		}
 		list[i] = l.convertESDocToListItem(&doc)
 	}
 
@@ -218,6 +229,19 @@ func (l *SearchActivitiesLogic) searchWithMySQL(in *activity.SearchActivitiesReq
 
 	// 4.2 加载分类映射
 	categoryMap := l.loadCategoryMap()
+
+	// 4.3 获取组织者最新信息（头像/昵称可能已更新）
+	organizerIDs := make([]uint64, len(result.List))
+	for i, act := range result.List {
+		organizerIDs[i] = act.OrganizerID
+	}
+	mysqlOrganizerMap := fetchOrganizerMap(l.ctx, l.svcCtx, organizerIDs)
+	for i := range result.List {
+		if info, ok := mysqlOrganizerMap[result.List[i].OrganizerID]; ok {
+			result.List[i].OrganizerName = info.Name
+			result.List[i].OrganizerAvatar = info.Avatar
+		}
+	}
 
 	// 5. 构建响应列表
 	list := make([]*activity.ActivityListItem, len(result.List))
