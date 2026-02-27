@@ -5,7 +5,9 @@ package user
 
 import (
 	"context"
+	"html"
 	"net/http"
+	"strings"
 
 	"activity-platform/app/user/api/internal/svc"
 	"activity-platform/app/user/api/internal/types"
@@ -35,21 +37,26 @@ func NewUpdateUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext, r *
 }
 
 func (l *UpdateUserInfoLogic) UpdateUserInfo(req *types.UpdateUserInfoReq) (resp *types.UpdateUserInfoResp, err error) {
-	// 校验年龄
-	if req.Age != 0 && (req.Age <= 0 || req.Age >= 200) {
+	nickname := strings.TrimSpace(req.Nickname)
+	introduction := strings.TrimSpace(req.Introduction)
+	avatarURL := strings.TrimSpace(req.AvatarUrl)
+	gender := strings.TrimSpace(req.Gender)
+
+	if nickname == "" || introduction == "" || avatarURL == "" || gender == "" || req.AvatarId <= 0 || len(req.InterestTagIds) == 0 {
+		return nil, errorx.NewWithMessage(errorx.CodeInvalidParams, "参数不能为空")
+	}
+
+	if req.Age <= 0 || req.Age >= 200 {
 		return nil, errorx.NewWithMessage(errorx.CodeInvalidParams, "年龄必须为正数并且小于两百岁")
 	}
 
-	// 校验并转换性别
 	var genderInt int64
-	if req.Gender != "" {
-		if req.Gender == "男" || req.Gender == "1" {
-			genderInt = 1
-		} else if req.Gender == "女" || req.Gender == "2" {
-			genderInt = 2
-		} else {
-			return nil, errorx.NewWithMessage(errorx.CodeInvalidParams, "性别只能是男或女")
-		}
+	if gender == "男" || gender == "1" {
+		genderInt = 1
+	} else if gender == "女" || gender == "2" {
+		genderInt = 2
+	} else {
+		return nil, errorx.NewWithMessage(errorx.CodeInvalidParams, "性别只能是男或女")
 	}
 
 	userId, err := ctxUtils.GetUserIdFromCtx(l.ctx)
@@ -60,11 +67,11 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(req *types.UpdateUserInfoReq) (resp
 	// 调用 RPC
 	_, err = l.svcCtx.UserBasicServiceRpc.UpdateUserInfo(l.ctx, &userbasicservice.UpdateUserInfoReq{
 		UserId:    userId,
-		Nickname:  req.Nickname,
-		Introduce: req.Introduction,
+		Nickname:  html.EscapeString(nickname),
+		Introduce: html.EscapeString(introduction),
 		Gender:    genderInt,
 		AvatarId:  req.AvatarId,
-		AvatarUrl: req.AvatarUrl,
+		AvatarUrl: avatarURL,
 		Age:       req.Age,
 		TagIds:    req.InterestTagIds,
 	})

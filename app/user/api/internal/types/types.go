@@ -207,13 +207,13 @@ type UpdateInterestResp struct {
 }
 
 type UpdateUserInfoReq struct {
-	Age            int64   `form:"age,optional"`
-	Nickname       string  `form:"nickname,optional"`
-	Introduction   string  `form:"introduction,optional"`
-	Gender         string  `form:"gender,optional"`
-	AvatarId       int64   `form:"avatarId,optional"`
-	AvatarUrl      string  `form:"avatarUrl,optional"`
-	InterestTagIds []int64 `form:"interestTagIds,optional"`
+	Age            int64   `json:"age"`
+	Nickname       string  `json:"nickname"`
+	Introduction   string  `json:"introduction"`
+	Gender         string  `json:"gender"`
+	AvatarId       int64   `json:"avatarId"`
+	AvatarUrl      string  `json:"avatarUrl"`
+	InterestTagIds []int64 `json:"interestTagIds"`
 }
 
 type UpdateUserInfoResp struct {
