@@ -193,6 +193,36 @@ func (m *ActivityTagStatsModel) GetTopTags(ctx context.Context, limit int) ([]ui
 	return tagIDs, err
 }
 
+// HotTagStats 热门标签统计（包含标签名称）
+type HotTagStats struct {
+	TagID         uint64 `json:"tag_id"`
+	TagName       string `json:"tag_name"`
+	ActivityCount uint32 `json:"activity_count"`
+}
+
+// GetHotTags 获取热门标签（带标签名称）
+//
+// 返回值：按 activity_count 降序排列的热门标签列表
+func (m *ActivityTagStatsModel) GetHotTags(ctx context.Context, limit int) ([]HotTagStats, error) {
+	if limit <= 0 {
+		limit = 10
+	}
+	if limit > 100 {
+		limit = 100
+	}
+
+	var results []HotTagStats
+	err := m.db.WithContext(ctx).
+		Table("activity_tag_stats ats").
+		Select("ats.tag_id, tc.name as tag_name, ats.activity_count").
+		Joins("INNER JOIN tag_cache tc ON tc.id = ats.tag_id").
+		Where("ats.activity_count > 0").
+		Order("ats.activity_count DESC").
+		Limit(limit).
+		Find(&results).Error
+	return results, err
+}
+
 // ==================== 维护方法 ====================
 
 // RecalculateStats 重新计算标签统计（用于数据修复）
