@@ -18,6 +18,7 @@ import (
 	"activity-platform/app/user/model"
 	"activity-platform/app/user/ocr"
 	"activity-platform/app/user/rpc/internal/config"
+	"activity-platform/app/user/security/sensitivedata"
 	"activity-platform/common/messaging"
 
 	"github.com/go-redis/redis/v8"
@@ -67,6 +68,10 @@ type ServiceContext struct {
 
 	// StudentVerificationModel 学生认证数据访问层
 	StudentVerificationModel model.IStudentVerificationModel
+
+	// SensitiveCodec 学生认证敏感字段编解码器
+	SensitiveCodec model.SensitiveDataCodec
+	
 	// SysImageModel 图片资源中心数据访问层
 	SysImageModel model.ISysImageModel
 
@@ -105,6 +110,13 @@ func NewServiceContext(c config.Config) (*ServiceContext, error) {
 	// 初始化OCR工厂（可选，失败不影响服务启动）
 	ocrFactory := initOcrFactory(c, rdb)
 
+	// 初始化敏感数据编解码器（必填，失败直接阻断启动）
+	sensitiveCodec, err := sensitivedata.New(c.SensitiveData.AesKey, c.SensitiveData.HashKey)
+	if err != nil {
+		logx.Errorf("敏感数据编解码器初始化失败: %v", err)
+		return nil, err
+	}
+
 	// 初始化消息客户端（可选，失败不影响服务启动）
 	msgClient := initMsgPublisher(c)
 
@@ -116,6 +128,12 @@ func NewServiceContext(c config.Config) (*ServiceContext, error) {
 	} else {
 		activityRpc = activityservice.NewActivityService(activityRpcClient)
 		logx.Info("Activity RPC 连接初始化成功")
+	}
+
+	studentVerificationModel, err := model.NewStudentVerificationModel(db, sensitiveCodec)
+	if err != nil {
+		logx.Errorf("学生认证模型初始化失败: %v", err)
+		return nil, err
 	}
 
 	return &ServiceContext{
@@ -133,7 +151,8 @@ func NewServiceContext(c config.Config) (*ServiceContext, error) {
 		InterestTagModel:          model.NewInterestTagModel(db),
 		UserCreditModel:           model.NewUserCreditModel(db),
 		CreditLogModel:            model.NewCreditLogModel(db),
-		StudentVerificationModel:  model.NewStudentVerificationModel(db),
+		StudentVerificationModel:  studentVerificationModel,
+		SensitiveCodec:            sensitiveCodec,
 		SysImageModel:             model.NewSysImageModel(db),
 
 		// 注入 RPC 客户端（可能为 nil）
