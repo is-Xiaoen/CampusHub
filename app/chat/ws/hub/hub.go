@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
@@ -255,6 +256,49 @@ func (h *Hub) subscribeMessages(ctx context.Context) {
 			// 用户不在线，不算错误
 			if err == ErrUserNotOnline {
 				logx.Infof("用户 %s 不在线，跳过通知", userID)
+				return nil
+			}
+			return err
+		}
+
+		return nil
+	})
+
+	// 订阅认证进度通知
+	h.messagingClient.Subscribe(messaging.TopicVerifyProgress, "ws-verify-progress-handler", func(msg *message.Message) error {
+		var progressEvent messaging.VerifyProgressEventData
+		if err := json.Unmarshal(msg.Payload, &progressEvent); err != nil {
+			return messaging.NewNonRetryableError(err)
+		}
+		if progressEvent.UserID <= 0 || progressEvent.VerifyID <= 0 {
+			return messaging.NewNonRetryableError(errors.New("无效的认证进度事件"))
+		}
+
+		if progressEvent.Timestamp <= 0 {
+			progressEvent.Timestamp = time.Now().Unix()
+		}
+
+		dataBytes, err := json.Marshal(types.VerifyProgressData{
+			VerifyID: progressEvent.VerifyID,
+			Status:   progressEvent.Status,
+			Refresh:  progressEvent.Refresh,
+		})
+		if err != nil {
+			return messaging.NewNonRetryableError(err)
+		}
+
+		wsMsg := &types.WSMessage{
+			Type:      types.TypeVerifyProgress,
+			MessageID: fmt.Sprintf("verify_%d_%d", progressEvent.VerifyID, progressEvent.Timestamp),
+			Timestamp: progressEvent.Timestamp,
+			Data:      dataBytes,
+		}
+
+		userID := strconv.FormatInt(progressEvent.UserID, 10)
+		if err := h.SendToUser(userID, wsMsg); err != nil {
+			if err == ErrUserNotOnline {
+				logx.Infof("用户 %s 不在线，跳过认证进度推送: verifyId=%d, status=%d",
+					userID, progressEvent.VerifyID, progressEvent.Status)
 				return nil
 			}
 			return err

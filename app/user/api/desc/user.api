@@ -122,7 +122,7 @@ type GetVerifyCurrentResp {
 	UpdatedAt string `json:"updated_at,optional"`
 }
 
-// 提交学生认证申请请求（multipart/form-data，文件由 Handler 手动解析）
+// 提交学生认证申请请求（multipart/form-data）
 type ApplyVerifyReq {
 	// 姓名
 	RealName string `form:"real_name"`
@@ -134,6 +134,10 @@ type ApplyVerifyReq {
 	Department string `form:"department"`
 	// 入学年份
 	AdmissionYear string `form:"admission_year"`
+	// 学生证正面照片URL
+	FrontImageUrl string `form:"front_image_url"`
+	// 学生证详情面照片URL
+	BackImageUrl string `form:"back_image_url"`
 }
 
 // 提交学生认证申请响应

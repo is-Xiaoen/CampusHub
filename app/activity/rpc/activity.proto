@@ -70,6 +70,8 @@ message ActivityDetail {
   int64 created_at = 31;
   int64 updated_at = 32;
   int32 version = 33;                 // 乐观锁版本号
+  int32 registration_status = 34;     // 报名状态: 0=不适用, 1=未开始报名, 2=报名中, 3=报名已截止
+  string registration_status_text = 35; // 报名状态文本
 }
 
 // ActivityListItem 活动列表项（简化信息）
@@ -90,6 +92,8 @@ message ActivityListItem {
   repeated Tag tags = 14;
   int64 view_count = 15;
   int64 created_at = 16;
+  int32 registration_status = 17;     // 报名状态: 0=不适用, 1=未开始报名, 2=报名中, 3=报名已截止
+  string registration_status_text = 18; // 报名状态文本
 }
 
 // ============================================================================
