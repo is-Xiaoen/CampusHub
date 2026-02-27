@@ -51,10 +51,10 @@ type DLQMiddlewareConfig struct {
 // 包装 Watermill 的 PoisonQueueWithFilter，添加元数据增强和监控
 func NewDLQMiddleware(config DLQMiddlewareConfig) (message.HandlerMiddleware, error) {
 	if config.Publisher == nil {
-		return nil, fmt.Errorf("DLQ publisher cannot be nil")
+		return nil, fmt.Errorf("DLQ 发布者不能为空")
 	}
 	if config.DLQTopic == "" {
-		return nil, fmt.Errorf("DLQ topic cannot be empty")
+		return nil, fmt.Errorf("DLQ topic 不能为空")
 	}
 
 	// 创建基础 PoisonQueue 中间件
@@ -77,7 +77,7 @@ func NewDLQMiddleware(config DLQMiddlewareConfig) (message.HandlerMiddleware, er
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to create poison queue: %w", err)
+		return nil, fmt.Errorf("创建 poison queue 失败: %w", err)
 	}
 
 	// 包装中间件，添加元数据增强和监控
