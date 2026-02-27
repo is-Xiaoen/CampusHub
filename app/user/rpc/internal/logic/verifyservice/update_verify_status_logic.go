@@ -77,6 +77,16 @@ func (l *UpdateVerifyStatusLogic) UpdateVerifyStatus(in *pb.UpdateVerifyStatusRe
 		return nil, err
 	}
 
+	// 推送认证进度（使用数据库记录中的 user_id，避免请求参数缺失/不准确）
+	publishVerifyProgress(
+		l.ctx,
+		l.svcCtx,
+		verification.UserID,
+		in.VerifyId,
+		newStatus,
+		in.Operator,
+	)
+
 	return &pb.UpdateVerifyStatusResp{
 		Success:      true,
 		BeforeStatus: int32(beforeStatus),

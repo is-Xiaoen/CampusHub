@@ -52,6 +52,10 @@ func (l *UploadSysImageLogic) UploadSysImage(in *pb.UploadSysImageReq) (*pb.Uplo
 	}
 
 	return &pb.UploadSysImageResp{
-		Id: img.ID,
+		Id:         img.ID,
+		Url:        img.URL,
+		FileSize:   img.FileSize,
+		OriginName: img.OriginName,
+		BizType:    img.BizType,
 	}, nil
 }

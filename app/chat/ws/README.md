@@ -63,3 +63,28 @@ go run websocket.go -f etc/websocket.yaml
 ---
 
 **默认推荐：合并模式** 🎉
+
+---
+
+## OCR 认证进度实时推送
+
+WebSocket 服务会订阅 Redis Stream `verify:progress`，并向对应用户下发 `verify_progress`：
+
+```json
+{
+  "type": "verify_progress",
+  "message_id": "verify_123_1700000000",
+  "timestamp": 1700000000,
+  "data": {
+    "verify_id": 123,
+    "status": 2,
+    "refresh": true
+  }
+}
+```
+
+前端联调约定：
+
+1. 收到 `type=verify_progress` 且 `data.refresh=true` 后，立即调用 `GET /api/v1/verify/student/current`。
+2. 用接口返回的最新 `status / need_action / verify_data` 刷新页面状态。
+3. 可选去抖：同一 `verify_id + status` 在 300ms 内仅触发一次刷新。

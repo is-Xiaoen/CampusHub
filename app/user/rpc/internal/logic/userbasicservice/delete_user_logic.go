@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"activity-platform/app/activity/rpc/activity"
 	"activity-platform/app/user/model"
 	qqemaillogic "activity-platform/app/user/rpc/internal/logic/qqemail"
 	"activity-platform/app/user/rpc/internal/svc"
@@ -41,7 +42,47 @@ func (l *DeleteUserLogic) DeleteUser(in *pb.DeleteUserReq) (*pb.DeleteUserRespon
 		return nil, errorx.New(errorx.CodeUserNotFound)
 	}
 
-	// 2. 调用 CheckQQEmailLogic 校验验证码
+	if l.svcCtx.ActivityRpc == nil {
+		return nil, errorx.NewWithMessage(errorx.CodeServiceUnavailable, "活动服务不可用")
+	}
+
+	pendingResp, err := l.svcCtx.ActivityRpc.GetActivityList(l.ctx, &activity.GetActivityListRequest{
+		Page:     1,
+		PageSize: 1,
+		Type:     "pending",
+		UserId:   in.UserId,
+	})
+	if err != nil {
+		return nil, errorx.ErrRPCError(err)
+	}
+	if pendingResp.GetTotal() > 0 {
+		return nil, errorx.NewWithMessage(errorx.CodeForbidden, "存在待参加活动，无法注销")
+	}
+
+	page := int32(1)
+	pageSize := int32(50)
+	for {
+		publishedResp, err := l.svcCtx.ActivityRpc.GetUserPublishedActivities(l.ctx, &activity.GetUserPublishedActivitiesReq{
+			UserId:   in.UserId,
+			Page:     page,
+			PageSize: pageSize,
+			Status:   -2,
+		})
+		if err != nil {
+			return nil, errorx.ErrRPCError(err)
+		}
+		for _, item := range publishedResp.GetList() {
+			if item.Status >= 0 && item.Status <= 3 {
+				return nil, errorx.NewWithMessage(errorx.CodeForbidden, "存在未结束活动，无法注销")
+			}
+		}
+		pagination := publishedResp.GetPagination()
+		if pagination == nil || page >= pagination.GetTotalPages() {
+			break
+		}
+		page++
+	}
+
 	checkLogic := qqemaillogic.NewCheckQQEmailLogic(l.ctx, l.svcCtx)
 	_, err = checkLogic.CheckQQEmail(&pb.CheckQQEmailReq{
 		QqEmail: user.QQEmail,

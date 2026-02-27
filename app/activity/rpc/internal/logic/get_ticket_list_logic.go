@@ -83,6 +83,10 @@ func (l *GetTicketListLogic) GetTicketList(in *activity.GetTicketListRequest) (*
 
 	items := make([]*activity.TicketListItem, 0, len(tickets))
 	for _, ticket := range tickets {
+		// 调试日志：输出票券状态信息
+		l.Debugf("[GetTicketList] Ticket: ID=%d, Status=%d, UsedTime=%d",
+			ticket.ID, ticket.Status, ticket.UsedTime)
+
 		item := &activity.TicketListItem{
 			TicketId:   int64(ticket.ID),
 			ActivityId: int64(ticket.ActivityID),

@@ -102,23 +102,30 @@ func (l *SearchActivitiesLogic) searchWithES(in *activity.SearchActivitiesReq) (
 
 // convertESDocToListItem 转换 ES 文档为列表项
 func (l *SearchActivitiesLogic) convertESDocToListItem(doc *search.ActivityDoc) *activity.ActivityListItem {
+	now := time.Now().Unix()
+	regStatus, regStatusText := model.ComputeRegistrationStatus(
+		doc.Status, doc.RegisterStartTime, doc.RegisterEndTime, now,
+	)
+
 	return &activity.ActivityListItem{
-		Id:                  int64(doc.ID),
-		Title:               doc.Title, // 可能包含高亮标签 <em>
-		CoverUrl:            doc.CoverURL,
-		CoverType:           int32(doc.CoverType),
-		CategoryName:        doc.CategoryName,
-		OrganizerName:       doc.OrganizerName,
-		OrganizerAvatar:     doc.OrganizerAvatar,
-		ActivityStartTime:   doc.ActivityStartTime,
-		Location:            doc.Location, // 可能包含高亮标签 <em>
-		MaxParticipants:     int32(doc.MaxParticipants),
-		CurrentParticipants: int32(doc.CurrentParticipants),
-		Status:              int32(doc.Status),
-		StatusText:          l.getStatusText(doc.Status),
-		Tags:                l.convertTagStrings(doc.Tags),
-		ViewCount:           int64(doc.ViewCount),
-		CreatedAt:           doc.CreatedAt,
+		Id:                     int64(doc.ID),
+		Title:                  doc.Title, // 可能包含高亮标签 <em>
+		CoverUrl:               doc.CoverURL,
+		CoverType:              int32(doc.CoverType),
+		CategoryName:           doc.CategoryName,
+		OrganizerName:          doc.OrganizerName,
+		OrganizerAvatar:        doc.OrganizerAvatar,
+		ActivityStartTime:      doc.ActivityStartTime,
+		Location:               doc.Location, // 可能包含高亮标签 <em>
+		MaxParticipants:        int32(doc.MaxParticipants),
+		CurrentParticipants:    int32(doc.CurrentParticipants),
+		Status:                 int32(doc.Status),
+		StatusText:             l.getStatusText(doc.Status),
+		Tags:                   l.convertTagStrings(doc.Tags),
+		ViewCount:              int64(doc.ViewCount),
+		CreatedAt:              doc.CreatedAt,
+		RegistrationStatus:     regStatus,
+		RegistrationStatusText: regStatusText,
 	}
 }
 
@@ -308,23 +315,31 @@ func (l *SearchActivitiesLogic) buildActivityListItem(
 	// 获取标签列表
 	tags := tagsMap[act.ID]
 
+	// 计算报名状态
+	now := time.Now().Unix()
+	regStatus, regStatusText := model.ComputeRegistrationStatus(
+		act.Status, act.RegisterStartTime, act.RegisterEndTime, now,
+	)
+
 	return &activity.ActivityListItem{
-		Id:                  int64(act.ID),
-		Title:               act.Title,
-		CoverUrl:            act.CoverURL,
-		CoverType:           int32(act.CoverType),
-		CategoryName:        categoryName,
-		OrganizerName:       act.OrganizerName,
-		OrganizerAvatar:     act.OrganizerAvatar,
-		ActivityStartTime:   act.ActivityStartTime,
-		Location:            act.Location,
-		MaxParticipants:     int32(act.MaxParticipants),
-		CurrentParticipants: int32(act.CurrentParticipants),
-		Status:              int32(act.Status),
-		StatusText:          act.StatusText(),
-		Tags:                l.convertTagCaches(tags),
-		ViewCount:           int64(act.ViewCount),
-		CreatedAt:           act.CreatedAt,
+		Id:                     int64(act.ID),
+		Title:                  act.Title,
+		CoverUrl:               act.CoverURL,
+		CoverType:              int32(act.CoverType),
+		CategoryName:           categoryName,
+		OrganizerName:          act.OrganizerName,
+		OrganizerAvatar:        act.OrganizerAvatar,
+		ActivityStartTime:      act.ActivityStartTime,
+		Location:               act.Location,
+		MaxParticipants:        int32(act.MaxParticipants),
+		CurrentParticipants:    int32(act.CurrentParticipants),
+		Status:                 int32(act.Status),
+		StatusText:             act.StatusText(),
+		Tags:                   l.convertTagCaches(tags),
+		ViewCount:              int64(act.ViewCount),
+		CreatedAt:              act.CreatedAt,
+		RegistrationStatus:     regStatus,
+		RegistrationStatusText: regStatusText,
 	}
 }
 

@@ -118,6 +118,14 @@ func (l *ConfirmStudentVerifyLogic) handleConfirmed(verifyID, userID int64) (int
 		l.Errorf("ConfirmStudentVerify 更新状态失败: verifyId=%d, err=%v", verifyID, err)
 		return 0, errorx.ErrDBError(err)
 	}
+	publishVerifyProgress(
+		l.ctx,
+		l.svcCtx,
+		userID,
+		verifyID,
+		newStatus,
+		constants.VerifyOperatorUserConfirm,
+	)
 
 	l.Infof("ConfirmStudentVerify 用户确认通过: userId=%d, verifyId=%d", userID, verifyID)
 	return newStatus, nil
@@ -155,6 +163,14 @@ func (l *ConfirmStudentVerifyLogic) handleModified(
 		l.Errorf("ConfirmStudentVerify 更新为人工审核失败: verifyId=%d, err=%v", in.VerifyId, err)
 		return 0, errorx.ErrDBError(err)
 	}
+	publishVerifyProgress(
+		l.ctx,
+		l.svcCtx,
+		in.UserId,
+		in.VerifyId,
+		newStatus,
+		constants.VerifyOperatorUserConfirm,
+	)
 
 	l.Infof("ConfirmStudentVerify 转人工审核: userId=%d, verifyId=%d", in.UserId, in.VerifyId)
 	return newStatus, nil

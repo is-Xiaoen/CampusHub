@@ -29,6 +29,7 @@ import (
 	"context"
 	"time"
 
+	verifyservicelogic "activity-platform/app/user/rpc/internal/logic/verifyservice"
 	"activity-platform/app/user/rpc/internal/svc"
 	"activity-platform/common/constants"
 
@@ -113,6 +114,14 @@ func (s *TimeoutScanner) scan() {
 				record.ID, record.UserID, err)
 			continue
 		}
+		verifyservicelogic.PublishVerifyProgress(
+			ctx,
+			s.svcCtx,
+			record.UserID,
+			record.ID,
+			constants.VerifyStatusTimeout,
+			constants.VerifyOperatorTimeoutJob,
+		)
 		logger.Infof("[TimeoutScanner] 已标记超时: verifyId=%d, userId=%d, createdAt=%v",
 			record.ID, record.UserID, record.CreatedAt)
 	}

@@ -103,7 +103,7 @@ const (
 	CreditChangeTypeNoShow int32 = 5
 	// CreditChangeTypeHostSuccess 圆满举办活动 -> +5（组织者奖励）
 	CreditChangeTypeHostSuccess int32 = 6
-	// CreditChangeTypeHostDelete 删除已有报名的活动 -> -10（组织者惩罚）
+	// CreditChangeTypeHostDelete 组织者违约（取消/删除已有报名活动）-> -10
 	CreditChangeTypeHostDelete int32 = 7
 	// CreditChangeTypeAdminAdjust 管理员人工调整 -> 分值由admin_delta指定
 	CreditChangeTypeAdminAdjust int32 = 99
@@ -128,7 +128,7 @@ var CreditChangeTypeNames = map[int]string{
 	int(CreditChangeTypeCancelLate):  "临期取消",
 	int(CreditChangeTypeNoShow):      "爽约",
 	int(CreditChangeTypeHostSuccess): "圆满举办",
-	int(CreditChangeTypeHostDelete):  "删除活动",
+	int(CreditChangeTypeHostDelete):  "组织者违约",
 	int(CreditChangeTypeAdminAdjust): "管理员调整",
 }
 
@@ -152,6 +152,13 @@ func GetCreditDelta(changeType int32, adminDelta int64) int {
 	}
 	return 0
 }
+
+// ==================== 圆满举办判定 ====================
+
+const (
+	// CreditHostSuccessMinCheckinRate 圆满举办奖励所需最低签到率
+	CreditHostSuccessMinCheckinRate = 0.8
+)
 
 // ==================== 风险用户限制 ====================
 
