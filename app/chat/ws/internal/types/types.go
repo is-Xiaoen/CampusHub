@@ -20,12 +20,6 @@ const (
 	TypeVerifyProgress MessageType = "verify_progress" // 认证进度更新
 	TypeError          MessageType = "error"           // 错误消息
 	TypeAck            MessageType = "ack"             // 消息确认
-	TypePong        MessageType = "pong"         // 心跳响应
-	TypeAuthSuccess MessageType = "auth_success" // 认证成功
-	TypeAuthFailed  MessageType = "auth_failed"  // 认证失败
-	TypeNewMessage  MessageType = "new_message"  // 新消息
-	TypeError       MessageType = "error"        // 错误消息
-	TypeAck         MessageType = "ack"          // 消息确认
 )
 
 // WSMessage WebSocket 消息结构
