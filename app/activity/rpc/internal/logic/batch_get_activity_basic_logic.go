@@ -74,7 +74,20 @@ func (l *BatchGetActivityBasicLogic) BatchGetActivityBasic(in *activity.BatchGet
 		}, nil
 	}
 
-	// 4. 收集分类 ID 并批量查询
+	// 4. 获取组织者最新信息（头像/昵称可能已更新）
+	orgIDs := make([]uint64, len(activities))
+	for i, act := range activities {
+		orgIDs[i] = act.OrganizerID
+	}
+	organizerMap := fetchOrganizerMap(l.ctx, l.svcCtx, orgIDs)
+	for i := range activities {
+		if info, ok := organizerMap[activities[i].OrganizerID]; ok {
+			activities[i].OrganizerName = info.Name
+			activities[i].OrganizerAvatar = info.Avatar
+		}
+	}
+
+	// 5. 收集分类 ID 并批量查询
 	categoryIDSet := make(map[uint64]bool)
 	for _, act := range activities {
 		categoryIDSet[act.CategoryID] = true
