@@ -80,11 +80,11 @@ type GetCreditLogsResp {
 // ============================================================================
 // OCR识别/认证数据
 type VerifyData {
-	// 姓名（脱敏显示）
+	// 姓名（全量回显）
 	RealName string `json:"real_name"`
 	// 学校名称
 	SchoolName string `json:"school_name"`
-	// 学号（脱敏显示）
+	// 学号（全量回显）
 	StudentId string `json:"student_id"`
 	// 院系
 	Department string `json:"department"`

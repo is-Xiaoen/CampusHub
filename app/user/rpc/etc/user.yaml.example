@@ -40,6 +40,13 @@ JWT:
   AccessExpire: 7200       # 2小时
   RefreshExpire: 604800    # 7天
 
+# 敏感数据加密配置（必填）
+# 生成示例：
+#   openssl rand -base64 32
+SensitiveData:
+  AesKey: <BASE64_32_BYTES_AES_KEY>
+  HashKey: <BASE64_32_BYTES_HASH_KEY>
+
 # 短信服务配置（示例）
 SMS:
   Provider: mock    # mock | aliyun

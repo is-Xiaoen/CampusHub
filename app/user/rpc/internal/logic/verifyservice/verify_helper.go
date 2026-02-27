@@ -11,7 +11,6 @@
 package verifyservicelogic
 
 import (
-	"context"
 	"database/sql"
 	"time"
 
@@ -87,8 +86,8 @@ func BuildVerifyOcrDataFromModel(v *model.StudentVerification) *pb.VerifyOcrData
 	return data
 }
 
-// BuildMaskedVerifyInfo 构建脱敏后的认证信息
-func BuildMaskedVerifyInfo(v *model.StudentVerification) *pb.GetVerifyInfoResp {
+// BuildVerifyInfo 构建用户侧认证信息（姓名/学号全量回显）
+func BuildVerifyInfo(v *model.StudentVerification) *pb.GetVerifyInfoResp {
 	if v == nil {
 		return &pb.GetVerifyInfoResp{IsVerified: false}
 	}
@@ -101,9 +100,9 @@ func BuildMaskedVerifyInfo(v *model.StudentVerification) *pb.GetVerifyInfoResp {
 	return &pb.GetVerifyInfoResp{
 		IsVerified:    true,
 		VerifyId:      v.ID,
-		RealName:      MaskRealName(v.RealName),
+		RealName:      v.RealName,
 		SchoolName:    v.SchoolName,
-		StudentId:     MaskStudentID(v.StudentID),
+		StudentId:     v.StudentID,
 		Department:    v.Department,
 		AdmissionYear: v.AdmissionYear,
 		VerifiedAt:    verifiedAt,
@@ -213,22 +212,4 @@ func BuildOcrResultData(ocrData *pb.VerifyOcrData) *model.OcrResultData {
 		OcrConfidence: ocrData.OcrConfidence,
 		OcrRawJSON:    ocrData.OcrRawJson,
 	}
-}
-
-// ============================================================================
-// 数据加密辅助函数（预留接口）
-// ============================================================================
-
-// EncryptSensitiveData 加密敏感数据（预留接口）
-// TODO: 实现AES加密，当前直接返回原文
-func EncryptSensitiveData(ctx context.Context, plainText string) string {
-	// TODO: 接入加密服务
-	return plainText
-}
-
-// DecryptSensitiveData 解密敏感数据（预留接口）
-// TODO: 实现AES解密，当前直接返回原文
-func DecryptSensitiveData(ctx context.Context, cipherText string) string {
-	// TODO: 接入解密服务
-	return cipherText
 }

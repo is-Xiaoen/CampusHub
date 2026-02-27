@@ -68,8 +68,7 @@ func (l *ApplyStudentVerifyLogic) ApplyStudentVerify(in *pb.ApplyStudentVerifyRe
 		return nil, errorx.ErrDBError(err)
 	}
 	if exists {
-		l.Infof("[WARN] ApplyStudentVerify 学号已被占用: school=%s, studentId=%s",
-			in.SchoolName, in.StudentId)
+		l.Infof("[WARN] ApplyStudentVerify 学号已被占用: school=%s", in.SchoolName)
 		return nil, errorx.ErrVerifyStudentIDUsed()
 	}
 

@@ -203,8 +203,8 @@ func (l *ProcessOcrVerifyLogic) ProcessOcrVerify(in *pb.ProcessOcrVerifyReq) (*p
 	}
 
 	// ==================== Step 6: OCR 成功，更新为 WaitConfirm ====================
-	l.Infof("[ProcessOcr] OCR识别成功: verifyId=%d, platform=%s, school=%s, name=%s",
-		in.VerifyId, ocrResult.Platform, ocrResult.SchoolName, ocrResult.RealName)
+	l.Infof("[ProcessOcr] OCR识别成功: verifyId=%d, platform=%s",
+		in.VerifyId, ocrResult.Platform)
 
 	// 再次检查状态（防止 OCR 期间用户取消）
 	if l.isStatusChanged(in.VerifyId) {

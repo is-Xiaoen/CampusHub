@@ -65,9 +65,10 @@ CREATE TABLE `student_verifications` (
     `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `user_id` bigint NOT NULL COMMENT '用户ID',
     `status` tinyint NOT NULL DEFAULT 0 COMMENT '认证状态：0初始 1OCR中 2待确认 3人工审核 4通过 5拒绝 6超时 7取消 8OCR失败',
-    `real_name` varchar(100) COMMENT '真实姓名（AES加密）',
+    `real_name` varchar(255) COMMENT '真实姓名（AES-256-GCM密文）',
     `school_name` varchar(100) COMMENT '学校名称',
-    `student_id` varchar(100) COMMENT '学号（AES加密）',
+    `student_id` varchar(255) COMMENT '学号（AES-256-GCM密文）',
+    `student_id_hash` varchar(64) NOT NULL DEFAULT '' COMMENT '学号哈希（HMAC-SHA256，用于索引查找）',
     `department` varchar(100) COMMENT '院系',
     `admission_year` varchar(10) COMMENT '入学年份',
     `front_image_url` varchar(500) DEFAULT '' COMMENT '学生证正面图片URL',
@@ -86,7 +87,7 @@ CREATE TABLE `student_verifications` (
     `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_user_id` (`user_id`),
-    UNIQUE KEY `uk_student_id` (`student_id`)
+    UNIQUE KEY `uk_school_student_hash` (`school_name`, `student_id_hash`)
 ) ENGINE=InnoDB COMMENT='学生认证表';
 
 
