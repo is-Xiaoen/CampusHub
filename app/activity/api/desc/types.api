@@ -60,10 +60,12 @@ type ActivityDetail {
 	RejectReason         string `json:"rejectReason,omitempty"`
 	ViewCount            int64  `json:"viewCount"`
 	LikeCount            int64  `json:"likeCount"`
-	Tags                 []Tag  `json:"tags"`
-	CreatedAt            int64  `json:"createdAt"`
-	UpdatedAt            int64  `json:"updatedAt"`
-	Version              int32  `json:"version"`                // 乐观锁版本号
+	Tags                   []Tag  `json:"tags"`
+	CreatedAt              int64  `json:"createdAt"`
+	UpdatedAt              int64  `json:"updatedAt"`
+	Version                int32  `json:"version"`                  // 乐观锁版本号
+	RegistrationStatus     int32  `json:"registrationStatus"`       // 报名状态: 0=不适用, 1=未开始, 2=报名中, 3=已截止
+	RegistrationStatusText string `json:"registrationStatusText"`   // 报名状态文本
 }
 
 // ActivityListItem 活动列表项（简化信息）
@@ -81,9 +83,11 @@ type ActivityListItem {
 	CurrentParticipants int32  `json:"currentParticipants"`
 	Status              int32  `json:"status"`
 	StatusText          string `json:"statusText"`
-	Tags                []Tag  `json:"tags"`
-	ViewCount           int64  `json:"viewCount"`
-	CreatedAt           int64  `json:"createdAt"`
+	Tags                   []Tag  `json:"tags"`
+	ViewCount              int64  `json:"viewCount"`
+	CreatedAt              int64  `json:"createdAt"`
+	RegistrationStatus     int32  `json:"registrationStatus"`       // 报名状态: 0=不适用, 1=未开始, 2=报名中, 3=已截止
+	RegistrationStatusText string `json:"registrationStatusText"`   // 报名状态文本
 }
 
 // ==================== CRUD 请求/响应类型 ====================

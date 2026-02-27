@@ -10,18 +10,16 @@ const (
 	TypePing        MessageType = "ping"         // 心跳
 	TypeAuth        MessageType = "auth"         // 认证
 	TypeSendMessage MessageType = "send_message" // 发送消息
-	TypeJoinGroup   MessageType = "join_group"   // 加入群聊
-	TypeLeaveGroup  MessageType = "leave_group"  // 离开群聊
-	TypeMarkRead    MessageType = "mark_read"    // 标记已读
 
 	// 服务端 -> 客户端
-	TypePong         MessageType = "pong"         // 心跳响应
-	TypeAuthSuccess  MessageType = "auth_success" // 认证成功
-	TypeAuthFailed   MessageType = "auth_failed"  // 认证失败
-	TypeNewMessage   MessageType = "new_message"  // 新消息
-	TypeNotification MessageType = "notification" // 系统通知
-	TypeError        MessageType = "error"        // 错误消息
-	TypeAck          MessageType = "ack"          // 消息确认
+	TypePong           MessageType = "pong"            // 心跳响应
+	TypeAuthSuccess    MessageType = "auth_success"    // 认证成功
+	TypeAuthFailed     MessageType = "auth_failed"     // 认证失败
+	TypeNewMessage     MessageType = "new_message"     // 新消息
+	TypeNotification   MessageType = "notification"    // 系统通知
+	TypeVerifyProgress MessageType = "verify_progress" // 认证进度更新
+	TypeError          MessageType = "error"           // 错误消息
+	TypeAck            MessageType = "ack"             // 消息确认
 )
 
 // WSMessage WebSocket 消息结构
@@ -57,13 +55,11 @@ type NewMessageData struct {
 	CreatedAt  int64  `json:"created_at"`  // 创建时间
 }
 
-// NotificationData 通知数据
-type NotificationData struct {
-	NotificationID string `json:"notification_id"` // 通知ID
-	Type           string `json:"type"`            // 通知类型
-	Title          string `json:"title"`           // 标题
-	Content        string `json:"content"`         // 内容
-	CreatedAt      int64  `json:"created_at"`      // 创建时间
+// VerifyProgressData 认证进度通知数据
+type VerifyProgressData struct {
+	VerifyID int64 `json:"verify_id"` // 认证记录ID
+	Status   int32 `json:"status"`    // 最新状态
+	Refresh  bool  `json:"refresh"`   // 是否触发前端刷新
 }
 
 // ErrorData 错误数据
@@ -76,20 +72,4 @@ type ErrorData struct {
 type AckData struct {
 	MessageID string `json:"message_id"` // 确认的消息ID
 	Success   bool   `json:"success"`    // 是否成功
-}
-
-// JoinGroupData 加入群聊数据
-type JoinGroupData struct {
-	GroupID string `json:"group_id"` // 群聊ID
-}
-
-// LeaveGroupData 离开群聊数据
-type LeaveGroupData struct {
-	GroupID string `json:"group_id"` // 群聊ID
-}
-
-// MarkReadData 标记已读数据
-type MarkReadData struct {
-	GroupID   string `json:"group_id"`   // 群聊ID
-	MessageID string `json:"message_id"` // 消息ID
 }

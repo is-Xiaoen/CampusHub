@@ -56,8 +56,8 @@ const (
 	// 分值变动: +5
 	CreditEventHostSuccess = "host_success"
 
-	// CreditEventHostDelete 删除活动
-	// 场景: 组织者删除已有报名的活动
+	// CreditEventHostDelete 组织者违约
+	// 场景: 组织者取消/删除已有报名的活动
 	// 分值变动: -10
 	CreditEventHostDelete = "host_delete"
 )
@@ -87,7 +87,7 @@ type CreditEventData struct {
 
 	// UserID 用户ID
 	// 对于参与者事件(checkin/cancel/noshow): 为报名用户ID
-	// 对于组织者事件(host_success/host_delete): 为活动创建者ID
+	// 对于组织者事件(host_success/host_delete): 为活动组织者ID
 	UserID int64 `json:"user_id"`
 
 	// Timestamp 事件发生时间（Unix 秒级时间戳）

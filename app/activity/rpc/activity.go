@@ -48,6 +48,11 @@ func main() {
 	statusCron.Start()
 	defer statusCron.Stop()
 
+	// 4.5 启动标签同步定时任务（从用户服务同步标签数据到 tag_cache）
+	tagSyncCron := cron.NewTagSyncCron(ctx.Redis, ctx.TagRpc, ctx.TagCacheModel)
+	tagSyncCron.Start()
+	defer tagSyncCron.Stop()
+
 	// 4.5 启动推荐列表缓存定时任务
 	recommendCron := cron.NewRecommendCron(
 		ctx.Redis,

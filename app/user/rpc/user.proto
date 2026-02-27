@@ -864,7 +864,7 @@ message CheckUserExistsResponse{
 message ForgetPasswordReq{
     string qq_code =1;
     string new_password =2;
-    int64 user_id =3;
+    string qq_email =3;
 }
 
 message ForgetPasswordResponse{
@@ -901,6 +901,7 @@ message UpdateUserInfoReq{
     int64 avatar_id =5;
     int64 age= 6;
     repeated int64 tag_ids =7;
+    string avatar_url =8;
 }
 
 message UpdateUserInfoResponse{
@@ -1170,4 +1171,8 @@ message UploadSysImageReq {
 // 上传通用图片响应
 message UploadSysImageResp {
     int64 id = 1;
+    string url = 2;
+    int64 file_size = 3;
+    string origin_name = 4;
+    string biz_type = 5;
 }
