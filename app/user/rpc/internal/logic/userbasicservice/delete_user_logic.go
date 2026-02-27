@@ -42,6 +42,7 @@ func (l *DeleteUserLogic) DeleteUser(in *pb.DeleteUserReq) (*pb.DeleteUserRespon
 		return nil, errorx.New(errorx.CodeUserNotFound)
 	}
 
+	// 2. 检查用户是否有待参加活动
 	if l.svcCtx.ActivityRpc == nil {
 		return nil, errorx.NewWithMessage(errorx.CodeServiceUnavailable, "活动服务不可用")
 	}
@@ -59,6 +60,7 @@ func (l *DeleteUserLogic) DeleteUser(in *pb.DeleteUserReq) (*pb.DeleteUserRespon
 		return nil, errorx.NewWithMessage(errorx.CodeForbidden, "存在待参加活动，无法注销")
 	}
 
+	// 3. 检查用户是否有待发布活动
 	page := int32(1)
 	pageSize := int32(50)
 	for {
@@ -72,7 +74,7 @@ func (l *DeleteUserLogic) DeleteUser(in *pb.DeleteUserReq) (*pb.DeleteUserRespon
 			return nil, errorx.ErrRPCError(err)
 		}
 		for _, item := range publishedResp.GetList() {
-			if item.Status >= 0 && item.Status <= 3 {
+			if item.Status >= 1 && item.Status <= 3 {
 				return nil, errorx.NewWithMessage(errorx.CodeForbidden, "存在未结束活动，无法注销")
 			}
 		}
@@ -83,6 +85,7 @@ func (l *DeleteUserLogic) DeleteUser(in *pb.DeleteUserReq) (*pb.DeleteUserRespon
 		page++
 	}
 
+	// 4. 校验 QQ 邮箱验证码
 	checkLogic := qqemaillogic.NewCheckQQEmailLogic(l.ctx, l.svcCtx)
 	_, err = checkLogic.CheckQQEmail(&pb.CheckQQEmailReq{
 		QqEmail: user.QQEmail,
@@ -93,7 +96,7 @@ func (l *DeleteUserLogic) DeleteUser(in *pb.DeleteUserReq) (*pb.DeleteUserRespon
 		return nil, err
 	}
 
-	// 3. 更新用户状态为注销
+	// 5. 更新用户状态为注销
 	user.Status = model.UserStatusDeleted
 	// 修改邮箱为原邮箱+注销时间戳，避免唯一索引冲突并保留记录
 	user.QQEmail = fmt.Sprintf("%s_%d", user.QQEmail, time.Now().Unix())

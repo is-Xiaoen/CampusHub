@@ -210,6 +210,7 @@ type UpdateUserInfoReq struct {
 	Introduction   string  `form:"introduction,optional"`
 	Gender         string  `form:"gender,optional"`
 	AvatarId       int64   `form:"avatarId,optional"`
+	AvatarUrl      string  `form:"avatarUrl,optional"`
 	InterestTagIds []int64 `form:"interestTagIds,optional"`
 }
 

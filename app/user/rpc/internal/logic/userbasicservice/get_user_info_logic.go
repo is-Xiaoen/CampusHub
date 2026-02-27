@@ -103,9 +103,11 @@ func (l *GetUserInfoLogic) GetUserInfo(in *pb.GetUserInfoReq) (*pb.GetUserInfoRe
 		l.Logger.Errorf("Get credit info failed: %v, userId: %d", errCredit, user.UserID)
 	}
 
-	// 2.5 头像URL：通过 avatar_id + user_id 查询（不直接使用数据库中的URL）
+	// 2.5 头像URL：优先使用数据库 avatar_url，没有则通过 avatar_id 查询
 	var avatarUrl string
-	if user.AvatarID > 0 {
+	if user.AvatarURL != "" {
+		avatarUrl = user.AvatarURL
+	} else if user.AvatarID > 0 {
 		imgResp, err := NewGetSysImageLogic(l.ctx, l.svcCtx).GetSysImage(&pb.GetSysImageReq{
 			UserId:  user.UserID,
 			ImageId: user.AvatarID,
