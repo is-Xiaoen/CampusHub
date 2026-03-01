@@ -51,6 +51,7 @@ type (
 		JoinedAt      string `json:"joined_at"`
 		LastMessage   string `json:"last_message,optional"`
 		LastMessageAt string `json:"last_message_at,optional"`
+		CoverUrl      string `json:"cover_url,optional"`
 	}
 	// 查询群信息请求
 	GetGroupInfoReq {
