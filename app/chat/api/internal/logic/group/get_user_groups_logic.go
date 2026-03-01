@@ -6,7 +6,6 @@ package group
 import (
 	"context"
 
-	"activity-platform/app/activity/rpc/activityservice"
 	"activity-platform/app/chat/api/internal/svc"
 	"activity-platform/app/chat/api/internal/types"
 	"activity-platform/app/chat/rpc/chat"
@@ -53,28 +52,7 @@ func (l *GetUserGroupsLogic) GetUserGroups(req *types.GetUserGroupsReq) (resp *t
 		return nil, errorx.NewWithMessage(errorx.CodeInternalError, "获取用户群列表失败")
 	}
 
-	// 批量获取活动封面图（弱依赖，失败不影响主流程）
-	coverUrlMap := make(map[int64]string)
-	if l.svcCtx.ActivityRpc != nil && len(rpcResp.Groups) > 0 {
-		ids := make([]int64, 0, len(rpcResp.Groups))
-		for _, g := range rpcResp.Groups {
-			if g.ActivityId != 0 {
-				ids = append(ids, int64(g.ActivityId))
-			}
-		}
-		if len(ids) > 0 {
-			actResp, actErr := l.svcCtx.ActivityRpc.BatchGetActivityBasic(l.ctx, &activityservice.BatchGetActivityBasicReq{Ids: ids})
-			if actErr != nil {
-				l.Infof("[WARN] 批量获取活动基本信息失败，cover_url 降级为空: %v", actErr)
-			} else {
-				for _, a := range actResp.Activities {
-					coverUrlMap[a.Id] = a.CoverUrl
-				}
-			}
-		}
-	}
-
-	// 转换群聊列表（RPC 现在返回完整的 UserGroupInfo）
+	// cover_url 已在创建群时存入 DB，由 RPC 直接返回，无需额外调用 Activity RPC
 	groups := make([]types.UserGroupInfo, 0, len(rpcResp.Groups))
 	for _, group := range rpcResp.Groups {
 		groups = append(groups, types.UserGroupInfo{
@@ -88,7 +66,7 @@ func (l *GetUserGroupsLogic) GetUserGroups(req *types.GetUserGroupsReq) (resp *t
 			JoinedAt:      formatTimestamp(group.JoinedAt),
 			LastMessage:   group.LastMessage,
 			LastMessageAt: formatTimestamp(group.LastMessageAt),
-			CoverUrl:      coverUrlMap[int64(group.ActivityId)],
+			CoverUrl:      group.CoverUrl,
 		})
 	}
 
