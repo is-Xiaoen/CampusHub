@@ -209,7 +209,7 @@ func (l *CreateActivityLogic) createActivityWithDTM(in *activity.CreateActivityR
 	// 7. 异步发布活动创建事件（仅已发布状态，草稿不需要通知）
 	if createdActivity.Status == model.StatusPublished && l.svcCtx.MsgProducer != nil {
 		l.svcCtx.MsgProducer.PublishActivityCreated(
-			l.ctx, createdActivity.ID, uint64(in.OrganizerId), in.Title,
+			l.ctx, createdActivity.ID, uint64(in.OrganizerId), in.Title, coverURL,
 		)
 	}
 
@@ -286,7 +286,7 @@ func (l *CreateActivityLogic) createActivityLocal(in *activity.CreateActivityReq
 	// 异步发布活动创建事件（仅已发布状态，草稿不需要通知）
 	if activityData.Status == model.StatusPublished && l.svcCtx.MsgProducer != nil {
 		l.svcCtx.MsgProducer.PublishActivityCreated(
-			l.ctx, activityData.ID, uint64(in.OrganizerId), in.Title,
+			l.ctx, activityData.ID, uint64(in.OrganizerId), in.Title, coverURL,
 		)
 	}
 

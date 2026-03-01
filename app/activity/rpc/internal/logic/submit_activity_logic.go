@@ -144,7 +144,7 @@ func (l *SubmitActivityLogic) SubmitActivity(in *activity.SubmitActivityReq) (*a
 	// 异步发布活动创建事件（草稿提交发布后通知 Chat 创建群聊）
 	if l.svcCtx.MsgProducer != nil {
 		l.svcCtx.MsgProducer.PublishActivityCreated(
-			l.ctx, uint64(in.Id), activityData.OrganizerID, activityData.Title,
+			l.ctx, uint64(in.Id), activityData.OrganizerID, activityData.Title, activityData.CoverURL,
 		)
 	}
 

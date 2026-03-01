@@ -47,6 +47,7 @@ func (c *ActivityCreatedConsumer) handleActivityCreated(msg *message.Message) er
 		Name:       event.Title,
 		OwnerId:    event.CreatorID,
 		MaxMembers: 500,
+		CoverUrl:   event.CoverUrl,
 	})
 	if err != nil {
 		c.logger.Errorf("自动创建群聊失败: %v, activity_id=%d", err, event.ActivityID)

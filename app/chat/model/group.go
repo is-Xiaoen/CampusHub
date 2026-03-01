@@ -14,6 +14,7 @@ type Group struct {
 	GroupID     string    `gorm:"uniqueIndex:uk_group_id;column:group_id;type:varchar(64);not null" json:"group_id"`     // 群聊唯一标识
 	ActivityID  uint64    `gorm:"uniqueIndex:uk_activity_id;column:activity_id;type:bigint;not null" json:"activity_id"` // 关联活动ID
 	Name        string    `gorm:"column:name;type:varchar(255);not null" json:"name"`                                    // 群聊名称
+	CoverUrl    string    `gorm:"column:cover_url;type:varchar(500);not null;default:''" json:"cover_url"`               // 封面图URL（活动封面）
 	OwnerID     uint64    `gorm:"index:idx_owner_id;column:owner_id;type:bigint;not null" json:"owner_id"`               // 群主用户ID
 	Status      int8      `gorm:"index:idx_status;column:status;type:tinyint;not null;default:1" json:"status"`          // 状态: 1-正常 2-已解散
 	MaxMembers  int32     `gorm:"column:max_members;type:int;not null" json:"max_members"`                               // 最大成员数

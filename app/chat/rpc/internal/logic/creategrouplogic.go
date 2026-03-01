@@ -55,6 +55,7 @@ func (l *CreateGroupLogic) CreateGroup(in *chat.CreateGroupReq) (*chat.CreateGro
 		GroupID:     groupID,
 		ActivityID:  in.ActivityId,
 		Name:        in.Name,
+		CoverUrl:    in.CoverUrl,
 		OwnerID:     in.OwnerId,
 		Status:      1, // 1-正常
 		MaxMembers:  maxMembers,
