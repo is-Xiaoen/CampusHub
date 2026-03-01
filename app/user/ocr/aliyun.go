@@ -169,12 +169,9 @@ func (p *AliyunProvider) recognizeImage(
 	// 创建请求 - 使用通用票证抽取API
 	request := &ocrapi.RecognizeGeneralStructureRequest{
 		Url: tea.String(imageURL),
-		// 指定需要提取的4个字段（根据实际返回的KEY）
+		// 指定需要提取的字段（包含入学年份相关）
 		Keys: tea.StringSlice([]string{
-			"姓名",   // → RealName
-			"学校名称", // → SchoolName
-			"学院",   // → Department
-			"学号",   // → StudentID
+			"姓名", "学校名称", "学院", "学号", "入学年份", "入学日期", "入学时间",
 		}),
 	}
 
@@ -279,7 +276,7 @@ func (p *AliyunProvider) parseResponse(response *ocrapi.RecognizeGeneralStructur
 }
 
 // mapFieldByKey 根据键名映射到结果字段
-// 字段映射规则（仅4个字段）：
+// 字段映射规则：
 //
 //	阿里云返回KEY     →    OcrResult字段
 //	─────────────────────────────────────
@@ -287,6 +284,7 @@ func (p *AliyunProvider) parseResponse(response *ocrapi.RecognizeGeneralStructur
 //	"学校名称"       →    SchoolName
 //	"学院"           →    Department
 //	"学号"           →    StudentID
+//	"入学年份/入学日期/入学时间" → AdmissionYear
 func (p *AliyunProvider) mapFieldByKey(result *OcrResult, key, value string) {
 	// 移除可能的冒号和空格
 	key = strings.TrimSpace(key)
@@ -314,6 +312,17 @@ func (p *AliyunProvider) mapFieldByKey(result *OcrResult, key, value string) {
 	case "学号":
 		if result.StudentID == "" {
 			result.StudentID = value
+		}
+
+	// 入学年份相关字段 → AdmissionYear
+	case "入学年份", "入学年", "入学日期", "入学时间", "入学年月":
+		if result.AdmissionYear == "" {
+			result.AdmissionYear = normalizeAdmissionYear(value)
+		}
+	default:
+		// 兜底：只要 key 包含“入学”就尝试提取年份。
+		if result.AdmissionYear == "" && strings.Contains(key, "入学") {
+			result.AdmissionYear = normalizeAdmissionYear(value)
 		}
 	}
 }
