@@ -37,6 +37,15 @@ UserRpc:
   NonBlock: true
   Timeout: 3000
 
+# 可选：调用 activity-rpc 获取活动封面图（群聊头像）
+ActivityRpc:
+  Etcd:
+    Hosts:
+      - 192.168.10.4:2379
+    Key: activity.rpc
+  NonBlock: true
+  Timeout: 3000
+
 # ==================== Redis 配置（用于获取用户状态）====================
 Redis:
   Host: 192.168.10.4:6379

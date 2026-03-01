@@ -15,10 +15,11 @@ type Config struct {
 		AccessSecret string
 		AccessExpire int64
 	}
-	ChatRpc   zrpc.RpcClientConf
-	UserRpc   zrpc.RpcClientConf `json:",optional"`
-	Redis     redis.RedisConf
-	WebSocket WebSocketConf `json:",optional"` // WebSocket 配置（可选）
+	ChatRpc     zrpc.RpcClientConf
+	UserRpc     zrpc.RpcClientConf `json:",optional"`
+	ActivityRpc zrpc.RpcClientConf `json:",optional"`
+	Redis       redis.RedisConf
+	WebSocket   WebSocketConf `json:",optional"` // WebSocket 配置（可选）
 }
 
 // WebSocketConf WebSocket 配置
