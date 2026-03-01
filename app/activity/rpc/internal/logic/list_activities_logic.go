@@ -100,6 +100,19 @@ func (l *ListActivitiesLogic) ListActivities(in *activity.ListActivitiesReq) (*a
 	// 5.3 查询分类（分类数量通常较少，一次性查询所有）
 	categoryMap := l.loadCategoryMap()
 
+	// 5.4 获取组织者最新信息（头像/昵称可能已更新）
+	organizerIDs := make([]uint64, len(result.List))
+	for i, act := range result.List {
+		organizerIDs[i] = act.OrganizerID
+	}
+	organizerMap := fetchOrganizerMap(l.ctx, l.svcCtx, organizerIDs)
+	for i := range result.List {
+		if info, ok := organizerMap[result.List[i].OrganizerID]; ok {
+			result.List[i].OrganizerName = info.Name
+			result.List[i].OrganizerAvatar = info.Avatar
+		}
+	}
+
 	// 6. 构建响应列表
 	list := make([]*activity.ActivityListItem, len(result.List))
 	for i, act := range result.List {

@@ -4169,6 +4169,7 @@ type UpdateUserInfoReq struct {
 	AvatarId      int64                  `protobuf:"varint,5,opt,name=avatar_id,json=avatarId,proto3" json:"avatar_id,omitempty"`
 	Age           int64                  `protobuf:"varint,6,opt,name=age,proto3" json:"age,omitempty"`
 	TagIds        []int64                `protobuf:"varint,7,rep,packed,name=tag_ids,json=tagIds,proto3" json:"tag_ids,omitempty"`
+	AvatarUrl     string                 `protobuf:"bytes,8,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -4250,6 +4251,13 @@ func (x *UpdateUserInfoReq) GetTagIds() []int64 {
 		return x.TagIds
 	}
 	return nil
+}
+
+func (x *UpdateUserInfoReq) GetAvatarUrl() string {
+	if x != nil {
+		return x.AvatarUrl
+	}
+	return ""
 }
 
 type UpdateUserInfoResponse struct {
@@ -6727,7 +6735,7 @@ const file_user_proto_rawDesc = "" +
 	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\x12\x17\n" +
 	"\auser_id\x18\x03 \x01(\x03R\x06userId\"2\n" +
 	"\x16UpdatePasswordResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xc6\x01\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xe5\x01\n" +
 	"\x11UpdateUserInfoReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1a\n" +
 	"\bnickname\x18\x02 \x01(\tR\bnickname\x12\x1c\n" +
@@ -6735,7 +6743,9 @@ const file_user_proto_rawDesc = "" +
 	"\x06gender\x18\x04 \x01(\x03R\x06gender\x12\x1b\n" +
 	"\tavatar_id\x18\x05 \x01(\x03R\bavatarId\x12\x10\n" +
 	"\x03age\x18\x06 \x01(\x03R\x03age\x12\x17\n" +
-	"\atag_ids\x18\a \x03(\x03R\x06tagIds\"\x80\x02\n" +
+	"\atag_ids\x18\a \x03(\x03R\x06tagIds\x12\x1d\n" +
+	"\n" +
+	"avatar_url\x18\b \x01(\tR\tavatarUrl\"\x80\x02\n" +
 	"\x16UpdateUserInfoResponse\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1a\n" +
 	"\bnickname\x18\x02 \x01(\tR\bnickname\x12\x1c\n" +

@@ -322,7 +322,7 @@ service VerifyService {
 
     // GetVerifyInfo 获取已通过的认证信息
     // 调用方: User API（个人中心-认证信息页面）
-    // 业务逻辑: 仅返回已通过认证用户的脱敏信息
+    // 业务逻辑: 仅返回已通过认证用户的信息（用户侧姓名/学号全量回显）
     rpc GetVerifyInfo(GetVerifyInfoReq) returns (GetVerifyInfoResp);
 
     // IsVerified 查询用户是否已完成学生认证
@@ -427,11 +427,11 @@ message GetVerifyInfoResp {
     bool is_verified = 1;
     // 认证ID
     int64 verify_id = 2;
-    // 真实姓名（脱敏：张*）
+    // 真实姓名（全量回显）
     string real_name = 3;
     // 学校名称
     string school_name = 4;
-    // 学号（脱敏：202301****）
+    // 学号（全量回显）
     string student_id = 5;
     // 院系
     string department = 6;
@@ -901,6 +901,7 @@ message UpdateUserInfoReq{
     int64 avatar_id =5;
     int64 age= 6;
     repeated int64 tag_ids =7;
+    string avatar_url =8;
 }
 
 message UpdateUserInfoResponse{

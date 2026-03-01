@@ -92,6 +92,19 @@ func (l *GetHotActivitiesLogic) GetHotActivities(in *activity.GetHotActivitiesRe
 	// 4.3 加载分类映射表
 	categoryMap := l.loadCategoryMap()
 
+	// 4.4 获取组织者最新信息（头像/昵称可能已更新）
+	organizerIDs := make([]uint64, len(activities))
+	for i, act := range activities {
+		organizerIDs[i] = act.OrganizerID
+	}
+	organizerMap := fetchOrganizerMap(l.ctx, l.svcCtx, organizerIDs)
+	for i := range activities {
+		if info, ok := organizerMap[activities[i].OrganizerID]; ok {
+			activities[i].OrganizerName = info.Name
+			activities[i].OrganizerAvatar = info.Avatar
+		}
+	}
+
 	// 5. 构建响应列表
 	list := make([]*activity.ActivityListItem, len(activities))
 	for i, act := range activities {

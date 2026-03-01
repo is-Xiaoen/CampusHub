@@ -7,7 +7,7 @@ Host: 192.168.22.11
 Port: 8002
 MaxConns: 10000
 CpuThreshold: 900
-Timeout: 3000
+Timeout: 15000
 
 # ==================== 内置中间件开关 ====================
 Middlewares:
@@ -35,7 +35,7 @@ ActivityRpc:
         - 192.168.10.4:2379
       Key: activity.rpc
     NonBlock: true
-    Timeout: 3000
+    Timeout: 10000
 #  Target: 127.0.0.1:9002    # 直接连本地 RPC
 #  NonBlock: true
 #  Timeout: 3000
@@ -47,7 +47,7 @@ UserRpc:
       - 192.168.10.4:2379
     Key: user.rpc
   NonBlock: true
-  Timeout: 3000
+  Timeout: 5000
 
 # ==================== 高并发、熔断限流配置 ====================
 # 报名活动限流配置（令牌桶算法）
@@ -61,3 +61,11 @@ RegistrationBreaker:
   Requests: 100                # 请求总数阈值
   ErrorRate: 0.5               # 错误率阈值（50%）
   Timeout: 60                  # 熔断持续时间（秒）
+
+# ==================== 链路追踪（微服务核心） ====================
+# 分布式追踪，可在 Jaeger UI 查看完整调用链
+Telemetry:
+  Name: activity-api
+  Endpoint: http://192.168.10.4:14268/api/traces
+  Sampler: 1.0
+  Batcher: jaeger
