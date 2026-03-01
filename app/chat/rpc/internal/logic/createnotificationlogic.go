@@ -2,11 +2,13 @@ package logic
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"activity-platform/app/chat/model"
 	"activity-platform/app/chat/rpc/chat"
 	"activity-platform/app/chat/rpc/internal/svc"
+	"activity-platform/common/messaging"
 
 	"github.com/google/uuid"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -63,7 +65,26 @@ func (l *CreateNotificationLogic) CreateNotification(in *chat.CreateNotification
 		return nil, status.Error(codes.Internal, "创建通知失败")
 	}
 
-	// 4. 返回结果
+	// 5. 异步推送实时通知（best-effort，失败不影响主流程）
+	go func() {
+		event := messaging.NotificationPushEventData{
+			UserID:         in.UserId,
+			NotificationID: notificationID,
+			Type:           in.Type,
+			Title:          in.Title,
+			Content:        in.Content,
+			Timestamp:      time.Now().Unix(),
+		}
+		payload, err := json.Marshal(event)
+		if err != nil {
+			l.Errorf("序列化通知推送事件失败: %v", err)
+			return
+		}
+		if err := l.svcCtx.MsgClient.Publish(context.Background(), messaging.TopicNotificationPush, payload); err != nil {
+			l.Errorf("发布通知推送事件失败: %v", err)
+		}
+	}()
+
 	return &chat.CreateNotificationResp{
 		NotificationId: notificationID,
 	}, nil
