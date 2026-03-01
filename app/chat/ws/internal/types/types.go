@@ -68,6 +68,14 @@ type ErrorData struct {
 	Message string `json:"message"` // 错误信息
 }
 
+// NotificationData 系统通知数据
+type NotificationData struct {
+	NotificationID string `json:"notification_id"`
+	Type           string `json:"type"`
+	Title          string `json:"title"`
+	Content        string `json:"content"`
+}
+
 // AckData 确认数据
 type AckData struct {
 	MessageID string `json:"message_id"` // 确认的消息ID

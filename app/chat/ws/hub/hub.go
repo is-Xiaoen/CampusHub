@@ -303,6 +303,41 @@ func (h *Hub) subscribeMessages(ctx context.Context) {
 		return nil
 	})
 
+	// 订阅系统通知推送事件
+	h.messagingClient.Subscribe(messaging.TopicNotificationPush, "ws-notification-push-handler", func(msg *message.Message) error {
+		var event messaging.NotificationPushEventData
+		if err := json.Unmarshal(msg.Payload, &event); err != nil {
+			return messaging.NewNonRetryableError(err)
+		}
+
+		dataBytes, err := json.Marshal(types.NotificationData{
+			NotificationID: event.NotificationID,
+			Type:           event.Type,
+			Title:          event.Title,
+			Content:        event.Content,
+		})
+		if err != nil {
+			return messaging.NewNonRetryableError(err)
+		}
+
+		wsMsg := &types.WSMessage{
+			Type:      types.TypeNotification,
+			MessageID: fmt.Sprintf("notif_%s", event.NotificationID),
+			Timestamp: event.Timestamp,
+			Data:      dataBytes,
+		}
+
+		userID := fmt.Sprintf("%d", event.UserID)
+		if err := h.SendToUser(userID, wsMsg); err != nil {
+			if err == ErrUserNotOnline {
+				logx.Infof("用户 %s 不在线，跳过通知推送: %s", userID, event.NotificationID)
+				return nil
+			}
+			return err
+		}
+		return nil
+	})
+
 	// 启动消息订阅
 	if err := h.messagingClient.Run(ctx); err != nil {
 		logx.Errorf("消息中间件客户端停止: %v", err)
