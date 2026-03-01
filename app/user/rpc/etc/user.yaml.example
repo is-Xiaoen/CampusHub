@@ -7,6 +7,7 @@
 
 Name: user.rpc
 ListenOn: 0.0.0.0:19001    # 使用高端口避免冲突
+Timeout: 60000             # RPC 服务端超时(ms)，上传/OCR 场景建议 >= 30000
 
 # 服务注册（Etcd）
 Etcd:
