@@ -219,6 +219,12 @@ func (l *MessageLogic) HandleSendMessageSync(client *hub.Client, msg *types.WSMe
 
 // autoJoinUserGroups 自动加入用户的所有群聊
 func (l *MessageLogic) autoJoinUserGroups(client *hub.Client, userID string) {
+	defer func() {
+		if r := recover(); r != nil {
+			logx.Errorf("autoJoinUserGroups panic, userID=%s: %v", userID, r)
+		}
+	}()
+
 	// 将 string 类型的 UserID 转换为 uint64
 	userIDUint, err := strconv.ParseUint(userID, 10, 64)
 	if err != nil {

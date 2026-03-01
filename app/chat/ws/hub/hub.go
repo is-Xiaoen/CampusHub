@@ -147,8 +147,6 @@ func (h *Hub) unregisterClient(client *Client) {
 			delete(h.clients, client.userID)
 		}
 
-		close(client.send)
-
 		// 从所有群聊中移除
 		for groupID := range client.groups {
 			if clients, ok := h.groups[groupID]; ok {
@@ -165,6 +163,9 @@ func (h *Hub) unregisterClient(client *Client) {
 			logx.Infof("用户 %s 已断开连接", client.userID)
 		}
 	}
+
+	// 始终关闭 send 通道，防止 WritePump goroutine 泄漏（未认证客户端断连时也需要）
+	close(client.send)
 }
 
 // handleClientMessage 处理客户端消息
