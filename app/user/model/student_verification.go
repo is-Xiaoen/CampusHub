@@ -14,6 +14,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	"activity-platform/common/constants"
@@ -390,12 +391,15 @@ func (m *StudentVerificationModel) UpdateOcrResult(
 		"student_id":       encryptedStudentID,
 		"student_id_hash":  studentIDHash,
 		"department":       ocrData.Department,
-		"admission_year":   ocrData.AdmissionYear,
 		"ocr_platform":     ocrData.OcrPlatform,
 		"ocr_confidence":   sql.NullFloat64{Float64: ocrData.OcrConfidence, Valid: true},
 		"ocr_raw_json":     sql.NullString{String: ocrData.OcrRawJSON, Valid: ocrData.OcrRawJSON != ""},
 		"ocr_completed_at": &now,
 		"operator":         constants.VerifyOperatorOcrCallback,
+	}
+	// OCR 结果未识别到入学年份时，保留用户原先提交值，避免被空字符串覆盖。
+	if year := strings.TrimSpace(ocrData.AdmissionYear); year != "" {
+		updates["admission_year"] = year
 	}
 	return m.db.WithContext(ctx).
 		Model(&StudentVerification{}).

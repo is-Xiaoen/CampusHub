@@ -34,6 +34,7 @@ package ocr
 import (
 	"context"
 	"encoding/json"
+	"regexp"
 	"strings"
 	"time"
 
@@ -186,9 +187,9 @@ func (p *TencentProvider) recognizeImage(
 	request := ocrSdk.NewExtractDocBasicRequest()
 	request.ImageUrl = common.StringPtr(imageURL)
 
-	// 指定需要提取的4个字段：机构、姓名、学号、学院
+	// 指定需要提取的字段：机构、姓名、学号、学院、入学年份相关字段
 	request.ItemNames = common.StringPtrs([]string{
-		"机构", "姓名", "学号", "学院",
+		"机构", "姓名", "学号", "学院", "入学年份", "入学日期", "入学时间",
 	})
 
 	// 关闭全文识别，仅返回结构化字段
@@ -320,11 +321,12 @@ func (p *TencentProvider) parseExtractDocBasicResponse(response *ocrSdk.ExtractD
 }
 
 // mapFieldByKey 根据键名映射到结果字段
-// 字段映射规则（仅4个字段）：
+// 字段映射规则：
 //   - "机构" → SchoolName（学校名称）
 //   - "姓名" → RealName（真实姓名）
 //   - "学号" → StudentID（学号）
 //   - "学院" → Department（院系）
+//   - "入学年份/入学日期/入学时间" → AdmissionYear（提取四位年份）
 func (p *TencentProvider) mapFieldByKey(result *OcrResult, key, value string) {
 	// 移除可能的冒号和空格
 	key = strings.TrimSpace(key)
@@ -353,7 +355,33 @@ func (p *TencentProvider) mapFieldByKey(result *OcrResult, key, value string) {
 		if result.Department == "" {
 			result.Department = value
 		}
+
+	// 入学年份相关字段 → AdmissionYear
+	case "入学年份", "入学年", "入学日期", "入学时间", "入学年月":
+		if result.AdmissionYear == "" {
+			result.AdmissionYear = normalizeAdmissionYear(value)
+		}
+	default:
+		// 兜底：只要 key 包含“入学”就尝试提取年份。
+		if result.AdmissionYear == "" && strings.Contains(key, "入学") {
+			result.AdmissionYear = normalizeAdmissionYear(value)
+		}
 	}
+}
+
+func normalizeAdmissionYear(value string) string {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return ""
+	}
+
+	yearRegexp := regexp.MustCompile(`(?:19|20)\d{2}`)
+	year := yearRegexp.FindString(trimmed)
+	if year != "" {
+		return year
+	}
+
+	return trimmed
 }
 
 // handleError 处理腾讯云API错误，直接返回 BizError
