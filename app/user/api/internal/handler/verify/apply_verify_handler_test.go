@@ -150,6 +150,7 @@ func TestApplyVerifyHandler_EmptyStringField(t *testing.T) {
 
 func TestApplyVerifyHandler_Success(t *testing.T) {
 	response.SetupGlobalErrorHandler()
+	response.SetupGlobalOkHandler()
 
 	mockRpc := &mockVerifyService{
 		applyResp: &verifyservice.ApplyStudentVerifyResp{
