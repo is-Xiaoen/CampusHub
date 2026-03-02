@@ -56,17 +56,18 @@ func (l *GetUserGroupsLogic) GetUserGroups(req *types.GetUserGroupsReq) (resp *t
 	groups := make([]types.UserGroupInfo, 0, len(rpcResp.Groups))
 	for _, group := range rpcResp.Groups {
 		groups = append(groups, types.UserGroupInfo{
-			GroupId:       group.GroupId,
-			ActivityId:    int64(group.ActivityId),
-			Name:          group.Name,
-			OwnerId:       int64(group.OwnerId),
-			MemberCount:   group.MemberCount,
-			Status:        group.Status,
-			Role:          getRoleString(group.Role),
-			JoinedAt:      formatTimestamp(group.JoinedAt),
-			LastMessage:   group.LastMessage,
-			LastMessageAt: formatTimestamp(group.LastMessageAt),
-			CoverUrl:      group.CoverUrl,
+			GroupId:        group.GroupId,
+			ActivityId:     int64(group.ActivityId),
+			Name:           group.Name,
+			OwnerId:        int64(group.OwnerId),
+			MemberCount:    group.MemberCount,
+			Status:         group.Status,
+			Role:           getRoleString(group.Role),
+			JoinedAt:       formatTimestamp(group.JoinedAt),
+			LastMessage:    group.LastMessage,
+			LastMessageAt:  formatTimestamp(group.LastMessageAt),
+			LastSenderName: group.LastSenderName,
+			CoverUrl:       group.CoverUrl,
 		})
 	}
 

@@ -5,6 +5,7 @@ import (
 
 	"activity-platform/app/chat/rpc/chat"
 	"activity-platform/app/chat/rpc/internal/svc"
+	"activity-platform/app/user/rpc/pb/pb"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"google.golang.org/grpc/codes"
@@ -64,27 +65,38 @@ func (l *GetUserGroupsLogic) GetUserGroups(in *chat.GetUserGroupsReq) (*chat.Get
 		// 4. 查询该群的最后一条消息
 		lastMessage := ""
 		lastMessageAt := int64(0)
+		lastSenderName := ""
 		messages, err := l.svcCtx.MessageModel.FindByGroupID(l.ctx, member.GroupID, "", 1)
 		if err == nil && len(messages) > 0 {
 			lastMsg := messages[0]
 			lastMessage = lastMsg.Content
 			lastMessageAt = lastMsg.CreatedAt.Unix()
+			// 查询最后消息发送者的用户名
+			if l.svcCtx.UserBasicRpc != nil {
+				userResp, err := l.svcCtx.UserBasicRpc.GetUserInfo(l.ctx, &pb.GetUserInfoReq{
+					UserId: int64(lastMsg.SenderID),
+				})
+				if err == nil && userResp.GetUserInfo() != nil {
+					lastSenderName = userResp.GetUserInfo().GetNickname()
+				}
+			}
 		}
 
 		groupList = append(groupList, &chat.UserGroupInfo{
-			GroupId:       group.GroupID,
-			ActivityId:    group.ActivityID,
-			Name:          group.Name,
-			CoverUrl:      group.CoverUrl,
-			OwnerId:       group.OwnerID,
-			Status:        int32(group.Status),
-			MaxMembers:    group.MaxMembers,
-			MemberCount:   group.MemberCount,
-			CreatedAt:     group.CreatedAt.Unix(),
-			Role:          int32(member.Role),
-			JoinedAt:      member.JoinedAt.Unix(),
-			LastMessage:   lastMessage,
-			LastMessageAt: lastMessageAt,
+			GroupId:        group.GroupID,
+			ActivityId:     group.ActivityID,
+			Name:           group.Name,
+			CoverUrl:       group.CoverUrl,
+			OwnerId:        group.OwnerID,
+			Status:         int32(group.Status),
+			MaxMembers:     group.MaxMembers,
+			MemberCount:    group.MemberCount,
+			CreatedAt:      group.CreatedAt.Unix(),
+			Role:           int32(member.Role),
+			JoinedAt:       member.JoinedAt.Unix(),
+			LastMessage:    lastMessage,
+			LastMessageAt:  lastMessageAt,
+			LastSenderName: lastSenderName,
 		})
 	}
 

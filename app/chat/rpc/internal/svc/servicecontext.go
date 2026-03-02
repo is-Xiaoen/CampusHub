@@ -31,6 +31,9 @@ type ServiceContext struct {
 
 	// ==================== User RPC 客户端（供 MQ 消费者使用）====================
 
+	// UserBasicRpc User 基础信息 RPC 客户端（用于获取用户名、头像等）
+	UserBasicRpc pb.UserBasicServiceClient
+
 	// UserCreditRpc User 信用分服务 RPC 客户端
 	UserCreditRpc pb.CreditServiceClient
 
@@ -62,6 +65,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	}
 
 	// 初始化 User RPC 客户端（弱依赖，失败不影响服务启动）
+	var userBasicRpc pb.UserBasicServiceClient
 	var userCreditRpc pb.CreditServiceClient
 	var userVerifyRpc pb.VerifyServiceClient
 
@@ -70,6 +74,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		log.Printf("[WARN] User RPC 客户端初始化失败: %v (服务将继续启动，但 User 域消费者将不可用)", err)
 	} else {
 		userRpcConn := userRpcClient.Conn()
+		userBasicRpc = pb.NewUserBasicServiceClient(userRpcConn)
 		userCreditRpc = pb.NewCreditServiceClient(userRpcConn)
 		userVerifyRpc = pb.NewVerifyServiceClient(userRpcConn)
 		log.Printf("[INFO] User RPC 客户端初始化成功")
@@ -80,6 +85,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		DB:                db,
 		RedisClient:       redisClient,
 		MsgClient:         msgClient,
+		UserBasicRpc:      userBasicRpc,
 		UserCreditRpc:     userCreditRpc,
 		UserVerifyRpc:     userVerifyRpc,
 		GroupModel:        model.NewGroupModel(db),
