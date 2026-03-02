@@ -9,7 +9,6 @@ import (
 	"activity-platform/common/errorx"
 	"activity-platform/common/utils/jwt"
 
-	"github.com/google/uuid"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -35,20 +34,19 @@ func (l *RefreshTokenLogic) RefreshToken(in *pb.RefreshReq) (*pb.RefreshResponse
 		return nil, errorx.New(errorx.CodeRefreshTokenInvalid)
 	}
 
-	// 2. 从redis校验refresh_jwtid是否存在
-	// key: token:refresh:{refreshJwtId}
-	refreshTokenKey := fmt.Sprintf("token:refresh:%s", claims.RefreshJwtId)
-	_, err = l.svcCtx.Redis.Get(l.ctx, refreshTokenKey).Result()
-	if err != nil {
+	// 2. 从redis校验refresh_token是否存在且匹配
+	// key: token:refresh:user:{userId}
+	refreshTokenKey := fmt.Sprintf("token:refresh:user:%d", claims.UserId)
+	storedToken, err := l.svcCtx.Redis.Get(l.ctx, refreshTokenKey).Result()
+	if err != nil || storedToken != in.RefreshToken {
 		return nil, errorx.New(errorx.CodeRefreshTokenExpired)
 	}
 
-	// 3. 生成新的短token (AccessJwtId使用新UUID，RefreshJwtId沿用旧的)
-	newAccessId := uuid.New().String()
+	// 3. 生成新的短token
 	shortToken, err := jwt.GenerateShortToken(claims.UserId, claims.Role, jwt.AuthConfig{
 		Secret: l.svcCtx.Config.JWT.AccessSecret,
 		Expire: l.svcCtx.Config.JWT.AccessExpire,
-	}, newAccessId, claims.RefreshJwtId)
+	})
 	if err != nil {
 		return nil, errorx.New(errorx.CodeTokenGenerateFailed)
 	}
