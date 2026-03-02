@@ -50,6 +50,10 @@ func (l *GetGroupUserLogic) GetGroupUser(in *pb.GetGroupUserReq) (*pb.GetGroupUs
 				l.Logger.Errorf("GetSysImage failed for group user %d: %v", u.UserID, err)
 			}
 		}
+		// 兜底：使用 avatar_url 字段（AvatarID 为 0 或 GetSysImage 失败时）
+		if avatarUrl == "" && u.AvatarURL != "" {
+			avatarUrl = u.AvatarURL
+		}
 		respUsers = append(respUsers, &pb.GroupUserInfo{
 			Id:        uint64(u.UserID),
 			Nickname:  u.Nickname,

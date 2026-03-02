@@ -182,13 +182,15 @@ type MarkNotificationReadResp struct {
 }
 
 type MessageInfo struct {
-	MessageId  string `json:"message_id"`
-	GroupId    string `json:"group_id"`
-	SenderId   int64  `json:"sender_id"`
-	SenderName string `json:"sender_name"`
-	MsgType    int32  `json:"msg_type"` // 1-文本 2-图片
-	Content    string `json:"content"`
-	CreatedAt  string `json:"created_at"`
+	MessageId    string `json:"message_id"`
+	GroupId      string `json:"group_id"`
+	SenderId     int64  `json:"sender_id"`
+	SenderName   string `json:"sender_name"`
+	SenderAvatar string `json:"sender_avatar"`
+	MsgType      int32  `json:"msg_type"` // 1-文本 2-图片
+	Content      string `json:"content"`
+	ImageUrl     string `json:"image_url"`
+	CreatedAt    string `json:"created_at"`
 }
 
 type NotificationInfo struct {
@@ -201,17 +203,18 @@ type NotificationInfo struct {
 }
 
 type UserGroupInfo struct {
-	GroupId       string `json:"group_id"`
-	ActivityId    int64  `json:"activity_id"`
-	Name          string `json:"name"`
-	OwnerId       int64  `json:"owner_id"`
-	MemberCount   int32  `json:"member_count"`
-	Status        int32  `json:"status"`
-	Role          string `json:"role"`
-	JoinedAt      string `json:"joined_at"`
-	LastMessage   string `json:"last_message,optional"`
-	LastMessageAt string `json:"last_message_at,optional"`
-	CoverUrl      string `json:"cover_url,omitempty"`
+	GroupId        string `json:"group_id"`
+	ActivityId     int64  `json:"activity_id"`
+	Name           string `json:"name"`
+	OwnerId        int64  `json:"owner_id"`
+	MemberCount    int32  `json:"member_count"`
+	Status         int32  `json:"status"`
+	Role           string `json:"role"`
+	JoinedAt       string `json:"joined_at"`
+	LastMessage    string `json:"last_message,optional"`
+	LastMessageAt  string `json:"last_message_at,optional"`
+	LastSenderName string `json:"last_sender_name,optional"`
+	CoverUrl       string `json:"cover_url,omitempty"`
 }
 
 type UserStatusInfo struct {
