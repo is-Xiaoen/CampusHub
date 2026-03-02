@@ -22,22 +22,28 @@ func NewUserCache(redisClient *redis.Client) *UserCache {
 	}
 }
 
-// Get 从缓存获取用户名
-// 返回用户名和是否存在
-func (c *UserCache) Get(userID uint64) (string, bool) {
+// GetUserInfo 从缓存获取用户名和头像
+// 返回 (name, avatar, ok)
+func (c *UserCache) GetUserInfo(userID uint64) (name string, avatar string, ok bool) {
 	key := c.getUserKey(userID)
-	val, err := c.redis.Get(c.ctx, key).Result()
-	if err != nil {
-		return "", false
+	vals, err := c.redis.HMGet(c.ctx, key, "name", "avatar").Result()
+	if err != nil || vals[0] == nil {
+		return "", "", false
 	}
-	return val, true
+	name, _ = vals[0].(string)
+	if vals[1] != nil {
+		avatar, _ = vals[1].(string)
+	}
+	return name, avatar, true
 }
 
-// Set 设置用户名到缓存
-// ttl: 缓存过期时间
-func (c *UserCache) Set(userID uint64, userName string, ttl time.Duration) error {
+// SetUserInfo 将用户名和头像写入缓存
+func (c *UserCache) SetUserInfo(userID uint64, name string, avatar string, ttl time.Duration) error {
 	key := c.getUserKey(userID)
-	return c.redis.Set(c.ctx, key, userName, ttl).Err()
+	if err := c.redis.HMSet(c.ctx, key, "name", name, "avatar", avatar).Err(); err != nil {
+		return err
+	}
+	return c.redis.Expire(c.ctx, key, ttl).Err()
 }
 
 // Delete 删除用户缓存
@@ -48,5 +54,5 @@ func (c *UserCache) Delete(userID uint64) error {
 
 // getUserKey 生成用户缓存键
 func (c *UserCache) getUserKey(userID uint64) string {
-	return fmt.Sprintf("chat:user:name:%d", userID)
+	return fmt.Sprintf("chat:user:info:%d", userID)
 }
