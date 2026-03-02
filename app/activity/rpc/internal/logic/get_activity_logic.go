@@ -107,7 +107,14 @@ func (l *GetActivityLogic) GetActivity(in *activity.GetActivityReq) (*activity.G
 		tagCaches = []model.TagCache{}
 	}
 
-	// 6. 构建响应
+	// 6. 获取组织者最新信息（头像/昵称可能已更新）
+	organizerMap := fetchOrganizerMap(l.ctx, l.svcCtx, []uint64{activityData.OrganizerID})
+	if info, ok := organizerMap[activityData.OrganizerID]; ok {
+		activityData.OrganizerName = info.Name
+		activityData.OrganizerAvatar = info.Avatar
+	}
+
+	// 7. 构建响应
 	detail := l.buildActivityDetail(activityData, categoryName, tagCaches)
 
 	l.Infof("获取活动详情成功: id=%d, title=%s, viewer_id=%d",

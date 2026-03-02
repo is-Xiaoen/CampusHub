@@ -75,6 +75,7 @@ func (l *GetUserGroupsLogic) GetUserGroups(in *chat.GetUserGroupsReq) (*chat.Get
 			GroupId:       group.GroupID,
 			ActivityId:    group.ActivityID,
 			Name:          group.Name,
+			CoverUrl:      group.CoverUrl,
 			OwnerId:       group.OwnerID,
 			Status:        int32(group.Status),
 			MaxMembers:    group.MaxMembers,

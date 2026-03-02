@@ -211,6 +211,7 @@ type UserGroupInfo struct {
 	JoinedAt      string `json:"joined_at"`
 	LastMessage   string `json:"last_message,optional"`
 	LastMessageAt string `json:"last_message_at,optional"`
+	CoverUrl      string `json:"cover_url,omitempty"`
 }
 
 type UserStatusInfo struct {

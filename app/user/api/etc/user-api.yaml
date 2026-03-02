@@ -1,19 +1,11 @@
 # ============================================================================
 # 用户服务 API 配置
 # ============================================================================
-#
-# 负责人：杨春路（B同学）
-#
-# 说明：
-#   - 所有 API 服务的 Auth.AccessSecret 必须一致
-#   - user-api 签发的 Token 在 activity-api、chat-api 中都能验证
-#
-# ============================================================================
 
 Name: user-api
 Host: 127.0.0.1
 Port: 8001
-MaxBytes: 10485760  # 请求体最大 10MB（支持图片上传）
+Timeout: 15000 # API 超时时间(ms)，上传图片场景需要放宽
 
 # 日志配置
 Log:
@@ -24,7 +16,7 @@ Log:
 
 # ==================== JWT 配置（重要：所有 API 服务必须一致）====================
 Auth:
-  AccessSecret: "kP9vX2mR7qN5zL4tA1wS8yJ3fG6hB0xU"
+  AccessSecret: "kP9vX2mR7qN5zL4tA1wS8yJ3fG6hB0xU" # 必须与 RPC 中的 AccessSecret 一致
   AccessExpire: 7200  # 2小时
 
 # ==================== RPC 服务配置（通过 Etcd 发现）====================
@@ -34,7 +26,9 @@ UserRpc:
       - 192.168.10.4:2379
     Key: user.rpc
   NonBlock: true
-  Timeout: 30000  # 30秒，因为包含图片上传到七牛云的耗时
+  Timeout: 10000 # 增加到 10秒，适应图片上传
+  Middlewares:
+    Duration: false # 失败时避免把二进制图片请求体打印到日志
 
 # ==================== Redis 配置 ====================
 BizRedis:
@@ -46,10 +40,9 @@ BizRedis:
 MySQL:
   DataSource: root:123456@tcp(192.168.10.4:3308)/campushub_user?charset=utf8mb4&parseTime=true&loc=Local
 
-
 # ==================== 链路追踪（可选）====================
-# Telemetry:
-#   Name: user-api
-#   Endpoint: http://192.168.10.4:14268/api/traces
-#   Sampler: 1.0
-#   Batcher: jaeger
+Telemetry:
+  Name: user-api
+  Endpoint: http://192.168.10.4:14268/api/traces
+  Sampler: 1.0
+  Batcher: jaeger

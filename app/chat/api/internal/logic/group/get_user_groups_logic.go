@@ -52,7 +52,7 @@ func (l *GetUserGroupsLogic) GetUserGroups(req *types.GetUserGroupsReq) (resp *t
 		return nil, errorx.NewWithMessage(errorx.CodeInternalError, "获取用户群列表失败")
 	}
 
-	// 转换群聊列表（RPC 现在返回完整的 UserGroupInfo）
+	// cover_url 已在创建群时存入 DB，由 RPC 直接返回，无需额外调用 Activity RPC
 	groups := make([]types.UserGroupInfo, 0, len(rpcResp.Groups))
 	for _, group := range rpcResp.Groups {
 		groups = append(groups, types.UserGroupInfo{
@@ -66,6 +66,7 @@ func (l *GetUserGroupsLogic) GetUserGroups(req *types.GetUserGroupsReq) (resp *t
 			JoinedAt:      formatTimestamp(group.JoinedAt),
 			LastMessage:   group.LastMessage,
 			LastMessageAt: formatTimestamp(group.LastMessageAt),
+			CoverUrl:      group.CoverUrl,
 		})
 	}
 

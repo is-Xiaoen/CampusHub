@@ -13,11 +13,18 @@ package model
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"strings"
 	"time"
 
 	"activity-platform/common/constants"
 
 	"gorm.io/gorm"
+)
+
+const (
+	sensitiveFieldRealName  = "real_name"
+	sensitiveFieldStudentID = "student_id"
 )
 
 // StudentVerification 学生认证实体
@@ -37,11 +44,13 @@ type StudentVerification struct {
 	// ==================== 认证信息字段（敏感数据加密存储） ====================
 
 	// 真实姓名（AES加密）
-	RealName string `gorm:"column:real_name;size:100" json:"real_name"`
+	RealName string `gorm:"column:real_name;size:255" json:"real_name"`
 	// 学校名称
-	SchoolName string `gorm:"column:school_name;size:100" json:"school_name"`
+	SchoolName string `gorm:"column:school_name;size:100;uniqueIndex:uk_school_student_hash,priority:1" json:"school_name"`
 	// 学号（AES加密）
-	StudentID string `gorm:"uniqueIndex:uk_school_student,priority:2;column:student_id;size:100" json:"student_id"`
+	StudentID string `gorm:"column:student_id;size:255" json:"student_id"`
+	// 学号哈希（HMAC-SHA256，用于唯一性索引）
+	StudentIDHash string `gorm:"column:student_id_hash;size:64;not null;default:'';uniqueIndex:uk_school_student_hash,priority:2" json:"student_id_hash"`
 	// 院系
 	Department string `gorm:"column:department;size:100" json:"department"`
 	// 入学年份
@@ -96,6 +105,15 @@ func (StudentVerification) TableName() string {
 // ============================================================================
 // 数据访问层接口定义
 // ============================================================================
+
+// SensitiveDataCodec 敏感字段编解码接口。
+// 由外层（RPC 层）注入具体实现，模型层仅依赖接口。
+type SensitiveDataCodec interface {
+	Encrypt(field, plaintext string) (string, error)
+	Decrypt(field, ciphertext string) (string, error)
+	HashStudentID(schoolName, studentID string) (string, error)
+	IsEncrypted(value string) bool
+}
 
 // IStudentVerificationModel 学生认证数据访问层接口
 type IStudentVerificationModel interface {
@@ -179,12 +197,23 @@ var _ IStudentVerificationModel = (*StudentVerificationModel)(nil)
 
 // StudentVerificationModel 学生认证数据访问层
 type StudentVerificationModel struct {
-	db *gorm.DB
+	db    *gorm.DB
+	codec SensitiveDataCodec
 }
 
-// NewStudentVerificationModel 创建学生认证Model实例
-func NewStudentVerificationModel(db *gorm.DB) IStudentVerificationModel {
-	return &StudentVerificationModel{db: db}
+// NewStudentVerificationModel 创建学生认证Model实例。
+func NewStudentVerificationModel(db *gorm.DB, codec SensitiveDataCodec) (IStudentVerificationModel, error) {
+	if db == nil {
+		return nil, fmt.Errorf("db is nil")
+	}
+	if codec == nil {
+		return nil, fmt.Errorf("sensitive data codec is nil")
+	}
+
+	return &StudentVerificationModel{
+		db:    db,
+		codec: codec,
+	}, nil
 }
 
 // ==================== 基础 CRUD ====================
@@ -194,6 +223,12 @@ func (m *StudentVerificationModel) Create(
 	ctx context.Context,
 	verification *StudentVerification,
 ) error {
+	restore, err := m.encryptForWrite(verification)
+	if err != nil {
+		return err
+	}
+	defer restore()
+
 	return m.db.WithContext(ctx).Create(verification).Error
 }
 
@@ -205,6 +240,9 @@ func (m *StudentVerificationModel) FindByID(
 	var verification StudentVerification
 	err := m.db.WithContext(ctx).First(&verification, id).Error
 	if err != nil {
+		return nil, err
+	}
+	if err := m.decryptAfterRead(&verification); err != nil {
 		return nil, err
 	}
 	return &verification, nil
@@ -220,6 +258,9 @@ func (m *StudentVerificationModel) FindByUserID(
 	if err != nil {
 		return nil, err
 	}
+	if err := m.decryptAfterRead(&verification); err != nil {
+		return nil, err
+	}
 	return &verification, nil
 }
 
@@ -228,6 +269,12 @@ func (m *StudentVerificationModel) Update(
 	ctx context.Context,
 	verification *StudentVerification,
 ) error {
+	restore, err := m.encryptForWrite(verification)
+	if err != nil {
+		return err
+	}
+	defer restore()
+
 	return m.db.WithContext(ctx).Save(verification).Error
 }
 
@@ -255,16 +302,23 @@ func (m *StudentVerificationModel) ExistsBySchoolAndStudentID(
 	schoolName, studentID string,
 	excludeUserID int64,
 ) (bool, error) {
+	studentIDHash, err := m.codec.HashStudentID(schoolName, studentID)
+	if err != nil {
+		return false, err
+	}
+
 	var count int64
 	query := m.db.WithContext(ctx).
 		Model(&StudentVerification{}).
-		Where("school_name = ? AND student_id = ?", schoolName, studentID).
-		Where("status = ?", constants.VerifyStatusPassed)
+		Where("school_name = ?", schoolName).
+		Where("status = ?", constants.VerifyStatusPassed).
+		Where("student_id_hash = ?", studentIDHash)
+
 	// 排除指定用户
 	if excludeUserID > 0 {
 		query = query.Where("user_id != ?", excludeUserID)
 	}
-	err := query.Count(&count).Error
+	err = query.Count(&count).Error
 	if err != nil {
 		return false, err
 	}
@@ -312,19 +366,40 @@ func (m *StudentVerificationModel) UpdateOcrResult(
 	id int64,
 	ocrData *OcrResultData,
 ) error {
+	if ocrData == nil {
+		return fmt.Errorf("ocrData is nil")
+	}
+
+	encryptedRealName, err := m.codec.Encrypt(sensitiveFieldRealName, ocrData.RealName)
+	if err != nil {
+		return fmt.Errorf("encrypt real_name failed: %w", err)
+	}
+	encryptedStudentID, err := m.codec.Encrypt(sensitiveFieldStudentID, ocrData.StudentID)
+	if err != nil {
+		return fmt.Errorf("encrypt student_id failed: %w", err)
+	}
+	studentIDHash, err := m.codec.HashStudentID(ocrData.SchoolName, ocrData.StudentID)
+	if err != nil {
+		return fmt.Errorf("hash student_id failed: %w", err)
+	}
+
 	now := time.Now()
 	updates := map[string]interface{}{
 		"status":           constants.VerifyStatusWaitConfirm,
-		"real_name":        ocrData.RealName,
+		"real_name":        encryptedRealName,
 		"school_name":      ocrData.SchoolName,
-		"student_id":       ocrData.StudentID,
+		"student_id":       encryptedStudentID,
+		"student_id_hash":  studentIDHash,
 		"department":       ocrData.Department,
-		"admission_year":   ocrData.AdmissionYear,
 		"ocr_platform":     ocrData.OcrPlatform,
 		"ocr_confidence":   sql.NullFloat64{Float64: ocrData.OcrConfidence, Valid: true},
 		"ocr_raw_json":     sql.NullString{String: ocrData.OcrRawJSON, Valid: ocrData.OcrRawJSON != ""},
 		"ocr_completed_at": &now,
 		"operator":         constants.VerifyOperatorOcrCallback,
+	}
+	// OCR 结果未识别到入学年份时，保留用户原先提交值，避免被空字符串覆盖。
+	if year := strings.TrimSpace(ocrData.AdmissionYear); year != "" {
+		updates["admission_year"] = year
 	}
 	return m.db.WithContext(ctx).
 		Model(&StudentVerification{}).
@@ -338,14 +413,32 @@ func (m *StudentVerificationModel) UpdateToManualReview(
 	id int64,
 	modifiedData *VerifyModifiedData,
 ) error {
+	if modifiedData == nil {
+		return fmt.Errorf("modifiedData is nil")
+	}
+
+	encryptedRealName, err := m.codec.Encrypt(sensitiveFieldRealName, modifiedData.RealName)
+	if err != nil {
+		return fmt.Errorf("encrypt real_name failed: %w", err)
+	}
+	encryptedStudentID, err := m.codec.Encrypt(sensitiveFieldStudentID, modifiedData.StudentID)
+	if err != nil {
+		return fmt.Errorf("encrypt student_id failed: %w", err)
+	}
+	studentIDHash, err := m.codec.HashStudentID(modifiedData.SchoolName, modifiedData.StudentID)
+	if err != nil {
+		return fmt.Errorf("hash student_id failed: %w", err)
+	}
+
 	updates := map[string]interface{}{
-		"status":         constants.VerifyStatusManualReview,
-		"real_name":      modifiedData.RealName,
-		"school_name":    modifiedData.SchoolName,
-		"student_id":     modifiedData.StudentID,
-		"department":     modifiedData.Department,
-		"admission_year": modifiedData.AdmissionYear,
-		"operator":       constants.VerifyOperatorUserConfirm,
+		"status":          constants.VerifyStatusManualReview,
+		"real_name":       encryptedRealName,
+		"school_name":     modifiedData.SchoolName,
+		"student_id":      encryptedStudentID,
+		"student_id_hash": studentIDHash,
+		"department":      modifiedData.Department,
+		"admission_year":  modifiedData.AdmissionYear,
+		"operator":        constants.VerifyOperatorUserConfirm,
 	}
 	return m.db.WithContext(ctx).
 		Model(&StudentVerification{}).
@@ -369,6 +462,11 @@ func (m *StudentVerificationModel) FindTimeoutRecords(
 	if err != nil {
 		return nil, err
 	}
+
+	if err := m.decryptListAfterRead(list); err != nil {
+		return nil, err
+	}
+
 	return list, nil
 }
 
@@ -393,7 +491,76 @@ func (m *StudentVerificationModel) FindByStatus(
 	if err := query.Offset(offset).Limit(pageSize).Order("created_at DESC").Find(&list).Error; err != nil {
 		return nil, 0, err
 	}
+	if err := m.decryptListAfterRead(list); err != nil {
+		return nil, 0, err
+	}
+
 	return list, total, nil
+}
+
+// encryptForWrite 在写库前加密敏感字段，并写入哈希索引。
+// 返回 restore 函数用于恢复调用方对象中的明文字段，避免副作用污染上层逻辑。
+func (m *StudentVerificationModel) encryptForWrite(v *StudentVerification) (func(), error) {
+	if v == nil {
+		return nil, fmt.Errorf("verification is nil")
+	}
+
+	originalRealName := v.RealName
+	originalStudentID := v.StudentID
+	originalStudentIDHash := v.StudentIDHash
+
+	encryptedRealName, err := m.codec.Encrypt(sensitiveFieldRealName, v.RealName)
+	if err != nil {
+		return nil, fmt.Errorf("encrypt real_name failed: %w", err)
+	}
+	encryptedStudentID, err := m.codec.Encrypt(sensitiveFieldStudentID, v.StudentID)
+	if err != nil {
+		return nil, fmt.Errorf("encrypt student_id failed: %w", err)
+	}
+	studentIDHash, err := m.codec.HashStudentID(v.SchoolName, v.StudentID)
+	if err != nil {
+		return nil, fmt.Errorf("hash student_id failed: %w", err)
+	}
+
+	v.RealName = encryptedRealName
+	v.StudentID = encryptedStudentID
+	v.StudentIDHash = studentIDHash
+
+	restore := func() {
+		v.RealName = originalRealName
+		v.StudentID = originalStudentID
+		v.StudentIDHash = originalStudentIDHash
+	}
+	return restore, nil
+}
+
+// decryptAfterRead 在读库后解密敏感字段。
+func (m *StudentVerificationModel) decryptAfterRead(v *StudentVerification) error {
+	if v == nil {
+		return nil
+	}
+
+	realName, err := m.codec.Decrypt(sensitiveFieldRealName, v.RealName)
+	if err != nil {
+		return fmt.Errorf("decrypt real_name failed: %w", err)
+	}
+	studentID, err := m.codec.Decrypt(sensitiveFieldStudentID, v.StudentID)
+	if err != nil {
+		return fmt.Errorf("decrypt student_id failed: %w", err)
+	}
+
+	v.RealName = realName
+	v.StudentID = studentID
+	return nil
+}
+
+func (m *StudentVerificationModel) decryptListAfterRead(list []*StudentVerification) error {
+	for _, item := range list {
+		if err := m.decryptAfterRead(item); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // ============================================================================

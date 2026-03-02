@@ -37,9 +37,9 @@ func (l *LogoutLogic) Logout(in *pb.LogoutReq) (*pb.LogoutResponse, error) {
 		return &pb.LogoutResponse{}, nil
 	}
 
-	// 2. 将 AccessJwtId 加入黑名单
-	// key: token:blacklist:access:{accessJwtId}
-	accessBlacklistKey := fmt.Sprintf("token:blacklist:access:%s", claims.AccessJwtId)
+	// 2. 将 AccessToken 加入黑名单
+	// key: token:blacklist:access:{accessToken}
+	accessBlacklistKey := fmt.Sprintf("token:blacklist:access:%s", in.AccessToken)
 	// 计算剩余有效期
 	remain := time.Until(claims.ExpiresAt.Time)
 	if remain > 0 {
@@ -49,9 +49,9 @@ func (l *LogoutLogic) Logout(in *pb.LogoutReq) (*pb.LogoutResponse, error) {
 		}
 	}
 
-	// 3. 删除 RefreshJwtId
-	// key: token:refresh:{refreshJwtId}
-	refreshKey := fmt.Sprintf("token:refresh:%s", claims.RefreshJwtId)
+	// 3. 删除 RefreshToken
+	// key: token:refresh:user:{userId}
+	refreshKey := fmt.Sprintf("token:refresh:user:%d", claims.UserId)
 	err = l.svcCtx.Redis.Del(l.ctx, refreshKey).Err()
 	if err != nil {
 		l.Logger.Errorf("Del refresh token failed: %v", err)

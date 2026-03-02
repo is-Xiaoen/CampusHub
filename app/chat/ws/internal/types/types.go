@@ -45,14 +45,15 @@ type SendMessageData struct {
 
 // NewMessageData 新消息数据
 type NewMessageData struct {
-	MessageID  string `json:"message_id"`  // 消息ID
-	GroupID    string `json:"group_id"`    // 群聊ID
-	SenderID   uint64 `json:"sender_id"`   // 发送者ID
-	SenderName string `json:"sender_name"` // 发送者名称
-	MsgType    int32  `json:"msg_type"`    // 消息类型
-	Content    string `json:"content"`     // 内容
-	ImageURL   string `json:"image_url"`   // 图片URL
-	CreatedAt  int64  `json:"created_at"`  // 创建时间
+	MessageID    string `json:"message_id"`    // 消息ID
+	GroupID      string `json:"group_id"`      // 群聊ID
+	SenderID     uint64 `json:"sender_id"`     // 发送者ID
+	SenderName   string `json:"sender_name"`   // 发送者名称
+	SenderAvatar string `json:"sender_avatar"` // 发送者头像URL
+	MsgType      int32  `json:"msg_type"`      // 消息类型
+	Content      string `json:"content"`       // 内容
+	ImageURL     string `json:"image_url"`     // 图片URL
+	CreatedAt    int64  `json:"created_at"`    // 创建时间
 }
 
 // VerifyProgressData 认证进度通知数据
@@ -66,6 +67,14 @@ type VerifyProgressData struct {
 type ErrorData struct {
 	Code    int    `json:"code"`    // 错误码
 	Message string `json:"message"` // 错误信息
+}
+
+// NotificationData 系统通知数据
+type NotificationData struct {
+	NotificationID string `json:"notification_id"`
+	Type           string `json:"type"`
+	Title          string `json:"title"`
+	Content        string `json:"content"`
 }
 
 // AckData 确认数据

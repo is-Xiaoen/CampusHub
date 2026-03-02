@@ -55,6 +55,7 @@ func (l *MessageLogic) HandleAuth(client *hub.Client, msg *types.WSMessage) erro
 	// 设置客户端用户ID
 	client.SetUserID(userID)
 	client.SetAuthed(true)
+	client.GetHub().BindClientUser(client, userID)
 
 	// 发送认证成功消息
 	successData, _ := json.Marshal(map[string]string{"user_id": userID})
@@ -90,15 +91,17 @@ func (l *MessageLogic) HandleSendMessage(client *hub.Client, msg *types.WSMessag
 	}
 
 	// 构造新消息数据
+	senderName, senderAvatar := l.getUserInfo(senderID)
 	newMsgData := types.NewMessageData{
-		MessageID:  messageID,
-		GroupID:    sendData.GroupID,
-		SenderID:   senderID,
-		SenderName: l.getUserName(senderID), // 从缓存或 RPC 获取用户名
-		MsgType:    sendData.MsgType,
-		Content:    sendData.Content,
-		ImageURL:   sendData.ImageURL,
-		CreatedAt:  now,
+		MessageID:    messageID,
+		GroupID:      sendData.GroupID,
+		SenderID:     senderID,
+		SenderName:   senderName,
+		SenderAvatar: senderAvatar,
+		MsgType:      sendData.MsgType,
+		Content:      sendData.Content,
+		ImageURL:     sendData.ImageURL,
+		CreatedAt:    now,
 	}
 
 	// 1. 立即发送 ACK（快速响应，延迟 1-2ms）✅
@@ -161,15 +164,17 @@ func (l *MessageLogic) HandleSendMessageSync(client *hub.Client, msg *types.WSMe
 	}
 
 	// 构造新消息数据
+	senderName, senderAvatar := l.getUserInfo(senderID)
 	newMsgData := types.NewMessageData{
-		MessageID:  messageID,
-		GroupID:    sendData.GroupID,
-		SenderID:   senderID,
-		SenderName: l.getUserName(senderID),
-		MsgType:    sendData.MsgType,
-		Content:    sendData.Content,
-		ImageURL:   sendData.ImageURL,
-		CreatedAt:  now,
+		MessageID:    messageID,
+		GroupID:      sendData.GroupID,
+		SenderID:     senderID,
+		SenderName:   senderName,
+		SenderAvatar: senderAvatar,
+		MsgType:      sendData.MsgType,
+		Content:      sendData.Content,
+		ImageURL:     sendData.ImageURL,
+		CreatedAt:    now,
 	}
 
 	// 1. 先保存消息到数据库（同步，确保可靠性）
@@ -218,6 +223,12 @@ func (l *MessageLogic) HandleSendMessageSync(client *hub.Client, msg *types.WSMe
 
 // autoJoinUserGroups 自动加入用户的所有群聊
 func (l *MessageLogic) autoJoinUserGroups(client *hub.Client, userID string) {
+	defer func() {
+		if r := recover(); r != nil {
+			logx.Errorf("autoJoinUserGroups panic, userID=%s: %v", userID, r)
+		}
+	}()
+
 	// 将 string 类型的 UserID 转换为 uint64
 	userIDUint, err := strconv.ParseUint(userID, 10, 64)
 	if err != nil {
@@ -244,11 +255,11 @@ func (l *MessageLogic) autoJoinUserGroups(client *hub.Client, userID string) {
 	logx.Infof("用户 %s 自动加入了 %d 个群聊", userID, len(resp.Groups))
 }
 
-// getUserName 获取用户名（带缓存）
-func (l *MessageLogic) getUserName(userID uint64) string {
+// getUserInfo 获取用户名和头像（带缓存）
+func (l *MessageLogic) getUserInfo(userID uint64) (name string, avatar string) {
 	// 1. 先从缓存查询
-	if name, ok := l.svcCtx.UserCache.Get(userID); ok {
-		return name
+	if n, a, ok := l.svcCtx.UserCache.GetUserInfo(userID); ok {
+		return n, a
 	}
 
 	// 2. 缓存未命中，调用 RPC
@@ -257,19 +268,20 @@ func (l *MessageLogic) getUserName(userID uint64) string {
 	})
 	if err != nil {
 		logx.Errorf("调用用户服务获取用户信息失败: %v", err)
-		return "用户" // 降级处理
+		return "用户", "" // 降级处理
 	}
 
 	if len(resp.Users) == 0 {
 		logx.Infof("用户 %d 不存在", userID)
-		return "用户" // 降级处理
+		return "用户", "" // 降级处理
 	}
 
-	name := resp.Users[0].Nickname
+	name = resp.Users[0].Nickname
+	avatar = resp.Users[0].AvatarUrl
 	// 3. 写入缓存（TTL 5分钟）
-	if err := l.svcCtx.UserCache.Set(userID, name, 5*time.Minute); err != nil {
+	if err := l.svcCtx.UserCache.SetUserInfo(userID, name, avatar, 5*time.Minute); err != nil {
 		logx.Errorf("写入用户缓存失败: %v", err)
 	}
 
-	return name
+	return name, avatar
 }

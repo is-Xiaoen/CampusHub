@@ -4,13 +4,13 @@
 package types
 
 type ApplyVerifyReq struct {
-	RealName      string `form:"real_name"`
-	SchoolName    string `form:"school_name"`
-	StudentId     string `form:"student_id"`
-	Department    string `form:"department"`
-	AdmissionYear string `form:"admission_year"`
-	FrontImageUrl string `form:"front_image_url"`
-	BackImageUrl  string `form:"back_image_url"`
+	RealName      string `json:"real_name"`
+	SchoolName    string `json:"school_name"`
+	StudentId     string `json:"student_id"`
+	Department    string `json:"department"`
+	AdmissionYear string `json:"admission_year"`
+	FrontImageUrl string `json:"front_image_url"`
+	BackImageUrl  string `json:"back_image_url"`
 }
 
 type ApplyVerifyResp struct {
@@ -207,13 +207,13 @@ type UpdateInterestResp struct {
 }
 
 type UpdateUserInfoReq struct {
-	Age            int64   `form:"age,optional"`
-	Nickname       string  `form:"nickname,optional"`
-	Introduction   string  `form:"introduction,optional"`
-	Gender         string  `form:"gender,optional"`
-	AvatarId       int64   `form:"avatarId,optional"`
-	AvatarUrl      string  `form:"avatarUrl,optional"`
-	InterestTagIds []int64 `form:"interestTagIds,optional"`
+	Age            int64   `json:"age"`
+	Nickname       string  `json:"nickname"`
+	Introduction   string  `json:"introduction"`
+	Gender         string  `json:"gender"`
+	AvatarId       int64   `json:"avatarId"`
+	AvatarUrl      string  `json:"avatarUrl"`
+	InterestTagIds []int64 `json:"interestTagIds"`
 }
 
 type UpdateUserInfoResp struct {

@@ -24,8 +24,8 @@ var (
 
 // Hub 连接管理中心
 type Hub struct {
-	// 已注册的客户端
-	clients map[string]*Client // userID -> Client
+	// 已注册的客户端（支持多端同时在线）
+	clients map[string]map[*Client]bool // userID -> set of clients
 
 	// 群聊订阅 (groupID -> clients)
 	groups map[string]map[*Client]bool
@@ -57,7 +57,7 @@ type MessageHandler interface {
 // NewHub 创建新的 Hub
 func NewHub(handler MessageHandler, messagingClient *messaging.Client, redisClient *redis.Client) *Hub {
 	return &Hub{
-		clients:         make(map[string]*Client),
+		clients:         make(map[string]map[*Client]bool),
 		groups:          make(map[string]map[*Client]bool),
 		register:        make(chan *Client),
 		unregister:      make(chan *Client),
@@ -98,17 +98,30 @@ func (h *Hub) registerClient(client *Client) {
 	defer h.mu.Unlock()
 
 	if client.userID != "" {
-		// 如果用户已有连接，关闭旧连接
-		if oldClient, exists := h.clients[client.userID]; exists {
-			close(oldClient.send)
+		if _, exists := h.clients[client.userID]; !exists {
+			h.clients[client.userID] = make(map[*Client]bool)
 		}
-		h.clients[client.userID] = client
-
-		// 更新用户在线状态到 Redis
+		h.clients[client.userID][client] = true
 		h.updateUserStatus(client.userID, true)
-
 		logx.Infof("用户 %s 已连接", client.userID)
 	}
+}
+
+// BindClientUser 在客户端认证成功后将连接绑定到用户，支持多端同时在线。
+func (h *Hub) BindClientUser(client *Client, userID string) {
+	if client == nil || userID == "" {
+		return
+	}
+
+	h.mu.Lock()
+	if _, exists := h.clients[userID]; !exists {
+		h.clients[userID] = make(map[*Client]bool)
+	}
+	h.clients[userID][client] = true
+	h.updateUserStatus(userID, true)
+	h.mu.Unlock()
+
+	logx.Infof("用户 %s 新增连接，当前连接数: %d", userID, len(h.clients[userID]))
 }
 
 // unregisterClient 注销客户端
@@ -117,26 +130,31 @@ func (h *Hub) unregisterClient(client *Client) {
 	defer h.mu.Unlock()
 
 	if client.userID != "" {
-		if _, exists := h.clients[client.userID]; exists {
-			delete(h.clients, client.userID)
-			close(client.send)
+		if userClients, exists := h.clients[client.userID]; exists {
+			delete(userClients, client)
+			if len(userClients) == 0 {
+				// 最后一个连接断开，标记用户离线
+				delete(h.clients, client.userID)
+				h.updateUserStatus(client.userID, false)
+				logx.Infof("用户 %s 所有连接已断开，标记离线", client.userID)
+			} else {
+				logx.Infof("用户 %s 断开一个连接，剩余 %d 个连接", client.userID, len(userClients))
+			}
+		}
 
-			// 从所有群聊中移除
-			for groupID := range client.groups {
-				if clients, ok := h.groups[groupID]; ok {
-					delete(clients, client)
-					if len(clients) == 0 {
-						delete(h.groups, groupID)
-					}
+		// 从所有群聊中移除该连接
+		for groupID := range client.groups {
+			if clients, ok := h.groups[groupID]; ok {
+				delete(clients, client)
+				if len(clients) == 0 {
+					delete(h.groups, groupID)
 				}
 			}
-
-			// 更新用户离线状态到 Redis
-			h.updateUserStatus(client.userID, false)
-
-			logx.Infof("用户 %s 已断开连接", client.userID)
 		}
 	}
+
+	// 始终关闭 send 通道，防止 WritePump goroutine 泄漏
+	close(client.send)
 }
 
 // handleClientMessage 处理客户端消息
@@ -190,17 +208,23 @@ func (h *Hub) BroadcastToGroup(groupID string, msg *types.WSMessage) {
 	}
 }
 
-// SendToUser 发送消息给指定用户
+// SendToUser 发送消息给指定用户的所有在线连接
 func (h *Hub) SendToUser(userID string, msg *types.WSMessage) error {
 	h.mu.RLock()
-	client, ok := h.clients[userID]
+	userClients, ok := h.clients[userID]
 	h.mu.RUnlock()
 
-	if !ok {
+	if !ok || len(userClients) == 0 {
 		return ErrUserNotOnline
 	}
 
-	return client.SendMessage(msg)
+	var lastErr error
+	for client := range userClients {
+		if err := client.SendMessage(msg); err != nil {
+			lastErr = err
+		}
+	}
+	return lastErr
 }
 
 // subscribeMessages 订阅消息中间件的消息
@@ -231,12 +255,15 @@ func (h *Hub) subscribeMessages(ctx context.Context) {
 			return messaging.NewNonRetryableError(err)
 		}
 
+		userIDStr := fmt.Sprintf("%d", event.UserID)
 		h.mu.RLock()
-		client, ok := h.clients[fmt.Sprintf("%d", event.UserID)]
+		userClients, ok := h.clients[userIDStr]
 		h.mu.RUnlock()
 
 		if ok {
-			h.AddClientToGroup(client, event.GroupID)
+			for client := range userClients {
+				h.AddClientToGroup(client, event.GroupID)
+			}
 			logx.Infof("用户 %d 自动订阅群聊 %s", event.UserID, event.GroupID)
 		}
 		return nil
@@ -249,12 +276,15 @@ func (h *Hub) subscribeMessages(ctx context.Context) {
 			return messaging.NewNonRetryableError(err)
 		}
 
+		userIDStr := fmt.Sprintf("%d", event.UserID)
 		h.mu.RLock()
-		client, ok := h.clients[fmt.Sprintf("%d", event.UserID)]
+		userClients, ok := h.clients[userIDStr]
 		h.mu.RUnlock()
 
 		if ok {
-			h.RemoveClientFromGroup(client, event.GroupID)
+			for client := range userClients {
+				h.RemoveClientFromGroup(client, event.GroupID)
+			}
 			logx.Infof("用户 %d 自动取消订阅群聊 %s", event.UserID, event.GroupID)
 		}
 		return nil
@@ -300,6 +330,41 @@ func (h *Hub) subscribeMessages(ctx context.Context) {
 			return err
 		}
 
+		return nil
+	})
+
+	// 订阅系统通知推送事件
+	h.messagingClient.Subscribe(messaging.TopicNotificationPush, "ws-notification-push-handler", func(msg *message.Message) error {
+		var event messaging.NotificationPushEventData
+		if err := json.Unmarshal(msg.Payload, &event); err != nil {
+			return messaging.NewNonRetryableError(err)
+		}
+
+		dataBytes, err := json.Marshal(types.NotificationData{
+			NotificationID: event.NotificationID,
+			Type:           event.Type,
+			Title:          event.Title,
+			Content:        event.Content,
+		})
+		if err != nil {
+			return messaging.NewNonRetryableError(err)
+		}
+
+		wsMsg := &types.WSMessage{
+			Type:      types.TypeNotification,
+			MessageID: fmt.Sprintf("notif_%s", event.NotificationID),
+			Timestamp: event.Timestamp,
+			Data:      dataBytes,
+		}
+
+		userID := fmt.Sprintf("%d", event.UserID)
+		if err := h.SendToUser(userID, wsMsg); err != nil {
+			if err == ErrUserNotOnline {
+				logx.Infof("用户 %s 不在线，跳过通知推送: %s", userID, event.NotificationID)
+				return nil
+			}
+			return err
+		}
 		return nil
 	})
 

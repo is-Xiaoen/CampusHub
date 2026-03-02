@@ -62,11 +62,12 @@ func (p *Producer) publishAsync(topic string, payload interface{}) {
 // ==================== 活动事件（Chat MQ 消费）====================
 
 // PublishActivityCreated 发布活动创建事件
-func (p *Producer) PublishActivityCreated(ctx context.Context, activityID uint64, creatorID uint64, title string) {
+func (p *Producer) PublishActivityCreated(ctx context.Context, activityID uint64, creatorID uint64, title string, coverUrl string) {
 	p.publishAsync(messaging.TopicActivityCreated, messaging.ActivityCreatedEvent{
 		ActivityID: activityID,
 		CreatorID:  creatorID,
 		Title:      title,
+		CoverUrl:   coverUrl,
 		CreatedAt:  time.Now(),
 	})
 }
