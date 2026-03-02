@@ -17,7 +17,6 @@ import (
 	"activity-platform/common/utils/encrypt"
 	"activity-platform/common/utils/jwt"
 
-	"github.com/google/uuid"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -70,28 +69,25 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 	}
 
 	// 3. 生成Token
-	accessJwtId := uuid.New().String()
-	refreshJwtId := uuid.New().String()
-
 	shortToken, err := jwt.GenerateShortToken(user.UserID, jwt.RoleUser, jwt.AuthConfig{
 		Secret: l.svcCtx.Config.JWT.AccessSecret,
 		Expire: l.svcCtx.Config.JWT.AccessExpire,
-	}, accessJwtId, refreshJwtId)
+	})
 	if err != nil {
 		return nil, errorx.New(errorx.CodeTokenGenerateFailed)
 	}
 	longToken, err := jwt.GenerateLongToken(user.UserID, jwt.RoleUser, jwt.AuthConfig{
 		Secret: l.svcCtx.Config.JWT.RefreshSecret,
 		Expire: l.svcCtx.Config.JWT.RefreshExpire,
-	}, accessJwtId, refreshJwtId)
+	})
 	if err != nil {
 		return nil, errorx.New(errorx.CodeTokenGenerateFailed)
 	}
 
 	// 记录长token到redis
-	// key: token:refresh:{refreshJwtId}  value: userId
-	refreshTokenKey := fmt.Sprintf("token:refresh:%s", refreshJwtId)
-	if err := l.svcCtx.Redis.Set(l.ctx, refreshTokenKey, user.UserID, time.Duration(l.svcCtx.Config.JWT.RefreshExpire)*time.Second).Err(); err != nil {
+	// key: token:refresh:user:{userId}  value: refreshToken
+	refreshTokenKey := fmt.Sprintf("token:refresh:user:%d", user.UserID)
+	if err := l.svcCtx.Redis.Set(l.ctx, refreshTokenKey, longToken.Token, time.Duration(l.svcCtx.Config.JWT.RefreshExpire)*time.Second).Err(); err != nil {
 		l.Logger.Errorf("刷新令牌写入Redis失败: %v", err)
 		return nil, errorx.ErrCacheError(err)
 	}

@@ -33,10 +33,8 @@ type AuthConfig struct {
 }
 
 type Claims struct {
-	UserId       int64  `json:"userId"`
-	Role         Role   `json:"role"`
-	AccessJwtId  string `json:"accessJwtId"`
-	RefreshJwtId string `json:"refreshJwtId"`
+	UserId int64 `json:"userId"`
+	Role   Role  `json:"role"`
 	jwt.RegisteredClaims
 }
 
@@ -45,12 +43,12 @@ type TokenResult struct {
 	ExpireAt int64
 }
 
-func GenerateShortToken(userId int64, role Role, cfg AuthConfig, accessId, refreshId string) (TokenResult, error) {
-	return generateToken(userId, role, cfg, time.Now(), accessId, refreshId)
+func GenerateShortToken(userId int64, role Role, cfg AuthConfig) (TokenResult, error) {
+	return generateToken(userId, role, cfg, time.Now())
 }
 
-func GenerateLongToken(userId int64, role Role, cfg AuthConfig, accessId, refreshId string) (TokenResult, error) {
-	return generateToken(userId, role, cfg, time.Now(), accessId, refreshId)
+func GenerateLongToken(userId int64, role Role, cfg AuthConfig) (TokenResult, error) {
+	return generateToken(userId, role, cfg, time.Now())
 }
 
 func IsAdmin(ctx context.Context) bool {
@@ -95,7 +93,7 @@ func ValidateRole(role Role) error {
 	return nil
 }
 
-func generateToken(userId int64, role Role, cfg AuthConfig, now time.Time, accessId, refreshId string) (TokenResult, error) {
+func generateToken(userId int64, role Role, cfg AuthConfig, now time.Time) (TokenResult, error) {
 	if err := ValidateRole(role); err != nil {
 		return TokenResult{}, err
 	}
@@ -105,10 +103,8 @@ func generateToken(userId int64, role Role, cfg AuthConfig, now time.Time, acces
 
 	expireAt := now.Add(time.Duration(cfg.Expire) * time.Second)
 	claims := Claims{
-		UserId:       userId,
-		Role:         role,
-		AccessJwtId:  accessId,
-		RefreshJwtId: refreshId,
+		UserId: userId,
+		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(expireAt),
@@ -141,13 +137,8 @@ func ParseToken(tokenString string, secret string) (*Claims, error) {
 	return nil, errors.New("invalid token")
 }
 
-func CheckTokenBlacklist(ctx context.Context, rdb *redis.Client, tokenStr string, secret string) (bool, error) {
-	claims, err := ParseToken(tokenStr, secret)
-	if err != nil {
-		return false, err
-	}
-
-	key := fmt.Sprintf("token:blacklist:access:%s", claims.AccessJwtId)
+func CheckTokenBlacklist(ctx context.Context, rdb *redis.Client, tokenStr string) (bool, error) {
+	key := fmt.Sprintf("token:blacklist:access:%s", tokenStr)
 	exists, err := rdb.Exists(ctx, key).Result()
 	if err != nil {
 		return false, err

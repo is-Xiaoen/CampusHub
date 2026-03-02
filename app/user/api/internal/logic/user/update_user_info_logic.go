@@ -51,9 +51,9 @@ func (l *UpdateUserInfoLogic) UpdateUserInfo(req *types.UpdateUserInfoReq) (resp
 	}
 
 	var genderInt int64
-	if gender == "男" || gender == "1" {
+	if gender == "男" {
 		genderInt = 1
-	} else if gender == "女" || gender == "2" {
+	} else if gender == "女" {
 		genderInt = 2
 	} else {
 		return nil, errorx.NewWithMessage(errorx.CodeInvalidParams, "性别只能是男或女")
