@@ -15,7 +15,6 @@ import (
 	"activity-platform/common/utils/encrypt"
 	"activity-platform/common/utils/jwt"
 
-	"github.com/google/uuid"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -101,13 +100,10 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 	}
 
 	// 4. 生成Token (自动登录)
-	accessJwtId := uuid.New().String()
-	refreshJwtId := uuid.New().String()
-
 	shortToken, err := jwt.GenerateShortToken(newUser.UserID, jwt.RoleUser, jwt.AuthConfig{
 		Secret: l.svcCtx.Config.JWT.AccessSecret,
 		Expire: l.svcCtx.Config.JWT.AccessExpire,
-	}, accessJwtId, refreshJwtId)
+	})
 	if err != nil {
 		l.Logger.Errorf("Generate short token failed: %v", err)
 		return nil, errorx.New(errorx.CodeTokenGenerateFailed)
@@ -115,16 +111,16 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 	longToken, err := jwt.GenerateLongToken(newUser.UserID, jwt.RoleUser, jwt.AuthConfig{
 		Secret: l.svcCtx.Config.JWT.RefreshSecret,
 		Expire: l.svcCtx.Config.JWT.RefreshExpire,
-	}, accessJwtId, refreshJwtId)
+	})
 	if err != nil {
 		l.Logger.Errorf("Generate long token failed: %v", err)
 		return nil, errorx.New(errorx.CodeTokenGenerateFailed)
 	}
 
 	// 记录长token到redis
-	// key: token:refresh:{refreshJwtId}  value: userId
-	refreshTokenKey := fmt.Sprintf("token:refresh:%s", refreshJwtId)
-	if err := l.svcCtx.Redis.Set(l.ctx, refreshTokenKey, newUser.UserID, time.Duration(l.svcCtx.Config.JWT.RefreshExpire)*time.Second).Err(); err != nil {
+	// key: token:refresh:user:{userId}  value: refreshToken
+	refreshTokenKey := fmt.Sprintf("token:refresh:user:%d", newUser.UserID)
+	if err := l.svcCtx.Redis.Set(l.ctx, refreshTokenKey, longToken.Token, time.Duration(l.svcCtx.Config.JWT.RefreshExpire)*time.Second).Err(); err != nil {
 		l.Logger.Errorf("Set refresh token to redis failed: %v", err)
 		// 不影响主流程，因为已经注册成功且返回了token
 	}
@@ -150,6 +146,7 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 			UserId:        uint64(newUser.UserID),
 			Nickname:      newUser.Nickname,
 			AvatarUrl:     avatarURL,
+			AvatarId:      newUser.AvatarID,
 			Introduction:  newUser.Introduction,
 			Gender:        "未知",
 			Age:           strconv.FormatInt(newUser.Age, 10),

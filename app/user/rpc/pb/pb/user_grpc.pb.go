@@ -407,7 +407,7 @@ type VerifyServiceClient interface {
 	GetVerifyCurrent(ctx context.Context, in *GetVerifyCurrentReq, opts ...grpc.CallOption) (*GetVerifyCurrentResp, error)
 	// GetVerifyInfo 获取已通过的认证信息
 	// 调用方: User API（个人中心-认证信息页面）
-	// 业务逻辑: 仅返回已通过认证用户的脱敏信息
+	// 业务逻辑: 仅返回已通过认证用户的信息（用户侧姓名/学号全量回显）
 	GetVerifyInfo(ctx context.Context, in *GetVerifyInfoReq, opts ...grpc.CallOption) (*GetVerifyInfoResp, error)
 	// IsVerified 查询用户是否已完成学生认证
 	// 调用方: Activity服务（报名/发布活动前校验）
@@ -544,7 +544,7 @@ type VerifyServiceServer interface {
 	GetVerifyCurrent(context.Context, *GetVerifyCurrentReq) (*GetVerifyCurrentResp, error)
 	// GetVerifyInfo 获取已通过的认证信息
 	// 调用方: User API（个人中心-认证信息页面）
-	// 业务逻辑: 仅返回已通过认证用户的脱敏信息
+	// 业务逻辑: 仅返回已通过认证用户的信息（用户侧姓名/学号全量回显）
 	GetVerifyInfo(context.Context, *GetVerifyInfoReq) (*GetVerifyInfoResp, error)
 	// IsVerified 查询用户是否已完成学生认证
 	// 调用方: Activity服务（报名/发布活动前校验）

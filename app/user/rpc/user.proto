@@ -1009,6 +1009,7 @@ message UserInfo {
     bool is_student_verified = 10; // 对应 "isStudentVerified"
     repeated InterestTag interest_tags = 11; // 对应 "interestTags" 列表
     string qq_email = 12; // 对应 "qqEmail"
+    int64 avatar_id = 13; // 对应 "avatarId"
 }
 
 // 刷新token

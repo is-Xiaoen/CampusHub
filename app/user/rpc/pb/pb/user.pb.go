@@ -1261,11 +1261,11 @@ type GetVerifyInfoResp struct {
 	IsVerified bool `protobuf:"varint,1,opt,name=is_verified,json=isVerified,proto3" json:"is_verified,omitempty"`
 	// 认证ID
 	VerifyId int64 `protobuf:"varint,2,opt,name=verify_id,json=verifyId,proto3" json:"verify_id,omitempty"`
-	// 真实姓名（脱敏：张*）
+	// 真实姓名（全量回显）
 	RealName string `protobuf:"bytes,3,opt,name=real_name,json=realName,proto3" json:"real_name,omitempty"`
 	// 学校名称
 	SchoolName string `protobuf:"bytes,4,opt,name=school_name,json=schoolName,proto3" json:"school_name,omitempty"`
-	// 学号（脱敏：202301****）
+	// 学号（全量回显）
 	StudentId string `protobuf:"bytes,5,opt,name=student_id,json=studentId,proto3" json:"student_id,omitempty"`
 	// 院系
 	Department string `protobuf:"bytes,6,opt,name=department,proto3" json:"department,omitempty"`
@@ -5105,6 +5105,7 @@ type UserInfo struct {
 	IsStudentVerified bool                   `protobuf:"varint,10,opt,name=is_student_verified,json=isStudentVerified,proto3" json:"is_student_verified,omitempty"` // 对应 "isStudentVerified"
 	InterestTags      []*InterestTag         `protobuf:"bytes,11,rep,name=interest_tags,json=interestTags,proto3" json:"interest_tags,omitempty"`                   // 对应 "interestTags" 列表
 	QqEmail           string                 `protobuf:"bytes,12,opt,name=qq_email,json=qqEmail,proto3" json:"qq_email,omitempty"`                                  // 对应 "qqEmail"
+	AvatarId          int64                  `protobuf:"varint,13,opt,name=avatar_id,json=avatarId,proto3" json:"avatar_id,omitempty"`                              // 对应 "avatarId"
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -5221,6 +5222,13 @@ func (x *UserInfo) GetQqEmail() string {
 		return x.QqEmail
 	}
 	return ""
+}
+
+func (x *UserInfo) GetAvatarId() int64 {
+	if x != nil {
+		return x.AvatarId
+	}
+	return 0
 }
 
 // 刷新token
@@ -6803,7 +6811,7 @@ const file_user_proto_rawDesc = "" +
 	"\btag_name\x18\x02 \x01(\tR\atagName\x12\x19\n" +
 	"\btag_icon\x18\x03 \x01(\tR\atagIcon\x12\x19\n" +
 	"\btag_desc\x18\x04 \x01(\tR\atagDesc\x12\x1b\n" +
-	"\ttag_color\x18\x05 \x01(\tR\btagColor\"\x91\x03\n" +
+	"\ttag_color\x18\x05 \x01(\tR\btagColor\"\xae\x03\n" +
 	"\bUserInfo\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x04R\x06userId\x12\x1a\n" +
 	"\bnickname\x18\x02 \x01(\tR\bnickname\x12\x1d\n" +
@@ -6818,7 +6826,8 @@ const file_user_proto_rawDesc = "" +
 	"\x13is_student_verified\x18\n" +
 	" \x01(\bR\x11isStudentVerified\x126\n" +
 	"\rinterest_tags\x18\v \x03(\v2\x11.user.InterestTagR\finterestTags\x12\x19\n" +
-	"\bqq_email\x18\f \x01(\tR\aqqEmail\"1\n" +
+	"\bqq_email\x18\f \x01(\tR\aqqEmail\x12\x1b\n" +
+	"\tavatar_id\x18\r \x01(\x03R\bavatarId\"1\n" +
 	"\n" +
 	"RefreshReq\x12#\n" +
 	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"4\n" +

@@ -58,7 +58,7 @@ func (m *RoleAuthMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 			parts := strings.Split(token, " ")
 			if len(parts) == 2 && parts[0] == "Bearer" {
 				token = parts[1]
-				isBlacklisted, _ := jwt.CheckTokenBlacklist(r.Context(), m.redis, token, m.accessSecret)
+				isBlacklisted, _ := jwt.CheckTokenBlacklist(r.Context(), m.redis, token)
 				if isBlacklisted {
 					response.Fail(w, errorx.ErrInvalidToken())
 					return
