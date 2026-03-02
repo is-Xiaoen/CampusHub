@@ -135,6 +135,7 @@ func (l *GetUserInfoLogic) GetUserInfo(in *pb.GetUserInfoReq) (*pb.GetUserInfoRe
 			UserId:            uint64(user.UserID),
 			Nickname:          user.Nickname,
 			AvatarUrl:         avatarUrl,
+			AvatarId:          user.AvatarID,
 			Introduction:      user.Introduction,
 			Gender:            genderStr,
 			Age:               strconv.FormatInt(user.Age, 10),

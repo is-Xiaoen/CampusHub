@@ -62,6 +62,7 @@ func (l *GetUserInfoLogic) GetUserInfo() (resp *types.UserInfo, err error) {
 		UserId:            int64(userInfo.UserId),
 		Nickname:          userInfo.Nickname,
 		AvatarUrl:         userInfo.AvatarUrl,
+		AvatarId:          userInfo.AvatarId,
 		Introduction:      userInfo.Introduction,
 		Gender:            userInfo.Gender,
 		Age:               userInfo.Age,

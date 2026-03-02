@@ -139,6 +139,7 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 				UserId:       uint64(user.UserID),
 				Nickname:     user.Nickname,
 				AvatarUrl:    avatarURL,
+				AvatarId:     user.AvatarID,
 				Introduction: user.Introduction,
 				Gender:       genderStr,
 				Age:          strconv.FormatInt(user.Age, 10),
