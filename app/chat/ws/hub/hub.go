@@ -111,29 +111,57 @@ func (h *Hub) registerClient(client *Client) {
 	}
 }
 
+// BindClientUser 在客户端认证成功后绑定 userID 到在线连接映射。
+// 认证发生在连接建立之后，因此不能只依赖 registerClient 的首次注册。
+func (h *Hub) BindClientUser(client *Client, userID string) {
+	if client == nil || userID == "" {
+		return
+	}
+
+	var oldClientToClose *Client
+
+	h.mu.Lock()
+	// 同一用户重复连接时，保留新连接并关闭旧连接。
+	if oldClient, exists := h.clients[userID]; exists && oldClient != client {
+		oldClientToClose = oldClient
+	}
+	h.clients[userID] = client
+	h.updateUserStatus(userID, true)
+	h.mu.Unlock()
+
+	// 触发旧连接退出；send 通道关闭由 unregisterClient 统一处理。
+	if oldClientToClose != nil {
+		_ = oldClientToClose.conn.Close()
+	}
+
+	logx.Infof("用户 %s 已认证并绑定连接", userID)
+}
+
 // unregisterClient 注销客户端
 func (h *Hub) unregisterClient(client *Client) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
 	if client.userID != "" {
-		if _, exists := h.clients[client.userID]; exists {
+		if current, exists := h.clients[client.userID]; exists && current == client {
 			delete(h.clients, client.userID)
-			close(client.send)
+		}
 
-			// 从所有群聊中移除
-			for groupID := range client.groups {
-				if clients, ok := h.groups[groupID]; ok {
-					delete(clients, client)
-					if len(clients) == 0 {
-						delete(h.groups, groupID)
-					}
+		close(client.send)
+
+		// 从所有群聊中移除
+		for groupID := range client.groups {
+			if clients, ok := h.groups[groupID]; ok {
+				delete(clients, client)
+				if len(clients) == 0 {
+					delete(h.groups, groupID)
 				}
 			}
+		}
 
-			// 更新用户离线状态到 Redis
+		// 仅当当前映射就是该连接时才更新为离线，避免旧连接误覆盖新连接状态。
+		if current, exists := h.clients[client.userID]; !exists || current == client {
 			h.updateUserStatus(client.userID, false)
-
 			logx.Infof("用户 %s 已断开连接", client.userID)
 		}
 	}
@@ -300,6 +328,41 @@ func (h *Hub) subscribeMessages(ctx context.Context) {
 			return err
 		}
 
+		return nil
+	})
+
+	// 订阅系统通知推送事件
+	h.messagingClient.Subscribe(messaging.TopicNotificationPush, "ws-notification-push-handler", func(msg *message.Message) error {
+		var event messaging.NotificationPushEventData
+		if err := json.Unmarshal(msg.Payload, &event); err != nil {
+			return messaging.NewNonRetryableError(err)
+		}
+
+		dataBytes, err := json.Marshal(types.NotificationData{
+			NotificationID: event.NotificationID,
+			Type:           event.Type,
+			Title:          event.Title,
+			Content:        event.Content,
+		})
+		if err != nil {
+			return messaging.NewNonRetryableError(err)
+		}
+
+		wsMsg := &types.WSMessage{
+			Type:      types.TypeNotification,
+			MessageID: fmt.Sprintf("notif_%s", event.NotificationID),
+			Timestamp: event.Timestamp,
+			Data:      dataBytes,
+		}
+
+		userID := fmt.Sprintf("%d", event.UserID)
+		if err := h.SendToUser(userID, wsMsg); err != nil {
+			if err == ErrUserNotOnline {
+				logx.Infof("用户 %s 不在线，跳过通知推送: %s", userID, event.NotificationID)
+				return nil
+			}
+			return err
+		}
 		return nil
 	})
 

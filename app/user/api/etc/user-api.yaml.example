@@ -14,6 +14,7 @@
 Name: user-api
 Host: 127.0.0.1
 Port: 8001
+Timeout: 15000 # API 超时时间(ms)，上传图片场景建议放宽
 
 # 日志配置
 Log:
@@ -34,7 +35,9 @@ UserRpc:
       - 127.0.0.1:2379
     Key: user.rpc
   NonBlock: true
-  Timeout: 3000
+  Timeout: 10000
+  Middlewares:
+    Duration: false # 上传失败时避免日志打印二进制请求体
 
 # ==================== Redis 配置 ====================
 BizRedis:

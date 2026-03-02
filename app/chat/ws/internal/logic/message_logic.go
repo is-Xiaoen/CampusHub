@@ -55,6 +55,7 @@ func (l *MessageLogic) HandleAuth(client *hub.Client, msg *types.WSMessage) erro
 	// 设置客户端用户ID
 	client.SetUserID(userID)
 	client.SetAuthed(true)
+	client.GetHub().BindClientUser(client, userID)
 
 	// 发送认证成功消息
 	successData, _ := json.Marshal(map[string]string{"user_id": userID})

@@ -12,6 +12,7 @@ package verify
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"activity-platform/app/user/api/internal/svc"
@@ -50,7 +51,12 @@ func (l *ApplyVerifyLogic) ApplyVerify(req *types.ApplyVerifyReq) (resp *types.A
 		return nil, errorx.ErrUnauthorized()
 	}
 
-	// 2. 调用 VerifyServiceRpc 提交认证申请（使用请求中的 URL）
+	// 2. 参数校验
+	if err := l.validateParams(req); err != nil {
+		return nil, err
+	}
+
+	// 3. 调用 VerifyServiceRpc 提交认证申请（使用请求中的 URL）
 	rpcResp, err := l.svcCtx.VerifyServiceRpc.ApplyStudentVerify(l.ctx,
 		&verifyservice.ApplyStudentVerifyReq{
 			UserId:        userId,
@@ -67,7 +73,7 @@ func (l *ApplyVerifyLogic) ApplyVerify(req *types.ApplyVerifyReq) (resp *types.A
 		return nil, errorx.FromError(err)
 	}
 
-	// 3. 转换 RPC 响应为 API 响应
+	// 4. 转换 RPC 响应为 API 响应
 	resp = &types.ApplyVerifyResp{
 		VerifyId:   rpcResp.VerifyId,
 		Status:     rpcResp.Status,
@@ -79,4 +85,29 @@ func (l *ApplyVerifyLogic) ApplyVerify(req *types.ApplyVerifyReq) (resp *types.A
 		userId, resp.VerifyId, resp.Status)
 
 	return resp, nil
+}
+
+func (l *ApplyVerifyLogic) validateParams(req *types.ApplyVerifyReq) error {
+	if strings.TrimSpace(req.RealName) == "" {
+		return errorx.ErrInvalidParams("姓名不能为空")
+	}
+	if strings.TrimSpace(req.SchoolName) == "" {
+		return errorx.ErrInvalidParams("学校名称不能为空")
+	}
+	if strings.TrimSpace(req.StudentId) == "" {
+		return errorx.ErrInvalidParams("学号不能为空")
+	}
+	if strings.TrimSpace(req.Department) == "" {
+		return errorx.ErrInvalidParams("院系不能为空")
+	}
+	if strings.TrimSpace(req.AdmissionYear) == "" {
+		return errorx.ErrInvalidParams("入学年份不能为空")
+	}
+	if strings.TrimSpace(req.FrontImageUrl) == "" {
+		return errorx.ErrInvalidParams("学生证正面图片不能为空")
+	}
+	if strings.TrimSpace(req.BackImageUrl) == "" {
+		return errorx.ErrInvalidParams("学生证详情面图片不能为空")
+	}
+	return nil
 }
