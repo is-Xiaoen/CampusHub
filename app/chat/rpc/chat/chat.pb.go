@@ -28,6 +28,7 @@ type CreateGroupReq struct {
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`                                // 群聊名称
 	OwnerId       uint64                 `protobuf:"varint,3,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`          // 群主用户ID
 	MaxMembers    int32                  `protobuf:"varint,4,opt,name=max_members,json=maxMembers,proto3" json:"max_members,omitempty"` // 最大成员数，默认500
+	CoverUrl      string                 `protobuf:"bytes,5,opt,name=cover_url,json=coverUrl,proto3" json:"cover_url,omitempty"`        // 封面图URL（活动封面）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -88,6 +89,13 @@ func (x *CreateGroupReq) GetMaxMembers() int32 {
 		return x.MaxMembers
 	}
 	return 0
+}
+
+func (x *CreateGroupReq) GetCoverUrl() string {
+	if x != nil {
+		return x.CoverUrl
+	}
+	return ""
 }
 
 // CreateGroupResp 创建群聊响应
@@ -895,6 +903,7 @@ type UserGroupInfo struct {
 	JoinedAt      int64                  `protobuf:"varint,10,opt,name=joined_at,json=joinedAt,proto3" json:"joined_at,omitempty"`                  // 用户加入时间（时间戳）
 	LastMessage   string                 `protobuf:"bytes,11,opt,name=last_message,json=lastMessage,proto3" json:"last_message,omitempty"`          // 最后一条消息内容
 	LastMessageAt int64                  `protobuf:"varint,12,opt,name=last_message_at,json=lastMessageAt,proto3" json:"last_message_at,omitempty"` // 最后消息时间（时间戳）
+	CoverUrl      string                 `protobuf:"bytes,13,opt,name=cover_url,json=coverUrl,proto3" json:"cover_url,omitempty"`                   // 封面图URL（活动封面）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1011,6 +1020,13 @@ func (x *UserGroupInfo) GetLastMessageAt() int64 {
 		return x.LastMessageAt
 	}
 	return 0
+}
+
+func (x *UserGroupInfo) GetCoverUrl() string {
+	if x != nil {
+		return x.CoverUrl
+	}
+	return ""
 }
 
 // GetUserGroupsResp 获取用户群列表响应
@@ -2251,14 +2267,15 @@ var File_chat_proto protoreflect.FileDescriptor
 const file_chat_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"chat.proto\x12\x04chat\"\x81\x01\n" +
+	"chat.proto\x12\x04chat\"\x9e\x01\n" +
 	"\x0eCreateGroupReq\x12\x1f\n" +
 	"\vactivity_id\x18\x01 \x01(\x04R\n" +
 	"activityId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x19\n" +
 	"\bowner_id\x18\x03 \x01(\x04R\aownerId\x12\x1f\n" +
 	"\vmax_members\x18\x04 \x01(\x05R\n" +
-	"maxMembers\",\n" +
+	"maxMembers\x12\x1b\n" +
+	"\tcover_url\x18\x05 \x01(\tR\bcoverUrl\",\n" +
 	"\x0fCreateGroupResp\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\"[\n" +
 	"\x11AddGroupMemberReq\x12\x19\n" +
@@ -2311,7 +2328,7 @@ const file_chat_proto_rawDesc = "" +
 	"\x10GetUserGroupsReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x04R\x06userId\x12\x12\n" +
 	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\"\xf1\x02\n" +
+	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\"\x8e\x03\n" +
 	"\rUserGroupInfo\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x1f\n" +
 	"\vactivity_id\x18\x02 \x01(\x04R\n" +
@@ -2328,7 +2345,8 @@ const file_chat_proto_rawDesc = "" +
 	"\tjoined_at\x18\n" +
 	" \x01(\x03R\bjoinedAt\x12!\n" +
 	"\flast_message\x18\v \x01(\tR\vlastMessage\x12&\n" +
-	"\x0flast_message_at\x18\f \x01(\x03R\rlastMessageAt\"V\n" +
+	"\x0flast_message_at\x18\f \x01(\x03R\rlastMessageAt\x12\x1b\n" +
+	"\tcover_url\x18\r \x01(\tR\bcoverUrl\"V\n" +
 	"\x11GetUserGroupsResp\x12+\n" +
 	"\x06groups\x18\x01 \x03(\v2\x13.chat.UserGroupInfoR\x06groups\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05total\":\n" +

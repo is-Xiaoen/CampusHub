@@ -12,6 +12,7 @@ message CreateGroupReq {
   string name = 2;         // 群聊名称
   uint64 owner_id = 3;     // 群主用户ID
   int32 max_members = 4;   // 最大成员数，默认500
+  string cover_url = 5;    // 封面图URL（活动封面）
 }
 
 // CreateGroupResp 创建群聊响应
@@ -118,6 +119,7 @@ message UserGroupInfo {
   int64 joined_at = 10;    // 用户加入时间（时间戳）
   string last_message = 11;   // 最后一条消息内容
   int64 last_message_at = 12; // 最后消息时间（时间戳）
+  string cover_url = 13;      // 封面图URL（活动封面）
 }
 
 // GetUserGroupsResp 获取用户群列表响应

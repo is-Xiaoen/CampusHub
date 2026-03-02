@@ -23,6 +23,7 @@ type ActivityCreatedEvent struct {
 	ActivityID uint64    `json:"activity_id"`
 	CreatorID  uint64    `json:"creator_id"`
 	Title      string    `json:"title"`
+	CoverUrl   string    `json:"cover_url"`
 	CreatedAt  time.Time `json:"created_at"`
 }
 
