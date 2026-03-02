@@ -258,6 +258,7 @@ type UserInfo struct {
 	UserId            int64         `json:"userId"`
 	Nickname          string        `json:"nickname"`
 	AvatarUrl         string        `json:"avatarUrl"`
+	AvatarId          int64         `json:"avatarId"`
 	Introduction      string        `json:"introduction"`
 	Gender            string        `json:"gender"`
 	Age               string        `json:"age"`

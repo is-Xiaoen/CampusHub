@@ -146,6 +146,7 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 			UserId:        uint64(newUser.UserID),
 			Nickname:      newUser.Nickname,
 			AvatarUrl:     avatarURL,
+			AvatarId:      newUser.AvatarID,
 			Introduction:  newUser.Introduction,
 			Gender:        "未知",
 			Age:           strconv.FormatInt(newUser.Age, 10),
