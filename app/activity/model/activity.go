@@ -651,17 +651,18 @@ func (m *ActivityModel) BatchUpdateStatusByTime(ctx context.Context, fromStatus,
 
 // ==================== 推荐系统相关方法 ====================
 
-// FindAllPublished 查询所有已发布的活动（供预计算推荐列表使用）
+// FindAllPublished 查询所有报名中的活动（供预计算推荐列表使用）
 func (m *ActivityModel) FindAllPublished(ctx context.Context) ([]Activity, error) {
 	now := time.Now().Unix()
 	var activities []Activity
 	err := m.db.WithContext(ctx).
-		Where("status = ? AND activity_end_time > ?", StatusPublished, now).
+		Where("status = ? AND activity_end_time > ? AND register_start_time <= ? AND register_end_time >= ?",
+			StatusPublished, now, now, now).
 		Find(&activities).Error
 	return activities, err
 }
 
-// FindPublishedOrderByViewCount 查询已发布的活动并按浏览量排序（供新用户推荐使用）
+// FindPublishedOrderByViewCount 查询报名中的活动并按浏览量排序（供新用户推荐使用）
 func (m *ActivityModel) FindPublishedOrderByViewCount(ctx context.Context, limit int) ([]Activity, error) {
 	if limit <= 0 {
 		limit = 10
@@ -673,7 +674,8 @@ func (m *ActivityModel) FindPublishedOrderByViewCount(ctx context.Context, limit
 	now := time.Now().Unix()
 	var activities []Activity
 	err := m.db.WithContext(ctx).
-		Where("status = ? AND activity_end_time > ?", StatusPublished, now).
+		Where("status = ? AND activity_end_time > ? AND register_start_time <= ? AND register_end_time >= ?",
+			StatusPublished, now, now, now).
 		Order("view_count DESC, created_at DESC").
 		Limit(limit).
 		Find(&activities).Error
