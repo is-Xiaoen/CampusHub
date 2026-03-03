@@ -2,11 +2,13 @@ package logic
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"time"
 
 	"activity-platform/app/activity/model"
 	"activity-platform/app/activity/rpc/activity"
+	"activity-platform/app/activity/rpc/internal/cron"
 	"activity-platform/app/activity/rpc/internal/svc"
 	"activity-platform/common/errorx"
 
@@ -44,6 +46,11 @@ func (l *ListActivitiesLogic) ListActivities(in *activity.ListActivitiesReq) (*a
 	// 1. 参数校验
 	if err := l.validateParams(in); err != nil {
 		return nil, err
+	}
+
+	// 推荐模式：从 Redis 预计算缓存读取
+	if in.Recommend {
+		return l.listByRecommend(in)
 	}
 
 	// 2. 构建查询条件
@@ -152,15 +159,17 @@ func (l *ListActivitiesLogic) validateParams(in *activity.ListActivitiesReq) err
 		}
 	}
 
-	// 3. 排序字段校验
-	validSorts := map[string]bool{
-		"":           true, // 默认
-		"created_at": true,
-		"hot":        true,
-		"start_time": true,
-	}
-	if !validSorts[in.Sort] {
-		return errorx.ErrInvalidParams("无效的排序字段")
+	// 3. 排序字段校验（推荐模式下排序由缓存决定，跳过校验）
+	if !in.Recommend {
+		validSorts := map[string]bool{
+			"":           true, // 默认
+			"created_at": true,
+			"hot":        true,
+			"start_time": true,
+		}
+		if !validSorts[in.Sort] {
+			return errorx.ErrInvalidParams("无效的排序字段")
+		}
 	}
 
 	return nil
@@ -235,6 +244,173 @@ func (l *ListActivitiesLogic) buildActivityListItem(
 		RegistrationStatus:     regStatus,
 		RegistrationStatusText: regStatusText,
 	}
+}
+
+// recommendCacheKey Redis 推荐列表缓存键（与 RecommendCron 保持一致）
+const recommendCacheKey = "activity:recommend:list_cache:global"
+
+// listByRecommend 推荐模式：从 Redis 预计算缓存读取排序后的活动列表
+//
+// 数据流：Redis 缓存 → 分页切片 → 按 ID 批量查 DB → 补充关联数据 → 返回
+// 降级策略：Redis 不可用或缓存缺失时，自动降级为 sort=hot 的普通 DB 查询
+func (l *ListActivitiesLogic) listByRecommend(in *activity.ListActivitiesReq) (*activity.ListActivitiesResp, error) {
+	// 1. 从 Redis 读取推荐缓存
+	cached, err := l.svcCtx.Redis.GetCtx(l.ctx, recommendCacheKey)
+	if err != nil || cached == "" {
+		l.Infof("[listByRecommend] 推荐缓存未命中（err=%v），降级为热度排序", err)
+		return l.fallbackToHotSort(in)
+	}
+
+	// 2. 反序列化
+	var scoredList []cron.ActivityScoreDTO
+	if err := json.Unmarshal([]byte(cached), &scoredList); err != nil {
+		l.Errorf("[listByRecommend] 反序列化推荐缓存失败: %v", err)
+		return l.fallbackToHotSort(in)
+	}
+
+	if len(scoredList) == 0 {
+		return &activity.ListActivitiesResp{
+			List: []*activity.ActivityListItem{},
+			Pagination: &activity.Pagination{
+				Page:       in.Page,
+				PageSize:   in.PageSize,
+				Total:      0,
+				TotalPages: 0,
+			},
+		}, nil
+	}
+
+	// 3. 分页计算
+	total := int64(len(scoredList))
+	page := int(in.Page)
+	pageSize := int(in.PageSize)
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	startIdx := (page - 1) * pageSize
+	if startIdx >= int(total) {
+		// 超出范围，返回空
+		totalPages := int32(total) / in.PageSize
+		if int64(totalPages)*int64(in.PageSize) < total {
+			totalPages++
+		}
+		return &activity.ListActivitiesResp{
+			List: []*activity.ActivityListItem{},
+			Pagination: &activity.Pagination{
+				Page:       in.Page,
+				PageSize:   in.PageSize,
+				Total:      total,
+				TotalPages: totalPages,
+			},
+		}, nil
+	}
+
+	endIdx := startIdx + pageSize
+	if endIdx > int(total) {
+		endIdx = int(total)
+	}
+
+	// 4. 提取当前页的活动 ID（保持推荐分数顺序）
+	pageSlice := scoredList[startIdx:endIdx]
+	ids := make([]uint64, len(pageSlice))
+	for i, dto := range pageSlice {
+		ids[i] = dto.ActivityID
+	}
+
+	// 5. 批量查询完整活动数据
+	activities, err := l.svcCtx.ActivityModel.FindByIDs(l.ctx, ids)
+	if err != nil {
+		l.Errorf("[listByRecommend] 批量查询活动失败: %v", err)
+		return nil, errorx.ErrDBError(err)
+	}
+
+	// 6. 按推荐顺序重排（FindByIDs 不保证顺序）
+	actMap := make(map[uint64]*model.Activity, len(activities))
+	for i := range activities {
+		actMap[activities[i].ID] = &activities[i]
+	}
+	ordered := make([]model.Activity, 0, len(ids))
+	for _, id := range ids {
+		if act, ok := actMap[id]; ok {
+			ordered = append(ordered, *act)
+		}
+	}
+
+	if len(ordered) == 0 {
+		totalPages := int32(total) / in.PageSize
+		if int64(totalPages)*int64(in.PageSize) < total {
+			totalPages++
+		}
+		return &activity.ListActivitiesResp{
+			List: []*activity.ActivityListItem{},
+			Pagination: &activity.Pagination{
+				Page:       in.Page,
+				PageSize:   in.PageSize,
+				Total:      total,
+				TotalPages: totalPages,
+			},
+		}, nil
+	}
+
+	// 7. 批量查询关联数据（标签、分类、组织者信息）
+	orderedIDs := make([]uint64, len(ordered))
+	organizerIDs := make([]uint64, len(ordered))
+	for i, act := range ordered {
+		orderedIDs[i] = act.ID
+		organizerIDs[i] = act.OrganizerID
+	}
+
+	tagsMap, err := l.svcCtx.TagCacheModel.FindByActivityIDs(l.ctx, orderedIDs)
+	if err != nil {
+		l.Infof("[listByRecommend] 批量查询标签失败: %v", err)
+		tagsMap = make(map[uint64][]model.TagCache)
+	}
+
+	categoryMap := l.loadCategoryMap()
+
+	organizerMap := fetchOrganizerMap(l.ctx, l.svcCtx, organizerIDs)
+	for i := range ordered {
+		if info, ok := organizerMap[ordered[i].OrganizerID]; ok {
+			ordered[i].OrganizerName = info.Name
+			ordered[i].OrganizerAvatar = info.Avatar
+		}
+	}
+
+	// 8. 构建响应
+	list := make([]*activity.ActivityListItem, len(ordered))
+	for i, act := range ordered {
+		list[i] = l.buildActivityListItem(&act, categoryMap, tagsMap)
+	}
+
+	totalPages := int32(total) / in.PageSize
+	if int64(totalPages)*int64(in.PageSize) < total {
+		totalPages++
+	}
+
+	l.Infof("[listByRecommend] 推荐列表查询成功: page=%d, pageSize=%d, total=%d, returned=%d",
+		page, pageSize, total, len(list))
+
+	return &activity.ListActivitiesResp{
+		List: list,
+		Pagination: &activity.Pagination{
+			Page:       in.Page,
+			PageSize:   in.PageSize,
+			Total:      total,
+			TotalPages: totalPages,
+		},
+	}, nil
+}
+
+// fallbackToHotSort 降级：推荐缓存不可用时，走 sort=hot 的普通 DB 查询
+func (l *ListActivitiesLogic) fallbackToHotSort(in *activity.ListActivitiesReq) (*activity.ListActivitiesResp, error) {
+	fallback := *in
+	fallback.Recommend = false
+	fallback.Sort = "hot"
+	return l.ListActivities(&fallback)
 }
 
 // convertTagCachesForList 转换标签缓存列表为 Proto Tag（用于列表项）
