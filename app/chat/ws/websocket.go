@@ -123,7 +123,8 @@ func main() {
 		svcCtx.SaveQueue.Stop()
 	}
 
-	// 关闭消息中间件客户端
+	// 关闭消息中间件客户端（先清理消费者组，再关闭连接）
+	svcCtx.MessagingClient.CleanupConsumerGroups(context.Background())
 	err := svcCtx.MessagingClient.Close()
 	if err != nil {
 		return

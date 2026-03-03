@@ -323,7 +323,7 @@ func (h *Hub) subscribeMessages(ctx context.Context) {
 		userID := strconv.FormatInt(progressEvent.UserID, 10)
 		if err := h.SendToUser(userID, wsMsg); err != nil {
 			if err == ErrUserNotOnline {
-				logx.Infof("用户 %s 不在线，跳过认证进度推送: verifyId=%d, status=%d",
+				logx.Debugf("用户 %s 不在本实例，跳过认证进度推送: verifyId=%d, status=%d",
 					userID, progressEvent.VerifyID, progressEvent.Status)
 				return nil
 			}
@@ -360,7 +360,7 @@ func (h *Hub) subscribeMessages(ctx context.Context) {
 		userID := fmt.Sprintf("%d", event.UserID)
 		if err := h.SendToUser(userID, wsMsg); err != nil {
 			if err == ErrUserNotOnline {
-				logx.Infof("用户 %s 不在线，跳过通知推送: %s", userID, event.NotificationID)
+				logx.Debugf("用户 %s 不在本实例，跳过通知推送: %s", userID, event.NotificationID)
 				return nil
 			}
 			return err

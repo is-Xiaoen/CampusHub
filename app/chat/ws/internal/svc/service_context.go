@@ -1,6 +1,8 @@
 package svc
 
 import (
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -40,6 +42,11 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	})
 
 	// 创建消息中间件客户端
+	// 每个实例使用唯一消费者组（hostname），确保所有实例都能收到广播消息
+	hostname, err := os.Hostname()
+	if err != nil {
+		hostname = fmt.Sprintf("ws-%d", time.Now().UnixNano())
+	}
 	messagingConfig := messaging.Config{
 		Redis: messaging.RedisConfig{
 			Addr:     c.Redis.Host,
@@ -47,6 +54,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 			DB:       c.Redis.DB,
 		},
 		ServiceName:   "websocket-service",
+		ConsumerGroup: fmt.Sprintf("websocket-service-%s", hostname),
 		EnableMetrics: true,
 		EnableGoZero:  true,
 		RetryConfig: messaging.RetryConfig{
