@@ -56,6 +56,7 @@ func (l *ListActivityLogic) ListActivity(req *types.ListActivityReq) (resp *type
 		Sort:       req.Sort,
 		ViewerId:   0, // 公开接口不需要登录
 		IsAdmin:    false,
+		Recommend:  req.Recommend,
 	})
 	if err != nil {
 		l.Errorf("RPC ListActivities failed: %v", err)

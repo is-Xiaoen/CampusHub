@@ -206,6 +206,7 @@ type ListActivityReq struct {
 	CategoryId int64  `form:"categoryId,optional"`     // 分类筛选
 	Status     int32  `form:"status,default=-1"`       // -1=公开状态, -2=全部
 	Sort       string `form:"sort,default=created_at"` // created_at, hot, start_time
+	Recommend  bool   `form:"recommend,optional"`      // true=推荐模式
 }
 
 type ListActivityResp struct {
