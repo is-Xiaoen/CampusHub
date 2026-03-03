@@ -2473,6 +2473,7 @@ type ListActivitiesReq struct {
 	Sort          string                 `protobuf:"bytes,6,opt,name=sort,proto3" json:"sort,omitempty"` // created_at, hot, start_time
 	ViewerId      int64                  `protobuf:"varint,7,opt,name=viewer_id,json=viewerId,proto3" json:"viewer_id,omitempty"`
 	IsAdmin       bool                   `protobuf:"varint,8,opt,name=is_admin,json=isAdmin,proto3" json:"is_admin,omitempty"`
+	Recommend     bool                   `protobuf:"varint,9,opt,name=recommend,proto3" json:"recommend,omitempty"` // true=从Redis推荐缓存读取
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2559,6 +2560,13 @@ func (x *ListActivitiesReq) GetViewerId() int64 {
 func (x *ListActivitiesReq) GetIsAdmin() bool {
 	if x != nil {
 		return x.IsAdmin
+	}
+	return false
+}
+
+func (x *ListActivitiesReq) GetRecommend() bool {
+	if x != nil {
+		return x.Recommend
 	}
 	return false
 }
@@ -4789,7 +4797,7 @@ const file_activity_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1b\n" +
 	"\tviewer_id\x18\x02 \x01(\x03R\bviewerId\"G\n" +
 	"\x0fGetActivityResp\x124\n" +
-	"\bactivity\x18\x01 \x01(\v2\x18.activity.ActivityDetailR\bactivity\"\xec\x01\n" +
+	"\bactivity\x18\x01 \x01(\v2\x18.activity.ActivityDetailR\bactivity\"\x8a\x02\n" +
 	"\x11ListActivitiesReq\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x1f\n" +
@@ -4799,7 +4807,8 @@ const file_activity_proto_rawDesc = "" +
 	"\forganizer_id\x18\x05 \x01(\x03R\vorganizerId\x12\x12\n" +
 	"\x04sort\x18\x06 \x01(\tR\x04sort\x12\x1b\n" +
 	"\tviewer_id\x18\a \x01(\x03R\bviewerId\x12\x19\n" +
-	"\bis_admin\x18\b \x01(\bR\aisAdmin\"z\n" +
+	"\bis_admin\x18\b \x01(\bR\aisAdmin\x12\x1c\n" +
+	"\trecommend\x18\t \x01(\bR\trecommend\"z\n" +
 	"\x12ListActivitiesResp\x12.\n" +
 	"\x04list\x18\x01 \x03(\v2\x1a.activity.ActivityListItemR\x04list\x124\n" +
 	"\n" +
