@@ -12,6 +12,11 @@ type Config struct {
 	// 服务配置
 	ServiceName string
 
+	// ConsumerGroup Redis Streams 消费者组名称
+	// 若为空则使用 ServiceName。
+	// 需要所有实例都收到消息的服务（如 WebSocket），应设置为每实例唯一的值。
+	ConsumerGroup string
+
 	// 中间件配置
 	EnableMetrics bool
 	EnableGoZero  bool // 启用 Go-Zero trace_id 传播

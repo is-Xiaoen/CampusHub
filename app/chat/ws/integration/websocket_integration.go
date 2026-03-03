@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -60,6 +61,11 @@ func NewWebSocketService(config WebSocketConfig) (*WebSocketService, error) {
 	userRpc := userbasicservice.NewUserBasicService(zrpc.MustNewClient(config.UserRpcConfig))
 
 	// 创建消息中间件客户端
+	// 每个实例使用唯一消费者组（hostname），确保所有实例都能收到广播消息
+	hostname, err := os.Hostname()
+	if err != nil {
+		hostname = fmt.Sprintf("ws-%d", time.Now().UnixNano())
+	}
 	messagingConfig := messaging.Config{
 		Redis: messaging.RedisConfig{
 			Addr:     config.RedisHost,
@@ -67,6 +73,7 @@ func NewWebSocketService(config WebSocketConfig) (*WebSocketService, error) {
 			DB:       config.RedisDB,
 		},
 		ServiceName:   "chat-api-websocket",
+		ConsumerGroup: fmt.Sprintf("chat-api-websocket-%s", hostname),
 		EnableMetrics: true,
 		EnableGoZero:  true,
 		RetryConfig: messaging.RetryConfig{
@@ -156,6 +163,7 @@ func (s *WebSocketService) Close() error {
 	}
 
 	if s.MessagingClient != nil {
+		s.MessagingClient.CleanupConsumerGroups(context.Background())
 		if err := s.MessagingClient.Close(); err != nil {
 			logx.Errorf("关闭消息中间件客户端失败: %v", err)
 			return err

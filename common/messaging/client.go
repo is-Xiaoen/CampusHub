@@ -16,11 +16,12 @@ import (
 
 // Client Watermill 消息客户端
 type Client struct {
-	Publisher   message.Publisher
-	Subscriber  message.Subscriber
-	Router      *message.Router
-	config      Config
-	redisClient *redis.Client
+	Publisher        message.Publisher
+	Subscriber       message.Subscriber
+	Router           *message.Router
+	config           Config
+	redisClient      *redis.Client
+	subscribedTopics []string // 记录所有订阅的 topic，用于关闭时清理消费者组
 }
 
 // NewClient 创建新的消息客户端
@@ -52,9 +53,13 @@ func NewClient(config Config) (*Client, error) {
 	}
 
 	// 创建 Subscriber
+	consumerGroup := config.ServiceName
+	if config.ConsumerGroup != "" {
+		consumerGroup = config.ConsumerGroup
+	}
 	subscriberConfig := redisstream.SubscriberConfig{
 		Client:        redisClient,
-		ConsumerGroup: config.ServiceName,
+		ConsumerGroup: consumerGroup,
 	}
 
 	// 如果配置了 ClaimInterval，则使用配置值
@@ -184,6 +189,8 @@ func (c *Client) Subscribe(
 	handlerName string,
 	handler message.NoPublishHandlerFunc,
 ) {
+	c.subscribedTopics = append(c.subscribedTopics, topic)
+
 	h := c.Router.AddNoPublisherHandler(
 		handlerName,
 		topic,
@@ -209,6 +216,23 @@ func (c *Client) Subscribe(
 // Run 启动 Router（阻塞）
 func (c *Client) Run(ctx context.Context) error {
 	return c.Router.Run(ctx)
+}
+
+// CleanupConsumerGroups 删除本实例在 Redis Stream 中创建的所有消费者组
+// 应在服务关闭时调用，防止废弃的消费者组阻止 Redis Stream 自动裁剪
+func (c *Client) CleanupConsumerGroups(ctx context.Context) {
+	consumerGroup := c.config.ServiceName
+	if c.config.ConsumerGroup != "" {
+		consumerGroup = c.config.ConsumerGroup
+	}
+	for _, topic := range c.subscribedTopics {
+		if err := c.redisClient.XGroupDestroy(ctx, topic, consumerGroup).Err(); err != nil {
+			c.Router.Logger().Error("清理消费者组失败", err, watermill.LogFields{
+				"topic":         topic,
+				"consumerGroup": consumerGroup,
+			})
+		}
+	}
 }
 
 // Running 返回一个 channel，当 Router 运行时关闭
