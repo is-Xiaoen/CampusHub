@@ -407,10 +407,17 @@ func (l *ListActivitiesLogic) listByRecommend(in *activity.ListActivitiesReq) (*
 
 // fallbackToHotSort 降级：推荐缓存不可用时，走 sort=hot 的普通 DB 查询
 func (l *ListActivitiesLogic) fallbackToHotSort(in *activity.ListActivitiesReq) (*activity.ListActivitiesResp, error) {
-	fallback := *in
-	fallback.Recommend = false
-	fallback.Sort = "hot"
-	return l.ListActivities(&fallback)
+	return l.ListActivities(&activity.ListActivitiesReq{
+		Page:        in.Page,
+		PageSize:    in.PageSize,
+		CategoryId:  in.CategoryId,
+		Status:      in.Status,
+		OrganizerId: in.OrganizerId,
+		Sort:        "hot",
+		ViewerId:    in.ViewerId,
+		IsAdmin:     in.IsAdmin,
+		Recommend:   false,
+	})
 }
 
 // convertTagCachesForList 转换标签缓存列表为 Proto Tag（用于列表项）
