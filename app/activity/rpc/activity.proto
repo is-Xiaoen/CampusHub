@@ -396,6 +396,7 @@ message ListActivitiesReq {
   string sort = 6;            // created_at, hot, start_time
   int64 viewer_id = 7;
   bool is_admin = 8;
+  bool recommend = 9;         // true=从Redis推荐缓存读取
 }
 
 message ListActivitiesResp {
