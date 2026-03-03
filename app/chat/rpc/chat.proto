@@ -117,9 +117,10 @@ message UserGroupInfo {
   int64 created_at = 8;    // 创建时间（时间戳）
   int32 role = 9;          // 用户在群中的角色: 1-普通成员 2-群主
   int64 joined_at = 10;    // 用户加入时间（时间戳）
-  string last_message = 11;   // 最后一条消息内容
-  int64 last_message_at = 12; // 最后消息时间（时间戳）
-  string cover_url = 13;      // 封面图URL（活动封面）
+  string last_message = 11;      // 最后一条消息内容
+  int64 last_message_at = 12;   // 最后消息时间（时间戳）
+  string cover_url = 13;         // 封面图URL（活动封面）
+  string last_sender_name = 14;  // 最后一条消息的发送者用户名
 }
 
 // GetUserGroupsResp 获取用户群列表响应
