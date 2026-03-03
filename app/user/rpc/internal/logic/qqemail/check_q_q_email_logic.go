@@ -43,8 +43,7 @@ func (l *CheckQQEmailLogic) CheckQQEmail(in *pb.CheckQQEmailReq) (*pb.CheckQQEma
 	}
 
 	// 2. 校验验证码
-	encInput := encrypt.EncryptPassword(in.QqCode)
-	if val != encInput {
+	if !encrypt.ComparePassword(in.QqCode, val) {
 		// 记录错误次数
 		count, err := l.svcCtx.Redis.Incr(l.ctx, errKey).Result()
 		if err != nil {
