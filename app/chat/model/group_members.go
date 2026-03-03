@@ -32,6 +32,7 @@ type GroupMemberModel interface {
 	FindOne(ctx context.Context, groupID string, userID uint64) (*GroupMember, error)
 	FindByGroupID(ctx context.Context, groupID string, page, pageSize int32) ([]*GroupMember, int64, error)
 	FindByUserID(ctx context.Context, userID uint64, page, pageSize int32) ([]*GroupMember, int64, error)
+	FindAllByUserID(ctx context.Context, userID uint64) ([]*GroupMember, error)
 	Delete(ctx context.Context, groupID string, userID uint64) error
 	UpdateRole(ctx context.Context, groupID string, userID uint64, role int8) error
 	UpdateStatus(ctx context.Context, groupID string, userID uint64, status int8) error
@@ -106,6 +107,17 @@ func (m *defaultGroupMemberModel) FindByUserID(ctx context.Context, userID uint6
 	}
 
 	return members, total, nil
+}
+
+// FindAllByUserID 根据用户ID查询加入的所有群（不分页，用于内存排序）
+func (m *defaultGroupMemberModel) FindAllByUserID(ctx context.Context, userID uint64) ([]*GroupMember, error) {
+	var members []*GroupMember
+	if err := m.db.WithContext(ctx).
+		Where("user_id = ? AND status = 1", userID).
+		Find(&members).Error; err != nil {
+		return nil, err
+	}
+	return members, nil
 }
 
 // Delete 删除群成员（软删除）
