@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"sort"
 
 	"activity-platform/app/chat/rpc/chat"
 	"activity-platform/app/chat/rpc/internal/svc"
@@ -46,12 +47,13 @@ func (l *GetUserGroupsLogic) GetUserGroups(in *chat.GetUserGroupsReq) (*chat.Get
 		pageSize = 100
 	}
 
-	// 2. 查询用户加入的群成员记录
-	members, total, err := l.svcCtx.GroupMemberModel.FindByUserID(l.ctx, in.UserId, page, pageSize)
+	// 2. 查询用户加入的所有群成员记录（不分页，后续排序后再手动分页）
+	members, err := l.svcCtx.GroupMemberModel.FindAllByUserID(l.ctx, in.UserId)
 	if err != nil {
 		l.Errorf("查询用户群列表失败: %v", err)
 		return nil, status.Error(codes.Internal, "查询用户群列表失败")
 	}
+	total := int32(len(members))
 
 	// 3. 根据群ID查询群信息，并组装用户特定信息
 	groupList := make([]*chat.UserGroupInfo, 0, len(members))
@@ -98,6 +100,30 @@ func (l *GetUserGroupsLogic) GetUserGroups(in *chat.GetUserGroupsReq) (*chat.Get
 			LastMessageAt:  lastMessageAt,
 			LastSenderName: lastSenderName,
 		})
+	}
+
+	// 5. 排序：取 max(lastMessageAt, joinedAt) 作为活跃时间，降序排列
+	// 效果：新加入的群或有新消息的群都会排到前面（类似微信）
+	activeAt := func(g *chat.UserGroupInfo) int64 {
+		if g.LastMessageAt > g.JoinedAt {
+			return g.LastMessageAt
+		}
+		return g.JoinedAt
+	}
+	sort.Slice(groupList, func(i, j int) bool {
+		return activeAt(groupList[i]) > activeAt(groupList[j])
+	})
+
+	// 6. 手动分页
+	start := int((page - 1) * pageSize)
+	if start >= len(groupList) {
+		groupList = groupList[:0]
+	} else {
+		end := start + int(pageSize)
+		if end > len(groupList) {
+			end = len(groupList)
+		}
+		groupList = groupList[start:end]
 	}
 
 	return &chat.GetUserGroupsResp{
