@@ -11,6 +11,7 @@ import (
 	"activity-platform/app/user/rpc/client/qqemail"
 	"activity-platform/app/user/rpc/client/userbasicservice"
 	"activity-platform/common/errorx"
+	"activity-platform/common/utils/validate"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -31,7 +32,12 @@ func NewGetRegisterCodeLogic(ctx context.Context, svcCtx *svc.ServiceContext) *G
 }
 
 func (l *GetRegisterCodeLogic) GetRegisterCode(req *types.GetRegisterCodeReq) (resp *types.GetCodeResp, err error) {
-	// 1. 检查用户是否已存在
+	// 1. 本地校验QQ邮箱格式
+	if !validate.IsValidQQEmail(req.QqEmail) {
+		return nil, errorx.ErrInvalidParams("邮箱格式不正确，仅支持QQ邮箱")
+	}
+
+	// 2. 检查用户是否已存在
 	existsResp, err := l.svcCtx.UserBasicServiceRpc.CheckUserExists(l.ctx, &userbasicservice.CheckUserExistsReq{
 		QqEmail: req.QqEmail,
 	})

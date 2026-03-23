@@ -16,6 +16,7 @@ import (
 	"activity-platform/common/utils/email"
 	"activity-platform/common/utils/encrypt"
 	"activity-platform/common/utils/jwt"
+	"activity-platform/common/utils/validate"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -35,17 +36,9 @@ func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic 
 }
 
 func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
-	// 1. 调用验证码校验逻辑
-	checkCaptchaLogic := captchaservicelogic.NewCheckCaptchaLogic(l.ctx, l.svcCtx)
-	_, err := checkCaptchaLogic.CheckCaptcha(&pb.CheckCaptchaReq{
-		LotNumber:     in.LotNumber,
-		CaptchaOutput: in.CaptchaOutput,
-		PassToken:     in.PassToken,
-		GenTime:       in.GenTime,
-	})
-
-	if err != nil {
-		return nil, err
+	// 1. 校验QQ邮箱格式
+	if !validate.IsValidQQEmail(in.QqEmail) {
+		return nil, errorx.ErrInvalidParams("邮箱格式不正确，仅支持QQ邮箱")
 	}
 
 	// 2. 校验账号密码
@@ -68,7 +61,20 @@ func (l *LoginLogic) Login(in *pb.LoginReq) (*pb.LoginResponse, error) {
 		return nil, errorx.New(errorx.CodeUserNotFound)
 	}
 
-	// 3. 生成Token
+	// 3. 调用验证码校验逻辑 (放在密码校验之后，避免密码错误白白消耗验证码/调用外部接口)
+	checkCaptchaLogic := captchaservicelogic.NewCheckCaptchaLogic(l.ctx, l.svcCtx)
+	_, err = checkCaptchaLogic.CheckCaptcha(&pb.CheckCaptchaReq{
+		LotNumber:     in.LotNumber,
+		CaptchaOutput: in.CaptchaOutput,
+		PassToken:     in.PassToken,
+		GenTime:       in.GenTime,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	// 4. 生成Token
 	shortToken, err := jwt.GenerateShortToken(user.UserID, jwt.RoleUser, jwt.AuthConfig{
 		Secret: l.svcCtx.Config.JWT.AccessSecret,
 		Expire: l.svcCtx.Config.JWT.AccessExpire,
