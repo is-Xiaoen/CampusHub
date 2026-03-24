@@ -9,6 +9,7 @@ import (
 // 预编译正则表达式，提升性能
 var (
 	phoneRegex    = regexp.MustCompile(`^1[3-9]\d{9}$`)
+	qqEmailRegex  = regexp.MustCompile(`^[1-9][0-9]{4,10}@qq\.com$`) // 严格匹配QQ邮箱：5-11位数字，以非0开头
 	emailRegex    = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	usernameRegex = regexp.MustCompile(`^[a-zA-Z0-9_\p{Han}]{2,20}$`)
 	idCardRegex   = regexp.MustCompile(`^[1-9]\d{5}(19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[\dXx]$`)
@@ -16,7 +17,15 @@ var (
 
 // IsValidPhone 验证手机号（中国大陆）
 
-// IsValidEmail 验证邮箱格式
+// IsValidQQEmail 验证QQ邮箱格式
+func IsValidQQEmail(email string) bool {
+	return qqEmailRegex.MatchString(email)
+}
+
+// IsValidEmail 验证通用邮箱格式
+func IsValidEmail(email string) bool {
+	return emailRegex.MatchString(email)
+}
 
 // IsValidUsername 验证用户名
 
