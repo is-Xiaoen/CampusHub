@@ -41,7 +41,7 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 	}
 
 	if !encrypt.ValidatePassword(in.Password) {
-		return nil, errorx.NewWithMessage(errorx.CodePasswordInvalid, "密码长度必须为8到20位之间，且必须包含以下4种字符类型中的至少3种：大写字母、小写字母、数字、特殊符号")
+		return nil, errorx.NewWithMessage(errorx.CodePasswordInvalid, "密码长度必须为8-20个字符，且包含至少3种字符（大写字母、小写字母、数字、特殊字符）")
 	}
 
 	// 2. 检查邮箱是否已注册（轻量级数据库查询）

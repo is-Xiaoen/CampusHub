@@ -179,7 +179,7 @@ var codeMessages = map[int]string{
 	CodeUserEmailAlreadyExists: "该邮箱已注册",
 	CodeLoginFailed:            "账号或密码错误",
 	// 密码与Token
-	CodePasswordInvalid:      "密码长度必须为8到20位之间，且必须包含以下4种字符类型中的至少3种：大写字母、小写字母、数字、特殊符号",
+	CodePasswordInvalid:      "密码格式不正确",
 	CodePasswordIncorrect:    "原密码错误",
 	CodePasswordUpdateFailed: "密码修改失败，请稍后重试",
 	CodeTokenGenerateFailed:  "令牌生成失败，请重试",
