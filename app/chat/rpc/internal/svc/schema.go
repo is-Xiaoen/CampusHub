@@ -2,6 +2,8 @@ package svc
 
 import (
 	"errors"
+	"fmt"
+	"log"
 	"strings"
 
 	"gorm.io/gorm"
@@ -15,28 +17,31 @@ const (
 func ensureChatSchema(db *gorm.DB) error {
 	exists, err := columnExists(db, "groups", "cover_url")
 	if err != nil {
-		return err
+		return fmt.Errorf("检查 groups.cover_url 字段失败: %w", err)
 	}
 	if exists {
+		log.Printf("[INFO] Chat schema 已包含 groups.cover_url 字段")
 		return nil
 	}
 
 	if err := db.Exec(addGroupsCoverURLColumnSQL).Error; err != nil {
 		if !isDuplicateColumnError(err) {
-			return err
+			return fmt.Errorf("补充 groups.cover_url 字段失败: %w", err)
 		}
 
 		exists, checkErr := columnExists(db, "groups", "cover_url")
 		if checkErr != nil {
-			return checkErr
+			return fmt.Errorf("复查 groups.cover_url 字段失败: %w", checkErr)
 		}
 		if exists {
+			log.Printf("[INFO] Chat schema 并发修复完成，groups.cover_url 已存在")
 			return nil
 		}
 
-		return err
+		return fmt.Errorf("补充 groups.cover_url 字段失败: %w", err)
 	}
 
+	log.Printf("[INFO] Chat schema 已修复，补充 groups.cover_url 字段成功")
 	return nil
 }
 
