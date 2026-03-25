@@ -19,6 +19,7 @@ CLAUDE.md
 common/messaging/tests
 common/messaging/README.md
 .specify
+.worktrees/
 specs
 tools
 learning/batch_query_network.md
