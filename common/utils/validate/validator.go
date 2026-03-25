@@ -9,7 +9,7 @@ import (
 // 预编译正则表达式，提升性能
 var (
 	phoneRegex    = regexp.MustCompile(`^1[3-9]\d{9}$`)
-	qqEmailRegex  = regexp.MustCompile(`^[a-zA-Z0-9._-]{3,18}@qq\.com$`) // 匹配 3 到 18 位的字母、数字、点、下划线、减号
+	qqEmailRegex  = regexp.MustCompile(`^[a-zA-Z0-9._-]{3,18}@(qq\.com|vip\.qq\.com|foxmail\.com)$`) // 匹配 3 到 18 位的字母、数字、点、下划线、减号
 	emailRegex    = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	usernameRegex = regexp.MustCompile(`^[a-zA-Z0-9_\p{Han}]{2,20}$`)
 	idCardRegex   = regexp.MustCompile(`^[1-9]\d{5}(19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[\dXx]$`)
