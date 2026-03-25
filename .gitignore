@@ -103,6 +103,10 @@ app/*/ws/etc/*.yaml
 docs/plan/
 !docs/superpowers/specs/
 !docs/superpowers/specs/*.md
+MY_CONTRIBUTION.md
+MY_EVIDENCE_MAP.md
+PROJECT_FOR_RESUME.md
+RESUME_TARGET.md
 context.md
 docs/audit/
 history.md
