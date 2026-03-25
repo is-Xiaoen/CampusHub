@@ -101,6 +101,10 @@ app/*/ws/etc/*.yaml
 # ==================== 项目特定排除 ====================
 # 计划文档（可能包含敏感业务信息）
 docs/plan/
+MY_CONTRIBUTION.md
+MY_EVIDENCE_MAP.md
+PROJECT_FOR_RESUME.md
+RESUME_TARGET.md
 context.md
 docs/audit/
 history.md
