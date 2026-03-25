@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/smtp"
 	"strings"
+	"time"
 )
 
 type EmailConfig struct {
@@ -45,8 +46,8 @@ func SendQQEmail(cfg EmailConfig, toEmail, code, sceneStr string) error {
 	header := make(map[string]string)
 	header["From"] = fmt.Sprintf("%s <%s>", cfg.FromName, cfg.Username)
 	header["To"] = toEmail
-	header["Subject"] = cfg.Subject
-	header["Content-Type"] = "text/plain; charset=UTF-8"
+	header["Subject"] = fmt.Sprintf("%s - 验证码：%s", cfg.Subject, code)
+	header["Content-Type"] = "text/html; charset=UTF-8"
 
 	message := ""
 	for k, v := range header {
@@ -54,20 +55,28 @@ func SendQQEmail(cfg EmailConfig, toEmail, code, sceneStr string) error {
 	}
 
 	// 邮件正文
+	// 引入时间戳作为隐形干扰字符，防止被 QQ 邮箱判定为短时间内发送大量相似垃圾邮件
+	timestamp := time.Now().Format("20060102150405")
+
 	body := fmt.Sprintf(`
-亲爱的用户：
-
-您正在进行【%s】操作。
-您的验证码是：%s
-请在3分钟内完成验证。
-
-温馨提示：
-1. 验证码具有时效性，请尽快使用。
-2. 为了您的账号安全，请勿将验证码告知他人，包括工作人员。
-3. 如果这不是您本人的操作，请忽略此邮件。
-
-CampusHub —— 只有想不到，没有做不到的校园生活！
-`, sceneStr, code)
+<div style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #333;">
+	<p>亲爱的用户：</p>
+	<p>您正在进行【%s】操作。</p>
+	<p>您的验证码是：<strong style="color: #1a73e8; font-size: 18px;">%s</strong></p>
+	<p>请在3分钟内完成验证。</p>
+	<br>
+	<p style="font-size: 12px; color: #999;">
+		温馨提示：<br>
+		1. 验证码具有时效性，请尽快使用。<br>
+		2. 为了您的账号安全，请勿将验证码告知他人，包括工作人员。<br>
+		3. 如果这不是您本人的操作，请忽略此邮件。
+	</p>
+	<p style="font-size: 12px; color: #999;">
+		CampusHub —— 只有想不到，没有做不到的校园生活！
+	</p>
+	<div style="display:none; color:transparent; font-size:0px; line-height:0px; max-height:0px; overflow:hidden; opacity:0;">%s</div>
+</div>
+`, sceneStr, code, timestamp)
 
 	message += "\r\n" + body
 

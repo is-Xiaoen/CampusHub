@@ -14,6 +14,7 @@ import (
 	"activity-platform/common/errorx"
 	"activity-platform/common/utils/encrypt"
 	"activity-platform/common/utils/jwt"
+	"activity-platform/common/utils/validate"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -34,23 +35,16 @@ func NewRegisterLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Register
 
 // 用户注册
 func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, error) {
-	// 1. 校验验证码 (复用 CheckQQEmailLogic 的逻辑)
-	checkEmailLogic := qqemaillogic.NewCheckQQEmailLogic(l.ctx, l.svcCtx)
-	_, err := checkEmailLogic.CheckQQEmail(&pb.CheckQQEmailReq{
-		QqEmail: in.QqEmail,
-		QqCode:  in.QqCode,
-		Scene:   "register",
-	})
-	if err != nil {
-		return nil, err
+	// 1. 校验邮箱和密码格式（最便宜的本地校验）
+	if !validate.IsValidQQEmail(in.QqEmail) {
+		return nil, errorx.ErrInvalidParams("邮箱格式不正确，仅支持QQ邮箱")
 	}
 
-	// 校验密码格式
 	if !encrypt.ValidatePassword(in.Password) {
 		return nil, errorx.NewWithMessage(errorx.CodePasswordInvalid, "密码长度必须为8-20个字符，且包含至少3种字符（大写字母、小写字母、数字、特殊字符）")
 	}
 
-	// 2. 检查邮箱是否已注册
+	// 2. 检查邮箱是否已注册（轻量级数据库查询）
 	exists, err := l.svcCtx.UserModel.ExistsByQQEmail(l.ctx, in.QqEmail)
 	if err != nil {
 		l.Logger.Errorf("Check email existence failed: %v", err)
@@ -60,7 +54,18 @@ func (l *RegisterLogic) Register(in *pb.RegisterReq) (*pb.RegisterResponse, erro
 		return nil, errorx.New(errorx.CodeUserEmailAlreadyExists)
 	}
 
-	// 3. 创建用户
+	// 3. 校验验证码（高成本操作/一次性资源）
+	checkEmailLogic := qqemaillogic.NewCheckQQEmailLogic(l.ctx, l.svcCtx)
+	_, err = checkEmailLogic.CheckQQEmail(&pb.CheckQQEmailReq{
+		QqEmail: in.QqEmail,
+		QqCode:  in.QqCode,
+		Scene:   "register",
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// 4. 创建用户
 	newUser := &model.User{
 		QQEmail:    in.QqEmail,
 		Nickname:   in.Nickname,
