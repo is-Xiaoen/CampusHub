@@ -102,6 +102,11 @@ func initDB(c config.Config) (*gorm.DB, error) {
 		return nil, fmt.Errorf("数据库连接失败: %w", err)
 	}
 
+	if err := ensureChatSchema(db); err != nil {
+		log.Printf("[ERROR] Chat schema 校验/修复失败: %v", err)
+		return nil, err
+	}
+
 	// 获取底层的 sql.DB 对象，配置连接池
 	sqlDB, err := db.DB()
 	if err != nil {

@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS `groups` (
     `group_id` VARCHAR(64) NOT NULL COMMENT '群聊唯一标识',
     `activity_id` BIGINT UNSIGNED NOT NULL COMMENT '关联活动ID',
     `name` VARCHAR(255) NOT NULL COMMENT '群聊名称',
+    `cover_url` VARCHAR(500) NOT NULL DEFAULT '' COMMENT '封面图URL（活动封面）',
     `owner_id` BIGINT UNSIGNED NOT NULL COMMENT '群主用户ID',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态: 1-正常 2-已解散',
     `max_members` INT NOT NULL COMMENT '最大成员数',
