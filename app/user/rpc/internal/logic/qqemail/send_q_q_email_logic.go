@@ -12,6 +12,7 @@ import (
 	"activity-platform/common/utils/email"
 	"activity-platform/common/utils/encrypt"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -36,18 +37,58 @@ func (l *SendQQEmailLogic) SendQQEmail(in *pb.SendQQEmailReq) (*pb.SendQQEmailRe
 	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 	code := fmt.Sprintf("%06d", rnd.Intn(1000000))
 
-	// 2. 频率限制：1小时内最多发送10次
-	limitKey := fmt.Sprintf("captcha:email:limit:%s", qqEmail)
-	count, err := l.svcCtx.Redis.Incr(l.ctx, limitKey).Result()
+	// 2. 频率限制
+	// 2.1 60秒内限制：只能发1次
+	limit60sKey := fmt.Sprintf("captcha:email:limit:60s:%s", qqEmail)
+	exists, err := l.svcCtx.Redis.Exists(l.ctx, limit60sKey).Result()
 	if err != nil {
-		l.Logger.Errorf("Redis Incr failed: %v", err)
+		l.Logger.Errorf("Redis Exists failed: %v", err)
 		return nil, errorx.ErrCacheError(err)
 	}
-	if count == 1 {
-		l.svcCtx.Redis.Expire(l.ctx, limitKey, time.Hour)
+	if exists > 0 {
+		return nil, errorx.NewWithMessage(errorx.CodeCaptchaRateLimit, "发送过于频繁，请60秒后再试")
 	}
-	if count > 10 {
-		return nil, errorx.New(errorx.CodeCaptchaRateLimit)
+
+	// 2.2 1小时内限制：只能发5次
+	limit1hKey := fmt.Sprintf("captcha:email:limit:1h:%s", qqEmail)
+	count1h, err := l.svcCtx.Redis.Get(l.ctx, limit1hKey).Int()
+	if err != nil && err != redis.Nil {
+		l.Logger.Errorf("Redis Get 1h failed: %v", err)
+		return nil, errorx.ErrCacheError(err)
+	}
+	if count1h >= 5 {
+		return nil, errorx.NewWithMessage(errorx.CodeCaptchaRateLimit, "1小时内发送次数过多，请稍后再试")
+	}
+
+	// 2.3 24小时内限制：只能发10次
+	limit24hKey := fmt.Sprintf("captcha:email:limit:24h:%s", qqEmail)
+	count24h, err := l.svcCtx.Redis.Get(l.ctx, limit24hKey).Int()
+	if err != nil && err != redis.Nil {
+		l.Logger.Errorf("Redis Get 24h failed: %v", err)
+		return nil, errorx.ErrCacheError(err)
+	}
+	if count24h >= 10 {
+		return nil, errorx.NewWithMessage(errorx.CodeCaptchaRateLimit, "今日发送次数已达上限，请明天再试")
+	}
+
+	// 2.4 所有校验通过，开始记录发送次数
+	// 设置60秒限制的锁
+	err = l.svcCtx.Redis.Set(l.ctx, limit60sKey, "1", 60*time.Second).Err()
+	if err != nil {
+		l.Logger.Errorf("Redis Set 60s limit failed: %v", err)
+		return nil, errorx.ErrCacheError(err)
+	}
+
+	// 增加1小时计数
+	newCount1h, _ := l.svcCtx.Redis.Incr(l.ctx, limit1hKey).Result()
+	if newCount1h == 1 {
+		l.svcCtx.Redis.Expire(l.ctx, limit1hKey, time.Hour)
+	}
+
+	// 增加24小时计数
+	newCount24h, _ := l.svcCtx.Redis.Incr(l.ctx, limit24hKey).Result()
+	if newCount24h == 1 {
+		l.svcCtx.Redis.Expire(l.ctx, limit24hKey, 24*time.Hour)
 	}
 
 	// 3. 存储验证码到Redis (有效期3分钟)
